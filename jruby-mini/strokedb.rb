@@ -90,7 +90,9 @@ module StrokeDB
     private
 
     def filename(uuid,version=nil)
-      File.join(path,uuid.to_s.gsub('-','/') + (version ? ".#{version}" : "") )
+      
+      uuid_s = uuid.to_s
+      File.join(path,[uuid_s[0,2], uuid_s[2,2], uuid_s[4,2], uuid_s.slice(6,30).gsub('-','')].join('/') + (version ? ".#{version}" : "") )
     end
 
   end
