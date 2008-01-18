@@ -186,7 +186,8 @@ module StrokeDB
   class Replica < Document
 
     def replicate!(document)
-      self[document.uuid] = document.all_versions - (self[document.uuid]||[]) - previous_versions.collect{|r| store.find(uuid,r)[document.uuid]}.flatten.uniq
+      self[document.uuid] = document.all_versions - (self[document.uuid]||[]) - 
+                            previous_versions.collect{|r| store.find(uuid,r)[document.uuid]}.flatten.uniq
       save!
     end
 
