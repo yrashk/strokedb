@@ -90,7 +90,6 @@ module StrokeDB
     private
 
     def filename(uuid,version=nil)
-      
       uuid_s = uuid.to_s
       File.join(path,[uuid_s[0,2], uuid_s[2,2], uuid_s[4,2], uuid_s.slice(6,30).gsub('-','')].join('/') + (version ? ".#{version}" : "") )
     end
@@ -105,6 +104,7 @@ module StrokeDB
       @uuid = java.util.UUID.randomUUID
       @slots = {}
       initialize_slots(slots)
+      after_initialize
     end
 
     def [](slotname)
@@ -144,7 +144,7 @@ module StrokeDB
       end
     end
 
-    private
+    protected
 
     def initialize_slots(slots)
       slots.each {|name,value| self[name] = value }
@@ -155,7 +155,14 @@ module StrokeDB
       md.update to_json(:except => ['__version__']).to_java_bytes
       self[:__version__] = md.digest.to_a.collect{|i| java.lang.Integer.to_hex_string(i & 0xff) }.join
     end
+    
+    def after_initialize
+    end
 
+  end
+  
+  class Replica < Document
+    
   end
 
 end
