@@ -4,23 +4,33 @@ require 'activesupport'
 
 module StrokeDB
 
+  # Utility classes
+  class HashWithSortedKeys < Hash
+    def keys_with_sort
+      keys_without_sort.sort
+    end
+    alias_method_chain :keys, :sort
+  end
+  
+  
+  
   class Slot
     attr_reader :doc
-    
+
     def initialize(doc)
       @doc = doc
     end
-    
+
     def value=(v)
       case v
-        when Document
+      when Document
         @value = "@##{v.uuid}"
         @cached_value = v # lets cache it locally
       else
         @value = v
       end
     end
-    
+
     def value
       case @value
       when /@#([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
@@ -33,7 +43,7 @@ module StrokeDB
         @value 
       end
     end
-    
+
     def to_json(opts={})
       @value.to_json(opts)
     end
@@ -42,6 +52,10 @@ module StrokeDB
   class Store
     def new_doc(slots={})
       Document.new(self,slots)
+    end
+
+    def new_replica
+      Replica.new(self)
     end
 
     protected
@@ -102,7 +116,6 @@ module StrokeDB
     def initialize(store,slots={})
       @store = store
       @uuid = java.util.UUID.randomUUID
-      @slots = {}
       initialize_slots(slots)
       after_initialize
     end
@@ -120,7 +133,7 @@ module StrokeDB
     end
 
     def to_json(opts={})
-       @slots.to_json(opts)
+      @slots.to_json(opts)
     end
 
     def to_s
@@ -130,7 +143,7 @@ module StrokeDB
     def new?
       !store.exists?(uuid)
     end
-        
+
     def save!
       self[:__previous_version__] = store.last_version(uuid) unless new?
       store.save!(self)
@@ -144,25 +157,49 @@ module StrokeDB
       end
     end
 
+    def version
+      self[:__version__]
+    end
+
+    def all_versions
+      [version] + previous_versions
+    end
+
     protected
 
     def initialize_slots(slots)
+      @slots = HashWithSortedKeys.new
       slots.each {|name,value| self[name] = value }
     end
 
     def set_version
       md = java.security.MessageDigest.get_instance("SHA-256")
-      md.update to_json(:except => ['__version__']).to_java_bytes
+      md.update to_json(:except => '__version__').to_java_bytes
       self[:__version__] = md.digest.to_a.collect{|i| java.lang.Integer.to_hex_string(i & 0xff) }.join
     end
-    
+
     def after_initialize
     end
 
   end
-  
+
   class Replica < Document
-    
+
+    def replicate!(document)
+      self[document.uuid] = document.all_versions - (self[document.uuid]||[]) - previous_versions.collect{|r| store.find(uuid,r)[document.uuid]}.flatten.uniq
+      save!
+    end
+
+    def update_replications!
+      @slots.each_pair do |k,v|
+        case k
+        when /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
+          self[k] = store.find($1).all_versions - self[k]
+        end
+      end
+      save!
+    end
+
   end
 
 end
@@ -190,5 +227,26 @@ if __FILE__ == $0
   puts d_
   puts d_[:_d1]
   puts d_.previous_versions.inspect
+
+  puts "replica::::"
+  r = store.new_replica
+  r.replicate!(d_)
+  # puts r
+  d_[:wonderful] = "hello"
+  d_.save!
+  puts d_
+  puts store.find(d_.uuid)
+  r.update_replications!
+  puts r
+  puts r[d_.uuid].member?(d_.version)
+  r.replicate!(d_)
+  puts r
+  r.replicate!(d_)
+  puts r
+  d_[:awonderful] = "hello"
+  d_.save!
+  r.replicate!(d_)
+  puts r
+  
 end
 
