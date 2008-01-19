@@ -54,8 +54,8 @@ module StrokeDB
       Document.new(self,slots)
     end
 
-    def new_replica
-      Replica.new(self)
+    def new_replica(slots={})
+      Replica.new(self,slots)
     end
 
     protected
