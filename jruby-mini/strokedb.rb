@@ -193,8 +193,7 @@ module StrokeDB
 
     def update_replications!
       @slots.each_pair do |k,v|
-        case k
-        when /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
+        if k.match /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
           self[k] = store.find($1).all_versions - self[k]
         end
       end
