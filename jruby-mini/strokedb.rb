@@ -202,6 +202,18 @@ module StrokeDB
       save!
     end
     
+    def to_packet(opts={})
+      docs = []
+      @slots.each_pair do |k,v|
+        if k.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/)
+          self[k].each {|version| docs << store.find($1,version).to_json(:transmittal => true) }
+        end
+      end
+      docs << to_json(:transmittal => true)
+      docs = docs.join("\n\n") if opts[:join]
+      docs
+    end
+    
 
   end
 
@@ -242,7 +254,9 @@ if __FILE__ == $0
   r.update_replications!
   puts ":::-----"
   puts r.to_json(:transmittal => true)
-  
+  puts "[[[[[[[]]]]]]]"
+  puts r.to_packet(:join => true)
+  puts "----------"
   puts r
   puts r[d_.uuid].member?(d_.version)
   r.replicate!(d_)
