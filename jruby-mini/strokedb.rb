@@ -133,7 +133,9 @@ module StrokeDB
     end
 
     def to_json(opts={})
-      @slots.to_json(opts)
+      _to_json = @slots
+      _to_json = [uuid.to_s,@slots] if opts[:transmittal]
+      _to_json.to_json(opts)
     end
 
     def to_s
@@ -199,6 +201,7 @@ module StrokeDB
       end
       save!
     end
+    
 
   end
 
@@ -237,6 +240,9 @@ if __FILE__ == $0
   puts d_
   puts store.find(d_.uuid)
   r.update_replications!
+  puts ":::-----"
+  puts r.to_json(:transmittal => true)
+  
   puts r
   puts r[d_.uuid].member?(d_.version)
   r.replicate!(d_)
@@ -247,6 +253,7 @@ if __FILE__ == $0
   d_.save!
   r.replicate!(d_)
   puts r
+  
   
 end
 
