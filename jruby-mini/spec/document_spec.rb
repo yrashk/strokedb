@@ -42,5 +42,29 @@ describe "Newly created Document with slots supplied" do
     @document.slotnames.to_set.should == ['__version__','slot1','slot2'].to_set
   end
   
+  it "should update slot value" do
+    @document[:slot1] = "someval"
+    @document[:slot1].should == "someval"
+  end
+  
+  it "should create new slot" do
+    lambda do
+      @document[:new_slot] = "someval"
+      @document[:new_slot].should == "someval"
+    end.should change(@document,:slotnames)
+  end
+  
+  it "should update version each time slots are updated" do
+    lambda do
+      @document[:slot1] = "newval"
+    end.should change(@document,:version)
+  end
+
+  it "should update version each time slots are created" do
+    lambda do
+      @document[:slot3] = "val3"
+    end.should change(@document,:version)
+  end
+  
 end
   
