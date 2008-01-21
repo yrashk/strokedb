@@ -1,0 +1,4 @@
+
+run:
+
+jruby-mini $ jruby test/playing.rb 
