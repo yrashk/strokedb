@@ -1,6 +1,6 @@
 require 'digest/sha1'
 
-module StrokeDB
+module StrokeDB  
   module Util
     class HashWithSortedKeys < Hash
       def keys_with_sort

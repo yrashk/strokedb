@@ -20,6 +20,10 @@ module StrokeDB
       slot.value = value
       set_version unless slotname == :__version__ 
     end
+    
+    def slotnames
+      @slots.keys
+    end
 
     def to_json(opts={})
       _to_json = @slots

@@ -18,7 +18,7 @@ module StrokeDB
 
     def value
       case @value
-      when /@#([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
+      when /@#(#{UUID_RE})/
         if doc.store.exists?($1)
           doc.store.find($1)
         else

@@ -8,7 +8,7 @@ module StrokeDB
 
     def update_replications!
       @slots.each_pair do |k,v|
-        if k.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/)
+        if k.match(UUID_RE)
           self[k] = store.find($1).all_versions - self[k]
         end
       end
@@ -18,7 +18,7 @@ module StrokeDB
     def to_packet(opts={})
       docs = []
       @slots.each_pair do |k,v|
-        if k.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/)
+        if k.match(UUID_RE)
           self[k].each {|version| docs << store.find($1,version).to_json(:transmittal => true) }
         end
       end
