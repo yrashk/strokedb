@@ -19,13 +19,9 @@ module StrokeDB
     def value
       case @value
       when /@#([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
-        if doc.store.exists?($1)
-          doc.store.find($1)
-        else
-          @cached_value || "@##{$1}" # return cache if available
-        end
+        doc.store.find($1) || @cached_value || "@##{$1}"
       else
-        @value 
+        @value
       end
     end
 

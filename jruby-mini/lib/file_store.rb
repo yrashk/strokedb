@@ -5,6 +5,7 @@ module StrokeDB
     attr_reader :path
 
     def find(uuid,version=nil)
+      return nil unless exists?(uuid)
       json = IO.read(filename(uuid,version))
       load_doc(uuid,json)
     end
@@ -34,7 +35,7 @@ module StrokeDB
       end
     end
 
-    private
+  private
 
     def filename(uuid,version=nil)
       uuid_s = uuid.to_s
