@@ -1,4 +1,6 @@
 module StrokeDB
+  class UnversionedDocumentError < Exception
+  end
   class Document
     attr_reader :uuid, :store
 
@@ -40,6 +42,7 @@ module StrokeDB
     end
 
     def save!
+      raise UnversionedDocumentError.new unless version
       self[:__previous_version__] = store.last_version(uuid) unless new?
       store.save!(self)
     end

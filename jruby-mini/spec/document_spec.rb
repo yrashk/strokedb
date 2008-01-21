@@ -24,6 +24,10 @@ describe "Newly created Document" do
     @document.slotnames.should be_empty
   end
   
+  it "cannot be saved" do
+    lambda { @document.save! }.should raise_error(StrokeDB::UnversionedDocumentError)
+  end
+  
 end
   
 
