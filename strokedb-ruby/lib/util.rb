@@ -10,7 +10,7 @@ module StrokeDB
     end
     
     def self.sha(str)
-      Digest::SHA2.hexdigest(str)
+      Digest::SHA256.hexdigest(str)
     end
     
     # Stupid implementation.

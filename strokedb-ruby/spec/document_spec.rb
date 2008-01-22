@@ -83,3 +83,34 @@ describe "Newly created Document with slots supplied" do
   
 end
   
+describe "Valid Document's JSON" do
+  
+  before(:each) do
+    @store = mock("Store")
+    @document = StrokeDB::Document.new(@store,:slot1 => "val1", :slot2 => "val2")
+    @json = @document.to_json
+  end
+  
+  it "should be loadable into Document" do
+    doc = StrokeDB::Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc.uuid.should == '7bb032d4-0a3c-43fa-b1c1-eea6a980452d'
+    doc.slotnames.to_set.should == ['__version__','slot1','slot2'].to_set
+  end
+  
+  
+end
+
+describe "Invalid Document's JSON (i.e. incorrect __version__)" do
+  
+  before(:each) do
+    @store = mock("Store")
+    @document = StrokeDB::Document.new(@store,:slot1 => "val1", :slot2 => "val2")
+    @json = @document.to_json.gsub(@document.version,'incorrect version')
+  end
+  
+  it "should not be loadable into Document" do
+    lambda do
+      StrokeDB::Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    end.should raise_error(StrokeDB::VersionMismatchError)
+  end
+end
