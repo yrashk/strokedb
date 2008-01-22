@@ -6,7 +6,7 @@ describe "Skiplist" do
     skiplist = Skiplist.new
   end
   
-  def 
+  it "should act as list" do  
     
   end
 
