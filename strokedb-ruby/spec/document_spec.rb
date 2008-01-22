@@ -94,7 +94,10 @@ describe "Valid Document's JSON" do
   it "should be loadable into Document" do
     doc = StrokeDB::Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     doc.uuid.should == '7bb032d4-0a3c-43fa-b1c1-eea6a980452d'
+    doc.slotnames.to_set.should == ['__version__','slot1','slot2'].to_set
   end
+  
+  
 end
 
 describe "Invalid Document's JSON (i.e. incorrect __version__)" do
