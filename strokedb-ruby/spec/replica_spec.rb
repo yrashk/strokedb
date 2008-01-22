@@ -16,7 +16,7 @@ describe "Replica with no replications" do
     @store = mock("Store")
     @document = mock("Document")
     @document.stub!(:uuid).and_return '34b030ab-03a5-4d97-a08a-a7b27daf0897'
-    @replica = StrokeDB::Replica.new(@store)
+    @replica = Replica.new(@store)
     avoid_replica_from_being_saved
   end
   
@@ -40,7 +40,7 @@ describe "Replica with document being replicated once" do
     @document = mock("Document")
     @document.stub!(:uuid).and_return '34b030ab-03a5-4d97-a08a-a7b27daf0897'
     @store.should_receive(:find).with(@document.uuid).any_number_of_times.and_return(@document)
-    @replica = StrokeDB::Replica.new(@store)
+    @replica = Replica.new(@store)
     avoid_replica_from_being_saved
     @document.stub!(:all_versions).and_return ['81f153775c952bd1144e118c1b6daa427aa60c6082265d87cc12703a9070040c',
                                                'ebfa015966891a400bf353bdf8ef30444a71b1751e2808ef6c014db34d168d85',
