@@ -37,7 +37,7 @@ module StrokeDB
         x = Node.new(newlevel, key, value)
         
         if cut?(newlevel)
-          return new_chunks(x, update)
+          return new_chunks!(x, update)
         else
           newlevel.times do |i|
             x.forward[i] = update[i].forward[i] || @tail
@@ -127,10 +127,14 @@ module StrokeDB
     	@cut_level && @size > 1 && l >= @cut_level
   	end
   	
-  	def new_chunks(newnode, update)
-  	  chunk2 = Skiplist.new({}, @default, @cut_level)
+  	def new_chunks!(newnode, update)
+  	  chunk = Skiplist.new({}, @default, @cut_level)
   	  
-  	  return self, chunk2
+  	  # 1. 'update' array contains refs to newnode and to the tail
+  	  
+  	  
+  	  # return the current chunk and the next chunk
+  	  return self; #, chunk
   	end
 
   	class Node

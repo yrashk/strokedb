@@ -66,9 +66,9 @@ describe "Empty big skiplist" do
   end
   
   it "should be empty with each" do
-    a = 0
-    @list.each{|n| a = 1 }
-    a.should == 0
+    a = b = "each{ } did not yield"
+    @list.each{|n| a = "each{ } did yield!" }
+    a.should == b
   end
   
   it "should not find anything" do
