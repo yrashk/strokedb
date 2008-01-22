@@ -4,8 +4,8 @@ describe "Slot" do
 
   before(:each) do
     @store = mock("Store")
-    @document = StrokeDB::Document.new(@store)
-    @slot = StrokeDB::Slot.new(@document)
+    @document = Document.new(@store)
+    @slot = Slot.new(@document)
   end
   
   it "should store arbitrary value" do
@@ -14,19 +14,19 @@ describe "Slot" do
   end
   
   it "should store Document reference if value is a new Document" do
-    some_doc = StrokeDB::Document.new(mock("Store"))
+    some_doc = Document.new(mock("Store"))
     @store.should_receive(:find).with(some_doc.uuid).and_return(nil)
     @slot.value = some_doc
     @slot.value.should == some_doc
-    @slot.plain_value.should match(/@##{StrokeDB::UUID_RE}/)
+    @slot.plain_value.should match(/@##{UUID_RE}/)
   end
 
   it "should store Document reference if value is a saved Document" do
-    some_doc = StrokeDB::Document.new(mock("Store"))
+    some_doc = Document.new(mock("Store"))
     @store.should_receive(:find).with(some_doc.uuid).and_return(some_doc)
     @slot.value = some_doc
     @slot.value.should == some_doc
-    @slot.plain_value.should match(/@##{StrokeDB::UUID_RE}/)
+    @slot.plain_value.should match(/@##{UUID_RE}/)
   end
   
 end

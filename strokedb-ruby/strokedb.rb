@@ -2,6 +2,7 @@ require 'rubygems'
 require 'activesupport'
 
 require 'lib/util'
+require 'lib/skiplist'
 require 'lib/slot'
 require 'lib/document'
 require 'lib/file_store'

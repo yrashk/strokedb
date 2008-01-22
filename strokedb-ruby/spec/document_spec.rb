@@ -4,12 +4,12 @@ describe "Newly created Document" do
   
   before(:each) do
     @store = mock("Store")
-    @document = StrokeDB::Document.new(@store)
+    @document = Document.new(@store)
     @store.should_receive(:exists?).with(@document.uuid).any_number_of_times.and_return(false)
   end
   
   it "should have UUID" do
-    @document.uuid.should match(StrokeDB::UUID_RE)
+    @document.uuid.should match(UUID_RE)
   end
   
   it "should be new" do
@@ -25,7 +25,7 @@ describe "Newly created Document" do
   end
   
   it "cannot be saved" do
-    lambda { @document.save! }.should raise_error(StrokeDB::UnversionedDocumentError)
+    lambda { @document.save! }.should raise_error(UnversionedDocumentError)
   end
 
   it "should create new slot" do
@@ -52,7 +52,7 @@ describe "Newly created Document with slots supplied" do
   
   before(:each) do
     @store = mock("Store")
-    @document = StrokeDB::Document.new(@store,:slot1 => "val1", :slot2 => "val2")
+    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2")
     @store.should_receive(:exists?).with(@document.uuid).any_number_of_times.and_return(false)
   end
   
@@ -87,12 +87,12 @@ describe "Valid Document's JSON" do
   
   before(:each) do
     @store = mock("Store")
-    @document = StrokeDB::Document.new(@store,:slot1 => "val1", :slot2 => "val2")
+    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2")
     @json = @document.to_json
   end
   
   it "should be loadable into Document" do
-    doc = StrokeDB::Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     doc.uuid.should == '7bb032d4-0a3c-43fa-b1c1-eea6a980452d'
     doc.slotnames.to_set.should == ['__version__','slot1','slot2'].to_set
   end
@@ -104,13 +104,13 @@ describe "Invalid Document's JSON (i.e. incorrect __version__)" do
   
   before(:each) do
     @store = mock("Store")
-    @document = StrokeDB::Document.new(@store,:slot1 => "val1", :slot2 => "val2")
+    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2")
     @json = @document.to_json.gsub(@document.version,'incorrect version')
   end
   
   it "should not be loadable into Document" do
     lambda do
-      StrokeDB::Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
-    end.should raise_error(StrokeDB::VersionMismatchError)
+      Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    end.should raise_error(VersionMismatchError)
   end
 end
