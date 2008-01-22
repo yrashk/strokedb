@@ -1,7 +1,16 @@
 
 run:
 
-jruby-mini $ jruby test/playing.rb 
+strokedb-ruby$ jruby test/playing.rb 
+
+or
+
+strokedb-ruby$ spec spec
+
+or
+
+strokedb-ruby$ ~/jruby/bin/spec spec
+
 
 
 CONSISTENCY MODELS
