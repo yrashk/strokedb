@@ -1,6 +1,7 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe "Slot" do
+
   before(:each) do
     @store = mock("Store")
     @document = StrokeDB::Document.new(@store)
