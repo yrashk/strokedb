@@ -5,8 +5,8 @@ module StrokeDB
   	attr_reader   :size
   	attr_accessor :default, :head, :tail
 	
-  	def initialize(data = {}, default = nil)
-  		@default, @size = default, 0
+  	def initialize(data = {}, default = nil, chunk_level = nil)
+  		@default, @size, @chunk_level = default, 0, chunk_level
 
   		@head = HeadNode.new
   		@tail = TailNode.new
@@ -15,7 +15,7 @@ module StrokeDB
   		data.each{|k, v| insert(k, v) }
   	end
 
-  	def insert(key, value)
+  	def insert(key, value, cheaters_level = nil)
   	  update = Array.new(@head.level)
   	  x = @head
   	  @head.level.downto(1) do |i|
@@ -26,7 +26,8 @@ module StrokeDB
   	    x.value = value
   	  else
   	    @size += 1
-  	    newlevel = random_level
+  	    newlevel = cheaters_level || random_level
+  	    newlevel = @chunk_level if @size == 1 && @chunk_level && newlevel < @chunk_level
   	    if newlevel > @head.level 
   	      (@head.level + 1).upto(newlevel) do |i|
   	        update[i-1] = @head
@@ -106,6 +107,7 @@ module StrokeDB
 
   private
 
+    # 1/E is a fastest search value
   	PROBABILITY = 1/Math::E
   	MAX_LEVEL   = 32
   
