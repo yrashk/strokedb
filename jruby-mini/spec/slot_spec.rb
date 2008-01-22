@@ -26,7 +26,6 @@ describe "Slot" do
     @slot.value = some_doc
     @slot.value.should == some_doc
     @slot.plain_value.should match(/@##{StrokeDB::UUID_RE}/)
-    
   end
   
 end
