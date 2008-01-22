@@ -5,8 +5,8 @@ module StrokeDB
   	attr_reader   :size
   	attr_accessor :default, :head, :tail
 	
-  	def initialize(data = {}, default = nil, chunk_level = nil)
-  		@default, @size, @chunk_level = default, 0, chunk_level
+  	def initialize(data = {}, default = nil, cut_level = nil)
+  		@default, @size, @cut_level = default, 0, cut_level
 
   		@head = HeadNode.new
   		@tail = TailNode.new
@@ -27,19 +27,25 @@ module StrokeDB
   	  else
   	    @size += 1
   	    newlevel = cheaters_level || random_level
-  	    newlevel = @chunk_level if @size == 1 && @chunk_level && newlevel < @chunk_level
+  	    newlevel = @cut_level if @size == 1 && @cut_level && newlevel < @cut_level
   	    if newlevel > @head.level 
   	      (@head.level + 1).upto(newlevel) do |i|
   	        update[i-1] = @head
           end
         end
+        
         x = Node.new(newlevel, key, value)
-        newlevel.times do |i|
-          x.forward[i] = update[i].forward[i] || @tail
-          update[i].forward[i] = x
+        
+        if cut?(newlevel)
+          return new_chunks(x, update)
+        else
+          newlevel.times do |i|
+            x.forward[i] = update[i].forward[i] || @tail
+            update[i].forward[i] = x
+          end
         end
       end
-  		return value
+  		return self
   	end
 
     def find(key, default = nil)
@@ -115,6 +121,16 @@ module StrokeDB
   		l = 1
   		l += 1 while rand < PROBABILITY && l < MAX_LEVEL
   		return l
+  	end
+  	
+  	def cut?(l)
+    	@cut_level && @size > 1 && l >= @cut_level
+  	end
+  	
+  	def new_chunks(newnode, update)
+  	  chunk2 = Skiplist.new({}, @default, @cut_level)
+  	  
+  	  return self, chunk2
   	end
 
   	class Node
