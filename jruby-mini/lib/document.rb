@@ -47,9 +47,13 @@ module StrokeDB
       store.save!(self)
     end
 
+    def previous_version
+      self[:__previous_version__]
+    end
+    
     def previous_versions
-      if prev_version = self[:__previous_version__]
-        [prev_version] + store.find(uuid,prev_version).previous_versions
+      if previous_version
+        [previous_version] + store.find(uuid,prev_version).previous_versions
       else
         []
       end

@@ -41,6 +41,10 @@ describe "Newly created Document" do
     end.should change(@document,:version)
   end
   
+  it "should have no previous version" do
+    @document.previous_version.should be_nil
+  end
+  
 end
   
 
@@ -49,6 +53,7 @@ describe "Newly created Document with slots supplied" do
   before(:each) do
     @store = mock("Store")
     @document = StrokeDB::Document.new(@store,:slot1 => "val1", :slot2 => "val2")
+    @store.should_receive(:exists?).with(@document.uuid).any_number_of_times.and_return(false)
   end
   
   it "should have version" do
@@ -69,6 +74,12 @@ describe "Newly created Document with slots supplied" do
       @document[:slot1] = "newval"
     end.should change(@document,:version)
   end
+  
+  it "should save itself" do
+    @store.should_receive(:save!).with(@document)
+    @document.save!
+  end
+  
   
 end
   
