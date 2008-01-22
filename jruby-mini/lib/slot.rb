@@ -28,5 +28,9 @@ module StrokeDB
     def to_json(opts={})
       @value.to_json(opts)
     end
+    
+    def plain_value
+      @value
+    end
   end
 end
