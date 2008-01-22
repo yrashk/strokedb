@@ -11,6 +11,12 @@ or
 
 strokedb-ruby$ ~/jruby/bin/spec spec
 
+TODO
+
+0) Skiplist chunking of objects
+1) JSON library dependency: wrong sha256 version when libs changes behavior
+2) Mapchunk for chunked skiplists (for faster access)
+
 
 
 CONSISTENCY MODELS
@@ -68,7 +74,9 @@ uuid    A B C D E     F G H I     J K L M     T
 level   4 1 2 1 1     3 1 2 1     3 1 1 2     4
         Chunk A.      Chunk F.    Chunk J.    Chunk T.
 
-For a sublist of length N, and cut level L following is true:
+
+
+For a sublist of length N, and cut level L the following is true:
 
          exp(L-1) = N;    L = log(N) + 1
 
