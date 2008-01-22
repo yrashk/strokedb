@@ -8,12 +8,5 @@ module StrokeDB
       Replica.new(self,slots)
     end
 
-  protected
-
-    def load_doc(uuid,json)
-      returning doc = Document.new(self, ActiveSupport::JSON.decode(json)) do
-        doc.instance_variable_set(:@uuid, uuid)
-      end
-    end
   end
 end

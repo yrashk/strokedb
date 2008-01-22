@@ -1,6 +1,6 @@
 module StrokeDB
-  class UnversionedDocumentError < Exception
-  end
+  class UnversionedDocumentError < Exception ; end
+  class VersionMismatchError < Exception ; end
   class Document
     attr_reader :uuid, :store
 
@@ -32,6 +32,14 @@ module StrokeDB
       _to_json = [uuid.to_s,@slots] if opts[:transmittal]
       _to_json.to_json(opts)
     end
+    
+    def self.from_json(store,uuid,json)
+      json_decoded = ActiveSupport::JSON.decode(json)
+      doc = new(store, json_decoded)
+      raise VersionMismatchError.new if json_decoded['__version__'] != doc.send!(:calculate_version)
+      doc.instance_variable_set(:@uuid,uuid)
+      doc
+    end
 
     def to_s
       to_json
@@ -53,7 +61,7 @@ module StrokeDB
     
     def previous_versions
       if previous_version
-        [previous_version] + store.find(uuid,prev_version).previous_versions
+        [previous_version] + store.find(uuid,previous_version).previous_versions
       else
         []
       end
@@ -75,7 +83,11 @@ module StrokeDB
     end
 
     def set_version
-      self[:__version__] = Util.sha(to_json(:except => '__version__'))
+      self[:__version__] = calculate_version
+    end
+    
+    def calculate_version
+      Util.sha(to_json(:except => '__version__'))
     end
 
     def after_initialize

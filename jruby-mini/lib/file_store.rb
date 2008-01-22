@@ -7,7 +7,7 @@ module StrokeDB
     def find(uuid,version=nil)
       return nil unless exists?(uuid)
       json = IO.read(filename(uuid,version))
-      load_doc(uuid,json)
+      Document.from_json(self,uuid,json)
     end
 
     def initialize(path)
