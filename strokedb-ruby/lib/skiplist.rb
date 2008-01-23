@@ -14,18 +14,26 @@ module StrokeDB
   		data.each{|k, v| insert(k, v) }
   	end
 
-  	def insert(key, value, cheaters_level = nil)
+  	def insert(key, value, __cheaters_level = nil)
   	  @size_cache = nil
   	  update = Array.new(@head.level)
   	  x = @head
   	  @head.level.downto(1) do |i|
-  	    x = x.forward[i-1] while x.forward[i-1] < key
+  	    if !x.forward[i-1]
+  	      puts "ERROR! x.forward[i-1] == #{x.forward[i-1].inspect}!"
+  	      puts "x = (#{x.to_s})"
+  	      puts "self = #{self}"
+	      end
+	      # Here's a bug: undefined method `<' for nil:NilClass
+  	    while x.forward[i-1] < key
+  	      x = x.forward[i-1]
+	      end
   	    update[i-1] = x
   	  end
   	  if x.key == key
   	    x.value = value
   	  else
-  	    newlevel = cheaters_level || random_level
+  	    newlevel = __cheaters_level || random_level
   	    newlevel = @cut_level if empty? && @cut_level && newlevel < @cut_level
   	    if newlevel > @head.level 
   	      (@head.level + 1).upto(newlevel) do |i|
@@ -178,6 +186,7 @@ module StrokeDB
   		  @forward.size
   		end
   		def <(key)
+  		  puts "ACHTUNG! no key in node #{self}" if !@key
   		  @key < key
   	  end
   	  def to_s

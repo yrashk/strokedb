@@ -92,7 +92,7 @@ describe "Insertion into skiplist" do
   end
 end
 
-=begin
+
 describe "Chunked skiplist process" do
   
   before(:all) do
@@ -104,6 +104,7 @@ describe "Chunked skiplist process" do
       newlists = []
       @lists.each do |list|
         a, b = list.insert(rand(100_000).to_s, "V")
+        #puts "a=#{a};\n b=#{b}\n\n--"
         newlists << a
         newlists << b if b
       end
@@ -130,5 +131,5 @@ describe "Chunked skiplist process" do
     end
   end  
 end
-=end
+
 
