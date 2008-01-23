@@ -19,15 +19,48 @@ describe "Empty chunked skiplist" do
     @list.head.level.should == @cut_level + 3
     @list.head.forward[0].level.should == @cut_level + 3
   end
-  
 end
 
-describe "Chunked skiplist" do
+
+describe "Chunked skiplist (variants)" do
+  
+  before(:each) do
+    @cut_level = 16
+  end
+
+  it "should be valid with ascending level order" do
+    @list = Skiplist.new({}, nil, @cut_level)
+    (1..10).each do |i|
+      @list.insert("K#{i*10}", "V", i)
+    end
+    @list.size.should == 10
+  end
+  
+  it "should be valid with descending level order" do
+    @list = Skiplist.new({}, nil, @cut_level)
+    (1..10).each do |i|
+      @list.insert("K#{i*10}", "V", 11 - i)
+    end
+    @list.size.should == 10
+  end
+  
+  it "should be valid with fixed level order" do
+    @list = Skiplist.new({}, nil, @cut_level)
+    (1..10).each do |i|
+      @list.insert("K#{i*10}", "V", 15)
+    end
+    @list.size.should == 10
+  end
+
+end
+
+
+describe "Insertion into skiplist" do
   
   before(:each) do
     @cut_level = 4
     @list = Skiplist.new({}, nil, @cut_level)
-    10.times do |i|
+    (0..9).each do |i|
       @list.insert("K#{i*10}", "V", rand(@cut_level)) # do not cut
     end
   end
@@ -38,18 +71,20 @@ describe "Chunked skiplist" do
     b.should be_nil
   end
 
-  it "should be cut by middle-entered value" do
-   # puts @list
+  it "should cut list by middle-entered value" do
+    puts @list
     a, b = @list.insert("K42", "H", @cut_level)
-   # puts a
-   # puts b
+    puts a
+    puts b
     a.should == @list
     b.should be_a_kind_of(Skiplist)
-    chunks_should_have_separate_values(a, b, "K30", "V")
-    chunks_should_have_separate_values(a, b, "K40", "V")
+    (0..4).each do |i|
+      chunks_should_have_separate_values(a, b, "K#{i}0", "V")
+    end
     chunks_should_have_separate_values(b, a, "K42", "H")
-    chunks_should_have_separate_values(b, a, "K50", "V")
-    chunks_should_have_separate_values(b, a, "K60", "V")
+    (5..9).each do |i|
+      chunks_should_have_separate_values(b, a, "K#{i}0", "V")
+    end
   end
 
   def chunks_should_have_separate_values(a, b, a_key, a_value)
