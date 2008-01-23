@@ -13,6 +13,7 @@ module StrokeDB
         doc = chunk.find(uuid)
         return doc if doc
       end
+      nil
     end
 
     def exists?(uuid)
