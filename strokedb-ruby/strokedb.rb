@@ -1,8 +1,19 @@
 require 'rubygems'
 require 'activesupport'
 
-['util','skiplist','slot','document','file_store','packet','replica',
- RUBY_PLATFORM =~ /java/ ? 'java_util' : nil ].compact.each {|m| require File.dirname(__FILE__) + "/lib/#{m}"}
+(%w[
+  util 
+  skiplist
+  slot
+  document
+  file_store
+  packet
+  replica
+  skiplist_store
+  chunk
+  file_chunk_storage
+  ] +
+ [RUBY_PLATFORM =~ /java/ ? 'java_util' : nil ]).compact.each {|m| require File.dirname(__FILE__) + "/lib/#{m}"}
 
 module StrokeDB
   VERSION = '0.1' + (RUBY_PLATFORM =~ /java/ ? 'j' : '')

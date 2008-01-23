@@ -2,7 +2,7 @@ module StrokeDB
   class Skiplist
   	include Enumerable
 	
-  	attr_accessor :default, :head, :tail
+  	attr_accessor :default, :head, :tail, :cut_level
 	
   	def initialize(data = {}, default = nil, cut_level = nil)
   		@default, @cut_level = default, cut_level
@@ -103,8 +103,8 @@ module StrokeDB
   		[@head.to_s, map{|node| node.level.to_s }, @tail.to_s].flatten.join(', ') +
   		">"
   	end
-	
-  	def each
+
+ 	def each
   	  n = @head.forward[0]
   	  until TailNode === n
   	    yield n
@@ -161,7 +161,7 @@ module StrokeDB
 	    end
 	    @head.level.times do |i|
 	      update[i].forward[i] = tail1
-      end
+        end
 	    tail1.next_chunk = list2
   	  # return the current chunk and the next chunk
   	  return self, list2
@@ -169,6 +169,7 @@ module StrokeDB
 
   	class Node
   		attr_accessor :key, :value, :forward
+  		attr_accessor :_serialized_index
   		def initialize(level, key, value)
   			@key, @value = key, value
   			@forward = Array.new(level)
