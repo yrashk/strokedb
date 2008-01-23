@@ -44,6 +44,14 @@ module StrokeDB
     def to_s
       to_json
     end
+    
+    def to_raw
+      raw_slots = {}
+      @slots.each_pair do |k,v|
+        raw_slots[k] = v.value # or plain_value?
+      end
+      raw_slots
+    end
 
     def new?
       !store.exists?(uuid)
