@@ -11,13 +11,6 @@ or
 
 strokedb-ruby$ ~/jruby/bin/spec spec
 
-TODO
-
-0) Skiplist chunking of objects
-1) JSON library dependency: wrong sha256 version when libs changes behavior
-2) Mapchunk for chunked skiplists (for faster access)
-3) Bad UUID implementation in pure ruby version
-
 
 CONSISTENCY MODELS
 
