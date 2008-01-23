@@ -9,12 +9,12 @@ describe "Non-empty skiplist" do
                          "p"   => "4")
   end
 
-	it "should create" do
+	it "should not be empty" do
 		@list.should_not be_empty
 	end
 	
 	it "should have size" do
-		@list.size.should == 4
+	  @list.should have(4).items
 	end
 
 	it "should find" do
@@ -22,11 +22,11 @@ describe "Non-empty skiplist" do
 		@list.find("aaa").should == "3"
 	end
 
-	it "should give default if nothing found" do
-		@list.find("404").should == nil
+	it "should return default value if nothing found" do
+		@list.find("404").should be_nil
 	end
 	
-	it "should give local default if nothing found" do
+	it "should give local default value if nothing found" do
 		@list.find("404", :default_value).should == :default_value
 	end
 	
@@ -42,13 +42,13 @@ describe "Non-empty skiplist" do
 	
 	it "should delete node by key" do
 	  @list.delete("aaa").should == "3"
-	  @list.find("aaa").should == nil
+	  @list.find("aaa").should be_nil
 	end
 	
-	it "should not delete not found key" do
-	  @list.find("404").should == nil
-	  @list.delete("404").should == nil
-	  @list.find("404").should == nil
+	it "should not delete non-existent key" do
+	  @list.find("404").should be_nil
+	  @list.delete("404").should be_nil
+	  @list.find("404").should be_nil
 	end
 	
 end
@@ -62,30 +62,30 @@ describe "Empty big skiplist" do
 
   it "should be empty" do
     @list.should be_empty
-    @list.size.should == 0
+    @list.should have(0).items 
   end
   
-  it "should be empty with each" do
+  it "should be empty with #each iteratpr" do
     a = b = "each{ } did not yield"
     @list.each{|n| a = "each{ } did yield!" }
     a.should == b
   end
   
   it "should not find anything" do
-    @list.find("a").should == nil
-    @list.find("").should == nil
-    @list.find("aaa").should == nil
-    @list.find(123).should == nil
-    @list.find(-1).should == nil
+    @list.find("a").should be_nil
+    @list.find("").should be_nil
+    @list.find("aaa").should be_nil
+    @list.find(123).should be_nil
+    @list.find(-1).should be_nil
   end
   
   it "should not delete anything" do
-    @list.delete("a").should == nil
-    @list.delete("a").should == nil
-    @list.delete("").should == nil
-    @list.delete("aaa").should == nil
-    @list.delete(123).should == nil
-    @list.delete(-1).should == nil
+    @list.delete("a").should be_nil
+    @list.delete("a").should be_nil
+    @list.delete("").should be_nil
+    @list.delete("aaa").should be_nil
+    @list.delete(123).should be_nil
+    @list.delete(-1).should be_nil
   end
 end
 

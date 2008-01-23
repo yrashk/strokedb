@@ -10,7 +10,7 @@ module StrokeDB
     end
     
     def self.random_uuid
-      java.util.UUID.randomUUID.to_s
+      java.util.UUID.random_uuid.to_s
     end
   end
 end
