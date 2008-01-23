@@ -2,11 +2,10 @@ module StrokeDB
   class Skiplist
   	include Enumerable
 	
-  	attr_reader   :size
   	attr_accessor :default, :head, :tail
 	
   	def initialize(data = {}, default = nil, cut_level = nil)
-  		@default, @size, @cut_level = default, 0, cut_level
+  		@default, @cut_level = default, cut_level
 
   		@head = HeadNode.new
   		@tail = TailNode.new
@@ -16,6 +15,7 @@ module StrokeDB
   	end
 
   	def insert(key, value, cheaters_level = nil)
+  	  @size_cache = nil
   	  update = Array.new(@head.level)
   	  x = @head
   	  @head.level.downto(1) do |i|
@@ -25,9 +25,8 @@ module StrokeDB
   	  if x.key == key
   	    x.value = value
   	  else
-  	    @size += 1
   	    newlevel = cheaters_level || random_level
-  	    newlevel = @cut_level if @size == 1 && @cut_level && newlevel < @cut_level
+  	    newlevel = @cut_level if empty? && @cut_level && newlevel < @cut_level
   	    if newlevel > @head.level 
   	      (@head.level + 1).upto(newlevel) do |i|
   	        update[i-1] = @head
@@ -60,6 +59,7 @@ module StrokeDB
     end
   
     def delete(key, default = nil)
+      @size_cache = nil
       default ||= @default
       update = Array.new(@head.level)
       x = @head
@@ -69,26 +69,25 @@ module StrokeDB
   	  end
   	  x = x.forward[0]
   	  if x.key == key
-  	    @size -= 1
         @head.level.times do |i|
           break if update[i].forward[i] != x
           update[i].forward[i] = x.forward[i]
         end
         true while (y = @head.forward.pop) == @tail
-        @head.forward.push y if y
+        @head.forward.push(y || @tail)
         x.free(self)
         x.value
       else
         default
       end
     end
-
-  	def length
-  		@size
+    
+    def size
+  		@size_cache ||= inject(0){|c,k| c + 1}
   	end
 	
   	def empty?
-  	  @size == 0
+  	  @head.forward[0] == @tail
   	end
 
   	# Returns a string representation of the Skiplist.
@@ -124,17 +123,45 @@ module StrokeDB
   	end
   	
   	def cut?(l)
-    	@cut_level && @size > 1 && l >= @cut_level
+    	@cut_level && !empty? && l >= @cut_level
   	end
-  	
+
   	def new_chunks!(newnode, update)
-  	  chunk = Skiplist.new({}, @default, @cut_level)
+  	  # Transposed picture:
+  	  #
+  	  # head level 8:     - - - - - - - -
+  	  # update.size 8:    - - - - - - - -
+  	  # ...
+  	  # newnode.level 5:  - - - - -
+  	  # cut level 3:      - - - 
+   	  # regular node:     - 
+  	  # regular node:     - -
+  	  # ...                        
+  	  # tail node:        T T T T T T T T   
+  	  #           refs:   A B C D E F G H 
+  	  #
+  	  # How to cut?
+  	  #
+      # 0) tail1 = TailNode.new; list2 = Skiplist.new
+  	  # 1) newnode.{A, B, C, D, E} := update{A,B,C,D,E}.forward
+  	  # 2) update.{all} := tail1 (for current chunk)
+  	  # 3) list2.head.{A, B, C, D, E} = new_node.{A, B, C, D, E}
+  	  # 4) tail1.next_chunk = list2
   	  
-  	  # 1. 'update' array contains refs to newnode and to the tail
+  	  list2 = Skiplist.new({}, @default, @cut_level)
+  	  tail1 = TailNode.new
   	  
-  	  
+  	  newnode.level.times do |i|
+  	    newnode.forward[i] = update[i].forward[i]
+  	    newnode.forward[i] = @tail
+  	    list2.head.forward[i] = newnode
+	    end
+	    @head.level.times do |i|
+	      update[i].forward[i] = tail1
+      end
+	    tail1.next_chunk = list2
   	  # return the current chunk and the next chunk
-  	  return self; #, chunk
+  	  return self, list2
   	end
 
   	class Node
@@ -173,6 +200,7 @@ module StrokeDB
 	
   	# also proxy-to-next-chunk node
   	class TailNode < Node
+  	  attr_accessor :next_chunk
   		def initialize
   			super 1, nil, nil
   		end

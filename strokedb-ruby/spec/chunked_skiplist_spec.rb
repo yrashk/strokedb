@@ -39,13 +39,17 @@ describe "Chunked skiplist" do
   end
 
   it "should be cut by middle-entered value" do
+   # puts @list
     a, b = @list.insert("K42", "H", @cut_level)
+   # puts a
+   # puts b
     a.should == @list
     b.should be_a_kind_of(Skiplist)
-    chunks_should_have_separate_values(b, a, "K50", "V")
-    chunks_should_have_separate_values(b, a, "K60", "V")
     chunks_should_have_separate_values(a, b, "K30", "V")
     chunks_should_have_separate_values(a, b, "K40", "V")
+    chunks_should_have_separate_values(b, a, "K42", "H")
+    chunks_should_have_separate_values(b, a, "K50", "V")
+    chunks_should_have_separate_values(b, a, "K60", "V")
   end
 
   def chunks_should_have_separate_values(a, b, a_key, a_value)
