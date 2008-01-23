@@ -19,12 +19,6 @@ module StrokeDB
   	  update = Array.new(@head.level)
   	  x = @head
   	  @head.level.downto(1) do |i|
-  	    if !x.forward[i-1]
-  	      puts "ERROR! x.forward[i-1] == #{x.forward[i-1].inspect}!"
-  	      puts "x = (#{x.to_s})"
-  	      puts "self = #{self}"
-	      end
-	      # Here's a bug: undefined method `<' for nil:NilClass
   	    while x.forward[i-1] < key
   	      x = x.forward[i-1]
 	      end
@@ -34,7 +28,7 @@ module StrokeDB
   	    x.value = value
   	  else
   	    newlevel = __cheaters_level || random_level
-  	    newlevel = @cut_level if empty? && @cut_level && newlevel < @cut_level
+  	    newlevel = 1 if empty?
   	    if newlevel > @head.level 
   	      (@head.level + 1).upto(newlevel) do |i|
   	        update[i-1] = @head
@@ -160,7 +154,9 @@ module StrokeDB
   	  tail1 = TailNode.new
   	  
   	  newnode.level.times do |i|
-  	    newnode.forward[i] = update[i].forward[i]
+  	    # add '|| @tail' because update[i] may be head of a lower level
+  	    # without forward ref to tail.
+  	    newnode.forward[i] = update[i].forward[i] || @tail
   	    list2.head.forward[i] = newnode
 	    end
 	    @head.level.times do |i|
@@ -186,7 +182,6 @@ module StrokeDB
   		  @forward.size
   		end
   		def <(key)
-  		  puts "ACHTUNG! no key in node #{self}" if !@key
   		  @key < key
   	  end
   	  def to_s
