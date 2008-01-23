@@ -19,7 +19,7 @@ module StrokeDB
       until @io.eof?
         datum = ""
         until (line = @io.readline).starts_with?('#')
-          datum << "#{line}\n"
+          datum << line
         end
         packet = ActiveSupport::JSON.decode(Base64::decode64(datum))
         doc = Document.new(@store,packet.last)
