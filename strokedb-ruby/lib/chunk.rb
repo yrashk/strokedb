@@ -32,10 +32,10 @@ module StrokeDB
   	# Raw format
 
     # TODO: lazify
-  	def self.from_raw(raw,find_proc)
+  	def self.from_raw(raw)
   	  chunk = Chunk.new(raw['cut_level'])
   	  chunk.uuid       = raw['uuid']
-  	  chunk.next_chunk = find_proc.call(raw['next_uuid']) 
+  	  chunk.next_chunk = nil
 
       chunk.skiplist.raw_insert(raw['nodes']) do |rn|
   	    [rn['key'], rn['value'], rn['forward'].size]

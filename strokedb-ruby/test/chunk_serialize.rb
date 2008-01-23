@@ -38,10 +38,12 @@ all_chunks = {} # uuid => chunk
 end
 
 all_chunks.each{|k,v|
- pp [k, x=v.to_raw]
- object = Chunk.from_raw(v.to_raw, proc{|uuid| all_chunks[uuid] })
+ rawv = v.to_raw
+ pp [k, rawv]
+ object = Chunk.from_raw(rawv)
+ object.next_chunk = all_chunks[rawv['next_uuid']]
  pp [k, object.to_raw]
- pp x == object.to_raw 
+ pp rawv == object.to_raw 
  puts "------"
  #puts v.skiplist.to_s
 }
