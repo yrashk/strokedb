@@ -165,7 +165,7 @@ module StrokeDB
   	  # 1) newnode.{A, B, C, D, E} := update{A,B,C,D,E}.forward
   	  # 2) update.{all} := tail1 (for current chunk)
   	  # 3) list2.head.{A, B, C, D, E} = new_node.{A, B, C, D, E}
-  	  # 4) tail1.next_chunk = list2
+  	  # 4) tail1.next_list = list2
   	  
   	  list2 = Skiplist.new({}, @default, @cut_level)
   	  tail1 = TailNode.new
@@ -179,7 +179,7 @@ module StrokeDB
 	    @head.level.times do |i|
 	      update[i].forward[i] = tail1
         end
-	    tail1.next_chunk = list2
+	    tail1.next_list = list2
   	  # return the current chunk and the next chunk
   	  return self, list2
   	end
@@ -221,7 +221,7 @@ module StrokeDB
 	
   	# also proxy-to-next-chunk node
   	class TailNode < Node
-  	  attr_accessor :next_chunk
+  	  attr_accessor :next_list
   		def initialize
   			super 1, nil, nil
   		end
