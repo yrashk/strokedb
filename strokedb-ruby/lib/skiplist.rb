@@ -115,14 +115,19 @@ module StrokeDB
     # Only for empty list!
     def raw_insert(data)
       n = @head
+      sn = nil
       data.each do |item|
         key, value, level = yield(item)
         sn = Node.new(level, key, value)
         level.times do |i| 
-          n.forward[i], sn.forward[i] = sn, n.forward[i] 
+          n.forward[i], sn.forward[i] = sn, (n.forward[i] || @tail) 
         end
+        n = sn
       end
-      
+      # sn is last
+      sn.level.times do |i| 
+        sn.forward[i] = @tail
+      end
     end
 
   private

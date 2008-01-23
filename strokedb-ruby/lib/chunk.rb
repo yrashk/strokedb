@@ -1,13 +1,13 @@
 module StrokeDB
   class Chunk
-    attr_accessor :skiplist, :next_chunk, :uuid, :cut_level, :uuid
+    attr_accessor :skiplist, :next_chunk, :uuid, :cut_level
     
     def initialize(cut_level)
       @skiplist, @cut_level = Skiplist.new({}, nil, cut_level), cut_level
     end
     
     def insert(uuid, raw_doc, __cheaters_level = nil)
-      self.uuid ||= uuid
+      @uuid ||= uuid
       a, new_list = skiplist.insert(uuid, raw_doc, __cheaters_level)
       if new_list
         tmp = Chunk.new(@cut_level)
@@ -32,14 +32,15 @@ module StrokeDB
   	# Raw format
 
     # TODO: lazify
-  	def self.from_raw(raw)
-  	  @uuid      = raw['uuid']
-  	  @cut_level = raw['cut_level']
-  	  chunk = Chunk.new(@cut_level)
+  	def self.from_raw(raw,find_proc)
+  	  chunk = Chunk.new(raw['cut_level'])
+  	  chunk.uuid       = raw['uuid']
+  	  chunk.next_chunk = find_proc.call(raw['next_uuid']) 
 
       chunk.skiplist.raw_insert(raw['nodes']) do |rn|
   	    [rn['key'], rn['value'], rn['forward'].size]
   	  end
+  	  chunk
   	end
  
 	def to_raw
