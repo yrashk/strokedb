@@ -24,6 +24,5 @@ module StrokeDB
         f.write chunk.to_raw.to_json
       end
     end
-    
   end
 end
