@@ -153,7 +153,6 @@ module StrokeDB
   	  
   	  newnode.level.times do |i|
   	    newnode.forward[i] = update[i].forward[i]
-  	    newnode.forward[i] = @tail
   	    list2.head.forward[i] = newnode
 	    end
 	    @head.level.times do |i|
@@ -182,7 +181,7 @@ module StrokeDB
   		  @key < key
   	  end
   	  def to_s
-  	    "#{key}: #{value}"
+  	    "[#{level}]#{@key}: #{@value}"
   	  end
   	end
 
@@ -194,7 +193,7 @@ module StrokeDB
   		  true
   	  end
   	  def to_s
-  	    "head(#{self.level})"
+  	    "head(#{level})"
   	  end
   	end
 	
@@ -208,7 +207,7 @@ module StrokeDB
   		  false
   	  end
   	  def to_s
-  	    "tail(#{self.level})"
+  	    "tail(#{level})"
   	  end
   	end
   end

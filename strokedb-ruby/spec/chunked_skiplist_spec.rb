@@ -60,8 +60,10 @@ describe "Insertion into skiplist" do
   before(:each) do
     @cut_level = 4
     @list = Skiplist.new({}, nil, @cut_level)
+    @levels_list = []
     (0..9).each do |i|
-      @list.insert("K#{i*10}", "V", rand(@cut_level)) # do not cut
+      @list.insert("K#{i*10}", "V", x = rand(@cut_level-1)+1)
+      @levels_list << x
     end
   end
 
@@ -72,18 +74,15 @@ describe "Insertion into skiplist" do
   end
 
   it "should cut list by middle-entered value" do
-    puts @list
     a, b = @list.insert("K42", "H", @cut_level)
-    puts a
-    puts b
     a.should == @list
     b.should be_a_kind_of(Skiplist)
     (0..4).each do |i|
-      chunks_should_have_separate_values(a, b, "K#{i}0", "V")
+      chunks_should_have_separate_values(a, b, "K#{i*10}", "V")
     end
     chunks_should_have_separate_values(b, a, "K42", "H")
     (5..9).each do |i|
-      chunks_should_have_separate_values(b, a, "K#{i}0", "V")
+      chunks_should_have_separate_values(b, a, "K#{i*10}", "V")
     end
   end
 
