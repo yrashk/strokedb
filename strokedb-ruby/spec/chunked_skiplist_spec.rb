@@ -27,7 +27,7 @@ describe "Chunked skiplist (variants)" do
     (1..10).each do |i|
       @list.insert("K#{i*10}", "V", i)
     end
-    @list.size.should == 10
+    @list.should have(10).items
   end
   
   it "should be valid with descending level order" do
@@ -35,7 +35,7 @@ describe "Chunked skiplist (variants)" do
     (1..10).each do |i|
       @list.insert("K#{i*10}", "V", 11 - i)
     end
-    @list.size.should == 10
+    @list.should have(10).items
   end
   
   it "should be valid with fixed level order" do
@@ -43,7 +43,7 @@ describe "Chunked skiplist (variants)" do
     (1..10).each do |i|
       @list.insert("K#{i*10}", "V", 15)
     end
-    @list.size.should == 10
+    @list.should have(10).items
   end
 
 end

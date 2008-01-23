@@ -14,7 +14,7 @@ describe "Non-empty skiplist" do
 	end
 	
 	it "should have size" do
-		@list.size.should == 4
+	  @list.should have(4).items
 	end
 
 	it "should find" do
@@ -62,7 +62,7 @@ describe "Empty big skiplist" do
 
   it "should be empty" do
     @list.should be_empty
-    @list.size.should == 0
+    @list.should have(0).items 
   end
   
   it "should be empty with each" do
