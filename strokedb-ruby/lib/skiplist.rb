@@ -116,17 +116,16 @@ module StrokeDB
     def raw_insert(data)
       n = @head
       sn = nil
+      update = []
       data.each do |item|
         key, value, level = yield(item)
         sn = Node.new(level, key, value)
         level.times do |i| 
-          n.forward[i], sn.forward[i] = sn, (n.forward[i] || @tail) 
+          update[i] ||= @head
+          update[i].forward[i] = sn
+          sn.forward[i] = @tail 
+          update[i] = sn
         end
-        n = sn
-      end
-      # sn is last
-      sn.level.times do |i| 
-        sn.forward[i] = @tail
       end
     end
 
