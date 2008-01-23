@@ -112,6 +112,19 @@ module StrokeDB
       end
   	end
 
+    # Only for empty list!
+    def raw_insert(data)
+      n = @head
+      data.each do |item|
+        key, value, level = yield(item)
+        sn = Node.new(level, key, value)
+        level.times do |i| 
+          n.forward[i], sn.forward[i] = sn, n.forward[i] 
+        end
+      end
+      
+    end
+
   private
 
     # 1/E is a fastest search value

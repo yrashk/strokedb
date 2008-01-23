@@ -1,14 +1,14 @@
 module StrokeDB
   class Chunk
-    attr_accessor :skiplist, :next_chunk, :uuid, :cut_level
+    attr_accessor :skiplist, :next_chunk, :uuid, :cut_level, :uuid
     
     def initialize(cut_level)
       @skiplist, @cut_level = Skiplist.new({}, nil, cut_level), cut_level
     end
     
-    def insert(uuid, doc, __cheaters_level = nil)
+    def insert(uuid, raw_doc, __cheaters_level = nil)
       self.uuid ||= uuid
-      a, new_list = skiplist.insert(uuid, doc, __cheaters_level)
+      a, new_list = skiplist.insert(uuid, raw_doc, __cheaters_level)
       if new_list
         tmp = Chunk.new(@cut_level)
         tmp.skiplist = new_list
@@ -30,18 +30,18 @@ module StrokeDB
     end
         
   	# Raw format
-=begin some crappy gtalk logs
-	19:45:42 Oleg Andreev: [{node_id: uuid, skiplist_refs:[1,2,3], data:{...}}, ...  ]
-    19:47:32 Oleg Andreev: ..., {proxy_to: uuid }]
-    20:28:04 Oleg Andreev: boom
-=end
 
-    attr_accessor :uuid
-
+    # TODO: lazify
   	def self.from_raw(raw)
-  	  
-  	end
+  	  @uuid      = raw['uuid']
+  	  @cut_level = raw['cut_level']
+  	  chunk = Chunk.new(@cut_level)
 
+      chunk.skiplist.raw_insert(raw['nodes']) do |rn|
+  	    [rn['key'], rn['value'], rn['forward'].size]
+  	  end
+  	end
+ 
 	def to_raw
 	  # enumerate nodes
 	  skiplist.each_with_index do |node,i|
@@ -51,17 +51,17 @@ module StrokeDB
       # now we know keys' positions right in the nodes
 	  nodes = skiplist.map do |node|
         {
-          :key     => node.key,
-          :forward => node.forward.map{|n| n._serialized_index || 0 },
-          :value   => node.value.to_json
+          'key'     => node.key,
+          'forward' => node.forward.map{|n| n._serialized_index || 0 },
+          'value'   => node.value
         }
       end
       {
-        :nodes     => nodes, 
-        :cut_level => @cut_level, 
-        :uuid      => @uuid,
+        'nodes'     => nodes, 
+        'cut_level' => @cut_level, 
+        'uuid'      => @uuid,
         # TODO: may not be needed
-        :next_uuid => next_chunk ? next_chunk.uuid : nil
+        'next_uuid' => next_chunk ? next_chunk.uuid : nil
       }
 	end
 	

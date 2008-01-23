@@ -30,7 +30,7 @@ head_chunk = Chunk.new(3)
 all_chunks = {} # uuid => chunk
 20.times do |i|
   doc = Document.new(fs, :some_data => i)
-  a, b = head_chunk.insert("K#{100+i}", doc)
+  a, b = head_chunk.insert("K#{100+i}", doc.to_raw)
   head_chunk = b || a
   [a, b].each do |c|
     all_chunks[c.uuid] = c if c
