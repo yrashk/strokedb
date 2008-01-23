@@ -13,7 +13,6 @@ describe "Empty chunk store" do
     Document.stub!(:from_raw).and_return(@document) 
 
     chunk_storage = mock("ChunkStorage")
-    chunk_storage.stub!(:cut_level).and_return(3)
     def chunk_storage.save!(chunk)
       @chunks ||= []
       @chunks << chunk
@@ -22,7 +21,7 @@ describe "Empty chunk store" do
       (@chunks || []).each &block
     end
     
-    @skiplist_store = SkiplistStore.new(chunk_storage)
+    @skiplist_store = SkiplistStore.new(chunk_storage, 4)
   end
   
   it "should contain no documents" do
