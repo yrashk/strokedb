@@ -43,7 +43,7 @@ module StrokeDB
       end
       
       # insert to mychunk
-      cur_chunk, new_chunk = mychunk.insert(uuid, doc)
+      cur_chunk, new_chunk = mychunk.insert(doc.uuid, doc)
       [cur_chunk, new_chunk].compact.each do |chunk|
         @chunk_storage.save!(chunk)
       end
