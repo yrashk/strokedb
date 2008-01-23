@@ -15,16 +15,15 @@ module StrokeDB
       save!
     end
     
-    def to_packet(opts={})
+    def to_packet
       docs = []
       @slots.each_pair do |k,v|
         if k.match(UUID_RE)
-          self[k].each {|version| docs << store.find($1,version).to_json(:transmittal => true) }
+          self[k].each {|version| docs << store.find($1,version) }
         end
       end
-      docs << to_json(:transmittal => true)
-      docs = docs.join("\n\n") if opts[:join]
-      docs
+      docs << self
+      Packet.new(docs)
     end
   end
 end
