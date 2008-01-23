@@ -9,7 +9,7 @@ module StrokeDB
       # TODO: master chunk scanning
       @paths = Dir["#{@path}/**"].sort # FIXME: File.join? Dir.glob special params?
       prev_chunk = nil
-      paths.each do |path|
+      @paths.each do |path|
         raw_chunk = ActiveSupport::JSON.decode(IO.read(path))
         chunk = Chunk.from_raw(raw_chunk)
         prev_chunk.next_chunk = chunk if prev_chunk
@@ -19,6 +19,7 @@ module StrokeDB
     end
 
     def save!(chunk)
+      FileUtils.mkdir_p @path
       File.open "#{@path}/#{chunk.uuid}", "w+" do |f|
         f.write chunk.to_raw.to_json
       end
