@@ -1,17 +1,16 @@
 module StrokeDB
   class SkiplistStore < Store
-    attr_accessor :chunk_storage, :cut_level
+    attr_accessor :chunk_storage
 
-    def initialize(chunk_storage, cut_level)
+    def initialize(chunk_storage)
       @chunk_storage = chunk_storage
-      @cut_level     = cut_level
     end
     
     def find(uuid, version=nil)
       # TODO: master chunk scanning
       @chunk_storage.each do |chunk|
-        doc = chunk.find(uuid)
-        return doc if doc
+        raw_doc = chunk.find(uuid)
+        return Document.from_raw(raw_doc) if raw_doc
       end
       nil
     end
@@ -43,14 +42,12 @@ module StrokeDB
           mychunk = chunk
         end
       end
-      mychunk ||= Chunk.new(@cut_level)
+      mychunk ||= Chunk.new(@chunk_storage.cut_level)
       # insert to mychunk
-      cur_chunk, new_chunk = mychunk.insert(doc.uuid, doc)
+      cur_chunk, new_chunk = mychunk.insert(doc.uuid, doc.to_raw)
       [cur_chunk, new_chunk].compact.each do |chunk|
         @chunk_storage.save!(chunk)
       end
-
     end
-
   end
 end

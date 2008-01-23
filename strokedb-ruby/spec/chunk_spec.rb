@@ -5,15 +5,16 @@ describe "Empty Chunk" do
     @it = Chunk.new(3)
   end
   
-  it { @it.size.should == 0 }
-  it { @it.cut_level.should == 3 }
-  it { @it.uuid.should == nil }
+  it { @it.size.should       == 0 }
+  it { @it.cut_level.should  == 3 }
+  it { @it.uuid.should       == nil }
   it { @it.next_chunk.should == nil }
   
   it "should be serialized" do
     @it.to_raw.should == {"cut_level"=>3, "uuid"=>nil, "next_uuid"=>nil, "nodes"=>[]}
   end
 end
+
 
 describe "Chunks" do
   

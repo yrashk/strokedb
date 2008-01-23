@@ -45,12 +45,23 @@ module StrokeDB
       to_json
     end
     
+    
+    # Primary serialization
+    
     def to_raw
-      raw_slots = {}
+      raw_slots = {'__uuid__' => self.uuid}
       @slots.each_pair do |k,v|
-        raw_slots[k] = v.value # or plain_value?
+        raw_slots[k.to_s] = v.value # or plain_value?
       end
       raw_slots
+    end
+    
+    def self.from_raw(raw_doc)
+      uuid = raw_slots.delete('__uuid__')
+      doc = new(store, raw_slots)
+      raise VersionMismatchError.new if raw_slots['__version__'] != doc.send!(:calculate_version)
+      doc.instance_variable_set(:@uuid, uuid)
+      doc
     end
 
     def new?

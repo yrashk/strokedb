@@ -46,24 +46,24 @@ module StrokeDB
   	def to_raw
   	  # enumerate nodes
   	  skiplist.each_with_index do |node,i|
-     	    node._serialized_index = i
-        end
+     	  node._serialized_index = i
+      end
       
-        # now we know keys' positions right in the nodes
+      # now we know keys' positions right in the nodes
   	  nodes = skiplist.map do |node|
-          {
-            'key'     => node.key,
-            'forward' => node.forward.map{|n| n._serialized_index || 0 },
-            'value'   => node.value
-          }
-        end
         {
-          'nodes'     => nodes, 
-          'cut_level' => @cut_level, 
-          'uuid'      => @uuid,
-          # TODO: may not be needed
-          'next_uuid' => next_chunk ? next_chunk.uuid : nil
+          'key'     => node.key,
+          'forward' => node.forward.map{|n| n._serialized_index || 0 },
+          'value'   => node.value
         }
+      end
+      {
+        'nodes'     => nodes, 
+        'cut_level' => @cut_level, 
+        'uuid'      => @uuid,
+        # TODO: may not be needed
+        'next_uuid' => next_chunk ? next_chunk.uuid : nil
+      }
   	end
   end
 end
