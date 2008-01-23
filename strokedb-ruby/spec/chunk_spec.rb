@@ -19,11 +19,13 @@ describe "Chunks" do
   
   before(:each) do
     head_chunk = Chunk.new(3)
-
+    @docs_by_uuid = {}
     @all_chunks = {} # uuid => chunk
     20.times do |i|
+      uuid = "K#{100+i}"
       doc = {:i => i, :text => "Text."}
-      a, b = head_chunk.insert("K#{100+i}", doc)
+      @docs_by_uuid[uuid] = doc
+      a, b = head_chunk.insert(uuid, doc)
       head_chunk = b || a
       [a, b].each do |c|
         @all_chunks[c.uuid] = c if c
@@ -37,6 +39,17 @@ describe "Chunks" do
       object = Chunk.from_raw(rawv)
       object.next_chunk = @all_chunks[rawv['next_uuid']]
       rawv.should == object.to_raw 
+    end
+  end
+  
+  it "should find stored data" do
+    @docs_by_uuid.each do |uuid, doc|
+      found = false
+      @all_chunks.each do |cuuid, chunk|
+        found = chunk.find(uuid, nil)
+        break if found
+      end
+      found.should == doc
     end
   end
   
