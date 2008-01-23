@@ -16,7 +16,7 @@ TODO
 0) Skiplist chunking of objects
 1) JSON library dependency: wrong sha256 version when libs changes behavior
 2) Mapchunk for chunked skiplists (for faster access)
-
+3) Bad UUID implementation in pure ruby version
 
 
 CONSISTENCY MODELS
@@ -93,3 +93,6 @@ N      L
 2048   9
 4096   9
 8192  10
+
+
+
