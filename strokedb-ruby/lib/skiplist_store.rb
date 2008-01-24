@@ -10,8 +10,8 @@ module StrokeDB
     def find(uuid, version=nil)
       # TODO: master chunk scanning
       @chunk_storage.each do |chunk|
-        raw_doc = chunk.find(uuid)
-        return Document.from_raw(raw_doc) if raw_doc
+        raw_doc = chunk.find(uuid + (version ? ".#{version}" : "") )
+        return Document.from_raw(self,raw_doc) if raw_doc
       end
       nil
     end
@@ -22,7 +22,7 @@ module StrokeDB
     end
 
     def last_version(uuid)
-      # TODO: dunno
+      # TODO
     end
 
     def save!(doc)
@@ -49,6 +49,11 @@ module StrokeDB
       [cur_chunk, new_chunk].compact.each do |chunk|
         @chunk_storage.save!(chunk)
       end
+      cur_chunk, new_chunk = (new_chunk||cur_chunk).insert("#{doc.uuid}.#{doc.version}", doc.to_raw)
+      [cur_chunk, new_chunk].compact.each do |chunk|
+        @chunk_storage.save!(chunk)
+      end
+      
     end
 
   end

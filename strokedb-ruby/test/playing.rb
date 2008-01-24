@@ -1,8 +1,10 @@
 require 'strokedb'
 
-store = StrokeDB::FileStore.new "test/storages/some-path"
+storage = StrokeDB::FileChunkStorage.new "test/storages/some_path_playing"
+store = StrokeDB::SkiplistStore.new storage, 4
 _d = nil
-100.times do |i|
+25.times do |i|
+  puts i
   _d1 = store.new_doc :welcome => 1
   _d = store.new_doc :hello => "once#{i}", :__meta__ => "Beliberda", :_d1 => _d1
   _d.save!
@@ -11,7 +13,6 @@ end
 
 puts "last saved:"
 d_ = store.find(_d.uuid)
-puts store.send!(:filename,_d.uuid)
 puts d_
 d_[:something] = 1
 d_.save!
@@ -35,7 +36,7 @@ r.update_replications!
 puts ":::-----"
 puts r.to_json(:transmittal => true)
 puts "[[[[[[[]]]]]]]"
-puts r.to_packet(:join => true)
+puts r.to_packet
 puts "----------"
 puts r
 puts r[d_.uuid].member?(d_.version)

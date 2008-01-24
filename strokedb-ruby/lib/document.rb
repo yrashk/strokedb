@@ -51,12 +51,12 @@ module StrokeDB
     def to_raw
       raw_slots = {'__uuid__' => self.uuid}
       @slots.each_pair do |k,v|
-        raw_slots[k.to_s] = v.value # or plain_value?
+        raw_slots[k.to_s] = v.plain_value # or plain_value?
       end
       raw_slots
     end
     
-    def self.from_raw(raw_doc)
+    def self.from_raw(store,raw_slots)
       uuid = raw_slots.delete('__uuid__')
       doc = new(store, raw_slots)
       raise VersionMismatchError.new if raw_slots['__version__'] != doc.send!(:calculate_version)
