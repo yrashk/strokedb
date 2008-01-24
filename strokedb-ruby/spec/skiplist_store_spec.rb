@@ -13,15 +13,8 @@ describe "Empty chunk store" do
     @document.stub!(:version).and_return '1234'
     Document.stub!(:from_raw).and_return(@document) 
 
-    chunk_storage = mock("ChunkStorage")
-    def chunk_storage.save!(chunk)
-      @chunks ||= []
-      @chunks << chunk
-    end
-    def chunk_storage.each(&block)
-      (@chunks || []).each &block
-    end
-    
+    chunk_storage = FileChunkStorage.new('test/storages/skiplist_store_spec')
+    chunk_storage.clear!
     @skiplist_store = SkiplistStore.new(chunk_storage, 4)
   end
   

@@ -8,11 +8,13 @@ module StrokeDB
     end
     
     def find(uuid, version=nil)
-      # TODO: master chunk scanning
-      @chunk_storage.each do |chunk|
-        raw_doc = chunk.find(uuid + (version ? ".#{version}" : "") )
-        return Document.from_raw(self,raw_doc) if raw_doc
-      end
+      master_chunk = @chunk_storage.find('MASTER')
+      return nil unless master_chunk  # no master chunk yet
+      chunk_uuid = master_chunk.find_nearest(uuid, nil)
+      return nil unless chunk_uuid # no chunks in master chunk yet
+      chunk = @chunk_storage.find(chunk_uuid)
+      raw_doc = chunk.find(uuid + (version ? ".#{version}" : "") )
+      return Document.from_raw(self,raw_doc) if raw_doc
       nil
     end
 
@@ -30,35 +32,40 @@ module StrokeDB
     end
 
     def save!(doc)
-      mychunk = nil
-      # determine a chunk where to insert
-      @chunk_storage.each do |chunk|
-        # later chunk
-        if doc.uuid < chunk.uuid
-          if mychunk
-            break
-          else
-            # actually, the first chunk, so use it:
-            # will insert in the head 
-            mychunk = chunk 
-            break
-          end
-        else # >=
-          mychunk = chunk
-        end
+      master_chunk = find_or_create_master_chunk
+      is_cur_chunk_new = false
+      chunk_uuid = master_chunk.find_nearest(doc.uuid)
+      unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
+        chunk = Chunk.new(@cut_level) 
+        is_cur_chunk_new = true
       end
-      mychunk ||= Chunk.new(@cut_level)
-      # insert to mychunk
-      cur_chunk, new_chunk = mychunk.insert(doc.uuid, doc.to_raw)
+      
+      cur_chunk, new_chunk = chunk.insert(doc.uuid, doc.to_raw)
       [cur_chunk, new_chunk].compact.each do |chunk|
         @chunk_storage.save!(chunk)
       end
+      master_chunk.insert(cur_chunk.uuid, cur_chunk.uuid) if is_cur_chunk_new
+      master_chunk.insert(new_chunk.uuid, new_chunk.uuid) if new_chunk
       cur_chunk, new_chunk = (new_chunk||cur_chunk).insert("#{doc.uuid}.#{doc.version}", doc.to_raw)
       [cur_chunk, new_chunk].compact.each do |chunk|
         @chunk_storage.save!(chunk)
       end
-      
-    end
+      master_chunk.insert(new_chunk.uuid, new_chunk.uuid) if new_chunk
 
+      @chunk_storage.save!(master_chunk)
+    end
+  
+  private
+  
+    def find_or_create_master_chunk
+      if master_chunk = @chunk_storage.find('MASTER')
+        return master_chunk 
+      end
+      master_chunk = Chunk.new(@cut_level)
+      master_chunk.uuid = 'MASTER'
+      @chunk_storage.save!(master_chunk)
+      master_chunk
+    end
+    
   end
 end

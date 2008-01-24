@@ -25,6 +25,10 @@ module StrokeDB
       skiplist.find(uuid, default)
     end
     
+    def find_nearest(uuid, default = nil)
+      skiplist.find_nearest(uuid, default)
+    end
+    
     def size
       skiplist.size
     end
