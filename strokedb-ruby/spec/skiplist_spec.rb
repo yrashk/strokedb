@@ -51,6 +51,17 @@ describe "Non-empty skiplist" do
 	  @list.find("404").should be_nil
 	end
 	
+	it "should find by first nearest key" do
+	  @list.find_nearest("0").should   == "1"
+	  @list.find_nearest("a").should   == "1"
+    @list.find_nearest("aa").should  == "2"
+    @list.find_nearest("aa0").should == "2"
+    @list.find_nearest("aaa").should == "3"
+    @list.find_nearest("ab").should  == "3"
+    @list.find_nearest("d").should   == "3"
+    @list.find_nearest("xxx").should == "4"
+	end
+	
 end
 
 

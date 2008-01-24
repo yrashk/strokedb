@@ -59,6 +59,16 @@ module StrokeDB
   	  return x.value if x.key == key
   	  default
     end
+    
+    def find_nearest(key, default = nil)
+      return default || @default if empty?
+      x = @head
+      @head.level.downto(1) do |i|
+  	    x = x.forward[i-1] while x.forward[i-1] < key
+  	  end
+  	  x = x.forward[0] if (x.forward[0].key == key || x == @head)
+  	  return x.value
+    end
   
     def delete(key, default = nil)
       @size_cache = nil
