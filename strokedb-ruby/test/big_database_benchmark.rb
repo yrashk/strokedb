@@ -17,11 +17,12 @@ def test_cut_level(bm, n, cutlevel, &block)
   end
 end
 
-N = 5_000
+N = 2_000
 
 puts "Creating #{N} documents..."
 
 bm(10) do |x| 
+  
   test_cut_level(x, N, 4) do |i|
     d = $store.new_doc :index => i
     d.save!
@@ -31,9 +32,10 @@ bm(10) do |x|
     d = $store.new_doc :index => i
     d.save!
   end  
-
+  
   test_cut_level(x, N, 8) do |i|
     d = $store.new_doc :index => i
     d.save!
   end
+
 end

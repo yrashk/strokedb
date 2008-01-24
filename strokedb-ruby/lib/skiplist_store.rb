@@ -38,14 +38,17 @@ module StrokeDB
       unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
         chunk = Chunk.new(@cut_level) 
         is_cur_chunk_new = true
+      #  puts "Very first new chunk! chunk_uuid = #{chunk_uuid}"
       end
       
       cur_chunk, new_chunk = chunk.insert(doc.uuid, doc.to_raw)
       [cur_chunk, new_chunk].compact.each do |chunk|
         @chunk_storage.save!(chunk)
       end
+            
       master_chunk.insert(cur_chunk.uuid, cur_chunk.uuid) if is_cur_chunk_new
       master_chunk.insert(new_chunk.uuid, new_chunk.uuid) if new_chunk
+      
       cur_chunk, new_chunk = (new_chunk||cur_chunk).insert("#{doc.uuid}.#{doc.version}", doc.to_raw)
       [cur_chunk, new_chunk].compact.each do |chunk|
         @chunk_storage.save!(chunk)
@@ -61,7 +64,7 @@ module StrokeDB
       if master_chunk = @chunk_storage.find('MASTER')
         return master_chunk 
       end
-      master_chunk = Chunk.new(@cut_level)
+      master_chunk = Chunk.new(999)
       master_chunk.uuid = 'MASTER'
       @chunk_storage.save!(master_chunk)
       master_chunk
