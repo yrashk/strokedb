@@ -29,7 +29,7 @@ module StrokeDB
       @value.to_json(opts)
     end
     
-    def plain_value
+    def raw_value
       @value
     end
   end

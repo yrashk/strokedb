@@ -18,7 +18,7 @@ describe "Slot" do
     @store.should_receive(:find).with(some_doc.uuid).and_return(nil)
     @slot.value = some_doc
     @slot.value.should == some_doc
-    @slot.plain_value.should match(/@##{UUID_RE}/)
+    @slot.raw_value.should match(/@##{UUID_RE}/)
   end
 
   it "should store Document reference if value is a saved Document" do
@@ -26,7 +26,7 @@ describe "Slot" do
     @store.should_receive(:find).with(some_doc.uuid).and_return(some_doc)
     @slot.value = some_doc
     @slot.value.should == some_doc
-    @slot.plain_value.should match(/@##{UUID_RE}/)
+    @slot.raw_value.should match(/@##{UUID_RE}/)
   end
   
 end
