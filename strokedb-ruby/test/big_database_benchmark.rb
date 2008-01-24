@@ -20,6 +20,7 @@ bm(10) do |x|
       d = store.new_doc :index => i
       d.save!
     end
+    storage.flush!
   end
   storage.clear!
   store = SkiplistStore.new(storage, 6)
@@ -29,5 +30,6 @@ bm(10) do |x|
       d = store.new_doc :index => i
       d.save!
     end
+    storage.flush!
   end
 end

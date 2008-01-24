@@ -18,9 +18,7 @@ module StrokeDB
     end
     
     def find(uuid)
-      path = chunk_path(uuid)
-      return nil unless File.exist? path
-      read(path)
+      read(chunk_path(uuid))
     end
 
     def save!(chunk)
@@ -30,13 +28,14 @@ module StrokeDB
     end
     
     def clear!
-      @chunks_cache = {} if @chunks_cache
+      @chunks_cache.clear if @chunks_cache
       FileUtils.rm_rf @path
     end
     
   private
     
     def read(path)
+      return nil unless File.exist?(path)
       raw_chunk = ActiveSupport::JSON.decode(IO.read(path))
       Chunk.from_raw(raw_chunk)
     end
@@ -61,14 +60,24 @@ module StrokeDB
       c
     end
     
+    # use storage.flush! to dump changes to disk and empty cache
     def write_with_cache(path, chunk)
-      @chunks_cache[path] = nil if @chunks_cache
-      write_without_cache(path, chunk)
+      if @chunks_cache
+        @chunks_cache[path] = chunk
+      else
+        write_without_cache(path, chunk)
+      end
     end
     
+    def flush!
+      @chunks_cache.each do |path, chunk|
+        write_without_cache(path, chunk) 
+      end
+      @chunks_cache.clear
+    end
+    public :flush!
     alias_method_chain :read,  :cache
     alias_method_chain :write, :cache
-    
     
   end
 end
