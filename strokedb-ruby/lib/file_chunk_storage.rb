@@ -33,6 +33,7 @@ module StrokeDB
     end
     
     def clear!
+      @chunks_cache = {} if @chunks_cache
       FileUtils.rm_rf @path
     end
   end
