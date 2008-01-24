@@ -50,5 +50,6 @@ module StrokeDB
         @chunk_storage.save!(chunk)
       end
     end
+
   end
 end

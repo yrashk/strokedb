@@ -15,13 +15,16 @@ def test_storage(bm, n, title, &block)
 end
 
 N = 128
-bm(32) do |x| 
-  test_storage x, N, "Write                            " do |i|
+bm(28) do |x| 
+  test_storage x, N, "Write                       " do |i|
     d = store.new_doc :index => i
     d.save!
   end
   
-  test_storage x, N, "Write (SkiplistStore chunk cache)" do |i|
+  # init and enable the cache
+  $storage.chunks_cache = {}
+  
+  test_storage x, N, "Write (FileChunkStore cache)" do |i|
     d = store.new_doc :index => i
     d.save!
   end
