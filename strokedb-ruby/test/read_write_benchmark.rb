@@ -15,7 +15,7 @@ def test_storage(bm, n, title, &block)
   end
 end
 
-N = 1024
+N = 1000
 M = 10
 bm(28) do |x| 
   test_storage x, N/100, "Write (#{N/100} documents)       " do |i|
