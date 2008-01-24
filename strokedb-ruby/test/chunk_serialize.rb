@@ -23,7 +23,7 @@ end
 exit
 =end
 
-fs = FileStore.new "some_path"
+fs = FileStore.new "test/storages/some-path"
 
 head_chunk = Chunk.new(3)
 

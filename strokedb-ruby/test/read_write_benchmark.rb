@@ -4,7 +4,7 @@ include StrokeDB
 require 'benchmark'
 include Benchmark 
 
-$storage = FileChunkStorage.new "__rw_bench_storage"
+$storage = FileChunkStorage.new "test/storages/rw_bench_storage"
 store = SkiplistStore.new($storage, 4)
 
 def test_storage(bm, n, title, &block)

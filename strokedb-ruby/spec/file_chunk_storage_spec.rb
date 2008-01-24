@@ -4,9 +4,9 @@ require File.dirname(__FILE__) + '/spec_helper'
   describe "FileChunkStorage #{mode}" do
 
     before(:each) do
-      @path = '__test_file_chunk_store'
-      FileUtils.rm_rf @path
+      @path = 'test/storages/file_chunk_storage_spec'
       @storage = FileChunkStorage.new(@path)
+      @storage.clear!
       @storage.chunks_cache = {} if mode == 'with cache'
       @chunk = mock("Chunk")
       @chunk.stub!(:to_raw).and_return({'a' => 1, 'b' => 2})
@@ -28,7 +28,8 @@ require File.dirname(__FILE__) + '/spec_helper'
     end
   
     after(:each) do
-      FileUtils.rm_rf @path
+      # Keep for investigation
+      # FileUtils.rm_rf @path
     end
 
   end

@@ -1,6 +1,6 @@
 require 'strokedb'
 
-store = StrokeDB::FileStore.new "db"
+store = StrokeDB::FileStore.new "test/storages/some-path"
 _d = nil
 100.times do |i|
   _d1 = store.new_doc :welcome => 1
