@@ -1,4 +1,4 @@
-[ ] Skiplist chunking of objects
+[x] Skiplist chunking of objects
 [ ] JSON library dependency: wrong sha256 version when libs changes behavior
-[ ] Mapchunk for chunked skiplists (for faster access)
+[ ] MASTER chunk for chunked skiplists (for faster access)
 [ ] Fix bad UUID implementation in pure ruby version
