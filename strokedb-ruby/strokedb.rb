@@ -6,6 +6,7 @@ require 'activesupport'
   skiplist
   slot
   document
+  diff
   file_store
   packet
   replica
