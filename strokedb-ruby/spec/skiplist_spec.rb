@@ -6,7 +6,10 @@ describe "Non-empty skiplist" do
     @list = Skiplist.new("a"   => "1", 
                          "aa"  => "2",
                          "aaa" => "3",
-                         "p"   => "4")
+                         "p"   => "4",
+                         "123.1" => "v1",
+                         "123.2" => "v2",
+                         "123" => "v0")
   end
 
 	it "should not be empty" do
@@ -14,13 +17,21 @@ describe "Non-empty skiplist" do
 	end
 	
 	it "should have size" do
-	  @list.should have(4).items
+	  @list.should have(7).items
 	end
 
 	it "should find" do
 		@list.find("a").should   == "1"
 		@list.find("aaa").should == "3"
 	end
+	
+	it "should find entries with prefix" do
+	  @list.find_all_with_prefix("123").to_set.should == ["v1","v2","v0"].to_set
+  end
+
+  it "should find default value if search with prefix returns nothing" do
+    @list.find_all_with_prefix("nothinglike123",123).should == 123
+  end
 
 	it "should return default value if nothing found" do
 		@list.find("404").should be_nil

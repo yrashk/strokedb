@@ -59,6 +59,23 @@ module StrokeDB
   	  return x.value if x.key == key
   	  default
     end
+
+    def find_all_with_prefix(key,default = nil)
+      results = []
+      x = @head
+      @head.level.downto(1) do |i|
+        x = x.forward[i-1] while x.forward[i-1] < key
+      end
+      x = x.forward[0]
+      # got first 
+      while x.key && x.key[0, key.size] == key 
+        results << x.value
+        x = x.forward[0]
+      end
+      results.empty? ? default : results
+    end
+    
+    
   
     def delete(key, default = nil)
       @size_cache = nil
