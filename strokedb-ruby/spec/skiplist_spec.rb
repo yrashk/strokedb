@@ -30,7 +30,7 @@ describe "Non-empty skiplist" do
   end
 
   it "should find default value if search with prefix returns nothing" do
-    @list.find_all_with_prefix("nothinglike123",123).should == 123
+    @list.find_all_with_prefix("nothinglike123").should == []
   end
 
 	it "should return default value if nothing found" do
@@ -75,6 +75,61 @@ describe "Non-empty skiplist" do
 	
 end
 
+
+describe "Skiplist (cut)" do
+  
+  before(:each) do
+    @chunk = Skiplist.new({}, nil, 4)
+    @chunk.insert('500', 'V', 2)
+  end
+  
+  it "should find single value" do
+    @chunk.find('500').should == 'V'
+    @chunk.size.should == 1
+  end
+  [['low level',1],['cut level',1],['high level',6]].each do |t, l|
+    it "should insert #{t} item into the start" do
+      a, b = @chunk.insert('200', 'W', l)
+      a.find('200').should == 'W'
+      a.find('500').should == 'V'
+      a.should == @chunk
+      b.should be_nil
+      @chunk.size.should == 2
+    end
+  end
+  
+  it "should cut when high level item inserted in the middle" do
+    a, b = @chunk.insert('600', 'W', 6)
+    a.find('500').should == 'V'
+    a.find('600').should be_nil
+    a.should == @chunk
+    a.size.should == 1
+    b.should be_kind_of(Skiplist)
+    b.find('500').should be_nil
+    b.find('600').should == 'W'
+    b.size.should == 1
+  end
+  
+  it "should cut when high level item inserted in the middle, but several hi-level items in the start" do
+    a, b = @chunk.insert('300', 'X', 6)
+    a, b = @chunk.insert('200', 'Y', 5)
+    a, b = @chunk.insert('600', 'W', 6)
+    a.find('500').should == 'V'
+    a.find('300').should == 'X'
+    a.find('200').should == 'Y'
+    a.find('600').should be_nil
+    a.should == @chunk
+    a.size.should == 3
+    b.should be_kind_of(Skiplist)
+    b.find('500').should be_nil
+    b.find('300').should be_nil
+    b.find('200').should be_nil
+    b.find('600').should == 'W'
+    b.size.should == 1
+  end
+  
+  
+end
 
 describe "Empty big skiplist" do
   

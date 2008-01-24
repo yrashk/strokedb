@@ -37,7 +37,7 @@ module StrokeDB
         
         x = Node.new(newlevel, key, value)
         
-        if cut?(newlevel)
+        if cut?(newlevel, update[0])
           return new_chunks!(x, update)
         else
           newlevel.times do |i|
@@ -49,6 +49,8 @@ module StrokeDB
   		return self
   	end
 
+    # Finders
+    
     def find(key, default = nil)
       default ||= @default
       x = @head
@@ -70,7 +72,7 @@ module StrokeDB
       return x.value
     end
     
-    def find_all_with_prefix(key, default = nil)
+    def find_all_with_prefix(key)
       results = []
       x = @head
       @head.level.downto(1) do |i|
@@ -82,8 +84,9 @@ module StrokeDB
         results << x.value
         x = x.forward[0]
       end
-      results.empty? ? default : results
-    end    
+      results
+    end
+    
         
     def delete(key, default = nil)
       @size_cache = nil
@@ -171,8 +174,8 @@ module StrokeDB
   		return l
   	end
   	
-  	def cut?(l)
-    	@cut_level && !empty? && l >= @cut_level
+  	def cut?(l, prev)
+    	@cut_level && !empty? && l >= @cut_level && prev != @head
   	end
 
   	def new_chunks!(newnode, update)
