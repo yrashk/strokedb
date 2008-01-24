@@ -26,6 +26,10 @@ module StrokeDB
     def slotnames
       @slots.keys
     end
+    
+    def diff(from)
+      Diff.new(store,from,self)
+    end
 
     def to_json(opts={})
       _to_json = @slots
