@@ -55,7 +55,7 @@ module StrokeDB
     def to_raw
       raw_slots = {}
       @slots.each_pair do |k,v|
-        raw_slots[k.to_s] = v.plain_value # or plain_value?
+        raw_slots[k.to_s] = v.plain_value 
       end
       raw_slots
     end
