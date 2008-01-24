@@ -9,6 +9,7 @@ store = SkiplistStore.new($storage, 4)
 
 def test_storage(bm, n, title, &block)
   $storage.clear!
+  GC.start
   bm.report(title) do
     n.times &block
   end
