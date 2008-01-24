@@ -24,5 +24,9 @@ module StrokeDB
         f.write chunk.to_raw.to_json
       end
     end
+    
+    def clear!
+      FileUtils.rm_rf @path
+    end
   end
 end
