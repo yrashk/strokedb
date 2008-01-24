@@ -10,6 +10,7 @@ describe "Empty chunk store" do
     @document = mock("Document")
     @document.stub!(:uuid).and_return @uuid
     @document.stub!(:to_raw).and_return({:stuff => '...'})
+    @document.stub!(:version).and_return '1234'
     Document.stub!(:from_raw).and_return(@document) 
 
     chunk_storage = mock("ChunkStorage")
