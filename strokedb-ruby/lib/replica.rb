@@ -1,8 +1,6 @@
 module StrokeDB
   class Replica < Document
     def replicate!(document)
-      # NOT A SLOT NAME
-      # self['123123-2323-2324-4346-545345345435345'] ???????
       self[document.uuid] = document.all_versions - (self[document.uuid]||[]) - 
                             previous_versions.collect{|r| store.find(uuid,r)[document.uuid]}.flatten.uniq
       save!
