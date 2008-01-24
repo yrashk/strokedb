@@ -80,10 +80,16 @@ module StrokeDB
     
     def previous_versions
       if previous_version
-        [previous_version] + store.find(uuid,previous_version).previous_versions
+        [previous_version] + store.find(@uuid,previous_version).previous_versions
       else
         []
       end
+    rescue => e
+      puts "-----------------------------"
+      puts e
+      puts uuid
+      puts previous_version
+      raise e
     end
 
     def version
@@ -92,6 +98,10 @@ module StrokeDB
 
     def all_versions
       [version] + previous_versions
+    end
+    
+    def uuid_version
+      uuid + (version ? ".#{version}" : "")
     end
 
   protected

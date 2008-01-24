@@ -8,7 +8,7 @@ module StrokeDB
       end
       alias_method_chain :keys, :sort
     end
-    
+
     def self.sha(str)
       Digest::SHA256.hexdigest(str)
     end

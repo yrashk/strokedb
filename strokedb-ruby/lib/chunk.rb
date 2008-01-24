@@ -1,6 +1,6 @@
 module StrokeDB
   class Chunk
-    attr_accessor :skiplist, :next_chunk, :uuid, :cut_level
+    attr_accessor :skiplist, :next_chunk, :prev_chunk, :uuid, :cut_level 
     
     def initialize(cut_level)
       @skiplist, @cut_level = Skiplist.new({}, nil, cut_level), cut_level
@@ -31,6 +31,10 @@ module StrokeDB
     
     def size
       skiplist.size
+    end
+    
+    def each(&block)
+      skiplist.each &block
     end
         
   	# Raw format

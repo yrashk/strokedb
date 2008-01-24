@@ -8,57 +8,75 @@ module StrokeDB
     end
     
     def find(uuid, version=nil)
+      uuid_version = uuid + (version ? ".#{version}" : "") 
       master_chunk = @chunk_storage.find('MASTER')
       return nil unless master_chunk  # no master chunk yet
-      chunk_uuid = master_chunk.find_nearest(uuid, nil)
+      chunk_uuid = master_chunk.find_nearest(uuid_version, nil)
       return nil unless chunk_uuid # no chunks in master chunk yet
       chunk = @chunk_storage.find(chunk_uuid)
-      raw_doc = chunk.find(uuid + (version ? ".#{version}" : "") )
+      raw_doc = chunk.find(uuid_version)
       return Document.from_raw(self,raw_doc) if raw_doc
+
+      # puts "Document not found!"
+      # puts "Looked for uuid #{uuid} version #{version}."
+      # puts "Looked into chunk #{chunk_uuid}."
+
       nil
     end
 
     def exists?(uuid)
-      # TODO: master chunk scanning
       !!find(uuid)
     end
 
     def last_version(uuid)
-      @chunk_storage.each do |chunk|
-        raw_doc = chunk.find(uuid)
-        return raw_doc['__version__'] if raw_doc
-      end
+      puts "LAST VERSION for #{uuid} is: #{find(uuid)['__version__']}" rescue nil
+      raw_doc = find(uuid)
+      return raw_doc['__version__'] if raw_doc
       nil
     end
 
     def save!(doc)
       master_chunk = find_or_create_master_chunk
-      is_cur_chunk_new = false
-      chunk_uuid = master_chunk.find_nearest(doc.uuid)
-      unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
-        chunk = Chunk.new(@cut_level) 
-        is_cur_chunk_new = true
-      #  puts "Very first new chunk! chunk_uuid = #{chunk_uuid}"
-      end
-      
-      cur_chunk, new_chunk = chunk.insert(doc.uuid, doc.to_raw)
-      [cur_chunk, new_chunk].compact.each do |chunk|
-        @chunk_storage.save!(chunk)
-      end
-            
-      master_chunk.insert(cur_chunk.uuid, cur_chunk.uuid) if is_cur_chunk_new
-      master_chunk.insert(new_chunk.uuid, new_chunk.uuid) if new_chunk
-      
-      cur_chunk, new_chunk = (new_chunk||cur_chunk).insert("#{doc.uuid}.#{doc.version}", doc.to_raw)
-      [cur_chunk, new_chunk].compact.each do |chunk|
-        @chunk_storage.save!(chunk)
-      end
-      master_chunk.insert(new_chunk.uuid, new_chunk.uuid) if new_chunk
 
+      insert_with_cut(doc.uuid,         doc, master_chunk)
+      insert_with_cut(doc.uuid_version, doc, master_chunk)
+      
       @chunk_storage.save!(master_chunk)
     end
   
+  
+    def full_dump
+      puts "Full storage dump:"
+      m = @chunk_storage.find('MASTER')
+      puts "No master!" unless m
+      m.each do |node|
+        puts "[chunk: #{node.key}]"
+        chunk = @chunk_storage.find(node.value)
+        if chunk
+          chunk.each do |node|
+            puts "    [doc: #{node.key}] => {uuid: #{node.value['__uuid__']}, version: #{node.value['__version__']}, previous_version: #{node.value['__previous_version__']}"
+          end
+        else
+          puts "    nil! (but in MASTER somehow?...)"
+        end
+      end
+    end
+  
   private
+    
+    def insert_with_cut(uuid, doc, master_chunk)
+      chunk_uuid = master_chunk.find_nearest(uuid)
+      unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
+        chunk = Chunk.new(@cut_level)
+      end
+      a, b = chunk.insert(uuid, doc.to_raw)
+      @chunk_storage.save!(a)
+      master_chunk.insert(a.uuid, a.uuid)
+      if b
+        @chunk_storage.save!(b)
+        master_chunk.insert(b.uuid, b.uuid)
+      end
+    end
   
     def find_or_create_master_chunk
       if master_chunk = @chunk_storage.find('MASTER')

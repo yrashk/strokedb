@@ -4,19 +4,7 @@ module StrokeDB
     def initialize(path)
       @path = path
     end
-    
-    def each
-      # TODO: master chunk scanning
-      @paths = Dir["#{@path}/**"].sort # FIXME: File.join? Dir.glob special params?
-      prev_chunk = nil
-      @paths.each do |path|
-        chunk = read(path)
-        prev_chunk.next_chunk = chunk if prev_chunk
-        prev_chunk = chunk
-        yield chunk
-      end
-    end
-    
+
     def find(uuid)
       read(chunk_path(uuid))
     end
@@ -52,9 +40,11 @@ module StrokeDB
     # Optimizations
     
     def read_with_cache(path)
-      unless @chunks_cache && (c = @chunks_cache[path])
-        c = @chunks_cache && @chunks_cache[path] || read_without_cache(path)
-        @chunks_cache[path] = c if @chunks_cache
+      return read_without_cache(path) unless @chunks_cache
+      unless c = @chunks_cache[path]
+      #  puts "NOT FOUND: #{path}"
+        c = read_without_cache(path)
+        @chunks_cache[path] = c
       end
       c
     end
@@ -69,10 +59,11 @@ module StrokeDB
     end
     
     def flush!
+      return unless @chunks_cache
       @chunks_cache.each do |path, chunk|
         write_without_cache(path, chunk) 
       end
-      @chunks_cache.clear
+      #@chunks_cache.clear
     end
     public :flush!
     alias_method_chain :read,  :cache
