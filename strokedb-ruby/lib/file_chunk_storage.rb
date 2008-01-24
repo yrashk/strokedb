@@ -42,7 +42,6 @@ module StrokeDB
     def read_with_cache(path)
       return read_without_cache(path) unless @chunks_cache
       unless c = @chunks_cache[path]
-      #  puts "NOT FOUND: #{path}"
         c = read_without_cache(path)
         @chunks_cache[path] = c
       end

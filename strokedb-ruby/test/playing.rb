@@ -23,7 +23,7 @@ _d = nil
 end
 storage.flush!
 
-puts "last saved:"
+puts "last saved (#{_d.uuid}):"
 d_ = store.find(_d.uuid)
 puts d_
 d_[:something] = 1

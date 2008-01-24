@@ -15,12 +15,7 @@ module StrokeDB
       return nil unless chunk_uuid # no chunks in master chunk yet
       chunk = @chunk_storage.find(chunk_uuid)
       raw_doc = chunk.find(uuid_version)
-      return Document.from_raw(self,raw_doc) if raw_doc
-
-      # puts "Document not found!"
-      # puts "Looked for uuid #{uuid} version #{version}."
-      # puts "Looked into chunk #{chunk_uuid}."
-
+      return Document.from_raw(self, uuid, raw_doc.freeze) if raw_doc
       nil
     end
 
@@ -29,7 +24,6 @@ module StrokeDB
     end
 
     def last_version(uuid)
-      puts "LAST VERSION for #{uuid} is: #{find(uuid)['__version__']}" rescue nil
       raw_doc = find(uuid)
       return raw_doc['__version__'] if raw_doc
       nil
@@ -42,8 +36,7 @@ module StrokeDB
       insert_with_cut(doc.uuid_version, doc, master_chunk)
       
       @chunk_storage.save!(master_chunk)
-    end
-  
+    end  
   
     def full_dump
       puts "Full storage dump:"
