@@ -6,6 +6,18 @@ module StrokeDB
       compute_diff
     end
     
+    def removed_slots
+      find_slots 'dropslot'
+    end    
+
+    def added_slots
+      find_slots 'addslot'
+    end    
+    
+    def updated_slots
+      find_slots 'updateslot'
+    end
+    
     protected
     
     def compute_diff
@@ -21,7 +33,10 @@ module StrokeDB
       updates.each do |update|
         self["__diff_updateslot_#{update}__"] = @to[update]
       end
-      
+    end
+    
+    def find_slots(keyword)
+      slotnames.select {|slotname| slotname.match(/^__diff_#{keyword}_(.+)__$/)}.map{|slotname| slotname.gsub(/^__diff_#{keyword}_(.+)__$/,'\\1') }
     end
     
   end
