@@ -65,5 +65,10 @@ module StrokeDB
         'next_uuid' => next_chunk ? next_chunk.uuid : nil
       }
   	end
+  	
+  	def eql?(chunk)
+  	 chunk.uuid == @uuid && chunk.skiplist.eql?(@skiplist)
+  	end
+  	
   end
 end

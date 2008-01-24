@@ -103,8 +103,13 @@ module StrokeDB
   		[@head.to_s, map{|node| node.level.to_s }, @tail.to_s].flatten.join(', ') +
   		">"
   	end
+  	
+  	def eql?(skiplist)
+  	  zip(skiplist) {|a, b| return false unless a.key == b.key && a.value == b.value }
+  	  true
+	  end
 
- 	def each
+ 	  def each
   	  n = @head.forward[0]
   	  until TailNode === n
   	    yield n
