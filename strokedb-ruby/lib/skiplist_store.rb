@@ -22,7 +22,11 @@ module StrokeDB
     end
 
     def last_version(uuid)
-      # TODO
+      @chunk_storage.each do |chunk|
+        raw_doc = chunk.find(uuid)
+        return raw_doc['__version__'] if raw_doc
+      end
+      nil
     end
 
     def save!(doc)
