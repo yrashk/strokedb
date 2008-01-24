@@ -24,6 +24,7 @@ module StrokeDB
     end
 
     def save!(chunk)
+      return unless chunk.modified_flag
       FileUtils.mkdir_p @path
       write(chunk_path(chunk.uuid), chunk)
     end
