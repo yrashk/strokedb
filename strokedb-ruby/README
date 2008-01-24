@@ -1,15 +1,15 @@
 
 run:
-
-strokedb-ruby$ jruby test/playing.rb 
-
+  $ jruby test/playing.rb 
 or
-
-strokedb-ruby$ spec spec
-
+  $ spec spec
 or
+  $ ~/jruby/bin/spec spec
 
-strokedb-ruby$ ~/jruby/bin/spec spec
+
+BENCHMARKS
+
+$ ruby test/read_write_benchmark.rb
 
 
 CONSISTENCY MODELS
