@@ -12,6 +12,7 @@ describe "Diffing documents with slot added" do
     @diff.slotnames.to_set.should == ['__version__','__diff_addslot_slot2__'].to_set
     @diff.added_slots.to_set.should == ['slot2'].to_set
     @diff['__diff_addslot_slot2__'].should == 2
+    @diff.added_slots['slot2'].should == 2
   end
 end
 
@@ -27,6 +28,7 @@ describe "Diffing documents with slot removed" do
     @diff.slotnames.to_set.should == ['__version__','__diff_dropslot_slot2__'].to_set
     @diff.removed_slots.to_set.should == ['slot2'].to_set
     @diff['__diff_dropslot_slot2__'].should == 2
+    @diff.removed_slots['slot2'].should == 2
   end
 end
 
@@ -42,5 +44,6 @@ describe "Diffing documents with slot changed" do
     @diff.slotnames.to_set.should == ['__version__','__diff_updateslot_slot1__'].to_set
     @diff.updated_slots.to_set.should == ['slot1'].to_set
     @diff['__diff_updateslot_slot1__'].should == 2
+    @diff.updated_slots['slot1'].should == 2
   end
 end
