@@ -1,15 +1,12 @@
 module StrokeDB
   class Chunk
     attr_accessor :skiplist, :next_chunk, :uuid, :cut_level
-    attr_accessor :modified_flag
     
     def initialize(cut_level)
-      @modified_flag = true
       @skiplist, @cut_level = Skiplist.new({}, nil, cut_level), cut_level
     end
     
     def insert(uuid, raw_doc, __cheaters_level = nil)
-      @modified_flag = true
       @uuid ||= uuid
       a, new_list = skiplist.insert(uuid, raw_doc, __cheaters_level)
       if new_list
@@ -41,7 +38,6 @@ module StrokeDB
     # TODO: lazify
   	def self.from_raw(raw)
   	  chunk = Chunk.new(raw['cut_level'])
-  	  chunk.modified_flag = false
   	  chunk.uuid       = raw['uuid']
   	  chunk.next_chunk = nil
 

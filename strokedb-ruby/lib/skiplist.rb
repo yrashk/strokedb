@@ -10,7 +10,6 @@ module StrokeDB
   		@head = HeadNode.new
   		@tail = TailNode.new
   		@head.forward[0] = @tail
-		
   		data.each{|k, v| insert(k, v) }
   	end
 
@@ -24,6 +23,7 @@ module StrokeDB
 	      end
   	    update[i-1] = x
   	  end
+  	  x = x.forward[0]
   	  if x.key == key
   	    x.value = value
   	  else

@@ -134,7 +134,7 @@ end
 describe "Skiplist search" do
   before(:each) do
     @times = 100
-    @start = 1024
+    @start = 128
     @ratio = 2
     @lists = [@start, @start*@ratio, @start*@ratio*@ratio].map do |len|
       list = Skiplist.new
