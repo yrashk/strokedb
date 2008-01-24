@@ -11,21 +11,6 @@ require File.dirname(__FILE__) + '/spec_helper'
       
       @chunk = Chunk.new(99)
       @chunk.insert('34b030ab-03a5-a08a-4d97-a7b27daf0897', {'a' => 1, 'b' => 2})
-=begin      
-      @chunk = mock("Chunk")
-      @chunk.stub!(:to_raw).and_return({'a' => 1, 'b' => 2})
-      @chunk.stub!(:uuid).and_return('34b030ab-03a5-a08a-4d97-a7b27daf0897')
-      Chunk.should_receive(:from_raw).any_number_of_times.and_return do |c| 
-        fail("Input chunk is #{c.inspect}") unless c
-        if c['a'] == 1
-          @chunk
-        elsif c['__uuid__'] == 'MASTER'
-          
-        else
-          fail("Unknown raw chunk: #{c.inspect}") 
-        end
-      end
-=end
     end
   
     it "should be empty when created" do
