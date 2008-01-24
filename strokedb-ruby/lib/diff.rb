@@ -36,7 +36,8 @@ module StrokeDB
     end
     
     def find_slots(keyword)
-      slotnames.select {|slotname| slotname.match(/^__diff_#{keyword}_(.+)__$/)}.map{|slotname| slotname.gsub(/^__diff_#{keyword}_(.+)__$/,'\\1') }
+      re = /^__diff_#{keyword}_(.+)__$/
+      slotnames.select {|slotname| slotname.match(re)}.map{|slotname| slotname.gsub(re,'\\1') }
     end
     
   end
