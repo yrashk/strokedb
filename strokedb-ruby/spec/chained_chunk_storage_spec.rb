@@ -20,7 +20,10 @@ ChunkStorage.subclasses.map(&:constantize).each do |storage|
       @storage.save! @chunk1
       target_storage.should_receive(:save!).with(@chunk1)
       @storage.replicate!(target_storage)
+      @storage.replicate!(target_storage)
     end
+    
+    
     
     it "should collect update to multiple target store" do
       target_storage = mock("Target store")
