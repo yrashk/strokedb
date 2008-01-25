@@ -7,12 +7,13 @@ require File.dirname(__FILE__) + '/spec_helper'
 # 4) Version 3 with dynamic k and chunking.
 
 describe KDSkiplist2 do
-  
+
   before(:each) do
     @kd = KDSkiplist2.new([:x, :y])
   end
   
   it "should store and retrieve multidimensional data" do
+    pending
     lisbon = { :name => 'Lisbon', :x => -9, :y => 37 }
     @kd.insert(lisbon)
     @kd.find(:x => -10..0, :y => 30..40).should == [ lisbon ]
