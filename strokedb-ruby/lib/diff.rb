@@ -96,13 +96,8 @@ module StrokeDB
         document.remove_slot!(removal)
       end
       updated_slots.each do |update|
-        if from[:__meta__] && strategy = from[:__meta__]["__diff_strategy_#{update}__"]
-          strategy_class = strategy.camelize.constantize rescue nil
-          if strategy_class && strategy_class.ancestors.include?(SlotDiffStrategy)
-            document[update] = strategy_class.patch(document[update],updated_slots[update])
-          else
-            document[update] = updated_slots[update]
-          end
+        if sk = strategy_class_for(update)
+            document[update] = sk.patch(document[update],updated_slots[update])
         else
           document[update] = updated_slots[update]
         end
@@ -122,14 +117,20 @@ module StrokeDB
       end
       updates = (to.slotnames - additions - ['__version__']).select {|slotname| to[slotname] != from[slotname]}
       updates.each do |update|
-        self["__diff_updateslot_#{update}__"] = to[update]
-        if from[:__meta__] && strategy = from[:__meta__]["__diff_strategy_#{update}__"]
-          strategy_class = strategy.camelize.constantize rescue nil
-          if strategy_class && strategy_class.ancestors.include?(SlotDiffStrategy)
-            self["__diff_updateslot_#{update}__"] = strategy_class.diff(from[update],to[update]) 
-          end
+        unless sk = strategy_class_for(update)
+          self["__diff_updateslot_#{update}__"] = to[update]
+        else
+          self["__diff_updateslot_#{update}__"] = sk.diff(from[update],to[update]) 
         end
       end
+    end
+    
+    def strategy_class_for(slotname)
+      if from[:__meta__] && strategy = from[:__meta__]["__diff_strategy_#{slotname}__"]
+        _strategy_class = strategy.camelize.constantize rescue nil
+        return _strategy_class if _strategy_class && _strategy_class.ancestors.include?(SlotDiffStrategy)
+      end
+      false
     end
     
     module SlotAccessor
