@@ -1,8 +1,8 @@
 module StrokeDB
-  class MemoryChunkStorage
+  class MemoryChunkStorage < ChunkStorage
     attr_accessor :chunks_cache
 
-    def initialize
+    def initialize(*args)
       @chunks_cache = {}
     end
       
@@ -10,9 +10,6 @@ module StrokeDB
       read(chunk_path(uuid))
     end
 
-    def save!(chunk)
-      write(chunk_path(chunk.uuid), chunk)
-    end
     
     def clear!
       @chunks_cache.clear
@@ -20,6 +17,10 @@ module StrokeDB
     
   
   private
+
+    def perform_save!(chunk)
+        write(chunk_path(chunk.uuid), chunk)
+    end
     
     def chunk_path(uuid)
       uuid

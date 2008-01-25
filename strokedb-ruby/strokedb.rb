@@ -13,6 +13,7 @@ require 'activesupport'
   store
   skiplist_store
   chunk
+  chunk_storage
   memory_chunk_storage
   file_chunk_storage
   ] +

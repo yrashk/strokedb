@@ -8,10 +8,11 @@ module StrokeDB
   end
 end
 
-# storage = StrokeDB::MemoryChunkStorage.new 
-storage = StrokeDB::FileChunkStorage.new "test/storages/some_path_playing"
-storage.clear!
-store = StrokeDB::SkiplistStore.new storage, 4
+mem_storage = StrokeDB::MemoryChunkStorage.new 
+file_storage = StrokeDB::FileChunkStorage.new "test/storages/some_path_playing"
+file_storage.clear!
+store = StrokeDB::SkiplistStore.new mem_storage, 4
+mem_storage.add_replica!(file_storage)
 
 _d = nil
 25.times do |i|
@@ -60,4 +61,4 @@ d_[:awonderful] = "hello"
 d_.save!
 r.replicate!(d_)
 puts r
-
+mem_storage.replicate!

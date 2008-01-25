@@ -1,5 +1,5 @@
 module StrokeDB
-  class FileChunkStorage
+  class FileChunkStorage < ChunkStorage
     attr_accessor :path
 
     def initialize(path)
@@ -10,16 +10,17 @@ module StrokeDB
       read(chunk_path(uuid))
     end
 
-    def save!(chunk)
-      FileUtils.mkdir_p @path
-      write(chunk_path(chunk.uuid), chunk)
-    end
     
     def clear!
       FileUtils.rm_rf @path
     end
     
   private
+    
+    def perform_save!(chunk)
+      FileUtils.mkdir_p @path
+      write(chunk_path(chunk.uuid), chunk)
+    end
     
     def read(path)
       return nil unless File.exist?(path)
