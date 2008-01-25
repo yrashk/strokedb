@@ -2,6 +2,16 @@ require 'digest/sha1'
 
 module StrokeDB  
   module Util
+    
+    module ::Enumerable
+      def map_with_index
+        collected=[]
+        each_with_index {|item, index| collected << yield(item, index) }
+        collected
+      end
+      alias :collect_with_index :map_with_index
+    end
+    
     class HashWithSortedKeys < Hash
       def keys_with_sort
         keys_without_sort.sort
