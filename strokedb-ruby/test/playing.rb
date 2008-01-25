@@ -1,12 +1,12 @@
 require 'strokedb'
 
-module StrokeDB
-  class << Util
-    def sha(str)
-      Digest::SHA256.hexdigest(str)[0..8]
-    end
-  end
-end
+# module StrokeDB
+#   class << Util
+#     def sha(str)
+#       Digest::SHA256.hexdigest(str)[0..8]
+#     end
+#   end
+# end
 
 mem_storage = StrokeDB::MemoryChunkStorage.new 
 file_storage = StrokeDB::FileChunkStorage.new "test/storages/some_path_playing"
