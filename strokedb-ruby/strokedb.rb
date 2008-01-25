@@ -8,9 +8,9 @@ require 'activesupport'
   slot
   document
   diff
-  file_store
   packet
   replica
+  store
   skiplist_store
   chunk
   file_chunk_storage
