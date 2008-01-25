@@ -4,3 +4,6 @@
 [ ] Fix bad UUID implementation in pure ruby version
 [ ] Read/Write benchmarks showing dependency of data size
 [ ] K-d skiplist & specs
+[ ] Rewrite replications to use diffing techniques
+[ ] Add slot value diffing
+[ ] Chained storages
