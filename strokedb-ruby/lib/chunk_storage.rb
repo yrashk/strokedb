@@ -42,7 +42,7 @@ module StrokeDB
     def save_with_replicas!(chunk)
       perform_save!(chunk)
       (@replicas||{}).each_pair do |storage,savings|
-        savings << chunk
+        savings << chunk unless savings.include?(chunk)
       end
     end
 
