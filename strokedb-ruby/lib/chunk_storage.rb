@@ -17,8 +17,8 @@ module StrokeDB
       if storage.nil?
         @replicas.each_pair do |storage, savings|
           savings.each {|saving| storage.save!(saving)}
-          @replicas[storage] = []
         end
+        @replicas = {}
       else
         (@replicas[storage]||[]).each do |saving|
           storage.save!(saving)

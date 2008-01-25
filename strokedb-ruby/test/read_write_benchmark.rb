@@ -5,6 +5,7 @@ require 'benchmark'
 include Benchmark 
 
 $f_storage = FileChunkStorage.new "test/storages/rw_bench_storage"
+$f_storage.clear!
 $storage = MemoryChunkStorage.new
 $storage.add_replica!($f_storage)
 store = SkiplistStore.new($storage, 4)
@@ -42,7 +43,7 @@ bm(28) do |x|
   x.report(          "Read (#{M} docs #{N} times) ") do
     N.times do
       some_random_uuids.each do |uuid|
-        f_store.find(uuid)
+        store.find(uuid)
       end
     end
   end
@@ -50,7 +51,7 @@ bm(28) do |x|
   x.report(          "Read (#{N} docs #{M} times) ") do
     M.times do
       all_docs.each do |uuid|
-        f_store.find(uuid)
+        store.find(uuid)
       end
     end
   end

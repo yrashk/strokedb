@@ -31,11 +31,13 @@ bm(10) do |x|
   end  
 
   test_cut_level(x, N, 6) do |i|
+    
     d = $store.new_doc :index => i
     d.save!
   end  
   
   test_cut_level(x, N, 8) do |i|
+
     d = $store.new_doc :index => i
     d.save!
   end
