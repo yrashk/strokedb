@@ -23,6 +23,12 @@ module StrokeDB
       set_version unless slotname == :__version__ 
     end
     
+    def remove_slot!(slotname)
+      @slots.delete slotname.to_s
+      set_version
+      @slots.delete '__version__' if slotnames == ['__version__']
+    end
+    
     def slotnames
       @slots.keys
     end

@@ -5,5 +5,7 @@
 [ ] Read/Write benchmarks showing dependency of data size
 [ ] K-d skiplist & specs
 [ ] Rewrite replications to use diffing techniques
-[ ] Add slot value diffing
+[X] Add slot value diffing
+[X] Add document patching
+[X] Add slot value patching
 [ ] Chained storages

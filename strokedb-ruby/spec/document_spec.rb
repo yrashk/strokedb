@@ -34,6 +34,18 @@ describe "Newly created Document" do
       @document[:new_slot].should == "someval"
     end.should change(@document,:slotnames)
   end
+  
+  it "should be able to remove slot" do
+    original_slotnames = @document.slotnames
+    lambda do
+      @document[:new_slot] = "someval"
+      @document[:new_slot].should == "someval"
+    end.should change(@document,:slotnames)
+    lambda do
+      @document.remove_slot!(:new_slot)
+    end.should change(@document,:slotnames)
+    @document.slotnames.should == original_slotnames
+  end
 
   it "should update version each time slots are created" do
     lambda do
