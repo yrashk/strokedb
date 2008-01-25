@@ -7,5 +7,5 @@
 [ ] Rewrite replications to use diffing techniques
 [X] Add slot value diffing
 [ ] Add document patching
-[ ] Add slot value patching
+[X] Add slot value patching
 [ ] Chained storages
