@@ -25,7 +25,7 @@ module StrokeDB
         when Hash
           ::Diff::LCS.diff(from.sort_by(&:to_s),to.sort_by(&:to_s)).map do |d|
             d.map do |change|
-              { :position => change.position,
+              {
                 :element => { change.element.first => change.element.last} ,
                 :action => change.action
               }
