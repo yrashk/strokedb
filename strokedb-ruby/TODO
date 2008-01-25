@@ -6,6 +6,6 @@
 [ ] K-d skiplist & specs
 [ ] Rewrite replications to use diffing techniques
 [X] Add slot value diffing
-[ ] Add document patching
+[X] Add document patching
 [X] Add slot value patching
 [ ] Chained storages
