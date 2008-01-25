@@ -64,9 +64,16 @@ module StrokeDB
 
   class Diff < Document
     def initialize(store,from,to)
-      @from, @to = from, to
-      super(store)
+      super(store, :__from__ => from, :__to__ => to)
       compute_diff
+    end
+    
+    def from
+      self[:__from__]
+    end
+    
+    def to
+      self[:__to__]
     end
 
     def removed_slots
@@ -81,29 +88,50 @@ module StrokeDB
       find_slots 'updateslot'
     end
 
-    protected
-
-    def compute_diff
-      additions = @to.slotnames - @from.slotnames 
-      additions.each do |addition|
-        self["__diff_addslot_#{addition}__"] = @to[addition]
+    def patch!(document)
+      added_slots.each do |addition|
+        document[addition] = added_slots[addition]
       end
-      removals = @from.slotnames - @to.slotnames
-      removals.each do |removal|
-        self["__diff_dropslot_#{removal}__"] = @from[removal]
+      removed_slots.each do |removal|
+        document.remove_slot!(removal)
       end
-      updates = (@to.slotnames - additions - ['__version__']).select {|slotname| @to[slotname] != @from[slotname]}
-      updates.each do |update|
-        self["__diff_updateslot_#{update}__"] = @to[update]
-        if @from[:__meta__] && strategy = @from[:__meta__]["__diff_strategy_#{update}__"]
+      updated_slots.each do |update|
+        if from[:__meta__] && strategy = from[:__meta__]["__diff_strategy_#{update}__"]
           strategy_class = strategy.camelize.constantize rescue nil
           if strategy_class && strategy_class.ancestors.include?(SlotDiffStrategy)
-            self["__diff_updateslot_#{update}__"] = strategy_class.diff(@from[update],@to[update]) 
+            document[update] = strategy_class.patch(document[update],updated_slots[update])
+          else
+            document[update] = updated_slots[update]
           end
+        else
+          document[update] = updated_slots[update]
         end
       end
     end
 
+    protected
+
+    def compute_diff
+      additions = to.slotnames - from.slotnames 
+      additions.each do |addition|
+        self["__diff_addslot_#{addition}__"] = to[addition]
+      end
+      removals = from.slotnames - to.slotnames
+      removals.each do |removal|
+        self["__diff_dropslot_#{removal}__"] = from[removal]
+      end
+      updates = (to.slotnames - additions - ['__version__']).select {|slotname| to[slotname] != from[slotname]}
+      updates.each do |update|
+        self["__diff_updateslot_#{update}__"] = to[update]
+        if from[:__meta__] && strategy = from[:__meta__]["__diff_strategy_#{update}__"]
+          strategy_class = strategy.camelize.constantize rescue nil
+          if strategy_class && strategy_class.ancestors.include?(SlotDiffStrategy)
+            self["__diff_updateslot_#{update}__"] = strategy_class.diff(from[update],to[update]) 
+          end
+        end
+      end
+    end
+    
     module SlotAccessor
       def [](name)
         return at(name) if name.is_a?(Numeric)
