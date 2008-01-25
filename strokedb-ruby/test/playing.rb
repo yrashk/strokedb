@@ -1,17 +1,18 @@
 require 'strokedb'
 
-module StrokeDB
-  class << Util
-    def sha(str)
-      Digest::SHA256.hexdigest(str)[0..8]
-    end
-  end
-end
+# module StrokeDB
+#   class << Util
+#     def sha(str)
+#       Digest::SHA256.hexdigest(str)[0..8]
+#     end
+#   end
+# end
 
-storage = StrokeDB::FileChunkStorage.new "test/storages/some_path_playing"
-storage.clear!
-storage.chunks_cache = {}
-store = StrokeDB::SkiplistStore.new storage, 4
+mem_storage = StrokeDB::MemoryChunkStorage.new 
+file_storage = StrokeDB::FileChunkStorage.new "test/storages/some_path_playing"
+file_storage.clear!
+store = StrokeDB::SkiplistStore.new mem_storage, 4
+mem_storage.add_replica!(file_storage)
 
 _d = nil
 25.times do |i|
@@ -21,7 +22,6 @@ _d = nil
   _d.save!
   _d1.save!
 end
-storage.flush!
 
 puts "last saved (#{_d.uuid}):"
 d_ = store.find(_d.uuid)
@@ -61,5 +61,4 @@ d_[:awonderful] = "hello"
 d_.save!
 r.replicate!(d_)
 puts r
-
-storage.flush!
+mem_storage.replicate!

@@ -4,8 +4,11 @@ include StrokeDB
 require 'benchmark'
 include Benchmark 
 
-$storage = FileChunkStorage.new "test/storages/rw_bench_storage"
+$f_storage = FileChunkStorage.new "test/storages/rw_bench_storage"
+$storage = MemoryChunkStorage.new
+$storage.add_replica!($f_storage)
 store = SkiplistStore.new($storage, 4)
+f_store = SkiplistStore.new($f_storage, 4)
 
 def test_storage(bm, n, title, &block)
   $storage.clear!
@@ -18,13 +21,12 @@ end
 N = 1000
 M = 10
 bm(28) do |x| 
+  
   test_storage x, N/100, "Write (#{N/100} documents)       " do |i|
-    d = store.new_doc :index => i
+    d = f_store.new_doc :index => i
     d.save!
   end
   
-  # init and enable the cache
-  $storage.chunks_cache = {}
   some_random_uuids = []
   all_docs = []
   test_storage x, N,     "Write (#{N} with cache)     " do |i|
@@ -34,14 +36,13 @@ bm(28) do |x|
     all_docs << d.uuid
   end
   
-  $storage.flush!
-  $storage.chunks_cache = {}  
+  $storage.replicate!
   
   GC.start
   x.report(          "Read (#{M} docs #{N} times) ") do
     N.times do
       some_random_uuids.each do |uuid|
-        store.find(uuid)
+        f_store.find(uuid)
       end
     end
   end
@@ -49,7 +50,7 @@ bm(28) do |x|
   x.report(          "Read (#{N} docs #{M} times) ") do
     M.times do
       all_docs.each do |uuid|
-        store.find(uuid)
+        f_store.find(uuid)
       end
     end
   end
