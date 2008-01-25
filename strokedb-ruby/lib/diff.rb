@@ -1,4 +1,11 @@
 module StrokeDB
+  
+  class SlotDiffStrategy 
+    def self.diff(from,to)
+      to
+    end
+  end
+  
   class Diff < Document
     def initialize(store,from,to)
       @from, @to = from, to
@@ -32,6 +39,12 @@ module StrokeDB
       updates = (@to.slotnames - additions - ['__version__']).select {|slotname| @to[slotname] != @from[slotname]}
       updates.each do |update|
         self["__diff_updateslot_#{update}__"] = @to[update]
+        if @from[:__meta__] && strategy = @from[:__meta__]["__diff_strategy_#{update}__"]
+          strategy_class = strategy.camelize.constantize rescue nil
+          if strategy_class && strategy_class.ancestors.include?(SlotDiffStrategy)
+            self["__diff_updateslot_#{update}__"] = strategy_class.diff(@from[update],@to[update]) 
+          end
+        end
       end
     end
 
@@ -50,8 +63,6 @@ module StrokeDB
       slots.instance_variable_set(:@keyword,keyword)
       slots
     end
-    
-    
     
   end
 end
