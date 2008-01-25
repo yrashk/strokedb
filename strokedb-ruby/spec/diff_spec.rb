@@ -97,7 +97,7 @@ describe "Diffing documents with slot changed and slot's diff strategy is specif
   
 end
 
-describe "Diffing documents with slot changed and slot's diff strategy is specified on meta, but there diff strategy is invalid" do
+describe "Diffing documents with slot changed and slot's diff strategy is specified on meta, but diff strategy is invalid" do
 
   before(:each) do
     @store = mock("Store")
