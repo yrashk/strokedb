@@ -4,6 +4,7 @@ require 'activesupport'
 (%w[
   util 
   skiplist
+  kd_skiplist
   slot
   document
   diff
