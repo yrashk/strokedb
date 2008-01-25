@@ -7,10 +7,18 @@ module StrokeDB
     def add_replica!(storage)
       @replicas ||= {}
       @replicas[storage] = []
+      class <<self
+        alias :save! :save_with_replicas!
+      end
     end
-    
+
     def remove_replica!(storage)
       @replicas.delete(storage)
+      if @replicas.keys.empty?
+        class <<self
+          alias :save! :save_without_replicas!
+        end
+      end
     end
 
     def replicate!(storage=nil)
@@ -27,13 +35,18 @@ module StrokeDB
       end
     end
 
+    def save_without_replicas!(chunk)
+      perform_save!(chunk)
+    end
 
-    def save!(chunk)
+    def save_with_replicas!(chunk)
       perform_save!(chunk)
       (@replicas||{}).each_pair do |storage,savings|
         savings << chunk
       end
     end
+
+    alias :save! :save_without_replicas!
 
 
   end
