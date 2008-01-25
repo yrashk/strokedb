@@ -8,4 +8,5 @@
 [X] Add slot value diffing
 [X] Add document patching
 [X] Add slot value patching
+[ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
 [ ] Chained storages
