@@ -4,16 +4,18 @@ include StrokeDB
 require 'benchmark'
 include Benchmark 
 
+$m_storage = MemoryChunkStorage.new 
 $storage = FileChunkStorage.new "test/storages/big_storage"
-$storage.chunks_cache = {}
+$m_storage.add_replica!($storage)
 
 def test_cut_level(bm, n, cutlevel, &block)
+  $m_storage.clear!
   $storage.clear!
-  $store = SkiplistStore.new($storage, cutlevel)
+  $store = SkiplistStore.new($m_storage, cutlevel)
   GC.start
   bm.report("Cut level = #{cutlevel}") do
     n.times &block
-    $storage.flush!
+    $m_storage.replicate!
   end
 end
 
@@ -29,11 +31,13 @@ bm(10) do |x|
   end  
 
   test_cut_level(x, N, 6) do |i|
+    
     d = $store.new_doc :index => i
     d.save!
   end  
   
   test_cut_level(x, N, 8) do |i|
+
     d = $store.new_doc :index => i
     d.save!
   end
