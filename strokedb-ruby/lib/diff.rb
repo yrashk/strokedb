@@ -1,8 +1,40 @@
+require 'diff/lcs'
 module StrokeDB
   
   class SlotDiffStrategy 
     def self.diff(from,to)
       to
+    end
+  end
+  
+  class DefaultSlotDiff < SlotDiffStrategy
+    def self.diff(from,to)
+      unless from.class == to.class # if value types are not the same
+        to # then return new value
+      else
+        case to
+        when Array, String
+          ::Diff::LCS.diff(from,to).map do |d|
+              d.map do |change|   
+                { :position => change.position,
+                  :element => change.element,
+                  :action => change.action
+                }
+              end
+          end
+        when Hash
+          ::Diff::LCS.diff(from.sort_by(&:to_s),to.sort_by(&:to_s)).map do |d|
+            d.map do |change|
+              { :position => change.position,
+                :element => { change.element.first => change.element.last} ,
+                :action => change.action
+              }
+            end
+          end
+        else
+          to 
+        end
+      end
     end
   end
   
