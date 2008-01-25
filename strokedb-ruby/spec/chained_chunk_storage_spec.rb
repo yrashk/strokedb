@@ -1,8 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-STORAGES = [MemoryChunkStorage, FileChunkStorage]
-
-STORAGES.each do |storage|
+ChunkStorage.subclasses.map(&:constantize).each do |storage|
   describe "Chained chunk storage" do
 
     before(:each) do
