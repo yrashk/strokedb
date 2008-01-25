@@ -8,9 +8,9 @@ module StrokeDB
   end
 end
 
+# storage = StrokeDB::MemoryChunkStorage.new 
 storage = StrokeDB::FileChunkStorage.new "test/storages/some_path_playing"
 storage.clear!
-storage.chunks_cache = {}
 store = StrokeDB::SkiplistStore.new storage, 4
 
 _d = nil
@@ -21,7 +21,6 @@ _d = nil
   _d.save!
   _d1.save!
 end
-storage.flush!
 
 puts "last saved (#{_d.uuid}):"
 d_ = store.find(_d.uuid)
@@ -62,4 +61,3 @@ d_.save!
 r.replicate!(d_)
 puts r
 
-storage.flush!

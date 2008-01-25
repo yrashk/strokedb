@@ -13,6 +13,7 @@ require 'activesupport'
   store
   skiplist_store
   chunk
+  memory_chunk_storage
   file_chunk_storage
   ] +
  [RUBY_PLATFORM =~ /java/ ? 'java_util' : nil ]).compact.each {|m| require File.dirname(__FILE__) + "/lib/#{m}"}
