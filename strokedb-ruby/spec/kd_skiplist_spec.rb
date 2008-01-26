@@ -9,7 +9,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 describe KDSkiplist2 do
 
   before(:each) do
-    @kd = KDSkiplist2.new([:x, :y])
+    @kd = KDSkiplist2.new
   end
   
   it "should store and retrieve multidimensional data" do

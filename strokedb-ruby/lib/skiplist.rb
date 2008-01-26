@@ -36,6 +36,7 @@ module StrokeDB
         end
         
         x = Node.new(newlevel, key, value)
+        value.skiplist_node_container = x if value.respond_to? :skiplist_node_container=
         
         if cut?(newlevel, update[0])
           return new_chunks!(x, update)
@@ -51,15 +52,19 @@ module StrokeDB
 
     # Finders
     
-    def find(key, default = nil)
-      default ||= @default
+    def find_node(key = nil)
       x = @head
       @head.level.downto(1) do |i|
   	    x = x.forward[i-1] while x.forward[i-1] < key
   	  end
   	  x = x.forward[0]
-  	  return x.value if x.key == key
-  	  default
+	    return (x.key && yield(x.key, key) ? x : nil) if block_given?
+  	  return x if x.key == key
+  	  nil
+    end
+    
+    def find(key, default = nil)
+      (i = find_node(key)) && i.value || default || @default
     end
 
     def find_nearest(key, default = nil)
@@ -110,6 +115,10 @@ module StrokeDB
       else
         default
       end
+    end
+    
+    def first_node
+      @head.forward[0]
     end
     
     def size
@@ -234,6 +243,9 @@ module StrokeDB
   		end
   		def <(key)
   		  @key < key
+  	  end
+  	  def next
+  	    forward[0]
   	  end
   	  def to_s
   	    "[#{level}]#{@key}: #{@value}"
