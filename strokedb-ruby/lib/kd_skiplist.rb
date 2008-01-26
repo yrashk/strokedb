@@ -13,6 +13,8 @@ module StrokeDB
     # Inserts some object to a k-d list.
     # Relies on a #[] and #each method to access dimensions slots.
     def insert(object, __cheater_levels = nil)
+      debug_header
+      debug "Inserting #{object.inspect}"
       locations = {}
       
       # Allocation nodes per each dimension
@@ -62,6 +64,7 @@ module StrokeDB
     # Returns an Array instance (empty when nothing found).
     # 
     def find(ranges, options = {})
+      debug_header
       debug "find: #{ranges.inspect}, options are #{options.inspect}"
       # 0. Optimization
       return find_optimized(ranges, options) unless options.delete(:non_optimized)
@@ -73,7 +76,7 @@ module StrokeDB
       offset         = options.delete(:offset)
       raise ":reversed_order, :limit and :offset are not supported!" if reversed_order || limit || offset
       # Convert single-values to ranges
-      ranges.each {|d, v| ranges[d] = [v, v] unless Enumerable === v }
+      ranges.each {|d, v| ranges[d] = [v, v] unless !(String === v) && Enumerable === v }
       ranges[order_by] ||= [ nil, nil ] if order_by
       results = []
       
@@ -86,7 +89,7 @@ module StrokeDB
         iterators[dim] = f.nil? ? @lists[dim].first_node : @lists[dim].find_node(f){|k1,k0| k1 >= k0}
         # return if no data with slot k found
         unless iterators[dim] 
-          debug "#{dim.inspect} not found in #{@lists[dim].inspect}. Range is #{range}"
+          debug "#{dim.inspect} -> #{range.inspect} not found in #{@lists[dim].to_s}. Range is #{range}"
           return []
         end
         hyperkey[dim] = iterators[dim].key
@@ -139,7 +142,8 @@ module StrokeDB
           # Switch dimension on current node
           dimension_i = (dimension_i + 1) % dimensions.size
           dimension = dimensions[dimension_i]
-          i = i.value.pointers[dimension]
+         # debug "Switching i = #{i.to_s} (=>) i.value.pointers[#{dimension.inspect}] = #{i.value.pointers[dimension].inspect}"
+          i = i.value.pointers[dimension] || i # nil only if ref to itself
         end until d_i == dimension_i
         
         # kd may be boolean
@@ -175,8 +179,12 @@ module StrokeDB
     end
     
     def debug(msg)
-      puts "Debug #{self.class}: #{msg}" if ENV['DEBUG']
+      puts "KDSL DEBUG: #{msg}" if ENV['DEBUG']
     end
+    def debug_header
+      puts "\n==========================================\n" if ENV['DEBUG']
+    end
+    
     
     # Utility classes
     
@@ -187,22 +195,6 @@ module StrokeDB
         @data     = data
         @pointers = {}
       end
-      
-      # Very special comparison operators.
-      # nil is considered a signed infinity.
-      # ( node < LowerBound )
-      # ( node > HigherBound )
-      # Compare with lower bound. value = nil is -infinity.
-      def <(value)
-        return false if value.nil?
-        key < value
-      end
-      # Compare with higher bound. value = nil is +infinity.
-      def >(value)
-        return false if value.nil?
-        key > value
-      end
-      
       def to_s
         "#<KDNode:#{@data.inspect}>"
       end
