@@ -8,10 +8,11 @@ module StrokeDB
       attr_reader :document
       def initialize(document)
         @document = document
+        @cache = {}
       end
       
       def [](version)
-        document.store.find(document.uuid,version)
+        @cache[version] ||= @document.store.find(document.uuid,version)
       end
       
       def empty?
