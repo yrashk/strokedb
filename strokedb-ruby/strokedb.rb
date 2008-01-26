@@ -9,7 +9,6 @@ require 'activesupport'
   document
   diff
   packet
-  replica
   store
   skiplist_store
   chunk
