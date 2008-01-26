@@ -13,6 +13,7 @@ task :status do
   puts ""
 end
 
+task :bench => [:benchmarks]
 task :benchmarks do
   paths = Dir['test/**/*_benchmark.rb']
   paths.each do |path| 
