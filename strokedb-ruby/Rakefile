@@ -1,0 +1,14 @@
+task :default => [:status]
+
+task :status do
+  o = `git-log | grep oleganza -c`.to_i
+  y = `git-log | grep yrashk -c`.to_i
+  sum = o + y
+  op = o*100/sum
+  yp = y*100/sum
+  puts ""
+  puts "        Commit status        "
+  puts "--------             --------"
+  puts "oleganza  #{op}% — #{yp}%  yrashk"
+  puts ""
+end
