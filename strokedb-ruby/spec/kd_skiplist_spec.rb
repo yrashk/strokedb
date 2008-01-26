@@ -107,12 +107,27 @@ describe KDSkiplist2, "basic multiple records finder" do
   # Positive
   
   it "should find by two ranges" do
-    pending
     @kd.find(:x => -9..14, :y => 37..52).to_set.should == [ @lisbon, @london, @naples ].to_set
   end
   
   # Negative
   
+end
+
+
+describe KDSkiplist2, "with duplicate keys" do
+  before(:each) do
+    @kd = KDSkiplist2.new(:name)
+  end
+  it "should store records separately" do
+    @vasya = { :name => 'Vasya', :age => 18 }
+    @petya = { :name => 'Petya', :age => 18 }
+    @kd.insert(@vasya)
+    @kd.insert(@petya)
+    @kd.find(:name => "Vasya").should == [ @vasya ]
+    @kd.find(:name => "Petya").should == [ @petya ]
+    @kd.find(:age  => 18).to_set.should == [ @vasya, @petya ].to_set
+  end
 end
 
 

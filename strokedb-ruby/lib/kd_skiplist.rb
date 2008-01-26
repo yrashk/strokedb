@@ -4,8 +4,9 @@ module StrokeDB
   # (according to Bradford G. Nickerson,
   #  Skip List Data Structures for Multidimensional Data)
   class KDSkiplist2
-    
-    def initialize
+    attr_reader :unique_key
+    def initialize(unique_key = nil)
+      @unique_key = unique_key
       @dimensions = []
       @lists = {}
     end
@@ -17,14 +18,14 @@ module StrokeDB
       debug "Inserting #{object.inspect}"
       locations = {}
       
-      # Allocation nodes per each dimension
+      # Allocating nodes per each dimension
       object.each do |k, v|
         node = Node.new(object[k], object)
         locations[k] = node
         # build dimensions dynamically
         unless @lists[k]
-          debug "Creating list #{k.inspect}"
-          @lists[k] = Skiplist.new()
+          debug "Creating skiplist #{k.inspect}"
+          @lists[k] = Skiplist.new({}, nil, nil, k == @unique_key)
           @dimensions.push k
         end
         @lists[k].insert(node.key, node, __cheater_levels ? __cheater_levels[k] : nil)
@@ -33,7 +34,10 @@ module StrokeDB
       # Add references to all nodes to their copies in other dimensions
       object.each do |k1, v2|
         object.each do |k2, v2|
-          locations[k1].pointers[k2] = locations[k2].skiplist_node_container unless k1 == k2 
+          unless k1 == k2 
+            debug "Cross-dimensions reference: #{locations[k1]}.pointers[#{k1.inspect}] = #{locations[k2].skiplist_node_container} [#{k2.inspect}]"
+            locations[k1].pointers[k2] = locations[k2].skiplist_node_container 
+          end
         end
       end
     end
@@ -131,7 +135,7 @@ module StrokeDB
           
           # if outside the range, try next item in current dimension
           if range.outside?(kd)
-            debug "Dimension #{dimension.inspect} iterator #{kd.inspect} is outside the range #{range.inspect}. going next iterator."
+            debug "Dimension #{dimension.inspect} iterator #{kd.inspect} is outside the range #{range.inspect}. Going to next iterator."
             in_range = false
             i = i.next
             break
@@ -143,7 +147,11 @@ module StrokeDB
           dimension_i = (dimension_i + 1) % dimensions.size
           dimension = dimensions[dimension_i]
          # debug "Switching i = #{i.to_s} (=>) i.value.pointers[#{dimension.inspect}] = #{i.value.pointers[dimension].inspect}"
-          i = i.value.pointers[dimension] || i # nil only if ref to itself
+          i_ = i.value.pointers[dimension]
+          unless i_
+            debug "Warning: iterator #{i} doesn't have a #{dimension.inspect} pointer!"
+          end
+          i = i_ || i # nil only if ref to itself
         end until d_i == dimension_i
         
         # kd may be boolean
@@ -152,10 +160,12 @@ module StrokeDB
           break
         end
         
-        debug "Node #{i.value.data.inspect} was tested. In range: #{in_range}."
         if in_range
+          debug "In range! Adding node #{i.value.data.inspect}."
           results << i.value.data # skiplist node is wrapped into kdnode
           i = i.next
+        else
+          debug "Not in range! Node is #{i.value}."
         end
       end
       debug "Big loop exited. #{lower_keys_counter} non-tested dimensions."
@@ -179,7 +189,23 @@ module StrokeDB
     end
     
     def debug(msg)
-      puts "KDSL DEBUG: #{msg}" if ENV['DEBUG']
+      if block_given?
+        begin
+          out = []
+          out << "\n\n---- Start of #{msg} -----"
+          yield(out)
+          return
+        rescue => e
+          puts out.join("\n")
+          puts "---- End of #{msg}: exception! -----"
+          puts e
+          puts e.backtrace.join("\n") rescue nil
+          puts "----"
+          raise e
+        end
+      else
+        puts "KDSL DEBUG: #{msg}" if ENV['DEBUG']
+      end
     end
     def debug_header
       puts "\n==========================================\n" if ENV['DEBUG']
