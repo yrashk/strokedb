@@ -175,7 +175,7 @@ module StrokeDB
     end
     
     def debug(msg)
-      puts "Debug #{self.class}: #{msg}"
+      puts "Debug #{self.class}: #{msg}" if ENV['DEBUG']
     end
     
     # Utility classes

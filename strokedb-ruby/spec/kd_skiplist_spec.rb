@@ -13,30 +13,29 @@ describe KDSkiplist2 do
   end
   
   it "should store and retrieve multidimensional data" do
-    #pending
     lisbon = { :name => 'Lisbon', :x => -9, :y => 37 }
     @kd.insert(lisbon)
     @kd.find(:x => -10..0, :y => 30..40).should == [ lisbon ]
   end
   
   it "should find by specific value" do
-    
+    pending
   end
   
   it "should find data in a specified range" do
-    
+    pending
   end
   
   it "should find data in a semi-infinite range" do
-    
+    pending
   end
     
   it "should sort data by one of the keys" do
-    
+    pending
   end
   
   it "should accept any object with #[] method" do
-    
+    pending
   end
   
 end
