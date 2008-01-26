@@ -20,6 +20,10 @@ module StrokeDB
       end
       
     end
+
+    def self.create(store, slots={})
+      new(store,slots).save!
+    end
     
     def initialize(store, slots={})
       @store = store
@@ -98,6 +102,7 @@ module StrokeDB
       raise UnversionedDocumentError.new unless version
       self[:__previous_version__] = store.last_version(uuid) unless new?
       store.save!(self)
+      self
     end
 
     def previous_version

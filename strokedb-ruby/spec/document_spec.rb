@@ -1,5 +1,18 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
+describe "Document" do
+
+  before(:each) do
+    @store = mock("Store")
+  end
+  
+  it "should be able to be created instantly" do
+    @store.should_receive(:save!).with(anything)
+    @store.should_receive(:exists?).with(anything).any_number_of_times.and_return(false)
+    @document = Document.create(@store,:slot1 => 1)
+  end
+end
+
 describe "Newly created Document" do
   
   before(:each) do
