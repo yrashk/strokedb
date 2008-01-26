@@ -17,20 +17,24 @@ module StrokeDB
   	  @size_cache = nil
   	  update = Array.new(@head.level)
   	  x = @head
-  	  @head.level.downto(1) do |i|
-  	    while x.forward[i-1] < key
-  	      x = x.forward[i-1]
-	      end
-  	    update[i-1] = x
-  	  end
+  	  # We have to choose between < and <= only,
+  	  # but we go into different branches to keep things fast.  
+  	  if @unique_keys
+  	    @head.level.downto(1) do |i|
+  	      x = x.forward[i-1] while x.forward[i-1] < key
+  	      update[i-1] = x
+  	    end
+	    else
+	      @head.level.downto(1) do |i|
+  	      x = x.forward[i-1] while x.forward[i-1] <= key
+  	      update[i-1] = x
+  	    end
+      end
   	  x = x.forward[0]
   	  if x.key == key && @unique_keys
   	    x.value = value
   	    value.skiplist_node_container = x if value.respond_to? :skiplist_node_container=
   	  else
-  	    unless @unique_keys 
-  	      (update[0] = x; x = x.forward[0]) while x.key == key
-  	    end  
   	    newlevel = __cheaters_level || random_level
   	    newlevel = 1 if empty?
   	    if newlevel > @head.level 
@@ -248,6 +252,9 @@ module StrokeDB
   		def <(key)
   		  @key < key
   	  end
+  	  def <=(key)
+  		  @key <= key
+  	  end
   	  def next
   	    forward[0]
   	  end
@@ -263,7 +270,10 @@ module StrokeDB
   		def <(key)
   		  true
   	  end
-  	  def to_s
+  	  def <=(key)
+  		  true
+  	  end
+      def to_s
   	    "head(#{level})"
   	  end
   	end
@@ -275,6 +285,9 @@ module StrokeDB
   			super 1, nil, nil
   		end
   		def <(key)
+  		  false
+  	  end
+  	  def <=(key)
   		  false
   	  end
   	  def to_s
