@@ -80,7 +80,14 @@ module StrokeDB
       offset         = options.delete(:offset)
       raise ":reversed_order, :limit and :offset are not supported!" if reversed_order || limit || offset
       # Convert single-values to ranges
-      ranges.each {|d, v| ranges[d] = [v, v] unless !(String === v) && Enumerable === v }
+      ranges.each do |d, v| 
+        if String === v && v[-1,1] == '*'
+          ranges[d] = [v[0..-2], v[0..-2] + "\xff\xff\xff"]
+        else
+          ranges[d] = [v, v] unless !(String === v) && Enumerable === v   
+        end
+        
+      end
       ranges[order_by] ||= [ nil, nil ] if order_by
       results = []
       

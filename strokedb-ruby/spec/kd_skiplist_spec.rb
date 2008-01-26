@@ -82,7 +82,7 @@ end
 describe KDSkiplist2, "basic multiple records finder" do
 
   before(:all) do
-    @kd = KDSkiplist2.new
+    @kd = KDSkiplist2.new(:name)
     @vancouver  = { :name => 'Vancouver', :x => -123, :y =>  48 }
     @newyork    = { :name => 'New York',  :x => -73,  :y =>  42 }
     @lisbon     = { :name => 'Lisbon',    :x => -9,   :y =>  37 }
@@ -110,7 +110,17 @@ describe KDSkiplist2, "basic multiple records finder" do
     @kd.find(:x => -9..14, :y => 37..52).to_set.should == [ @lisbon, @london, @naples ].to_set
   end
   
+  it "should find by one range" do
+    @kd.find(:name => 'L'..'Lz').to_set.should == [ @lisbon, @london ].to_set
+  end
+  
+  it "should find by prefix syntax :slot => 'prefi*'" do
+    @kd.find(:name => 'N*').to_set.should == [ @newyork, @naples ].to_set
+  end
+  
   # Negative
+  
+  
   
 end
 
