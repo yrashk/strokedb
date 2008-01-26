@@ -2,10 +2,10 @@ module StrokeDB
   class Skiplist
   	include Enumerable
 	
-  	attr_accessor :default, :head, :tail, :cut_level
-	
-  	def initialize(data = {}, default = nil, cut_level = nil)
-  		@default, @cut_level = default, cut_level
+  	attr_accessor :default, :head, :tail, :cut_level, :unique_keys
+	  
+  	def initialize(data = {}, default = nil, cut_level = nil, unique_keys = true)
+  		@default, @cut_level, @unique_keys = default, cut_level, unique_keys
 
   		@head = HeadNode.new
   		@tail = TailNode.new
@@ -24,9 +24,13 @@ module StrokeDB
   	    update[i-1] = x
   	  end
   	  x = x.forward[0]
-  	  if x.key == key
+  	  if x.key == key && @unique_keys
   	    x.value = value
+  	    value.skiplist_node_container = x if value.respond_to? :skiplist_node_container=
   	  else
+  	    unless @unique_keys 
+  	      (update[0] = x; x = x.forward[0]) while x.key == key
+  	    end  
   	    newlevel = __cheaters_level || random_level
   	    newlevel = 1 if empty?
   	    if newlevel > @head.level 

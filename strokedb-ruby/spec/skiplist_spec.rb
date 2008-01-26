@@ -62,7 +62,7 @@ describe "Non-empty skiplist" do
 	  @list.find("404").should be_nil
 	end
 	
-	it "should find by first nearest key" do
+	it "should find the nearest key" do
 	  @list.find_nearest("0").should   == "v0"
 	  @list.find_nearest("a").should   == "1"
     @list.find_nearest("aa").should  == "2"
@@ -75,6 +75,27 @@ describe "Non-empty skiplist" do
 	
 end
 
+
+describe "Skiplist with duplicate keys" do
+  
+  before(:all) do
+    @list = Skiplist.new({}, nil, nil, false)
+    @list.insert("a", "v1")
+    @list.insert("a", "v2")
+    @list.insert("a", "v3")
+  end
+  
+  it "should find first value" do
+    @list.find("a").should == 'v1'
+  end
+  
+  it "should find node iterator" do
+    @list.find_node("a").value.should           == 'v1'
+    @list.find_node("a").next.value.should      == 'v2'
+    @list.find_node("a").next.next.value.should == 'v3'
+  end
+
+end
 
 describe "Skiplist (cut)" do
   
