@@ -62,9 +62,9 @@ module StrokeDB
     # Returns an Array instance (empty when nothing found).
     # 
     def find(ranges, options = {})
-      
+      debug "find: #{ranges.inspect}, options are #{options.inspect}"
       # 0. Optimization
-      find_optimized(ranges, options) unless options.delete(:non_optimized)
+      return find_optimized(ranges, options) unless options.delete(:non_optimized)
       
       # 1. Prepare input: options and ranges
       order_by       = options.delete(:order_by)
@@ -100,6 +100,7 @@ module StrokeDB
       is_greater_by_dimensions = []
       lower_keys_counter = ranges.size
       while lower_keys_counter > 0
+        debug "#{lower_keys_counter} dimensions to test. Base is #{dimension.inspect}."
         d_i = dimension_i
         in_range = false
         begin
@@ -110,13 +111,19 @@ module StrokeDB
           higher  = (kd.nil? || range.higher?(kd))
           greater = is_greater_by_dimensions[dimension_i]
           if higher && !greater
-            debug "Dimension #{dimension.inspect} iterator is outside the range #{range.inspect}. #{dimensions.size - lower_keys_counter - 1} dimensions left."
-            lower_keys_counter += 1
+            debug "Dimension #{dimension.inspect} iterator is outside the range #{range.inspect}. #{lower_keys_counter - 1} dimensions left."
+            lower_keys_counter -= 1
             is_greater_by_dimensions[dimension_i] = true
           elsif !higher && greater
-            debug "Dimension #{dimension.inspect} iterator returned to #{range.inspect} or lower. #{dimensions.size - lower_keys_counter + 1} dimensions left."
-            lower_keys_counter -= 1
+            debug "Dimension #{dimension.inspect} iterator returned to #{range.inspect} or lower. #{lower_keys_counter + 1} dimensions left."
+            lower_keys_counter += 1
             is_greater_by_dimensions[dimension_i] = false
+          end
+          
+          # kd may be boolean
+          if kd.nil?
+            debug "Key is nil (terminator). Exiting in-range loop."
+            break
           end
           
           # if outside the range, try next item in current dimension
@@ -126,20 +133,29 @@ module StrokeDB
             i = i.next
             break
           end
+          
           in_range = true
-          debug "Switching dimension: #{dimension.inspect} => #{dimensions[(dimension_i + 1) % dimensions.size].inspect}."
+          debug "Switching dimension: #{dimension.inspect} => #{dimensions[(dimension_i + 1) % dimensions.size].inspect}. Base is #{dimensions[d_i].inspect}."
           # Switch dimension on current node
           dimension_i = (dimension_i + 1) % dimensions.size
           dimension = dimensions[dimension_i]
           i = i.value.pointers[dimension]
         end until d_i == dimension_i
-                
-        if in_range 
+        
+        # kd may be boolean
+        if kd.nil?
+          debug "Key is nil (terminator). Exiting big loop."
+          break
+        end
+        
+        debug "Node #{i.value.data.inspect} was tested. In range: #{in_range}."
+        if in_range
           results << i.value.data # skiplist node is wrapped into kdnode
           i = i.next
         end
       end
-      
+      debug "Big loop exited. #{lower_keys_counter} non-tested dimensions."
+      debug "Results: #{results.size}; unique: #{results.uniq.size}"
       # results may contain duplicate values
       results.uniq 
     end
