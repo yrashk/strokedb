@@ -12,3 +12,15 @@ task :status do
   puts "oleganza  #{op}% — #{yp}%  yrashk"
   puts ""
 end
+
+task :benchmarks do
+  paths = Dir['test/**/*_benchmark.rb']
+  paths.each do |path| 
+    ruby path
+    puts ""
+  end
+end
+
+task :ci do
+  sh 'spec spec'
+end
