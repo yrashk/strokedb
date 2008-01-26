@@ -25,3 +25,10 @@ end
 task :ci do
   sh 'spec spec'
 end
+
+task :jci do
+  unless (which_jruby = `which jruby`).empty?
+    jruby_bin_dir = File.dirname(which_jruby)
+    sh "#{jruby_bin_dir}/spec spec"
+  end
+end
