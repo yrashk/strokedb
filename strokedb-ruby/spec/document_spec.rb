@@ -1,5 +1,18 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
+describe "Document" do
+
+  before(:each) do
+    @store = mock("Store")
+  end
+  
+  it "should be able to be created instantly" do
+    @store.should_receive(:save!).with(anything)
+    @store.should_receive(:exists?).with(anything).any_number_of_times.and_return(false)
+    @document = Document.create(@store,:slot1 => 1)
+  end
+end
+
 describe "Newly created Document" do
   
   before(:each) do
@@ -57,6 +70,36 @@ describe "Newly created Document" do
     @document.previous_version.should be_nil
   end
   
+  it "should have no versions" do
+    @document.versions.should be_empty
+  end
+  
+end
+  
+
+describe "Document with previous version" do
+  
+  before(:each) do
+    @store = mock("Store")
+    @document = Document.new(@store)
+    @previous_version = 'eb2dee7f2758cc60823f2d1a4034d98f605c1f793db2b9a1df1394891eb4512e'
+    @document.stub!(:previous_version).and_return(@previous_version)
+  end
+  
+  it "should have no previous version" do
+    @document.previous_version.should_not be_nil
+  end
+  
+  it "should have versions" do
+    @document.versions.should_not be_empty
+  end
+  
+  it "should be able to access previous version" do
+    @document_with_previous_version = mock("Document with previous version")
+    @store.should_receive(:find).with(@document.uuid,@previous_version).and_return(@document_with_previous_version)
+    @document.versions[@previous_version].should == @document_with_previous_version
+  end
+  
 end
   
 
@@ -95,6 +138,8 @@ describe "Newly created Document with slots supplied" do
   
 end
   
+  
+
 describe "Valid Document's JSON" do
   
   before(:each) do

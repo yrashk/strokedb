@@ -1,15 +1,11 @@
+SPECS
 
-run:
-  $ jruby test/playing.rb 
-or
-  $ spec spec
-or
-  $ ~/jruby/bin/spec spec
-
+$ rake ci
+$ rake jci (for jruby, jruby should be in PATH)
 
 BENCHMARKS
 
-$ ruby test/read_write_benchmark.rb
+$ rake bench
 
 
 CONSISTENCY MODELS

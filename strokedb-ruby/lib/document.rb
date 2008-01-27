@@ -4,6 +4,27 @@ module StrokeDB
   class Document
     attr_reader :uuid, :store
 
+    class Versions
+      attr_reader :document
+      def initialize(document)
+        @document = document
+        @cache = {}
+      end
+      
+      def [](version)
+        @cache[version] ||= @document.store.find(document.uuid,version)
+      end
+      
+      def empty?
+        document.previous_version.nil?
+      end
+      
+    end
+
+    def self.create(store, slots={})
+      new(store,slots).save!
+    end
+    
     def initialize(store, slots={})
       @store = store
       @uuid = Util.random_uuid
@@ -81,6 +102,7 @@ module StrokeDB
       raise UnversionedDocumentError.new unless version
       self[:__previous_version__] = store.last_version(uuid) unless new?
       store.save!(self)
+      self
     end
 
     def previous_version
@@ -89,17 +111,10 @@ module StrokeDB
     
     def previous_versions
       if previous_version
-        [previous_version] + store.find(@uuid,previous_version).previous_versions
+        [previous_version] + versions[previous_version].previous_versions
       else
         []
       end
-    rescue => e
-      puts "-----------------------------"
-      puts e
-      puts uuid
-      puts previous_version
-      store.full_dump
-      raise e
     end
 
     def version
@@ -108,6 +123,10 @@ module StrokeDB
 
     def all_versions
       [version] + previous_versions
+    end
+    
+    def versions
+      @versions ||= Versions.new(self)
     end
     
     def uuid_version
