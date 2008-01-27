@@ -117,9 +117,15 @@ describe KDSkiplist2, "basic multiple records finder" do
   it "should find by prefix syntax :slot => 'prefi*'" do
     @kd.find(:name => 'N*').to_set.should == [ @newyork, @naples ].to_set
   end
+
+  it "should find filtered by two ranges and unique key" do
+   # @kd.find(:x => -9..14, :y => 37..52, :name => 'Lisbon').to_set.should == [ @lisbon ].to_set
+   # @kd.find(:x => -9..14, :y => 37..52, :name => 'Naples').to_set.should == [ @naples ].to_set
+    @kd.find(:x => -9..14, :y => 37..52, :name => 'New York').should == [  ]
+   # @kd.find(:x => -9..14, :y => 37..52, :name => 'Something').should == [  ]
+  end
   
   # Negative
-  
   
   
 end
