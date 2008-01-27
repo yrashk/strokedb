@@ -1,0 +1,101 @@
+diff --git a/strokedb-ruby/lib/kd_skiplist.rb b/strokedb-ruby/lib/kd_skiplist.rb
+index 18ff9bc..e0eb5ea 100644
+--- a/strokedb-ruby/lib/kd_skiplist.rb
++++ b/strokedb-ruby/lib/kd_skiplist.rb
+@@ -86,7 +86,6 @@ module StrokeDB
+         else
+           ranges[d] = [v, v] unless !(String === v) && Enumerable === v   
+         end
+-        
+       end
+       ranges[order_by] ||= [ nil, nil ] if order_by
+       results = []
+@@ -106,6 +105,11 @@ module StrokeDB
+         hyperkey[dim] = iterators[dim].key
+       end
+       
++      iterators.each do |dim, it|
++        debug "Initial iterators[#{dim.inspect}]= #{it}"
++      end
++      debug_header
++      
+       dimensions  = ranges.keys
+       dimension   = dimensions.first
+       dimension_i = 0
+@@ -117,19 +121,24 @@ module StrokeDB
+         debug "#{lower_keys_counter} dimensions to test. Base is #{dimension.inspect}."
+         d_i = dimension_i
+         in_range = false
++        start_i = i
++        debug "set start_i = #{start_i}; key = #{start_i.key}"
+         begin
++          debug "i = iterators[#{dimension}] = #{iterators[dimension]} (#{__LINE__})"
++          i = iterators[dimension]
+           range = ranges[dimension]
+-          hyperkey[dimension] = kd = i.key
++          kd = i.key
++          hyperkey[dimension] = kd
+           debug "Testing #{kd.inspect} against #{range.inspect}"
+           # update hyperkey comparison data
+           higher  = (kd.nil? || range.higher?(kd))
+           greater = is_greater_by_dimensions[dimension_i]
+           if higher && !greater
+-            debug "Dimension #{dimension.inspect} iterator is outside the range #{range.inspect}. #{lower_keys_counter - 1} dimensions left."
++            debug ">>> Dimension #{dimension.inspect} iterator is outside the range #{range.inspect}. #{lower_keys_counter - 1} dimensions left."
+             lower_keys_counter -= 1
+             is_greater_by_dimensions[dimension_i] = true
+           elsif !higher && greater
+-            debug "Dimension #{dimension.inspect} iterator returned to #{range.inspect} or lower. #{lower_keys_counter + 1} dimensions left."
++            debug ">>> Dimension #{dimension.inspect} iterator returned to #{range.inspect} or lower. #{lower_keys_counter + 1} dimensions left."
+             lower_keys_counter += 1
+             is_greater_by_dimensions[dimension_i] = false
+           end
+@@ -142,23 +151,31 @@ module StrokeDB
+           
+           # if outside the range, try next item in current dimension
+           if range.outside?(kd)
+-            debug "Dimension #{dimension.inspect} iterator #{kd.inspect} is outside the range #{range.inspect}. Going to next iterator."
++            debug "Range outside: dimension #{dimension.inspect} iterator #{kd.inspect} is outside the range #{range.inspect}."
+             in_range = false
+-            i = i.next
++            # Wrong to write i = i.next!
++            #debug "iterators[#{dimension}] = i = i.next = #{i.next} (#{__LINE__})"
++            #iterators[dimension] = i = i.next
++            
++            debug "iterators[#{dimension}] = i = iterators[#{dimension}].next = #{iterators[dimension].next} (#{__LINE__})"
++            iterators[dimension] = i = iterators[dimension].next
++            
+             break
+           end
+-          
++
+           in_range = true
+           debug "Switching dimension: #{dimension.inspect} => #{dimensions[(dimension_i + 1) % dimensions.size].inspect}. Base is #{dimensions[d_i].inspect}."
+           # Switch dimension on current node
+           dimension_i = (dimension_i + 1) % dimensions.size
+           dimension = dimensions[dimension_i]
+-         # debug "Switching i = #{i.to_s} (=>) i.value.pointers[#{dimension.inspect}] = #{i.value.pointers[dimension].inspect}"
++          debug "Switching i = #{i.to_s} (=>) i.value.pointers[#{dimension.inspect}] == #{i.value.pointers[dimension]}"
+           i_ = i.value.pointers[dimension]
++          debug "i = i.value.pointers[#{dimension}] = #{i_} (#{__LINE__})"
+           unless i_
+             debug "Warning: iterator #{i} doesn't have a #{dimension.inspect} pointer!"
+           end
+           i = i_ || i # nil only if ref to itself
++          debug "d_i == dimension_i ? #{d_i} == #{dimension_i} ?"
+         end until d_i == dimension_i
+         
+         # kd may be boolean
+@@ -170,9 +187,11 @@ module StrokeDB
+         if in_range
+           debug "In range! Adding node #{i.value.data.inspect}."
+           results << i.value.data # skiplist node is wrapped into kdnode
++          debug "iterators[#{dimension}] = i = i.next = #{i.next} (#{__LINE__})"
+           i = i.next
++          iterators[dimension] = i
+         else
+-          debug "Not in range! Node is #{i.value}."
++          debug "Not in range! Node is #{i.value}. (actually, node i is changed)"
+         end
+       end
+       debug "Big loop exited. #{lower_keys_counter} non-tested dimensions."
