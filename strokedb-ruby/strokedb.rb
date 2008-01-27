@@ -1,22 +1,41 @@
 require 'rubygems'
 require 'activesupport'
 
-(%w[
-  util/util 
-  data_structures/skiplist
-  data_structures/kd_skiplist
-  document/slot
-  document/document
-  sync/diff
-  sync/packet
-  stores/store
-  stores/skiplist_store
-  stores/skiplist_store/chunk
-  stores/skiplist_store/chunk_storage
-  stores/skiplist_store/memory_chunk_storage
-  stores/skiplist_store/file_chunk_storage
-  ] +
- [RUBY_PLATFORM =~ /java/ ? 'util/java_util' : nil ]).compact.each {|m| require File.expand_path(File.dirname(__FILE__) + "/lib/#{m}")}
+class SmartassLoader
+  def initialize(pattern)
+    @pattern = pattern
+    @req_paths = {}
+  end
+  def require!
+    paths = Dir[@pattern].select do |p| 
+      (p !~ /\/java_/ || RUBY_PLATFORM =~ /java/) && p =~ /\.rb$/
+    end.sort.map do |p|
+      File.expand_path(File.dirname(__FILE__) + "/" + p)
+    end
+    require_rest_paths(paths)
+  end
+  def require_rest_paths(paths)
+    broken_paths = []
+    paths.each do |p|
+      begin
+        if @req_paths[p]
+          load p
+          puts "Resolved: #{p}" if ENV["DEBUG"]
+        else
+          @req_paths[p] = 1
+          require p
+        end
+      rescue NameError
+        puts "Not resolved: #{p}" if ENV["DEBUG"]
+        broken_paths.push p
+      end
+    end
+    # Stack grows...
+    require_rest_paths(broken_paths) unless broken_paths.empty? 
+  end
+end
+
+SmartassLoader.new("lib/**/*").require!
 
 module StrokeDB
   VERSION = '0.0.1' + (RUBY_PLATFORM =~ /java/ ? '-java' : '')
