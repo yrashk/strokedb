@@ -16,7 +16,7 @@ require 'activesupport'
   stores/skiplist_store/memory_chunk_storage
   stores/skiplist_store/file_chunk_storage
   ] +
- [RUBY_PLATFORM =~ /java/ ? 'util/java_util' : nil ]).compact.each {|m| require File.dirname(__FILE__) + "/lib/#{m}"}
+ [RUBY_PLATFORM =~ /java/ ? 'util/java_util' : nil ]).compact.each {|m| require File.expand_path(File.dirname(__FILE__) + "/lib/#{m}")}
 
 module StrokeDB
   VERSION = '0.0.1' + (RUBY_PLATFORM =~ /java/ ? '-java' : '')
