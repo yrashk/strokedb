@@ -1,4 +1,4 @@
-task :default => [:status]
+task :default => [:ci]
 
 task :status do
   o = `git-log | grep oleganza -c`.to_i
