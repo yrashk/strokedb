@@ -4,8 +4,8 @@ task :status do
   o = `git-log | grep oleganza -c`.to_i
   y = `git-log | grep yrashk -c`.to_i
   sum = o + y
-  op = o*100/sum
-  yp = y*100/sum
+  op = (o*100.0/sum).round
+  yp = (y*100.0/sum).round
   puts ""
   puts "        Commit status        "
   puts "--------             --------"
