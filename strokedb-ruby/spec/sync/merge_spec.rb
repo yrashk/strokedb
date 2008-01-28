@@ -22,7 +22,7 @@ describe "Merging store" do
     @new_version.save!
   end
   
-  it "should raise exception if document's previous version isn't the last version in the store and no merge strategy is specified (WHERE?)" do
+  it "should raise exception if document's previous version isn't the last version in the store and no merge strategy is specified" do
     @original_document = Document.create(@store, :slot1 => 1)
     @new_version = Document.from_raw(@merging_store,@original_document.uuid,@original_document.to_raw)
     @original_document[:slot2] = 2
@@ -33,4 +33,25 @@ describe "Merging store" do
     lambda { @new_version.save! }.should raise_error(MergeCondition)
   end
   
+  it "should use some merge strategy if document's previous version isn't the last version in the store and merge strategy is specified" do
+    
+    Object.send!(:remove_const,'SomeMerge') if defined?(SomeMerge)
+    SomeMerge = Class.new(MergeStrategy)
+
+    @meta = Document.create(@store,:__merge_strategy__ => 'some_merge')
+    @original_document = Document.create(@store, :slot1 => 1, :__meta__ => @meta)
+    @new_version = Document.from_raw(@merging_store,@original_document.uuid,@original_document.to_raw)
+    @original_document[:slot2] = 2
+    @original_document.save!
+
+    @new_version[:slot1] = 2
+
+    @merging_store.should_receive(:find).with(@meta.uuid).any_number_of_times.and_return(@meta)
+    @merging_store.should_receive(:find).with(@original_document.uuid).any_number_of_times.and_return(@original_document)
+    
+    merged_doc = mock("merged doc")
+    SomeMerge.should_receive(:merge!).with(@new_version,@original_document).and_return(merged_doc)
+    @store.should_receive(:save!).with(merged_doc)
+    @new_version.save!
+  end
 end

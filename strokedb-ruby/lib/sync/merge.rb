@@ -1,4 +1,8 @@
 module StrokeDB
+
+  class MergeStrategy
+    
+  end
   
   class MergeCondition < Exception
     attr_reader :document
@@ -21,10 +25,17 @@ module StrokeDB
       @store.last_version(uuid)
     end
     
+    def find(uuid,version=nil)
+      @store.find(uuid,version)
+    end
+    
     def save!(document)
-      return store.save!(document) if document.versions.empty? || last_version(document.uuid) == document.previous_version
+      _last_version = find(document.uuid)
+      return store.save!(document) if document.versions.empty? || _last_version.version == document.previous_version
+      return store.save!(document.meta[:__merge_strategy__].camelize.constantize.merge!(document,_last_version)) if document.meta && document.meta[:__merge_strategy__]
       raise MergeCondition.new(document)
     end
+    
     
   end
   

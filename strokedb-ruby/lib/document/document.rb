@@ -106,6 +106,10 @@ module StrokeDB
       store.save!(self)
       self
     end
+    
+    def meta
+      self[:__meta__]
+    end
 
     def previous_version
       self[:__previous_version__]
