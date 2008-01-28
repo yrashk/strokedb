@@ -99,7 +99,7 @@ describe "Document with previous version" do
     @store.should_receive(:find).with(@document.uuid,@previous_version).and_return(@document_with_previous_version)
     @document.versions[@previous_version].should == @document_with_previous_version
   end
-  
+    
 end
   
 
@@ -151,7 +151,12 @@ describe "Valid Document's JSON" do
   it "should be loadable into Document" do
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     doc.uuid.should == '7bb032d4-0a3c-43fa-b1c1-eea6a980452d'
-    doc.slotnames.to_set.should == ['__version__','slot1','slot2'].to_set
+    doc.slotnames.to_set.should == ['__version__','__previous_version__','slot1','slot2'].to_set
+  end
+  
+  it "should set its version as previous version" do
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc.previous_version.should == @document.version
   end
   
   

@@ -66,10 +66,7 @@ module StrokeDB
     
     def self.from_json(store,uuid,json)
       json_decoded = ActiveSupport::JSON.decode(json)
-      doc = new(store, json_decoded)
-      raise VersionMismatchError.new if json_decoded['__version__'] != doc.send!(:calculate_version)
-      doc.instance_variable_set(:@uuid,uuid)
-      doc
+      from_raw(store,uuid,json_decoded)
     end
 
     def to_s
@@ -90,6 +87,7 @@ module StrokeDB
     def self.from_raw(store, uuid, raw_slots)
       doc = new(store, raw_slots)
       raise VersionMismatchError.new if raw_slots['__version__'] != doc.send!(:calculate_version)
+      doc[:__previous_version__] = doc.version
       doc.instance_variable_set(:@uuid, uuid)
       doc
     end
@@ -100,7 +98,7 @@ module StrokeDB
 
     def save!
       raise UnversionedDocumentError.new unless version
-      self[:__previous_version__] = store.last_version(uuid) unless new?
+      self[:__previous_version__] ||= store.last_version(uuid) unless new?
       store.save!(self)
       self
     end

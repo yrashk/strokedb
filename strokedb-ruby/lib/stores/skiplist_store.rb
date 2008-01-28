@@ -25,7 +25,7 @@ module StrokeDB
 
     def last_version(uuid)
       raw_doc = find(uuid)
-      return raw_doc['__version__'] if raw_doc
+      return raw_doc.version if raw_doc
       nil
     end
 
