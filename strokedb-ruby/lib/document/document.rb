@@ -41,6 +41,10 @@ module StrokeDB
     def []=(slotname,value)
       slot = @slots[slotname.to_s] || @slots[slotname.to_s] = Slot.new(self)
       slot.value = value
+      if @__previous_version__
+        prev_version = @__previous_version__ ; @__previous_version__ = nil
+        self[:__previous_version__] = prev_version
+      end
       set_version unless slotname == :__version__ 
     end
     
@@ -87,7 +91,7 @@ module StrokeDB
     def self.from_raw(store, uuid, raw_slots)
       doc = new(store, raw_slots)
       raise VersionMismatchError.new if raw_slots['__version__'] != doc.send!(:calculate_version)
-      doc[:__previous_version__] = doc.version
+      doc.instance_variable_set(:@__previous_version__, doc.version)
       doc.instance_variable_set(:@uuid, uuid)
       doc
     end
@@ -98,7 +102,7 @@ module StrokeDB
 
     def save!
       raise UnversionedDocumentError.new unless version
-      self[:__previous_version__] ||= store.last_version(uuid) unless new?
+      self[:__previous_version__] ||= (@__previous_version__ || store.last_version(uuid)) unless new?
       store.save!(self)
       self
     end
