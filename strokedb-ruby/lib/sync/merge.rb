@@ -1,7 +1,15 @@
 module StrokeDB
 
-  class MergeStrategy
-    
+  class MergeStrategy ; end
+  
+  class SimplePatchMergeStrategy < MergeStrategy
+    def self.merge!(document,merge_with)
+      document_base = document.versions[document.previous_version.inspect] || merge_with.store.find(document.uuid,document.previous_version)
+      base_diff = merge_with.diff(document_base)
+      base_diff.patch!(document)
+      document[:__previous_version__] = merge_with.version # FIXME: I am not yet sure about it
+      document
+    end
   end
   
   class MergeCondition < Exception

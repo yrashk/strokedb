@@ -12,22 +12,29 @@ describe "Empty chunk store" do
     @document.stub!(:to_raw).and_return({:stuff => '...'})
     @document.stub!(:version).and_return '1234'
     @document.stub!(:uuid_version).and_return "#{@uuid}.1234"
-    Document.stub!(:from_raw).and_return(@document) 
 
-    chunk_storage = FileChunkStorage.new('test/storages/skiplist_store_spec')
-    chunk_storage.clear!
+    chunk_storage = MemoryChunkStorage.new
     @skiplist_store = SkiplistStore.new(chunk_storage, 4)
   end
   
   it "should contain no documents" do
+    Document.stub!(:from_raw).and_return(@document) 
     @skiplist_store.find(@uuid).should be_nil
     @skiplist_store.exists?(@uuid).should be_false
   end
   
   it "should store a document" do
+    Document.stub!(:from_raw).and_return(@document) 
     @skiplist_store.save!(@document)
     @skiplist_store.find(@uuid).should == @document
   end
+  
+  it "should find a versioned document" do
+    VersionedDocument.should_receive(:from_raw).with(@skiplist_store, @document.uuid, anything).and_return(VersionedDocument.new(@skiplist_store)) 
+    @skiplist_store.save!(@document)
+    @skiplist_store.find(@uuid,@document.version).should be_a_kind_of(VersionedDocument)
+  end
+  
 
 end
 

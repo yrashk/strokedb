@@ -55,3 +55,24 @@ describe "Merging store" do
     @new_version.save!
   end
 end
+
+describe "SimplePatchMergeStrategy" do
+  
+  before(:each) do 
+    @strategy = SimplePatchMergeStrategy
+    @store = SkiplistStore.new(MemoryChunkStorage.new,4)
+    @another_store = SkiplistStore.new(MemoryChunkStorage.new,4)
+  end
+  
+  it "should patch new document against changes between its previous version and last version in the store" do
+    @document = Document.create(@store, :data => "abcdef")
+    @new_version = Document.from_raw(@another_store,@document.uuid,@document.to_raw)
+    @new_version[:a] = 1
+    @new_version.save!
+    @document[:additional_slot] = "ghi"
+    @document.save!
+    @strategy.merge!(@new_version,@document)
+    @new_version.slotnames.should include('additional_slot')
+  end
+  
+end
