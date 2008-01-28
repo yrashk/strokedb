@@ -1,4 +1,4 @@
-task :default => [:ci]
+task :default => [:status, :ci, :jci, :bench]
 
 task :status do
   o = `git-log | grep oleganza -c`.to_i
@@ -31,6 +31,6 @@ task :jci do
     jruby_bin_dir = File.dirname(which_jruby)
     sh "#{jruby_bin_dir}/spec spec"
   else
-    puts "jruby not found in PATH (`which jruby` gives nothing)"
+    puts "jruby was not found in PATH (`which jruby` gives nothing)"
   end
 end
