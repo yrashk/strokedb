@@ -25,7 +25,7 @@ class SmartassLoader
           @req_paths[p] = 1
           require p
         end
-      rescue NameError
+      rescue NameError => e
         puts "Not resolved: #{p}" if ENV["DEBUG"]
         broken_paths.push p
       end
