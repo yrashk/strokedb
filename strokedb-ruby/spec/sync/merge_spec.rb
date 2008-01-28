@@ -73,6 +73,7 @@ describe "SimplePatchMergeStrategy" do
     @document.save!
     @strategy.merge!(@new_version,@document)
     @new_version.slotnames.should include('additional_slot')
+    @new_version[:additional_slot].should == "ghi"
   end
   
 end
