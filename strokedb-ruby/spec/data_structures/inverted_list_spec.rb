@@ -41,7 +41,7 @@ describe InvertedList, " with flat string attributes" do
     @il.find(:__version__ => @article1[:slots][:__version__]).should == [@article1[:uuid]].to_set
   end
   
-  it "should not find object by a non-matched attribute" do
+  it "should not find object by a not matched attribute" do
     @il.find(:name => 'Nobody').should == [  ].to_set
     @il.find(:__meta__ => 'NoMeta').should == [  ].to_set
     @il.find(:__version__ => 'no-version').should == [  ].to_set
@@ -53,11 +53,32 @@ describe InvertedList, " with flat string attributes" do
     @il.find(:date => '28 Jan 2008', :author => ('#@' + @yrashk_profile[:uuid])).should == [@post1[:uuid], @article2[:uuid]].to_set
   end
   
-  it "should not find objects by a not-matched pair of attributes" do
+  it "should not find objects by a not matched pair of attributes" do
     @il.find(:date => '28 Jan 2008', :title => 'StrokeDB kicks ass').should == [  ].to_set
     @il.find(:date => '28 Jan 2008', :__meta__ => 'Profile').should == [  ].to_set
     @il.find(:date => '28 Jan 2008', :author => ('#@' + @oleg_profile[:uuid])).should == [  ].to_set
   end
   
+  it "should find objects by three attributes" do
+    @il.find(:date     => '28 Jan 2008', 
+             :author   => ('#@' + @yrashk_profile[:uuid]),
+             :__meta__ => 'Article'
+             ).should == [ @article2[:uuid] ].to_set
+  end
+  
+  it "should not find objects by not matched three attributes" do
+    @il.find(:date     => '28 Jan 2008', 
+             :author   => ('#@' + @oleg_profile[:uuid]),
+             :__meta__ => 'Article'
+             ).should == [   ].to_set
+    @il.find(:date     => '42 Jan 2008', 
+             :author   => ('#@' + @yrashk_profile[:uuid]),
+             :__meta__ => 'Article'
+             ).should == [   ].to_set
+    @il.find(:date     => '28 Jan 2008', 
+             :author   => ('#@' + @yrashk_profile[:uuid]),
+             :__meta__ => 'Profile'
+             ).should == [   ].to_set
+  end
   
 end
