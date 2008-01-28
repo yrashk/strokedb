@@ -74,8 +74,14 @@ module StrokeDB
     end
 
     def to_s
-      to_json
+      s = "<Document "
+      to_raw.each_pair do |k,v|
+        s << "#{k}: #{self[k].inspect} "
+      end
+      s << ">"
     end
+    
+    alias :inspect :to_s
 
 
     # Primary serialization
