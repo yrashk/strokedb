@@ -75,16 +75,19 @@ module StrokeDB
       (i = find_node(key)) && i.value || default || @default
     end
 
-    def find_nearest(key, default = nil)
-      return default || @default if empty?
+    def find_nearest_node(key)
       x = @head
       @head.level.downto(1) do |i|
   	    x = x.forward[i-1] while x.forward[i-1] < key
       end
       x = x.forward[0] if (x.forward[0].key == key || x == @head)
-      return x.value
+      x
     end
     
+    def find_nearest(key, default = nil)
+      find_nearest_node(key).value || default || @default
+    end
+        
     def find_all_with_prefix(key)
       results = []
       x = @head
