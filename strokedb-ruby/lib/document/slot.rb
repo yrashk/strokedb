@@ -8,6 +8,9 @@ module StrokeDB
 
     def value=(v)
       case v
+      when VersionedDocument
+        @value = "@##{v.uuid}.#{v.version}"
+        @cached_value = v # lets cache it locally
       when Document
         @value = "@##{v.uuid}"
         @cached_value = v # lets cache it locally
@@ -18,7 +21,9 @@ module StrokeDB
 
     def value
       case @value
-      when /@#(#{UUID_RE})/
+      when /@##{UUID_RE}.#{VERSION_RE}/
+        doc.store.find($1,$2) || @cached_value || "@##{$1}.#{$2}"
+      when /@##{UUID_RE}/
         doc.store.find($1) || @cached_value || "@##{$1}"
       else
         @value

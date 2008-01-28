@@ -21,6 +21,15 @@ describe "Slot" do
     @slot.raw_value.should match(/@##{UUID_RE}/)
   end
 
+  it "should store VersionedDocument reference if value is a new Document" do
+    some_doc = VersionedDocument.new(mock("Store"))
+    some_doc[:something] = 1
+    @store.should_receive(:find).with(some_doc.uuid,some_doc.version).and_return(nil)
+    @slot.value = some_doc
+    @slot.value.should == some_doc
+    @slot.raw_value.should match(/@##{UUID_RE}.#{VERSION_RE}/)
+  end
+
   it "should store Document reference if value is a saved Document" do
     some_doc = Document.new(mock("Store"))
     @store.should_receive(:find).with(some_doc.uuid).and_return(some_doc)

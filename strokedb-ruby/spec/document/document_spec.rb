@@ -154,6 +154,26 @@ describe "Valid Document's JSON" do
     doc.slotnames.to_set.should == ['__version__','slot1','slot2'].to_set
   end
   
+  it "should cache its version as previous version" do
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc.instance_variable_get(:@__previous_version__).should == @document.version
+  end
+  
+  it "should reuse cached previous version at first modification" do
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc[:hello] = 'world'
+    doc[:hello] = 'world!'
+    doc[:__previous_version__].should == @document.version
+  end
+
+  it "should reuse cached previous version at save without any modification" do
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    @store.should_receive(:exists?).with('7bb032d4-0a3c-43fa-b1c1-eea6a980452d').and_return(true)
+    @store.should_receive(:save!).with(doc)
+    doc.save!
+    doc[:__previous_version__].should == @document.version
+  end
+  
   
 end
 

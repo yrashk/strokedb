@@ -13,7 +13,7 @@ module StrokeDB
         to # then return new value
       else
         case to
-        when /@##{UUID_RE}/
+        when /@##{UUID_RE}/, /@##{UUID_RE}.#{VERSION_RE}/
           to
         when Array, String
           ::Diff::LCS.diff(from,to).map do |d|
@@ -35,7 +35,7 @@ module StrokeDB
 
     def self.patch(from,patch)
       case from
-      when /@##{UUID_RE}/
+      when /@##{UUID_RE}/, /@##{UUID_RE}.#{VERSION_RE}/
         patch
       when String, Array
         lcs_patch = patch.map do |d|
@@ -64,16 +64,17 @@ module StrokeDB
 
   class Diff < Document
     def initialize(store,from,to)
+      @from, @to = from, to
       super(store, :__from__ => from, :__to__ => to)
       compute_diff
     end
     
     def from
-      self[:__from__]
+      @from || self[:__from__]
     end
     
     def to
-      self[:__to__]
+      @to || self[:__to__]
     end
 
     def removed_slots
