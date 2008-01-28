@@ -74,13 +74,17 @@ module StrokeDB
     end
 
     def to_s
-      s = "<Document "
+      s = "<#{self.class.name} "
       to_raw.each_pair do |k,v|
-        s << "#{k}: #{self[k].inspect} "
+        if %w(__version__ __previous_version__).member?(k)
+          s << "#{k}: #{v[0,5]}... "
+        else
+          s << "#{k}: #{self[k].inspect} "
+        end
       end
       s << ">"
     end
-    
+
     alias :inspect :to_s
 
 
