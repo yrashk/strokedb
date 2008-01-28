@@ -3,9 +3,20 @@
 [x] MASTER chunk for chunked skiplists (for faster access)
 [ ] Fix bad UUID implementation in pure ruby version
 [ ] Read/Write benchmarks showing dependency of data size
-[ ] K-d skiplist & specs
-[X] Add slot value diffing
-[X] Add document patching
-[X] Add slot value patching
+[-] K-d skiplist & specs
+[x] Add slot value diffing
+[x] Add document patching
+[x] Add slot value patching
 [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
-[X] Chained storages
+[x] Chained storages
+
+InvertedList index:
+
+[ ] Optimize prefixes
+[ ] Serialize & dump
+[ ] Range/set query support
+[ ] Faster intersection
+[ ] Custom boolean operation on results
+[ ] Assoc's indexing
+[ ] Sub-attributes indexing
+
