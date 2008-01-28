@@ -7,10 +7,10 @@ class SmartassLoader
     @req_paths = {}
   end
   def require!
-    paths = Dir[@pattern].select do |p| 
+    paths = Dir[File.dirname(__FILE__) + "/" + @pattern].select do |p| 
       (p !~ /\/java_/ || RUBY_PLATFORM =~ /java/) && p =~ /\.rb$/
     end.sort.map do |p|
-      File.expand_path(File.dirname(__FILE__) + "/" + p)
+      File.expand_path(p)
     end
     require_rest_paths(paths)
   end
