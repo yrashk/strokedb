@@ -49,7 +49,7 @@ module StrokeDB
 	    #debug "returning total = #{total.inspect}"
 	    total
   	end
-  	
+	
   	def debug(msg)
       if block_given?
         begin
