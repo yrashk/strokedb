@@ -127,7 +127,7 @@ module StrokeDB
     end
     
     def strategy_class_for(slotname)
-      if from[:__meta__] && strategy = from[:__meta__]["__diff_strategy_#{slotname}__"]
+      if from.meta && strategy = from.meta["__diff_strategy_#{slotname}__"]
         _strategy_class = strategy.camelize.constantize rescue nil
         return _strategy_class if _strategy_class && _strategy_class.ancestors.include?(SlotDiffStrategy)
       end
