@@ -31,7 +31,7 @@ module StrokeDB
     end
 
     def to_json(opts={})
-      @value.to_json(opts)
+      @value.to_json(opts.merge(:slot_serialization => true))
     end
     
     def raw_value

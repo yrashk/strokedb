@@ -69,6 +69,7 @@ module StrokeDB
     end
 
     def to_json(opts={})
+      return "\"@##{uuid}\"" if opts[:slot_serialization]
       _to_json = @slots
       _to_json = [uuid.to_s,@slots] if opts[:transmittal]
       _to_json.to_json(opts)
@@ -105,14 +106,13 @@ module StrokeDB
     end
 
     def self.from_raw(store, uuid, raw_slots)
-      klass = self
-      meta = raw_slots['__meta__']
-      if meta && meta_name = store.find(meta[2,meta.size])[:name]
-        klass = meta_name.constantize rescue klass
-        raise InvalidMetaDocumentError.new(meta_name) unless klass.ancestors.include?(Document)
-      end
-      doc = klass.new(store, raw_slots)
+      doc = new(store, raw_slots)
       raise VersionMismatchError.new if raw_slots['__version__'] != doc.send!(:calculate_version)
+      
+      meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
+      meta_modules.each do |meta_module|
+        doc.extend(meta_module)
+      end
       doc.instance_variable_set(:@__previous_version__, doc.version)
       doc.instance_variable_set(:@uuid, uuid)
       doc
@@ -187,8 +187,29 @@ module StrokeDB
 
     def after_initialize
     end
+    
+    def self.collect_meta_modules(store,meta)
+      meta_names = []
+      meta = 
+      case meta
+      when /@##{UUID_RE}.#{VERSION_RE}/
+        meta_names << store.find($1,$2)[:name]
+      when /@##{UUID_RE}/
+        meta_names << store.find($1)[:name]
+      when Array
+        meta_names = meta.map {|m| collect_meta_modules(store,m) }.flatten
+      end
+      meta_names.collect {|m| m.is_a?(String) ? (m.constantize rescue nil) : m }.compact
+    end
 
   end
 
-  module VersionedDocument ; end
+  module VersionedDocument
+    def to_json(opts={})
+      return "\"@##{uuid_version}\"" if opts[:slot_serialization]
+      _to_json = @slots
+      _to_json = [uuid.to_s,@slots] if opts[:transmittal]
+      _to_json.to_json(opts)
+    end
+  end
 end

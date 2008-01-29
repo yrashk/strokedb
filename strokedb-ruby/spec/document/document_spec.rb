@@ -231,32 +231,51 @@ describe "Valid Document's JSON with meta name specified" do
     @store.should_receive(:find).with(@meta.uuid).any_number_of_times.and_return(@meta)
   end
 
-  it "should load meta's class if it is available and it is a Document class descendant" do
+  it "should load meta's module if it is available" do
     Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
-    SomeDocument = Class.new(Document)
+    SomeDocument = Module.new
 
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
-    doc.class.should == SomeDocument
+    doc.should be_a_kind_of(SomeDocument)
   end
 
-  it "should not load meta's class and raise exception if it is available but it is not a Document class descendant" do
+  it "should not load meta's module if it is not available" do
     Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
-    SomeDocument = Class.new
-
+    
     lambda do
       doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
-    end.should raise_error(InvalidMetaDocumentError)
-  end
-
-  it "should not load meta's class if it is not available" do
-    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
-
-    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
-    doc.class.should == Document
+    end.should_not raise_error
   end
 
 
 end
+
+describe "Valid Document's JSON with multiple meta names specified" do
+
+  before(:each) do
+    @store = mock("Store")
+    @metas = []
+    3.times do |i|
+      @metas << Document.new(@store, :name => "SomeDocument#{i}")
+      @store.should_receive(:find).with(@metas.last.uuid).any_number_of_times.and_return(@metas.last)
+    end
+    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :__meta__ => @metas)
+    @json = @document.to_json
+  end
+
+  it "should load all available meta modules" do
+    Object.send!(:remove_const,'SomeDocument0') if defined?(SomeDocument1)
+    SomeDocument0 = Module.new
+    Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument3)
+    SomeDocument2 = Module.new
+    
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc.should be_a_kind_of(SomeDocument0)
+    doc.should be_a_kind_of(SomeDocument2)
+  end
+
+end
+
 
 
 describe "Invalid Document's JSON (i.e. incorrect __version__)" do
