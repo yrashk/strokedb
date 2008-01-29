@@ -17,7 +17,7 @@ module StrokeDB
       raw_doc = chunk.find(uuid_version)
       if raw_doc
         doc = Document.from_raw(self,uuid,raw_doc.freeze)
-        doc.extend(VersionedDocument)
+        doc.extend(VersionedDocument) if version
         return doc
       end
       nil
