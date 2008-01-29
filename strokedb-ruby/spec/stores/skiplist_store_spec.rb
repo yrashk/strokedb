@@ -28,6 +28,7 @@ describe "Empty chunk store" do
     Document.stub!(:from_raw).and_return(@document) 
     @store.save!(@document)
     @store.find(@uuid).should == @document
+    @store.find(@uuid).should_not be_a_kind_of(VersionedDocument)
   end
   
   it "should find a versioned document" do
