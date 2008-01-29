@@ -31,7 +31,7 @@ describe "Empty chunk store" do
   end
   
   it "should find a versioned document" do
-    VersionedDocument.should_receive(:from_raw).with(@store, @document.uuid, anything).and_return(VersionedDocument.new(@store)) 
+    Document.stub!(:from_raw).and_return(@document) 
     @store.save!(@document)
     @store.find(@uuid,@document.version).should be_a_kind_of(VersionedDocument)
   end

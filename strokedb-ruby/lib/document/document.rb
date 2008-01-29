@@ -169,6 +169,7 @@ module StrokeDB
 
   end
 
-  class VersionedDocument < Document
-  end
+  # class VersionedDocument < Document
+  # end
+  module VersionedDocument ; end
 end
