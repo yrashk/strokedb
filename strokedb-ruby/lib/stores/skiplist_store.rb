@@ -15,7 +15,11 @@ module StrokeDB
       return nil unless chunk_uuid # no chunks in master chunk yet
       chunk = @chunk_storage.find(chunk_uuid)
       raw_doc = chunk.find(uuid_version)
-      return (version.nil? ? Document : VersionedDocument).from_raw(self,uuid,raw_doc.freeze) if raw_doc 
+      if raw_doc
+        doc = Document.from_raw(self,uuid,raw_doc.freeze)
+        doc.extend(VersionedDocument) if version
+        return doc
+      end
       nil
     end
 

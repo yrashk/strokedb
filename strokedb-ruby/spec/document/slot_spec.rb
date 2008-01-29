@@ -22,7 +22,8 @@ describe "Slot" do
   end
 
   it "should store VersionedDocument reference if value is a new Document" do
-    some_doc = VersionedDocument.new(mock("Store"))
+    some_doc = Document.new(mock("Store"))
+    some_doc.extend(VersionedDocument)
     some_doc[:something] = 1
     @store.should_receive(:find).with(some_doc.uuid,some_doc.version).and_return(nil)
     @slot.value = some_doc

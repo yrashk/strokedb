@@ -1,6 +1,12 @@
 module StrokeDB
   class UnversionedDocumentError < Exception ; end
   class VersionMismatchError < Exception ; end
+  class InvalidMetaDocumentError < Exception 
+    attr_reader :meta_name
+    def initialize(meta_name)
+      @meta_name = meta_name
+    end
+  end
   class Document
     attr_reader :uuid, :store
 
@@ -99,7 +105,13 @@ module StrokeDB
     end
 
     def self.from_raw(store, uuid, raw_slots)
-      doc = new(store, raw_slots)
+      klass = self
+      meta = raw_slots['__meta__']
+      if meta && meta_name = store.find(meta[2,meta.size])[:name]
+        klass = meta_name.constantize rescue klass
+        raise InvalidMetaDocumentError.new(meta_name) unless klass.ancestors.include?(Document)
+      end
+      doc = klass.new(store, raw_slots)
       raise VersionMismatchError.new if raw_slots['__version__'] != doc.send!(:calculate_version)
       doc.instance_variable_set(:@__previous_version__, doc.version)
       doc.instance_variable_set(:@uuid, uuid)
@@ -169,6 +181,5 @@ module StrokeDB
 
   end
 
-  class VersionedDocument < Document
-  end
+  module VersionedDocument ; end
 end

@@ -177,6 +177,44 @@ describe "Valid Document's JSON" do
   
 end
 
+describe "Valid Document's JSON with meta name specified" do
+  
+  before(:each) do
+    @store = mock("Store")
+    @meta = Document.new(@store,:name => 'SomeDocument')
+    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :__meta__ => @meta)
+    @json = @document.to_json
+    @store.should_receive(:find).with(@meta.uuid).any_number_of_times.and_return(@meta)
+  end
+  
+  it "should load meta's class if it is available and it is a Document class descendant" do
+    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
+    SomeDocument = Class.new(Document)
+    
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc.class.should == SomeDocument
+  end
+
+  it "should not load meta's class and raise exception if it is available but it is not a Document class descendant" do
+    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
+    SomeDocument = Class.new
+    
+    lambda do
+      doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    end.should raise_error(InvalidMetaDocumentError)
+  end
+
+  it "should not load meta's class if it is not available" do
+    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
+    
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc.class.should == Document
+  end
+  
+  
+end
+
+
 describe "Invalid Document's JSON (i.e. incorrect __version__)" do
   
   before(:each) do
