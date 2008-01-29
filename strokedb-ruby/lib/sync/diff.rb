@@ -139,6 +139,11 @@ module StrokeDB
         return at(name) if name.is_a?(Numeric)
         @diff["__diff_#{@keyword}_#{name}__"]
       end
+      def clear!
+        @diff.slotnames.each do |slotname|
+          @diff.remove_slot!(slotname) if slotname.match(/^__diff_#{@keyword}_(.+)__$/)
+        end
+      end
     end
 
     def find_slots(keyword)

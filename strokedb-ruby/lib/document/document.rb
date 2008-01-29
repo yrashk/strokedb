@@ -130,7 +130,16 @@ module StrokeDB
     end
 
     def meta
-      self[:__meta__]
+      _meta = self[:__meta__]
+      return _meta unless _meta.kind_of?(Array)
+      metas = _meta.clone
+      collected_meta = metas.shift
+      metas.each do |next_meta|
+        diff = next_meta.diff(collected_meta)
+        diff.removed_slots.clear!
+        diff.patch!(collected_meta)
+      end
+      collected_meta
     end
 
     def previous_version

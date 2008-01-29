@@ -34,6 +34,11 @@ describe "Diffing documents with slot added" do
     @diff.added_slots[:slot2].should == 2
   end
 
+  it "should be able to clear added slots" do
+    @diff.added_slots.clear!
+    @diff.added_slots.should be_empty
+  end
+
   it_should_behave_like "Diffing documents"
 
 end
@@ -55,6 +60,11 @@ describe "Diffing documents with slot removed" do
     @diff.removed_slots.to_set.should == ['slot2'].to_set
     @diff['__diff_dropslot_slot2__'].should == 2
     @diff.removed_slots[:slot2].should == 2
+  end
+  
+  it "should be able to clear removed slots" do
+    @diff.removed_slots.clear!
+    @diff.removed_slots.should be_empty
   end
 
   it_should_behave_like "Diffing documents"
@@ -80,6 +90,12 @@ describe "Diffing documents with slot changed" do
     @diff['__diff_updateslot_slot1__'].should == 2
     @diff.updated_slots[:slot1].should == 2
   end
+  
+  it "should be able to clear changed slots" do
+    @diff.updated_slots.clear!
+    @diff.updated_slots.should be_empty
+  end
+  
 
   it_should_behave_like "Diffing documents"
 
