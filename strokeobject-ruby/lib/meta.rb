@@ -54,7 +54,7 @@ module Stroke
       store ||= Stroke.default_store
       raise NoDefaultStoreError.new unless Stroke.default_store
       unless meta_doc = nil # TODO: add meta document search (warning is ok for now)
-        meta_doc = StrokeObject.new(*@args)
+        meta_doc = StrokeObject.new(*(@args.unshift store))
         meta_doc[:__meta__] = Meta.document(store)
         meta_doc.extend(Meta)
         meta_doc.save!
