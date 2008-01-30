@@ -80,21 +80,21 @@ describe InvertedList, " with numeric attributes" do
     @ps = []
     @ps << new_doc('Point', :x =>    0, :y =>  0)   # 0 
     @ps << new_doc('Point', :x =>   10, :y =>  50)  # 1
-    @ps << new_doc('Point', :x =>   50, :y =>  50)  # 2
-    @ps << new_doc('Point', :x =>  200, :y =>  10)  # 3
-    @ps << new_doc('Point', :x =>  500, :y =>  10)  # 4
-    @ps << new_doc('Point', :x => -500, :y =>  10)  # 5
-    @ps << new_doc('Point', :x =>  -20, :y =>  10)  # 6
-    @ps << new_doc('Point', :x => -2.1, :y =>  10)  # 7
-    @ps << new_doc('Point', :x => 20.6, :y =>  10)  # 8
+  #  @ps << new_doc('Point', :x =>   50, :y =>  50)  # 2
+  #  @ps << new_doc('Point', :x =>  200, :y =>  10)  # 3
+  #  @ps << new_doc('Point', :x =>  500, :y =>  10)  # 4
+  #  @ps << new_doc('Point', :x => -500, :y =>  10)  # 5
+  #  @ps << new_doc('Point', :x =>  -20, :y =>  10)  # 6
+  #  @ps << new_doc('Point', :x => -2.1, :y =>  10)  # 7
+  #  @ps << new_doc('Point', :x => 20.6, :y =>  10)  # 8
     
     @ps.each {|p| insert_doc(@il, p) }
   end
   
   it "should find by positive value" do
     @il.find(:x =>  10).should == [@ps[1][:uuid]].to_set
-    @il.find(:x =>  50).should == [@ps[2][:uuid]].to_set
-    @il.find(:x => 200).should == [@ps[3][:uuid]].to_set
+  #  @il.find(:x =>  50).should == [@ps[2][:uuid]].to_set
+  #  @il.find(:x => 200).should == [@ps[3][:uuid]].to_set
   end
   
   it "should find by negative value" do
@@ -114,6 +114,8 @@ describe InvertedList, " with numeric attributes" do
   
   
 end
+
+
 
 def new_doc(meta, slots)
   slots[:__meta__] = meta
