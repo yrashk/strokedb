@@ -1,5 +1,5 @@
 module Stroke
-  module Meta
+  module MetaDefinition
     def new(*args)
       doc = StrokeObject.new(*args)
       doc.extend(self)
@@ -16,7 +16,7 @@ end
 module Kernel
   def define_meta(name,&block)
     mod = Module.new do
-      extend Stroke::Meta
+      extend Stroke::MetaDefinition
     end
     mod.module_eval(&block) if block_given?
     Object.const_set(name,mod)
