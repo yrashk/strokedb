@@ -66,12 +66,14 @@ module StrokeDB
 	    
 	    (@head.level-1).downto(0) do |i|
 	      while x.forward[i].less(key, i)
-	        debug "Insert walking: i: #{i}, x: #{x}, x.forward[i]: #{x.forward[i]}"
+	        debug "Insert walking: i: #{i}, x: #{x}, x.forward[i]: #{x.forward[i]} (less than #{key.inspect})"
 	        x = x.forward[i]
 	        base_keys[i] = x.decompress_key(x.compressed_keys[i], base_keys[i])
         end
 	      update[i] = x
 	    end
+	    
+	    debug "x: #{x}; x.forward[0] = #{x.forward[0]}"
 	    
   	  x = x.forward[0]
   	  if x.equal(key, 0)
@@ -291,7 +293,8 @@ module StrokeDB
   		# Iterational methods (valid in search context only)
   		# ai_ because "array index" == level - 1
   		def less(key, ai_level)
-  		  key_spaceship(key, @compressed_keys[ai_level]) < 0
+  		  # > because #key_spaceship is for key. But #less is for self.
+  		  key_spaceship(key, @compressed_keys[ai_level]) > 0
   	  end
   	  def equal(key, ai_level)
   	    key_spaceship(key, @compressed_keys[ai_level]) == 0

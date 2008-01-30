@@ -1,18 +1,33 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
- if false
+
 describe InvertedList, " with primitive objects" do
  
   before(:each) do
-    
+    @il = InvertedList.new
+  end
+
+  it "should put items in a lexicographical order" do
+    @il.insert_attribute("b", "V2")
+    @il.insert_attribute("a", "V1")
+    @il.map{|n| n.values }.should == [["V1"], ["V2"]]
   end
   
-  it "should description" do
-    
+  it "should put items in a array" do
+    @il.insert_attribute("a", "a1")
+    @il.map{|n| n.values }.should == [%w[a1]]
+    @il.insert_attribute("b", "b1")
+    @il.map{|n| n.values }.should == [%w[a1], %w[b1]]
+    @il.insert_attribute("b", "b2")
+    @il.map{|n| n.values }.should == [%w[a1], %w[b1 b2]]
+    @il.insert_attribute("b", "b3")
+    @il.map{|n| n.values }.should == [%w[a1], %w[b1 b2 b3]]
+    @il.insert_attribute("a", "a2")
+    @il.map{|n| n.values }.should == [%w[a1 a2], %w[b1 b2 b3]]
   end
- 
+  
 end
  
- 
+if false 
 describe InvertedList, " with flat string attributes" do
   
   before(:all) do
@@ -93,21 +108,21 @@ describe InvertedList, " with numeric attributes" do
     @ps = []
     @ps << new_doc('Point', :x =>    0, :y =>  0)   # 0 
     @ps << new_doc('Point', :x =>   10, :y =>  50)  # 1
-  #  @ps << new_doc('Point', :x =>   50, :y =>  50)  # 2
-  #  @ps << new_doc('Point', :x =>  200, :y =>  10)  # 3
-  #  @ps << new_doc('Point', :x =>  500, :y =>  10)  # 4
-  #  @ps << new_doc('Point', :x => -500, :y =>  10)  # 5
-  #  @ps << new_doc('Point', :x =>  -20, :y =>  10)  # 6
-  #  @ps << new_doc('Point', :x => -2.1, :y =>  10)  # 7
-  #  @ps << new_doc('Point', :x => 20.6, :y =>  10)  # 8
+    @ps << new_doc('Point', :x =>   50, :y =>  50)  # 2
+    @ps << new_doc('Point', :x =>  200, :y =>  10)  # 3
+    @ps << new_doc('Point', :x =>  500, :y =>  10)  # 4
+    @ps << new_doc('Point', :x => -500, :y =>  10)  # 5
+    @ps << new_doc('Point', :x =>  -20, :y =>  10)  # 6
+    @ps << new_doc('Point', :x => -2.1, :y =>  10)  # 7
+    @ps << new_doc('Point', :x => 20.6, :y =>  10)  # 8
     
     @ps.each {|p| insert_doc(@il, p) }
   end
   
   it "should find by positive value" do
     @il.find(:x =>  10).should == [@ps[1][:uuid]].to_set
-  #  @il.find(:x =>  50).should == [@ps[2][:uuid]].to_set
-  #  @il.find(:x => 200).should == [@ps[3][:uuid]].to_set
+    @il.find(:x =>  50).should == [@ps[2][:uuid]].to_set
+    @il.find(:x => 200).should == [@ps[3][:uuid]].to_set
   end
   
   it "should find by negative value" do
