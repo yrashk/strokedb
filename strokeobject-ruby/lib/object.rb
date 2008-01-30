@@ -18,4 +18,10 @@ module Stroke
       end
     end
   end
+  class StrokeDB::Store
+    private
+    def document_class
+      StrokeObject
+    end
+  end
 end

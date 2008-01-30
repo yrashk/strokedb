@@ -1,25 +1,68 @@
 module Stroke
-  module MetaDefinition
+
+  module Meta
+
+    class <<self
+      def new(*args,&block)
+        mod = Module.new
+        mod.module_eval do
+          extend Meta
+          @args = args
+        end
+        mod.module_eval(&block) if block_given?
+        Object.const_set(extract_meta_name(*args),mod)
+        mod
+      end
+
+      def document(store=nil)
+        store ||= Stroke.default_store
+        raise NoDefaultStoreError.new unless Stroke.default_store
+        unless meta_doc = store.find(NIL_UUID)
+          meta_doc = StrokeObject.new(store,:name => '::Stroke::Meta')
+          meta_doc.instance_variable_set(:@uuid,NIL_UUID) # hack that ensures that meta meta is uniquely identified by nil uuid
+          meta_doc.save!
+        end
+        meta_doc
+      end
+
+      private
+
+      def extract_meta_name(*args)
+        if args.first.is_a?(Hash) 
+          args.first[:name]
+        else
+          args[1][:name]
+        end
+      end
+
+    end
+
     def new(*args)
       doc = StrokeObject.new(*args)
       doc.extend(self)
-      doc[:__meta__] = meta(doc.store)
+      doc[:__meta__] = document(doc.store)
       doc
     end
-    private
-    def meta(store)
-      @meta ||= StrokeDB::Document.new(store, :name => name) # FIXME: it is just a stub for future meta-related undercover
+
+    def inspect
+      "<META #{name}>"
     end
+    alias :to_s :inspect
+
+
+    def document(store=nil)
+      store ||= Stroke.default_store
+      raise NoDefaultStoreError.new unless Stroke.default_store
+      unless meta_doc = nil # TODO: add meta document search (warning is ok for now)
+        meta_doc = StrokeObject.new(*@args)
+        meta_doc[:__meta__] = Meta.document(store)
+        meta_doc.extend(Meta)
+        meta_doc.save!
+      end
+      meta_doc
+    end
+
   end
+
 end
 
-module Kernel
-  def define_meta(name,&block)
-    mod = Module.new do
-      extend Stroke::MetaDefinition
-    end
-    mod.module_eval(&block) if block_given?
-    Object.const_set(name,mod)
-    name.to_s.constantize
-  end
-end
