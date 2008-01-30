@@ -1,5 +1,13 @@
 require 'rubygems'
 require 'activesupport'
+if ENV["DEBUGGER"]
+  require 'ruby-debug'
+  ENV["DEBUG"] = 1
+else
+  module Kernel
+    def debugger; end
+  end
+end
 
 class SmartassLoader
   def initialize(pattern)

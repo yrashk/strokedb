@@ -1,4 +1,17 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
+ if false
+describe InvertedList, " with primitive objects" do
+ 
+  before(:each) do
+    
+  end
+  
+  it "should description" do
+    
+  end
+ 
+end
+ 
  
 describe InvertedList, " with flat string attributes" do
   
@@ -115,7 +128,7 @@ describe InvertedList, " with numeric attributes" do
   
 end
 
-
+end # if false
 
 def new_doc(meta, slots)
   slots[:__meta__] = meta
