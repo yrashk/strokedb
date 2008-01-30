@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'activesupport'
+require 'fileutils'
 if ENV["DEBUGGER"]
   require 'ruby-debug'
   ENV["DEBUG"] = 1
