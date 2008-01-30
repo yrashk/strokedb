@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
+require File.dirname(__FILE__) + '/chunk_storage_spec'
 
 describe "FileChunkStorage" do
 
