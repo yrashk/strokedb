@@ -72,3 +72,28 @@ describe InvertedList::Node, "key decompression" do
     end
   end
 end
+
+describe InvertedList::Node, "key spaceship (comparison) operator" do
+  before(:each) do
+    @node = InvertedList::Node.new(1, '', '')
+  end
+  
+  it "should compare suffices with zero offset" do
+    @node.key_spaceship("a", [0, ""]).should     == ("a" <=> "")
+    @node.key_spaceship("a", [0, "b"]).should    == ("a" <=> "b")
+    @node.key_spaceship("a", [0, "ab"]).should   == ("a" <=> "ab")
+    @node.key_spaceship("a", [0, "abc"]).should  == ("a" <=> "abc")
+  end
+  
+  it "should compare suffices with offset 1" do
+    @node.key_spaceship("a",  [1, "a"]).should    == (""  <=> "a")
+    @node.key_spaceship("za", [1, "b"]).should    == ("a" <=> "b")
+    @node.key_spaceship("aa", [1, "ab"]).should   == ("a" <=> "ab")
+    @node.key_spaceship("za", [1, "abc"]).should  == ("a" <=> "abc")
+    
+    @node.key_spaceship("aab", [1, "a"]).should    == ("ab" <=> "a")
+    @node.key_spaceship("zab", [1, "b"]).should    == ("ab" <=> "b")
+    @node.key_spaceship("aab", [1, "ab"]).should   == ("ab" <=> "ab")
+    @node.key_spaceship("zab", [1, "abc"]).should  == ("ab" <=> "abc")
+  end
+end
