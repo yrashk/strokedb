@@ -1,5 +1,12 @@
 module Stroke
   class NoDefaultStoreError < Exception ; end
+  class SlotNotFoundError < Exception 
+    attr_reader :slotname
+    def initialize(slotname)
+      @slotname = slotname
+    end
+  end
+  
   class StrokeObject < StrokeDB::Document
     def initialize(*args)
       if args.first.is_a?(Hash) || args.empty?
@@ -14,6 +21,7 @@ module Stroke
       if sym.ends_with?('=')
         send(:[]=,sym.chomp('='),*args)
       else
+        raise SlotNotFoundError.new(sym) unless slotnames.include?(sym)
         send(:[],sym)
       end
     end

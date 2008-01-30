@@ -40,10 +40,15 @@ describe "StrokeObject", :shared => true do
     @object.slot1.should == 1
   end
 
+  it "should raise an exception if slot not found when trying to read it" do
+    lambda { @object.slot_that_never_can_exist }.should raise_error(SlotNotFoundError)
+  end
+
   it "should allow to write slot by writer method" do
     @object.slot1 = 2
     @object.slot1.should == 2
   end
+  
 end
 
 describe "Newly created StrokeObject" do
