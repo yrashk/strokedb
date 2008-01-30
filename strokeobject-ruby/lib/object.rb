@@ -1,5 +1,4 @@
 module Stroke
-  class NoDefaultStoreError < Exception ; end
   class SlotNotFoundError < Exception 
     attr_reader :slotname
     def initialize(slotname)
