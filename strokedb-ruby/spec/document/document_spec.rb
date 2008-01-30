@@ -86,10 +86,6 @@ describe "Document with previous version" do
     @document.stub!(:previous_version).and_return(@previous_version)
   end
 
-  it "should have previous version" do
-    @document.previous_version.should_not be_nil
-  end
-
   it "should have versions" do
     @document.versions.should_not be_empty
   end
