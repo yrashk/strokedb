@@ -6,7 +6,7 @@ end
 
 module Stroke
   VERSION = '0.0.1' + (RUBY_PLATFORM =~ /java/ ? '-java' : '')
-  NIL_UUID = "00000000-0000-0000-0000-000000000000"
+  NIL_UUID = "00000000-0000-0000-0000-000000000000" # so called Nil UUID, should be used as special UUID for Meta meta
 
 
   #
