@@ -37,7 +37,7 @@ module StrokeDB
       @chained_storages[storage] = []
     end
 
-    def save_without_chained_storages!(chunk)
+    def save_without_chained_storages!(chunk, source=nil)
       perform_save!(chunk)
     end
 

@@ -19,7 +19,24 @@ describe "ChunkStorage", :shared => true do
     @storage.find('MASTER').find('some-uuid').should == raw_doc
   end
 
-
-
 end
+ 
+describe "ChunkStorage with authoritative source" do
+  
+  before(:each) do
+    @authoritative_source = mock("authoritative source")
+    @storage = ChunkStorage.new
+    @storage.authoritative_source = @authoritative_source
+  end
 
+  it "should call authoritative source's #find if chunk was not found" do
+    @storage.should_receive(:chunk_path).with('blablabla').and_return('blablabla')
+    @storage.should_receive(:read).with('blablabla').and_return(nil)
+    
+    result = mock("search result")
+    @authoritative_source.should_receive(:find).with('blablabla').and_return(result)
+    @storage.should_receive(:save!).with(result,@authoritative_source)
+    @storage.find('blablabla').should == result
+  end
+  
+end

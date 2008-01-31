@@ -6,10 +6,6 @@ module StrokeDB
       @chunks_cache = {}
     end
       
-    def find(uuid)
-      read(chunk_path(uuid))
-    end
-
     
     def clear!
       @chunks_cache.clear
@@ -22,10 +18,6 @@ module StrokeDB
         write(chunk_path(chunk.uuid), chunk)
     end
     
-    def chunk_path(uuid)
-      uuid
-    end
-    
     def read(path)
       @chunks_cache[path]
     end
@@ -33,6 +25,11 @@ module StrokeDB
     def write(path, chunk)
       @chunks_cache[path] = chunk
     end
+    
+    def chunk_path(uuid)
+      uuid
+    end
+    
     
   end
 end

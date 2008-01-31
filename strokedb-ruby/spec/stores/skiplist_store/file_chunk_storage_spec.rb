@@ -13,11 +13,11 @@ describe "FileChunkStorage" do
   end
 
   it_should_behave_like "ChunkStorage"
-
   after(:each) do
     # Keep files for investigation
     # FileUtils.rm_rf @path
   end
 
 end
+
 

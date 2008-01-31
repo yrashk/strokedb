@@ -6,11 +6,6 @@ module StrokeDB
       @path = path
     end
 
-    def find(uuid)
-      read(chunk_path(uuid))
-    end
-
-    
     def clear!
       FileUtils.rm_rf @path
     end
