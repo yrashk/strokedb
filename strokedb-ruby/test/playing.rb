@@ -12,7 +12,7 @@ mem_storage = StrokeDB::MemoryChunkStorage.new
 file_storage = StrokeDB::FileChunkStorage.new "test/storages/some_path_playing"
 file_storage.clear!
 store = StrokeDB::SkiplistStore.new mem_storage, 4
-mem_storage.add_replica!(file_storage)
+mem_storage.add_chained_storage!(file_storage)
 
 _d = nil
 25.times do |i|
@@ -39,7 +39,7 @@ puts d_.previous_versions.inspect
 
 puts "replica::::"
 r = store.new_replica
-r.replicate!(d_)
+r.sync_chained_storage!(d_)
 # puts r
 d_[:wonderful] = "hello"
 d_.save!
@@ -53,12 +53,12 @@ puts r.to_packet
 puts "----------"
 puts r
 puts r[d_.uuid].member?(d_.version)
-r.replicate!(d_)
+r.sync_chained_storage!(d_)
 puts r
-r.replicate!(d_)
+r.sync_chained_storage!(d_)
 puts r
 d_[:awonderful] = "hello"
 d_.save!
-r.replicate!(d_)
+r.sync_chained_storage!(d_)
 puts r
-mem_storage.replicate!
+mem_storage.sync_chained_storages!
