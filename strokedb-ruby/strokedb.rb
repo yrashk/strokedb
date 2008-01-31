@@ -23,7 +23,9 @@ class SmartassLoader
     end
     require_rest_paths(paths)
   end
-  def require_rest_paths(paths)
+  def require_rest_paths(paths, i = 0)
+    ENV['DEBUG'] = "1"  if i == 10 
+    ENV.delete('DEBUG') if i == 20
     broken_paths = []
     paths.each do |p|
       begin
@@ -36,11 +38,12 @@ class SmartassLoader
         end
       rescue NameError => e
         puts "Not resolved: #{p}" if ENV["DEBUG"]
+        puts e if ENV["DEBUG"]
         broken_paths.push p
       end
     end
     # Stack grows...
-    require_rest_paths(broken_paths) unless broken_paths.empty? 
+    require_rest_paths(broken_paths, i + 1) unless broken_paths.empty? 
   end
 end
 
