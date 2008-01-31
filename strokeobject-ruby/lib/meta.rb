@@ -55,10 +55,11 @@ module Stroke
       raise NoDefaultStoreError.new unless Stroke.default_store
       args = @args.clone
       args.unshift(store) if args.first.is_a?(Hash)
+      args.last[:__meta__] = Meta.document(store)
+      
       unless meta_doc = store.index_store ? store.index_store.find(:name => args[1][:name], 
                                                                   :__meta__ => Meta.document(store)).first : nil
         meta_doc = StrokeObject.new(*args)
-        meta_doc[:__meta__] = Meta.document(store)
         meta_doc.extend(Meta)
         meta_doc.save!
       else
