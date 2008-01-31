@@ -1,2 +1,3 @@
 .DS_Store
 strokedb-ruby/test/storages/*
+strokeobject-ruby/test/storages/*
