@@ -38,6 +38,10 @@ describe "Diffing documents with slot added" do
     @diff.added_slots.clear!
     @diff.added_slots.should be_empty
   end
+  
+  it "should report as modified" do
+    @diff.should be_modified
+  end
 
   it_should_behave_like "Diffing documents"
 
@@ -67,6 +71,11 @@ describe "Diffing documents with slot removed" do
     @diff.removed_slots.should be_empty
   end
 
+
+  it "should report as modified" do
+    @diff.should be_modified
+  end
+
   it_should_behave_like "Diffing documents"
 
 
@@ -94,6 +103,10 @@ describe "Diffing documents with slot changed" do
   it "should be able to clear changed slots" do
     @diff.updated_slots.clear!
     @diff.updated_slots.should be_empty
+  end
+
+  it "should report as modified" do
+    @diff.should be_modified
   end
   
 

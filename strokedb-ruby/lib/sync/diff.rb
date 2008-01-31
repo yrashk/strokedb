@@ -88,6 +88,10 @@ module StrokeDB
     def updated_slots
       find_slots 'updateslot'
     end
+    
+    def modified?
+      !updated_slots.empty? || !removed_slots.empty? || !added_slots.empty?
+    end
 
     def patch!(document)
       added_slots.each do |addition|

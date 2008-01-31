@@ -61,6 +61,11 @@ module Stroke
         meta_doc[:__meta__] = Meta.document(store)
         meta_doc.extend(Meta)
         meta_doc.save!
+      else
+        if (diff = StrokeObject.new(*args).diff(meta_doc)).modified?
+          diff.patch!(meta_doc)
+          meta_doc.save!
+        end
       end
       meta_doc
     end

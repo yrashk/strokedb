@@ -28,6 +28,18 @@ describe "Meta module" do
     doc = SomeName.document
     SomeName.document.uuid.should == doc.uuid
   end
+
+  it "should save new document version if it was updated" do
+    doc = SomeName.document
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    @meta = Meta.new(:name => "SomeName", :description => "Something")  
+    new_doc = SomeName.document
+    new_doc.uuid.should == doc.uuid
+    new_doc.previous_version.should_not be_nil
+    new_doc.previous_version.should == doc.version
+    new_doc.description.should == "Something"
+  end
+
   
   private
   
