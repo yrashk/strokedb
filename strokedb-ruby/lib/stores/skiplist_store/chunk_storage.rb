@@ -1,5 +1,5 @@
 module StrokeDB
   class ChunkStorage
-    include ReplicableStorage
+    include ChainableStorage
   end
 end

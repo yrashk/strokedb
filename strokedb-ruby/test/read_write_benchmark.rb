@@ -7,7 +7,7 @@ include Benchmark
 $f_storage = FileChunkStorage.new "test/storages/rw_bench_storage"
 $f_storage.clear!
 $storage = MemoryChunkStorage.new
-$storage.add_replica!($f_storage)
+$storage.add_chained_storage!($f_storage)
 store = SkiplistStore.new($storage, 4)
 f_store = SkiplistStore.new($f_storage, 4)
 
@@ -37,7 +37,7 @@ bm(28) do |x|
     all_docs << d.uuid
   end
   
-  $storage.replicate!
+  $storage.sync_chained_storages!
   
   GC.start
   x.report(          "Read (#{M} docs #{N} times) ") do

@@ -6,7 +6,7 @@ include Benchmark
 
 $m_storage = MemoryChunkStorage.new 
 $storage = FileChunkStorage.new "test/storages/big_storage"
-$m_storage.add_replica!($storage)
+$m_storage.add_chained_storage!($storage)
 
 def test_cut_level(bm, n, cutlevel, &block)
   $m_storage.clear!
@@ -15,7 +15,7 @@ def test_cut_level(bm, n, cutlevel, &block)
   GC.start
   bm.report("Cut level = #{cutlevel}") do
     n.times &block
-    $m_storage.replicate!
+    $m_storage.sync_chained_storages!
   end
 end
 
