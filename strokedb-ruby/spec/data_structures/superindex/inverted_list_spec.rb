@@ -9,25 +9,27 @@ describe InvertedList, " with primitive objects" do
   it "should put items in a lexicographical order" do
     @il.insert_attribute("b", "V2")
     @il.insert_attribute("a", "V1")
-    @il.map{|n| n.values }.should == [["V1"], ["V2"]]
+    @il.map{|k,n| n.values }.should == [["V1"], ["V2"]]
+    @il.map{|k,n| k }.should == %w[a b]
   end
   
   it "should put items in a array" do
     @il.insert_attribute("a", "a1")
-    @il.map{|n| n.values }.should == [%w[a1]]
+    @il.map{|k,n| n.values }.should == [%w[a1]]
     @il.insert_attribute("b", "b1")
-    @il.map{|n| n.values }.should == [%w[a1], %w[b1]]
+    @il.map{|k,n| n.values }.should == [%w[a1], %w[b1]]
     @il.insert_attribute("b", "b2")
-    @il.map{|n| n.values }.should == [%w[a1], %w[b1 b2]]
+    @il.map{|k,n| n.values }.should == [%w[a1], %w[b1 b2]]
     @il.insert_attribute("b", "b3")
-    @il.map{|n| n.values }.should == [%w[a1], %w[b1 b2 b3]]
+    @il.map{|k,n| n.values }.should == [%w[a1], %w[b1 b2 b3]]
     @il.insert_attribute("a", "a2")
-    @il.map{|n| n.values }.should == [%w[a1 a2], %w[b1 b2 b3]]
+    @il.map{|k,n| n.values }.should == [%w[a1 a2], %w[b1 b2 b3]]
+    @il.map{|k,n| k }.should == %w[a b]
   end
   
 end
  
-if false 
+ 
 describe InvertedList, " with flat string attributes" do
   
   before(:all) do
@@ -44,21 +46,41 @@ describe InvertedList, " with flat string attributes" do
     @post1          = new_doc('Post',    :title  => 'Hello', 
                                          :date   => '28 Jan 2008',
                                          :author => ('#@' + @yrashk_profile[:uuid]))
-    
-    insert_doc(@il, @oleg_profile)
-    insert_doc(@il, @yrashk_profile)
-    insert_doc(@il, @article1)
-    insert_doc(@il, @article2)
-    insert_doc(@il, @post1)
   end
   
+  def should_have_keys_in_order(list)
+    keys = list.map{|k,n| k}
+    keys.should == keys.sort
+  end
+  
+  it "should insert docs correctly" do
+    insert_doc(@il, @oleg_profile)
+  #  pp @il.map{|k,n| [n.level, k, n.values]}
+    @il.map{|k,n| n.values}.should == [ [@oleg_profile[:uuid]] ]*(2 + 2)
+    should_have_keys_in_order(@il)
+    insert_doc(@il, @yrashk_profile)
+  #  pp @il.map{|k,n| [n.level, k, n.values]}
+    should_have_keys_in_order(@il)
+    insert_doc(@il, @article1)
+  #  pp @il.map{|k,n| [n.level, k, n.values]}
+    should_have_keys_in_order(@il)
+    insert_doc(@il, @article2)
+  #  pp @il.map{|k,n| [n.level, k, n.values]}
+    should_have_keys_in_order(@il)
+    insert_doc(@il, @post1)
+  #  pp @il.map{|k,n| [n.level, k, n.values]}
+    should_have_keys_in_order(@il)
+    
+  end
+  
+
   it "should find objects by a single attribute" do
     @il.find(:name => 'Oleg').should == [@oleg_profile[:uuid]].to_set
     @il.find(:email => 'yrashk').should == [@yrashk_profile[:uuid]].to_set
     @il.find(:__meta__ => 'Article').should == [@article1[:uuid], @article2[:uuid]].to_set
     @il.find(:__version__ => @article1[:slots][:__version__]).should == [@article1[:uuid]].to_set
   end
-  
+
   it "should not find object by a not matched attribute" do
     @il.find(:name => 'Nobody').should == [  ].to_set
     @il.find(:__meta__ => 'NoMeta').should == [  ].to_set
@@ -98,9 +120,10 @@ describe InvertedList, " with flat string attributes" do
              :__meta__ => 'Profile'
              ).should == [   ].to_set
   end
-  
+
 end
 
+#if false
 describe InvertedList, " with numeric attributes" do
   
   before(:all) do
@@ -143,11 +166,11 @@ describe InvertedList, " with numeric attributes" do
   
 end
 
-end # if false
+#end # if false
 
 def new_doc(meta, slots)
   slots[:__meta__] = meta
-  slots[:__version__] = 'v1' + rand(10000000).to_s
+  slots[:__version__] = 'v' + rand(10000000).to_s
   {:uuid => meta + rand(1000000).to_s, :slots => slots}
 end
 

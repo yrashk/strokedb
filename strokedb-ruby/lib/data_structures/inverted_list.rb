@@ -63,20 +63,24 @@ module StrokeDB
   	  update = Array.new(@head.level)
   	  base_keys = [@head.prefix.dup]*@head.level
   	  x = @head
-	    
+	    bkey = @head.prefix
 	    (@head.level-1).downto(0) do |i|
-	      while x.forward[i].less(key, i)
-	        debug "Insert walking: i: #{i}, x: #{x}, x.forward[i]: #{x.forward[i]} (less than #{key.inspect})"
+	      bkey = base_keys[i + 1] || @head.prefix
+	      while x.forward[i].less(key, i, bkey)
+	        #puts "Insert walking: i: #{i}, x: #{x}, x.forward[i]: #{x.forward[i]} (less than #{key.inspect})"
 	        x = x.forward[i]
-	        base_keys[i] = x.decompress_key(x.compressed_keys[i], base_keys[i])
+	        #puts "DECOMPRESS[#{i}]: #{x.compressed_keys[i].inspect}, base #{bkey.inspect} "
+	        bkey = x.decompress_key(x.compressed_keys[i], bkey)
         end
+        base_keys[i] = bkey
+        #puts ">> (inserting #{key.inspect}) base_keys[#{i}] = #{base_keys.inspect}"
 	      update[i] = x
 	    end
 	    
 	    debug "x: #{x}; x.forward[0] = #{x.forward[0]}"
 	    
   	  x = x.forward[0]
-  	  if x.equal(key, 0)
+  	  if x.equal(key, 0, bkey)
   	    x.values.push value
   	  else
   	    newlevel = __cheaters_level || random_level
@@ -86,7 +90,7 @@ module StrokeDB
   	      (@head.level + 1).upto(newlevel) do |i|
   	        update[i-1]              = @head
   	        update[i-1].forward[i-1] = @tail
-  	        base_keys[i-1]           = base_keys[base_keys.size-1]
+  	        base_keys[i-1]           = ""
           end
         end
 
@@ -139,16 +143,18 @@ module StrokeDB
     def find_node(key = nil)
       base_keys = [@head.prefix.dup]*@head.level
   	  x = @head
-	    
+	    bkey = @head.prefix
 	    (@head.level-1).downto(0) do |i|
-	      while x.forward[i].less(key, i)
+	      bkey = base_keys[i + 1] || @head.prefix
+	      while x.forward[i].less(key, i, bkey)
 	        debug "Find walking: i: #{i}, x: #{x}, x.forward[i]: #{x.forward[i]}"
 	        x = x.forward[i]
-	        base_keys[i] = x.decompress_key(x.compressed_keys[i], base_keys[i])
+	        bkey = x.decompress_key(x.compressed_keys[i], bkey)
         end
+        base_keys[i] = bkey
 	    end
   	  x = x.forward[0]
-  	  return x if x.equal(key, 0)
+  	  return x if x.equal(key, 0, bkey)
   	  nil
     end
     
@@ -183,8 +189,10 @@ module StrokeDB
 
  	  def each
   	  n = @head.forward[0]
+  	  k = @head.prefix
   	  until TailNode === n
-  	    yield n
+  	    k = n.decompress_key(n.compressed_keys[0], k)
+  	    yield(k, n)
   	    n = n.forward[0]
       end
   	end
@@ -247,7 +255,7 @@ module StrokeDB
 
   	class Node
   	  include Debug
-  		attr_accessor :values, :forward, :compressed_keys
+  		attr_accessor :values, :forward, :compressed_keys, :key
   		attr_accessor :_serialized_index
   		def initialize(level, key, value)
   			@values   = [value]
@@ -257,6 +265,12 @@ module StrokeDB
   		end
 
       def insert_after(prev_nodes, base_keys)
+        # puts "-----------------------"
+        # puts "Inserting after (level = #{level}): "
+        # pp :key => @key
+        # pp :prev_nodes => prev_nodes.map{|n| n.nil? ? n : n.key }
+        # pp :base_keys  => base_keys
+        
         key = @key # 30% faster than @key
         @forward.each_with_index do |fwd, i|
           # update compressed keys
@@ -286,22 +300,27 @@ module StrokeDB
   		  j = 0
 			  j += 1 while key[j] && key[j] == base[j]
 			  [ j, key[j, key.size] ]
-  		end
+   		end
   		def decompress_key(compressed_key, base)
   		  base[ 0, compressed_key[0] ] + compressed_key[1]
   		end
   		# Iterational methods (valid in search context only)
   		# ai_ because "array index" == level - 1
-  		def less(key, ai_level)
+  		def less(key, ai_level, base)
   		  # > because #key_spaceship is for key. But #less is for self.
-  		  key_spaceship(key, @compressed_keys[ai_level]) > 0
+  		  key_spaceship(key, @compressed_keys[ai_level], base) > 0
   	  end
-  	  def equal(key, ai_level)
-  	    key_spaceship(key, @compressed_keys[ai_level]) == 0
+  	  def equal(key, ai_level, base)
+  	    key_spaceship(key, @compressed_keys[ai_level], base) == 0
   	  end
   	  
-  	  def key_spaceship(key, compressed_key)
-  	    key[ compressed_key[0], key.size ] <=> compressed_key[1]
+  	  def key_spaceship(key, compressed_key, base)
+  #	    puts "KEY COMP.: #{key[ compressed_key[0], key.size ].inspect} <=> #{compressed_key[1]} => #{key[ compressed_key[0], key.size ] <=> compressed_key[1]}"
+        l  = compressed_key[0]
+        kp = key[  0, l ]
+        bp = base[ 0, l ]
+        return kp <=> bp if kp != bp
+  	    key[ l, key.size ] <=> compressed_key[1]
 	    end  	  
       
   	  def next
@@ -319,6 +338,9 @@ module StrokeDB
   		  @value = nil
   		  @forward = [nil]
   		end
+  		def key
+  		  @prefix
+		  end
       def to_s
   	    "head([#{level}] #{@prefix.inspect})"
   	  end
@@ -329,10 +351,10 @@ module StrokeDB
   	  attr_accessor :next_list
   		def initialize
   		end
-  		def less(key, ai_level) # ai_ because "array index" == level - 1
+  		def less(key, ai_level, b) # ai_ because "array index" == level - 1
   		  false
   	  end
-  	  def equal(key, ai_level)
+  	  def equal(key, ai_level, b)
   	    false
   	  end
   	  def to_s

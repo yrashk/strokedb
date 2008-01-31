@@ -79,21 +79,28 @@ describe InvertedList::Node, "key spaceship (comparison) operator" do
   end
   
   it "should compare suffices with zero offset" do
-    @node.key_spaceship("a", [0, ""]).should     == ("a" <=> "")
-    @node.key_spaceship("a", [0, "b"]).should    == ("a" <=> "b")
-    @node.key_spaceship("a", [0, "ab"]).should   == ("a" <=> "ab")
-    @node.key_spaceship("a", [0, "abc"]).should  == ("a" <=> "abc")
+    @node.key_spaceship("a", [0, ""], "a").should     == ("a" <=> "")
+    @node.key_spaceship("a", [0, "b"], "w").should    == ("a" <=> "b")
+    @node.key_spaceship("a", [0, "ab"], "e").should   == ("a" <=> "ab")
+    @node.key_spaceship("a", [0, "abc"], "r").should  == ("a" <=> "abc")
   end
   
   it "should compare suffices with offset 1" do
-    @node.key_spaceship("a",  [1, "a"]).should    == (""  <=> "a")
-    @node.key_spaceship("za", [1, "b"]).should    == ("a" <=> "b")
-    @node.key_spaceship("aa", [1, "ab"]).should   == ("a" <=> "ab")
-    @node.key_spaceship("za", [1, "abc"]).should  == ("a" <=> "abc")
+    @node.key_spaceship("ra", [1, "a"], "r0").should    == ("a" <=> "a")
+    @node.key_spaceship("za", [1, "b"], "z0").should    == ("a" <=> "b")
+    @node.key_spaceship("aa", [1, "ab"], "ab").should   == ("a" <=> "ab")
+    @node.key_spaceship("za", [1, "abc"], "zz").should  == ("a" <=> "abc")
     
-    @node.key_spaceship("aab", [1, "a"]).should    == ("ab" <=> "a")
-    @node.key_spaceship("zab", [1, "b"]).should    == ("ab" <=> "b")
-    @node.key_spaceship("aab", [1, "ab"]).should   == ("ab" <=> "ab")
-    @node.key_spaceship("zab", [1, "abc"]).should  == ("ab" <=> "abc")
+    @node.key_spaceship("aab", [1, "a"], "asd").should    == ("ab" <=> "a")
+    @node.key_spaceship("zab", [1, "b"], "zsd").should    == ("ab" <=> "b")
+    @node.key_spaceship("aab", [1, "ab"], "asd").should   == ("ab" <=> "ab")
+    @node.key_spaceship("zab", [1, "abc"], "zsd").should  == ("ab" <=> "abc")
+  end
+  
+  it "should compare prefices when they differ" do
+    @node.key_spaceship("ra", [1, "a"], "x0").should    == ("r" <=> "x")
+    @node.key_spaceship("za", [1, "b"], "y0").should    == ("z" <=> "y")
+    @node.key_spaceship("aa", [1, "ab"], "bb").should   == ("a" <=> "b")
+    @node.key_spaceship("za", [1, "abc"], "a").should   == ("z" <=> "a")
   end
 end
