@@ -1,39 +1,54 @@
 module StrokeDB
   class InvertedListFileStorage
-    include ReplicableStorage
+    # TODO: 
+    # include ChainableStorage
     attr_accessor :path
 
     def initialize(path)
       @path = path
     end
 
-    def find(uuid)
-      read(chunk_path(uuid))
+    def find_list
+      read(file_path)
     end
-
     
     def clear!
       FileUtils.rm_rf @path
     end
     
-  private
-    
-    def perform_save!(chunk)
+    def save!(list)
       FileUtils.mkdir_p @path
-      write(chunk_path(chunk.uuid), chunk)
+      write(file_path, list)
     end
     
+  private
+
     def read(path)
-      return nil unless File.exist?(path)
-      raw_chunk = ActiveSupport::JSON.decode(IO.read(path))
-      Chunk.from_raw(raw_chunk)
+      return InvertedList.new unless File.exist?(path)
+      raw_list = ActiveSupport::JSON.decode(IO.read(path))
+      list = InvertedList.new
+      # TODO: Optimize!
+      raw_list.each do |k, vs|
+        vs.each do |v|
+          list.insert_attribute(k, v)
+        end
+      end
+      list
     end
     
-    def write(path, chunk)
+    def write(path, list)
+      raw_list = {}
+      # TODO: Optimize!
+      list.each do |n|
+        raw_list[n.key] = n.values
+      end
       File.open path, "w+" do |f|
-        f.write _______________.to_json
+        f.write raw_list.to_json
       end
     end
   
+    def file_path
+      "#{@path}/INVERTED_INDEX"
+    end
   end
 end

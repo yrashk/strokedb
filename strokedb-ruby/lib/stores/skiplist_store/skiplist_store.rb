@@ -1,10 +1,11 @@
 module StrokeDB
   class SkiplistStore < Store
-    attr_accessor :chunk_storage, :cut_level
+    attr_accessor :chunk_storage, :cut_level, :index_store
 
-    def initialize(chunk_storage, cut_level)
+    def initialize(chunk_storage, cut_level, index_store = nil)
       @chunk_storage = chunk_storage
       @cut_level = cut_level
+      @index_store = index_store
     end
     
     def find(uuid, version=nil)
@@ -40,6 +41,16 @@ module StrokeDB
       insert_with_cut(doc.uuid_version, doc, master_chunk)
       
       @chunk_storage.save!(master_chunk)
+      
+      # Update index
+      if @index_store
+        if doc.previous_version
+          pdoc = doc.versions[doc.previous_version]
+          @index_store.delete(pdoc)
+        end
+        @index_store.insert(doc)
+        @index_store.save!
+      end
     end  
   
     def full_dump

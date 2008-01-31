@@ -131,7 +131,7 @@ module StrokeDB
 
     def meta
       _meta = self[:__meta__]
-      return _meta unless _meta.kind_of?(Array)
+      return _meta || Document.new(@store) unless _meta.kind_of?(Array)
       metas = _meta.clone
       collected_meta = metas.shift
       metas.each do |next_meta|

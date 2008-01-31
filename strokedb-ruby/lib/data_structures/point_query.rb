@@ -16,6 +16,9 @@ module StrokeDB
         
     def initialize(slots)
       @slots = slots
+      @slots.each do |k, v|
+        @slots[k] = "@\##{v.uuid}" if v.is_a? Document
+      end
     end
   end
 end
