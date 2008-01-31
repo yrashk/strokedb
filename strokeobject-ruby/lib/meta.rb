@@ -62,7 +62,7 @@ module Stroke
         meta_doc.extend(Meta)
         meta_doc.save!
       else
-        if (diff = StrokeObject.new(*args).diff(meta_doc)).modified?
+        if (diff = StrokeObject.new(*args).diff(meta_doc)).different?
           diff.patch!(meta_doc)
           meta_doc.save!
         end

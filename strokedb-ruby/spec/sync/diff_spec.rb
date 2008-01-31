@@ -40,7 +40,7 @@ describe "Diffing documents with slot added" do
   end
   
   it "should report as modified" do
-    @diff.should be_modified
+    @diff.should be_different
   end
 
   it_should_behave_like "Diffing documents"
@@ -73,7 +73,7 @@ describe "Diffing documents with slot removed" do
 
 
   it "should report as modified" do
-    @diff.should be_modified
+    @diff.should be_different
   end
 
   it_should_behave_like "Diffing documents"
@@ -106,7 +106,7 @@ describe "Diffing documents with slot changed" do
   end
 
   it "should report as modified" do
-    @diff.should be_modified
+    @diff.should be_different
   end
   
 

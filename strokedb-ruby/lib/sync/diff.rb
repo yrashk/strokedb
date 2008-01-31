@@ -89,7 +89,7 @@ module StrokeDB
       find_slots 'updateslot'
     end
     
-    def modified?
+    def different?
       !updated_slots.empty? || !removed_slots.empty? || !added_slots.empty?
     end
 
