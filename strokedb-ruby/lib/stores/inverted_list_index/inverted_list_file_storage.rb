@@ -1,6 +1,6 @@
 module StrokeDB
   class InvertedListFileStorage
-    include ReplicableStorage
+    include ChainableStorage
     attr_accessor :path
 
     def initialize(path)
