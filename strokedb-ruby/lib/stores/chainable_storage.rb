@@ -24,7 +24,7 @@ module StrokeDB
       @chained_storages = {}
     end
     
-    def sync_chained_storage!(storage=nil)
+    def sync_chained_storage!(storage)
       (@chained_storages[storage]||[]).each do |saving|
         storage.save!(saving)
       end
