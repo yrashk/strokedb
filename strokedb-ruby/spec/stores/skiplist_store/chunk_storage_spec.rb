@@ -38,5 +38,15 @@ describe "ChunkStorage with authoritative source" do
     @storage.should_receive(:save!).with(result,@authoritative_source)
     @storage.find('blablabla').should == result
   end
+
+  it "should not save anything if authoritative source returned nothing" do
+    @storage.should_receive(:chunk_path).with('blablabla').and_return('blablabla')
+    @storage.should_receive(:read).with('blablabla').and_return(nil)
+    
+    result = nil
+    @authoritative_source.should_receive(:find).with('blablabla').and_return(result)
+    @storage.should_not_receive(:save!).with(nil,@authoritative_source)
+    @storage.find('blablabla').should be_nil
+  end
   
 end
