@@ -44,9 +44,7 @@ module StrokeDB
     def save_with_chained_storages!(chunk,source=nil)
       perform_save!(chunk)
       (@chained_storages||{}).each_pair do |storage,savings|
-        unless storage == chunk
-          savings << chunk unless savings.include?(chunk)
-        end
+          savings << chunk unless  storage == chunk || savings.include?(chunk)
       end
     end
 
