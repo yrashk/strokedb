@@ -4,7 +4,7 @@ include StrokeDB
 require 'benchmark'
 include Benchmark 
 
-N_INSERTS       = (ENV['N_INSERTS'] || 10000).to_i
+N_INSERTS       = (ENV['N_INSERTS'] || 10000 ).to_i
 N_FINDS         = 10000
 N_SLOTS         = 5
 TOTAL_SLOTS     = 10
@@ -29,6 +29,11 @@ SLOTS_NAMES  = generate_names(TOTAL_SLOTS, SLOT_NAME_SIZE)
 
 list = InvertedList.new
 
+#require 'ruby-prof'
+
+# Profile the code
+#RubyProf.start
+
 bm(48) do |x| 
   x.report("Building index (#{N_INSERTS} docs)") do
     buf = []
@@ -43,7 +48,8 @@ bm(48) do |x|
   end
 end
 
-
-
+#result = RubyProf.stop
+#printer = RubyProf::GraphHtmlPrinter.new(result)
+#printer.print(STDOUT, 0)
 
 
