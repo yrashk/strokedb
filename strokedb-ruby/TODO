@@ -9,7 +9,7 @@
 [x] Add slot value patching
 [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
 [x] Chained storages
-[ ] Add back chaining for storages?
+[x] Add reverse chaining for storages
 
 InvertedList index:
 

@@ -2,6 +2,7 @@ module StrokeDB
   class InvertedListFileStorage
     # TODO: 
     # include ChainableStorage
+
     attr_accessor :path
 
     def initialize(path)
