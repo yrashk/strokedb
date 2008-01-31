@@ -7,4 +7,7 @@ BENCHMARKS
 
 $ rake bench
 
+REQUIREMENTS
+
+$ sudo gem install diff-lcs
 
