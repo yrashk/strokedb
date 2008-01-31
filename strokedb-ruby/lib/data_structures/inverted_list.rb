@@ -22,9 +22,7 @@ module StrokeDB
   	    value = value.to_s
   	    key = key.to_s
   	    prefix = value + SEPARATOR + key + TERMINATOR
-  	    #debug "Inserting prefix #{prefix.inspect} with #{data.inspect}"
   	    insert_attribute(prefix, data, __cheaters_level)
-  	    #debug "Now list is #{self}"
 	    end
   	end
 
@@ -32,23 +30,13 @@ module StrokeDB
   	  @size_cache = nil
   	  update = Array.new(@head.level)
   	  x = @head
-  	  # We have to choose between < and <= only,
-  	  # but we go into different branches to keep things fast.  
-  	  if @unique_keys
-  	    @head.level.downto(1) do |i|
-  	      x = x.forward[i-1] while x.forward[i-1] < key
-  	      update[i-1] = x
-  	    end
-	    else
-	      @head.level.downto(1) do |i|
-  	      x = x.forward[i-1] while x.forward[i-1] <= key
-  	      update[i-1] = x
-  	    end
-      end
+      @head.level.downto(1) do |i|
+	      x = x.forward[i-1] while x.forward[i-1] < key
+	      update[i-1] = x
+	    end
   	  x = x.forward[0]
-  	  if x.key == key && @unique_keys
-  	    x.value = value
-  	    value.skiplist_node_container = x if value.respond_to? :skiplist_node_container=
+  	  if x.key == key
+  	    x.values.push value
   	  else
   	    newlevel = __cheaters_level || random_level
   	    newlevel = 1 if empty?
@@ -59,7 +47,6 @@ module StrokeDB
         end
 
         x = Node.new(newlevel, key, value)
-        value.skiplist_node_container = x if value.respond_to? :skiplist_node_container=
 
         if cut?(newlevel, update[0])
           return new_chunks!(x, update)
@@ -72,6 +59,34 @@ module StrokeDB
       end
   		return self
   	end
+  	
+  	
+  	def delete(slots, data)
+  	  slots.each do |key, value|
+  	    value = value.to_s
+  	    key = key.to_s
+  	    prefix = value + SEPARATOR + key + TERMINATOR
+  	    delete_attribute(prefix, data)
+	    end
+  	end
+  	
+  	def delete_attribute(key, value)
+  	  @size_cache = nil
+  	  update = Array.new(@head.level)
+  	  x = @head
+      @head.level.downto(1) do |i|
+	      x = x.forward[i-1] while x.forward[i-1] < key
+	      update[i-1] = x
+	    end
+  	  x = x.forward[0]
+  	  if x.key == key
+  	    x.values.delete value
+  	    value
+  	  else
+  	    nil
+      end
+  	end
+  	  	
 
     # Finders
     
@@ -79,36 +94,28 @@ module StrokeDB
   	  q = PointQuery.new(*args)
   	  total = Set.new
   	  first_pass = true
-  	  #debug_header
-  	  #debug "Search #{q.slots.inspect}..."
-  	  #debug to_s
   	  q.slots.each do |key, value|
   	    results = []
   	    key = key.to_s
   	    value = value.to_s
   	    prefix = value + SEPARATOR + key + TERMINATOR
-  	    #debug "Looking for prefix #{prefix.inspect}"
-  	    node = find_nearest_node(prefix)
-  	    while node.key == prefix
-  	      results.push node.value
-  	      node = node.next
-  	    end
-  	    #debug "Results: #{results.inspect}; first pass? #{first_pass}"
+  	    node = find_node(prefix)
+  	    results = node.values if node
   	    total = (first_pass ? results.to_set : (total & results))
   	    first_pass = false
-  	    #debug "intermediate total = #{total.inspect}"
 	    end
-	    #debug "returning total = #{total.inspect}"
 	    total
   	end
   	
-    def find_nearest_node(key)
+    def find_node(key)
       x = @head
       @head.level.downto(1) do |i|
   	    x = x.forward[i-1] while x.forward[i-1] < key
-      end
-      x = x.forward[0] if (x.forward[0].key == key || x == @head)
-      x
+  	  end
+  	  x = x.forward[0]
+	    return (x.key && yield(x.key, key) ? x : nil) if block_given?
+  	  return x if x.key == key
+  	  nil
     end
 
     def first_node
@@ -134,11 +141,6 @@ module StrokeDB
   		[@head.to_s, map{|node| node.level.to_s }, @tail.to_s].flatten.join(', ') +
   		">"
   	end
-
-  	def eql?(skiplist)
-  	  zip(skiplist) {|a, b| return false unless a.key == b.key && a.value == b.value }
-  	  true
-	  end
 
  	  def each
   	  n = @head.forward[0]
@@ -204,10 +206,10 @@ module StrokeDB
   	end
 
   	class Node
-  		attr_accessor :key, :value, :forward
+  		attr_accessor :key, :values, :forward
   		attr_accessor :_serialized_index
   		def initialize(level, key, value)
-  			@key, @value = key, value
+  			@key, @values = key, [value]
   			@forward = Array.new(level)
   		end
   		# this is called when node is thrown out of the list
@@ -228,7 +230,7 @@ module StrokeDB
   	    forward[0]
   	  end
   	  def to_s
-  	    "[#{level}]#{@key}: #{@value}"
+  	    "[#{level}]#{@key}: #{@values.inspect}"
   	  end
   	end
 

@@ -71,6 +71,15 @@ describe InvertedList, " with flat string attributes" do
              ).should == [   ].to_set
   end
   
+  it "should delete doc from index" do
+    @il.find(:name => 'Oleg').should == [@oleg_profile[:uuid]].to_set
+    delete_doc(@il, @oleg_profile)
+    @il.find(:name => 'Oleg').should == [  ].to_set
+    @il.find(:email => 'yrashk').should == [@yrashk_profile[:uuid]].to_set
+    delete_doc(@il, @yrashk_profile)
+    @il.find(:email => 'yrashk').should == [  ].to_set
+  end
+  
 end
 
 describe InvertedList, " with numeric attributes" do
@@ -124,3 +133,8 @@ end
 def insert_doc(il, doc)
   il.insert(doc[:slots], doc[:uuid])
 end
+
+def delete_doc(il, doc)
+  il.delete(doc[:slots], doc[:uuid])
+end
+
