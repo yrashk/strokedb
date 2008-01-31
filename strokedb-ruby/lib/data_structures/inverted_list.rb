@@ -43,10 +43,10 @@ module StrokeDB
   	end
 
   	def insert(slots, data, __cheaters_level = nil)
-  	  debug_header
+  	  #debug_header
   	  slots.each do |key, value|
-  	    debug "inserting slot: key: #{key}, value:#{value.inspect}"
-  	    debug "list: #{self}"
+  	  #  debug "inserting slot: key: #{key}, value:#{value.inspect}"
+  	  #  debug "list: #{self}"
   	    value = value.to_s
   	    key = key.to_s
   	    prefix = value + SEPARATOR + key + TERMINATOR
@@ -57,14 +57,16 @@ module StrokeDB
   	end
 
   	def insert_attribute(key, value, __cheaters_level = nil)
-  	  debug "insert: key: #{key.inspect}, value = #{value.inspect}"
+  	  #debug "insert: key: #{key.inspect}, value = #{value.inspect}"
       
   	  @size_cache = nil
   	  update = Array.new(@head.level)
   	  base_keys = [@head.prefix.dup]*@head.level
   	  x = @head
 	    bkey = @head.prefix
-	    (@head.level-1).downto(0) do |i|
+	    i = @head.level-1
+	    #(@head.level-1).downto(0) do |i|
+	    while i >= 0 
 	      bkey = base_keys[i + 1] || @head.prefix
 	      while x.forward[i].less(key, i, bkey)
 	        #puts "Insert walking: i: #{i}, x: #{x}, x.forward[i]: #{x.forward[i]} (less than #{key.inspect})"
@@ -75,9 +77,10 @@ module StrokeDB
         base_keys[i] = bkey
         #puts ">> (inserting #{key.inspect}) base_keys[#{i}] = #{base_keys.inspect}"
 	      update[i] = x
+	      i -= 1
 	    end
 	    
-	    debug "x: #{x}; x.forward[0] = #{x.forward[0]}"
+	    #debug "x: #{x}; x.forward[0] = #{x.forward[0]}"
 	    
   	  x = x.forward[0]
   	  if x.equal(key, 0, bkey)
@@ -109,9 +112,9 @@ module StrokeDB
     # Finders
     
     def find(*args)
-      debug_header
-      debug "list is: #{self}"
-      debug "query is #{args.inspect}"
+      #debug_header
+      #debug "list is: #{self}"
+      #debug "query is #{args.inspect}"
   	  q = PointQuery.new(*args)
   	  total = Set.new
   	  first_pass = true
@@ -147,7 +150,7 @@ module StrokeDB
 	    (@head.level-1).downto(0) do |i|
 	      bkey = base_keys[i + 1] || @head.prefix
 	      while x.forward[i].less(key, i, bkey)
-	        debug "Find walking: i: #{i}, x: #{x}, x.forward[i]: #{x.forward[i]}"
+	        #debug "Find walking: i: #{i}, x: #{x}, x.forward[i]: #{x.forward[i]}"
 	        x = x.forward[i]
 	        bkey = x.decompress_key(x.compressed_keys[i], bkey)
         end
@@ -297,9 +300,9 @@ module StrokeDB
   		# HOT SPOTS! (ruby is increadibly slower in this place)
   		
   		def compress_key(key, base)
-  		  j = 0
-			  j += 1 while key[j] && key[j] == base[j]
-			  [ j, key[j, key.size] ]
+        j = 0
+        j += 1 while key[j] && key[j] == base[j]
+        [ j, key[j, key.size] ]
    		end
   		def decompress_key(compressed_key, base)
   		  base[ 0, compressed_key[0] ] + compressed_key[1]
