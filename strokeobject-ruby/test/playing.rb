@@ -14,7 +14,7 @@ Stroke.default_store = StrokeDB::SkiplistStore.new(@mem,6, @index)
 @index.document_store = Stroke.default_store
 
 
-Stroke::Meta.new(:name => "User")
+User = Stroke::Meta.new
 unless u = @index.find(:__meta__ => User.document, :email => "yrashk@gmail.com").first
   puts "User not found, creating new user"
   u = User.new :email => "yrashk@gmail.com"
