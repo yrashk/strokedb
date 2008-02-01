@@ -10,7 +10,9 @@ module Stroke
           @args = args
         end
         mod.module_eval(&block) if block_given?
-        Object.const_set(extract_meta_name(*args),mod)
+        if meta_name = extract_meta_name(*args)
+          Object.const_set(meta_name,mod)
+        end
         mod
       end
 
@@ -31,7 +33,7 @@ module Stroke
         if args.first.is_a?(Hash) 
           args.first[:name]
         else
-          args[1][:name]
+          args[1][:name] unless args.empty?
         end
       end
 
@@ -55,10 +57,11 @@ module Stroke
       raise NoDefaultStoreError.new unless Stroke.default_store
       args = @args.clone
       args.unshift(store) if args.first.is_a?(Hash)
+      args << {} unless args.last.is_a?(Hash)
       args.last[:__meta__] = Meta.document(store)
-      
-      unless meta_doc = store.index_store ? store.index_store.find(:name => args[1][:name], 
-                                                                  :__meta__ => Meta.document(store)).first : nil
+      args.last[:name] ||= name
+      unless meta_doc = store.index_store ? store.index_store.find(:name => args.last[:name], 
+        :__meta__ => Meta.document(store)).first : nil
         meta_doc = StrokeObject.new(*args)
         meta_doc.extend(Meta)
         meta_doc.save!
