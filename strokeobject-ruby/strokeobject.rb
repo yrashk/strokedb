@@ -6,6 +6,7 @@ module Stroke
 
   #
   # Stroke.default_store accessor (should be thread-safe)
+  # Stroke.default_config accessor (should be thread-safe)
   #
   class <<self
     def default_store
@@ -13,6 +14,12 @@ module Stroke
     end
     def default_store=(store)
       Thread.current['StrokeObject.default_store'] = store
+    end
+    def default_config
+      Thread.current['StrokeObject.default_config']
+    end
+    def default_config=(config)
+      Thread.current['StrokeObject.default_config'] = config
     end
   end
   

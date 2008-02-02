@@ -8,6 +8,11 @@ module StrokeDB
       @index_store = index_store
     end
     
+    def self.get_new(storage, options = {})
+      raise "Missing cut_level" unless options[:cut_level]
+      new(storage, options[:cut_level], options[:index])
+    end
+    
     def find(uuid, version=nil)
       uuid_version = uuid + (version ? ".#{version}" : "") 
       master_chunk = @chunk_storage.find('MASTER')
