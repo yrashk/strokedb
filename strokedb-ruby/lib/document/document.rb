@@ -193,9 +193,9 @@ module StrokeDB
       meta = 
       case meta
       when /@##{UUID_RE}.#{VERSION_RE}/
-        meta_names << store.find($1,$2)[:name]
+        meta_names << store.find($1,$2)[:name] if store.find($1,$2)
       when /@##{UUID_RE}/
-        meta_names << store.find($1)[:name]
+        meta_names << store.find($1)[:name] if store.find($1)
       when Array
         meta_names = meta.map {|m| collect_meta_modules(store,m) }.flatten
       end
