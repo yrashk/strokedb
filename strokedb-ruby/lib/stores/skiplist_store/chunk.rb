@@ -17,9 +17,11 @@ module StrokeDB
         @next_chunk = tmp
         @next_chunk.uuid = uuid
       end
-      # we don't update self.uuid 'cos don't like to change filename
-      # anyway, we would have to do it for the very first chunk only
       [self, @next_chunk]
+    end
+    
+    def delete(uuid)
+      skiplist.delete(uuid)
     end
 
     def find(uuid, default = nil)
@@ -28,6 +30,10 @@ module StrokeDB
     
     def find_nearest(uuid, default = nil)
       skiplist.find_nearest(uuid, default)
+    end
+    
+    def first_uuid
+      skiplist.first_node.key
     end
     
     def size

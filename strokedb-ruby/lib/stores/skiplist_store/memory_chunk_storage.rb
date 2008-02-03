@@ -5,17 +5,19 @@ module StrokeDB
     def initialize(*args)
       @chunks_cache = {}
     end
-      
+    
+    def delete!(chunk_uuid)
+      write(chunk_path(chunk_uuid), nil)
+    end
     
     def clear!
       @chunks_cache.clear
     end
-    
   
   private
 
     def perform_save!(chunk)
-        write(chunk_path(chunk.uuid), chunk)
+      write(chunk_path(chunk.uuid), chunk)
     end
     
     def read(path)

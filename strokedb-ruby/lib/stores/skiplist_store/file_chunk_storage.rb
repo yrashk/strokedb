@@ -5,6 +5,10 @@ module StrokeDB
     def initialize(path)
       @path = path
     end
+    
+    def delete!(chunk_uuid)
+      FileUtils.rm_rf(chunk_path(chunk_uuid))
+    end
 
     def clear!
       FileUtils.rm_rf @path

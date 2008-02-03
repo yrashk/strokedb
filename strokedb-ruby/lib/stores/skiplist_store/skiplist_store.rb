@@ -83,11 +83,27 @@ module StrokeDB
         chunk = Chunk.new(@cut_level)
       end
       a, b = chunk.insert(uuid, doc.to_raw)
-      @chunk_storage.save!(a)
-      master_chunk.insert(a.uuid, a.uuid)
+      
+      # if split
       if b
+        # rename chunk if the first chunk inconsistency detected 
+        if a.uuid != a.first_uuid
+          old_uuid = a.uuid
+          a.uuid = a.first_uuid
+          @chunk_storage.save!(a)
+          master_chunk.insert(a.uuid, a.uuid)
+          # remove old chunk
+          @chunk_storage.delete!(old_uuid)
+          master_chunk.delete(old_uuid)
+        else
+          @chunk_storage.save!(a)
+          master_chunk.insert(a.uuid, a.uuid)
+        end
         @chunk_storage.save!(b)
         master_chunk.insert(b.uuid, b.uuid)
+      else
+        @chunk_storage.save!(a)
+        master_chunk.insert(a.uuid, a.uuid)
       end
     end
   
