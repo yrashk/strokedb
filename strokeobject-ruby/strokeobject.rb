@@ -15,12 +15,6 @@ module Stroke
     def default_store=(store)
       Thread.current['StrokeObject.default_store'] = store
     end
-    def default_config
-      Thread.current['StrokeObject.default_config']
-    end
-    def default_config=(config)
-      Thread.current['StrokeObject.default_config'] = config
-    end
   end
   
   class NoDefaultStoreError < Exception ; end

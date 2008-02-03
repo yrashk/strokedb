@@ -1,5 +1,4 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
-require File.expand_path(File.dirname(__FILE__) + '../../../../strokeobject-ruby/strokeobject')
 
 describe "Config" do
 
@@ -11,7 +10,7 @@ describe "Config" do
   
   it "should be the default config if desired" do
     @config = StrokeDB::Config.new(true)
-    ::Stroke.default_config.should == @config
+    ::StrokeDB.default_config.should == @config
   end
   
   it "should have no storages or indexes on creation" do
@@ -75,7 +74,6 @@ describe "Config" do
     @config.add_index :default, :inverted_list, :index_storage
     @config.add_store :default, :skiplist, :fs, :cut_level => 4
     @config.stores[:default].should be_an_instance_of(SkiplistStore)
-    ::Stroke.default_store.should == @config.stores[:default]
   end
 
   after(:each) do

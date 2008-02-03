@@ -1,4 +1,4 @@
-require 'assistance/inflector.rb'
+require 'assistance/inflector'
 
 module StrokeDB
   class UnknownStorageTypeError < Exception ; end
@@ -10,7 +10,7 @@ module StrokeDB
       @storages = {}
       @indexes = {}
       @stores = {}
-      ::Stroke.default_config = self if default && Object.const_defined?(:Stroke)
+      ::StrokeDB.default_config = self if default
     end
     
     def [](name)
@@ -66,7 +66,6 @@ module StrokeDB
       options[:index] ||= @indexes[:default]
       store_instance = store_class.get_new(storage, options)
       @stores[key] = store_instance
-      ::Stroke.default_store = @stores[key] if key == :default && Object.const_defined?(:Stroke)
       return @stores[key]
     end
     
@@ -82,6 +81,15 @@ module StrokeDB
     
     def full_store_type(type)
       'StrokeDB::' + Inflector.classify(type.to_s) + 'Store'
+    end
+  end
+  
+  class <<self
+    def default_config
+      Thread.current['StrokeDB.default_config']
+    end
+    def default_config=(config)
+      Thread.current['StrokeDB.default_config'] = config
     end
   end
 end
