@@ -61,7 +61,8 @@ module StrokeDB
       rescue => e
         raise UnknownStoreTypeError, "Unable to load store type #{store_type}"
       end
-      storage ||= @storages[:default]
+      storage ||= :default
+      storage = @storages[storage]
       raise "Missing storage for store #{key}" unless storage
       options[:index] ||= @indexes[:default]
       store_instance = store_class.get_new(storage, options)

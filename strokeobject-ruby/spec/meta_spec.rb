@@ -48,7 +48,7 @@ describe "Meta module with name" do
   before(:each) do
     setup_index
     @mem_storage = StrokeDB::MemoryChunkStorage.new
-    Stroke.default_store = StrokeDB::SkiplistStore.new(@mem_storage,6, @index)
+    Stroke.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(@mem_storage,6,@index))
     @index.document_store = Stroke.default_store
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
@@ -66,7 +66,7 @@ describe "Meta instantiation without name" do
   before(:each) do
     setup_index
     @mem_storage = StrokeDB::MemoryChunkStorage.new
-    Stroke.default_store = StrokeDB::SkiplistStore.new(@mem_storage,6, @index)
+    Stroke.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(@mem_storage,6,@index))
     @index.document_store = Stroke.default_store
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)

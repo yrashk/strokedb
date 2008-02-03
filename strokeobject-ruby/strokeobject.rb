@@ -10,10 +10,7 @@ module Stroke
   #
   class <<self
     def default_store
-      Thread.current['StrokeObject.default_store']
-    end
-    def default_store=(store)
-      Thread.current['StrokeObject.default_store'] = store
+      StrokeDB.default_config.stores[:default]
     end
   end
   

@@ -3,12 +3,12 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 describe "StrokeObject initialization with store omitted", :shared => true do
 
   it "should raise an exception if no default store available" do
-    Stroke.default_store = nil
+    Stroke.stub!(:default_store).and_return(nil)
     lambda { StrokeObject.new(*@args) }.should raise_error(NoDefaultStoreError)
   end
 
   it "should use default store if available" do
-    Stroke.default_store = mock("Store")
+    Stroke.stub!(:default_store).and_return(mock("Store"))
     object = StrokeObject.new(*@args)
     object.store.should == Stroke.default_store
   end

@@ -65,6 +65,7 @@ describe "Config" do
     @config.add_storage :fs, :file_chunk, @paths.last
     @config.add_store :store, :skiplist, :fs, :cut_level => 4
     @config.stores[:store].should be_an_instance_of(SkiplistStore)
+    @config.stores[:store].chunk_storage.should == @config.storages[:fs]
   end
   
   it "should add a default store with default index" do
