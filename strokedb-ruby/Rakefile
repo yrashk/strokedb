@@ -1,17 +1,4 @@
-task :default => [:status, :ci, :jci, :bench]
-
-task :status do
-  o = `git-log | grep oleganza -c`.to_i
-  y = `git-log | grep yrashk -c`.to_i
-  sum = o + y
-  op = (o*100.0/sum).round
-  yp = (y*100.0/sum).round
-  puts ""
-  puts "        Commit status        "
-  puts "--------             --------"
-  puts "oleganza  #{op}% — #{yp}%  yrashk"
-  puts ""
-end
+task :default => [:ci, :jci, :bench]
 
 task :bench => [:benchmarks]
 task :benchmarks do
