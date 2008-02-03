@@ -7,9 +7,7 @@ module StrokeDB
   class Config
     attr_reader :storages, :indexes, :stores
     def initialize(default = false)
-      @storages = {}
-      @indexes = {}
-      @stores = {}
+      @storages, @indexes, @stores = {}, {}, {}
       ::StrokeDB.default_config = self if default
     end
     
@@ -18,12 +16,7 @@ module StrokeDB
     end
     
     def add_storage(key, type, *args)
-      storage_type = full_storage_type(type)
-      begin
-        storage_class = Inflector.constantize storage_type
-      rescue => e
-        raise UnknownStorageTypeError, "Unable to load storage type #{storage_type}"
-      end
+      storage_class = constantize(:storage,type)
       storage_instance = storage_class.new(*args)
       @storages[key] = storage_instance
       return @storages[key]
@@ -43,12 +36,7 @@ module StrokeDB
     alias :chain :chain_storages
     
     def add_index(key, type, storage_key, store_key = nil)
-      index_type = full_index_type(type)
-      begin
-        index_class = Inflector.constantize index_type
-      rescue => e
-        raise UnknownIndexTypeError, "Unable to load index type #{index_type}"
-      end
+      index_class = constantize(:index,type)
       index_instance = index_class.new(@storages[storage_key])
       index_instance.document_store = @stores[store_key] if store_key
       @indexes[key] = index_instance
@@ -56,12 +44,7 @@ module StrokeDB
     end
     
     def add_store(key, type, storage = nil, options = {})
-      store_type = full_store_type(type)
-      begin
-        store_class = Inflector.constantize store_type
-      rescue => e
-        raise UnknownStoreTypeError, "Unable to load store type #{store_type}"
-      end
+      store_class = constantize(:store,type)
       storage ||= :default
       storage = @storages[storage]
       raise "Missing storage for store #{key}" unless storage
@@ -74,17 +57,17 @@ module StrokeDB
     
     private
     
-    def full_storage_type(type)
-      'StrokeDB::' + Inflector.classify(type.to_s) + 'Storage'
+    def constantize(name,type)
+      Inflector.constantize(type_fullname(name,type))
+    rescue 
+      exception = Inflector.constantize("::StrokeDB::Unknown#{Inflector.classify(name.to_s)}TypeError")
+      raise exception, "Unable to load #{name} type #{type}"
     end
     
-    def full_index_type(type)
-      'StrokeDB::' + Inflector.classify(type.to_s) + 'Index'
+    def type_fullname(type, name)
+      "::StrokeDB::#{Inflector.classify(name.to_s)}#{Inflector.classify(type)}"
     end
     
-    def full_store_type(type)
-      'StrokeDB::' + Inflector.classify(type.to_s) + 'Store'
-    end
   end
   
   class <<self
