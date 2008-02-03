@@ -3,10 +3,10 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe "Database search" do
   
   before(:all) do
-    @path = "test/storages/database_search"
-    @f_storage = FileChunkStorage.new @path
+    @path = File.dirname(__FILE__) + "/../../test/storages/database_search"
+    @f_storage = FileChunkStorage.new(@path + "/storage")
     @f_storage.clear!
-    @index_storage = InvertedListFileStorage.new(@path)
+    @index_storage = InvertedListFileStorage.new(@path+"/index")
     @index_storage.clear!
     @index  = InvertedListIndex.new(@index_storage)
     @index2 = InvertedListIndex.new(@index_storage)
@@ -18,6 +18,10 @@ describe "Database search" do
     @profile_meta = @f_store.new_doc :name => 'Profile', 
                                      'non_indexable_slots' => [ :bio, :__version__, :__previous_version__ ]
     @profile_meta.save!
+  end
+  
+  after(:all) do
+    FileUtils.rm_rf @path
   end
   
   it "should add new doc" do
@@ -41,16 +45,19 @@ describe "Database search" do
     doc.save!
     @yura_uuid = doc.uuid
     results = @index.find(:name => "Yurii")
+    results.should_not be_empty
     results[0].uuid.should == @yura_uuid
   end
 
   it "should find all profiles" do
     results = @index.find(:__meta__ => @profile_meta)
+    results.should_not be_empty
     results.map(&:uuid).to_set == [ @yura_uuid, @oleg_uuid ].to_set 
   end
   
   it "should find all profiles from Ukraine" do
     results = @index.find(:__meta__ => @profile_meta, :state => 'Ukraine')
+    results.should_not be_empty
     results.map(&:uuid).to_set == [ @yura_uuid ].to_set 
   end
   
