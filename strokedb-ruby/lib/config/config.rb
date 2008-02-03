@@ -1,4 +1,4 @@
-require 'assistance/inflector'
+# require 'assistance/inflector'
 
 module StrokeDB
   class UnknownStorageTypeError < Exception ; end
@@ -58,14 +58,14 @@ module StrokeDB
     private
     
     def constantize(name,type)
-      Inflector.constantize(type_fullname(name,type))
+      type_fullname(name,type).constantize
     rescue 
-      exception = Inflector.constantize("::StrokeDB::Unknown#{Inflector.classify(name.to_s)}TypeError")
+      exception = "::StrokeDB::Unknown#{name.to_s.camelize}TypeError".constantize
       raise exception, "Unable to load #{name} type #{type}"
     end
     
     def type_fullname(type, name)
-      "::StrokeDB::#{Inflector.classify(name.to_s)}#{Inflector.classify(type)}"
+      "::StrokeDB::#{name.to_s.camelize}#{type.to_s.camelize}"
     end
     
   end
