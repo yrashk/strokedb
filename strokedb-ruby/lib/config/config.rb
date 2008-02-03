@@ -17,7 +17,6 @@ module StrokeDB
       storage_class = constantize(:storage,type)
       storage_instance = storage_class.new(*args)
       @storages[key] = storage_instance
-      return @storages[key]
     end
     
     def chain_storages(a, b, options = {})
@@ -38,7 +37,6 @@ module StrokeDB
       index_instance = index_class.new(@storages[storage_key])
       index_instance.document_store = @stores[store_key] if store_key
       @indexes[key] = index_instance
-      return @indexes[key]
     end
     
     def add_store(key, type, storage = nil, options = {})
@@ -50,7 +48,6 @@ module StrokeDB
       store_instance = store_class.get_new(storage, options)
       @stores[key] = store_instance
       options[:index].document_store = store_instance if options[:index]
-      return @stores[key]
     end
     
     private
