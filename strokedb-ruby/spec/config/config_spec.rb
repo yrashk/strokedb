@@ -76,6 +76,7 @@ describe "Config" do
     @config.add_index :default, :inverted_list, :index_storage
     @config.add_store :default, :skiplist, :fs, :cut_level => 4
     @config.stores[:default].should be_an_instance_of(SkiplistStore)
+    @config.indexes[:default].document_store.should == @config.stores[:default]
   end
 
   after(:each) do

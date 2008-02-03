@@ -42,14 +42,15 @@ module StrokeDB
     end
     alias :chain :chain_storages
     
-    def add_index(key, type, store_key)
+    def add_index(key, type, storage_key, store_key = nil)
       index_type = full_index_type(type)
       begin
         index_class = Inflector.constantize index_type
       rescue => e
         raise UnknownIndexTypeError, "Unable to load index type #{index_type}"
       end
-      index_instance = index_class.new(@storages[store_key])
+      index_instance = index_class.new(@storages[storage_key])
+      index_instance.document_store = @stores[store_key] if store_key
       @indexes[key] = index_instance
       return @indexes[key]
     end
@@ -67,6 +68,7 @@ module StrokeDB
       options[:index] ||= @indexes[:default]
       store_instance = store_class.get_new(storage, options)
       @stores[key] = store_instance
+      options[:index].document_store = store_instance if options[:index]
       return @stores[key]
     end
     
