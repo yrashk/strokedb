@@ -1,5 +1,3 @@
-# require 'assistance/inflector'
-
 module StrokeDB
   class UnknownStorageTypeError < Exception ; end
   class UnknownIndexTypeError < Exception ; end
