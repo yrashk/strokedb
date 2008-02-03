@@ -4,7 +4,7 @@ describe "Config" do
 
   before(:each) do
     @config = StrokeDB::Config.new
-    @root_path = 'test/config/'
+    @root_path = File.dirname(__FILE__) + '/../../test/storages/config/'
     @paths = []
   end
   
@@ -61,7 +61,8 @@ describe "Config" do
   end
 
   it "should add a store" do
-    @config.add_storage :fs, :file_chunk, 'file_chunk_storage_store'
+    @paths << (@root_path + "file_chunk_storage")
+    @config.add_storage :fs, :file_chunk, @paths.last
     @config.add_store :store, :skiplist, :fs, :cut_level => 4
     @config.stores[:store].should be_an_instance_of(SkiplistStore)
   end
