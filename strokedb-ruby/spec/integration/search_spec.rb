@@ -4,6 +4,7 @@ describe "Database search" do
   
   before(:all) do
     @path = File.dirname(__FILE__) + "/../../test/storages/database_search"
+    FileUtils.rm_rf @path
     @f_storage = FileChunkStorage.new(@path + "/storage")
     @f_storage.clear!
     @index_storage = InvertedListFileStorage.new(@path+"/index")
@@ -20,9 +21,10 @@ describe "Database search" do
     @profile_meta.save!
   end
   
-  after(:all) do
-    FileUtils.rm_rf @path
-  end
+  # Leave for investigation
+  # after(:all) do
+  #   FileUtils.rm_rf @path
+  # end
   
   it "should add new doc" do
     doc = @f_store.new_doc :name => "Oleg", :state => 'Russia', :age => 21, :__meta__ => @profile_meta
