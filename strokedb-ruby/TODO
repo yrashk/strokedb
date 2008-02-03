@@ -28,6 +28,11 @@ Config:
 	
 [ ] ...and split chaining and authoritative source, they are basically an orthogonal concepts.
 
+	config[:mem].authoritative_source = config[:fs]
+	
+[ ] Get rid of SkiplistStore.get_new; it doesn't look really nice. May be #initialize should be options-based 
+	(and all code needs to be updated), or... don't know, but I really don't like this .get_new [yrashk]
+
 InvertedList index:
 
 [ ] Optimize prefixes
