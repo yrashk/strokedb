@@ -11,6 +11,23 @@
 [x] Chained storages
 [x] Add reverse chaining for storages
 
+Config:
+
+[ ] Allow to chain any number of storages:
+	
+	config.chain :mem, :memcached, :fs
+	config.chain :memcached, :network
+	
+	These two calls made sequentially should build the following structure:
+	
+	mem <-> memcached <-> fs
+				^
+				|
+				V
+			 network
+	
+[ ] ...and split chaining and authoritative source, they are basically an orthogonal concepts.
+
 InvertedList index:
 
 [ ] Optimize prefixes
