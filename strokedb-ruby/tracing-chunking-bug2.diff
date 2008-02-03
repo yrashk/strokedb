@@ -1,0 +1,144 @@
+diff --git a/strokedb-ruby/lib/data_structures/inverted_list.rb b/strokedb-ruby/lib/data_structures/inverted_list.rb
+index b1e8952..67cf8d0 100644
+--- a/strokedb-ruby/lib/data_structures/inverted_list.rb
++++ b/strokedb-ruby/lib/data_structures/inverted_list.rb
+@@ -104,6 +104,14 @@ module StrokeDB
+   	    total = (first_pass ? results.to_set : (total & results))
+   	    first_pass = false
+ 	    end
++	    if total.to_a[0] == nil
++	      puts "Returning nil in a total set? O_o"
++        puts self.to_s_levels
++        puts "================================="
++	      puts self.to_s
++	      puts "================================="
++        pp self
++      end
+ 	    total
+   	end
+   	
+diff --git a/strokedb-ruby/lib/stores/inverted_list_index/inverted_list_index.rb b/strokedb-ruby/lib/stores/inverted_list_index/inverted_list_index.rb
+index a012646..1965dc1 100644
+--- a/strokedb-ruby/lib/stores/inverted_list_index/inverted_list_index.rb
++++ b/strokedb-ruby/lib/stores/inverted_list_index/inverted_list_index.rb
+@@ -12,7 +12,14 @@ module StrokeDB
+     
+     def find(*args)
+       find_uuids(*args).map do |uuid|
+-        @document_store.find(uuid)
++        doc = @document_store.find(uuid)
++        unless doc
++          puts "Wrong UUID o_O?"
++          puts uuid
++          pp doc
++          puts "=============================="
++        end
++        doc
+       end
+     end
+     
+diff --git a/strokedb-ruby/lib/stores/skiplist_store/chunk.rb b/strokedb-ruby/lib/stores/skiplist_store/chunk.rb
+index d0fc36f..33b2975 100644
+--- a/strokedb-ruby/lib/stores/skiplist_store/chunk.rb
++++ b/strokedb-ruby/lib/stores/skiplist_store/chunk.rb
+@@ -1,12 +1,13 @@
+ module StrokeDB
+   class Chunk
+     attr_accessor :skiplist, :next_chunk, :prev_chunk, :uuid, :cut_level 
+-    
++    attr_accessor :next_chunk_uuid  
+     def initialize(cut_level)
+       @skiplist, @cut_level = Skiplist.new({}, nil, cut_level), cut_level
+     end
+     
+     def insert(uuid, raw_doc, __cheaters_level = nil)
++      puts "Chunk#insert: uuid: #{@uuid.inspect}; doc.uuid = #{uuid}"
+       @uuid ||= uuid
+       a, new_list = skiplist.insert(uuid, raw_doc, __cheaters_level)
+       if new_list
+@@ -15,6 +16,7 @@ module StrokeDB
+         tmp.next_chunk = @next_chunk if @next_chunk
+         @next_chunk = tmp
+         @next_chunk.uuid = uuid
++        puts "Chunk#insert: Cut!"
+       end
+       # we don't update self.uuid 'cos don't like to change filename
+       # anyway, we would have to do it for the very first chunk only
+@@ -44,7 +46,7 @@ module StrokeDB
+   	  chunk = Chunk.new(raw['cut_level'])
+   	  chunk.uuid       = raw['uuid']
+   	  chunk.next_chunk = nil
+-
++      chunk.next_chunk_uuid = raw['next_uuid']
+       chunk.skiplist.raw_insert(raw['nodes']) do |rn|
+   	    [rn['key'], rn['value'], rn['forward'].size]
+   	  end
+@@ -70,7 +72,7 @@ module StrokeDB
+         'cut_level' => @cut_level, 
+         'uuid'      => @uuid,
+         # TODO: may not be needed
+-        'next_uuid' => next_chunk ? next_chunk.uuid : nil
++        'next_uuid' => @next_chunk_uuid || (@next_chunk ? @next_chunk.uuid : nil)
+       }
+   	end
+   	
+diff --git a/strokedb-ruby/lib/stores/skiplist_store/skiplist_store.rb b/strokedb-ruby/lib/stores/skiplist_store/skiplist_store.rb
+index 3fb70d6..d442630 100644
+--- a/strokedb-ruby/lib/stores/skiplist_store/skiplist_store.rb
++++ b/strokedb-ruby/lib/stores/skiplist_store/skiplist_store.rb
+@@ -78,10 +78,13 @@ module StrokeDB
+   private
+     
+     def insert_with_cut(uuid, doc, master_chunk)
++      puts "SkiplistStore#insert_with_cut(#{uuid})"
+       chunk_uuid = master_chunk.find_nearest(uuid)
+       unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
++        puts "SkiplistStore#insert_with_cut: New chunk to insert to! (inserting #{uuid} -> #{doc.inspect})"
+         chunk = Chunk.new(@cut_level)
+       end
++      # oleganza: here's the Devil, i suppose...
+       a, b = chunk.insert(uuid, doc.to_raw)
+       @chunk_storage.save!(a)
+       master_chunk.insert(a.uuid, a.uuid)
+diff --git a/strokedb-ruby/spec/integration/search_spec.rb b/strokedb-ruby/spec/integration/search_spec.rb
+index 51797dd..a4e14eb 100644
+--- a/strokedb-ruby/spec/integration/search_spec.rb
++++ b/strokedb-ruby/spec/integration/search_spec.rb
+@@ -3,8 +3,11 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+ describe "Database search" do
+   
+   before(:all) do
+-    @path = File.dirname(__FILE__) + "/../../test/storages/database_search"
++    @path  = File.dirname(__FILE__) + "/../../test/storages/database_search"
++    @path2 = File.dirname(__FILE__) + "/../../test/storages/database_search2"
+     FileUtils.rm_rf @path
++    FileUtils.rm_rf @path2
++    
+     @f_storage = FileChunkStorage.new(@path + "/storage")
+     @f_storage.clear!
+     @index_storage = InvertedListFileStorage.new(@path+"/index")
+@@ -19,6 +22,7 @@ describe "Database search" do
+     @profile_meta = @f_store.new_doc :name => 'Profile', 
+                                      'non_indexable_slots' => [ :bio, :__version__, :__previous_version__ ]
+     @profile_meta.save!
++    `cp -rf #{@path} #{@path2}`
+   end
+   
+   # Leave for investigation
+@@ -35,7 +39,7 @@ describe "Database search" do
+     results.should_not be_empty
+     results[0].uuid.should == @oleg_uuid
+   end
+-  
++=begin
+   it "should find doc in a separate index instance" do
+     results = @index2.find(:name => "Oleg", :__meta__ => @profile_meta)
+     results.should_not be_empty
+@@ -73,6 +77,6 @@ describe "Database search" do
+     results = @index.find(:name => 'Oleganza')
+     results[0].uuid.should == oleg.uuid
+   end
+-  
++=end  
+ end
+ 
