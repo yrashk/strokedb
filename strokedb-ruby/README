@@ -9,5 +9,5 @@ $ rake bench
 
 REQUIREMENTS
 
-$ sudo gem install diff-lcs
+$ sudo gem install diff-lcs assistance
 
