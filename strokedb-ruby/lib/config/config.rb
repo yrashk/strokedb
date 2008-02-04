@@ -19,16 +19,21 @@ module StrokeDB
       @storages[key] = storage_instance
     end
     
-    def chain_storages(a, b, options = {})
-      sa, sb = @storages[a], @storages[b]
-      raise "Missing storage #{a}" unless sa
-      raise "Missing storage #{b}" unless sb
-      sa.add_chained_storage!(sb)
-      if xopt = options[:authoritative]
-        sa.authoritative_source = sb if xopt == b
-        sb.authoritative_source = sa if xopt == a
+    def chain_storages(*args)
+      raise "Too few storages" unless args.size >= 2
+      chained = []
+      sb = nil
+      args[0,args.length-1].each_with_index do |storage_key, index|
+        next_storage_key = args[index]+1
+        sa = @storages[storage_key]
+        sb = @storages[next_storage_key]
+        raise "Missing storage #{storage_key}" unless sa
+        raise "Missing storage #{next_storage_key}" unless sb
+        @storages[sa].add_chained_storage!(sb)
+        chained << sa
       end
-      return sa, sb
+      chained << sb
+      return chained
     end
     alias :chain :chain_storages
     
