@@ -20,20 +20,11 @@ module StrokeDB
     end
     
     def chain_storages(*args)
-      raise "Too few storages" unless args.size >= 2
-      chained = []
-      sb = nil
-      args[0,args.length-1].each_with_index do |storage_key, index|
-        next_storage_key = args[index]+1
-        sa = @storages[storage_key]
-        sb = @storages[next_storage_key]
-        raise "Missing storage #{storage_key}" unless sa
-        raise "Missing storage #{next_storage_key}" unless sb
-        @storages[sa].add_chained_storage!(sb)
-        chained << sa
+      raise "Not enough storages to chain storages" unless args.size >= 2
+      ss = args.map{|x| @storages[x] || raise("Missing storage #{x}")}
+      (0..ss.length-2).each do |idx|
+        ss[idx].add_chained_storage!(ss[idx+1])
       end
-      chained << sb
-      return chained
     end
     alias :chain :chain_storages
     

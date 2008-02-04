@@ -34,21 +34,31 @@ describe "Config" do
     lambda { @config.add_storage :unknown, :unknown_storage_type }.should raise_error(StrokeDB::UnknownStorageTypeError)
   end
   
+  it "should raise an exception on chain with insufficient storages" do
+    lambda { @config.chain }.should raise_error
+    @config.add_storage :mem, :memory_chunk
+    lambda { @config.chain :mem }.should raise_error
+  end
+
+  it "should raise an exception on chain with undefined storages" do
+    lambda { @config.chain :not_here }.should raise_error
+  end
+
   it "should chain storages together" do
     @paths << (@root_path + "file_chunk_storage_chain")
     @config.add_storage :mem1, :memory_chunk
     @config.add_storage :mem2, :memory_chunk
     @config.add_storage :fs, :file_chunk, @paths.last
     @config.chain :mem1, :mem2, :fs
-    @config.storages[:mem1].has_chained_storage?(@config.storages[:fs]).should be_true
     @config.storages[:mem1].has_chained_storage?(@config.storages[:mem2]).should be_true
     @config.storages[:mem2].has_chained_storage?(@config.storages[:fs]).should be_true
-    @config.storages[:mem2].has_chained_storage?(@config.storages[:mem1]).should be_true
-    @config.storages[:fs].has_chained_storage?(@config.storages[:mem1]).should be_true
     @config.storages[:fs].has_chained_storage?(@config.storages[:mem2]).should be_true
+    @config.storages[:mem2].has_chained_storage?(@config.storages[:mem1]).should be_true
     @config.storages[:mem1].has_chained_storage?(@config.storages[:mem1]).should be_false
     @config.storages[:mem2].has_chained_storage?(@config.storages[:mem2]).should be_false
-    @config.storages[:fs].has_chained_storage?(@config.storages[:fs]).should be_true
+    @config.storages[:fs].has_chained_storage?(@config.storages[:fs]).should be_false
+    @config.storages[:mem1].has_chained_storage?(@config.storages[:fs]).should be_false
+    @config.storages[:fs].has_chained_storage?(@config.storages[:mem1]).should be_false
   end
 
   it "should add an index" do
