@@ -13,7 +13,7 @@
 
 Config:
 
-[ ] Allow to chain any number of storages:
+[x] Allow to chain any number of storages:
 	
 	config.chain :mem, :memcached, :fs
 	config.chain :memcached, :network
@@ -26,7 +26,7 @@ Config:
 				V
 			 network
 	
-[ ] ...and split chaining and authoritative source, they are basically an orthogonal concepts.
+[x] ...and split chaining and authoritative source, they are basically an orthogonal concepts.
 
 	config[:mem].authoritative_source = config[:fs]
 	
