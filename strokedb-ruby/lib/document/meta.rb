@@ -26,7 +26,8 @@ module StrokeDB
         end
         meta_doc
       end
-
+      
+      
       private
 
       def extract_meta_name(*args)
@@ -39,10 +40,15 @@ module StrokeDB
 
     end
 
+    def on_meta_initialization(&block)
+      @on_meta_initialization_block = block
+    end
+
     def new(*args)
       doc = Document.new(*args)
       doc.extend(self)
       doc[:__meta__] = document(doc.store)
+      @on_meta_initialization_block.call(doc) if @on_meta_initialization_block
       doc
     end
 
@@ -60,14 +66,15 @@ module StrokeDB
       args << {} unless args.last.is_a?(Hash)
       args.last[:__meta__] = Meta.document(store)
       args.last[:name] ||= name
-      unless meta_doc = store.index_store ? store.index_store.find(:name => args.last[:name], 
+      unless meta_doc = (store.respond_to?(:index_store) && store.index_store) ? store.index_store.find(:name => args.last[:name], 
         :__meta__ => Meta.document(store)).first : nil
         meta_doc = Document.new(*args)
         meta_doc.extend(Meta)
         meta_doc.save!
       else
-        if (diff = Document.new(*args).diff(meta_doc)).different?
-          diff.patch!(meta_doc)
+        if (new_doc = Document.new(*args)).version != meta_doc.version
+          meta_doc.slotnames.each {|slotname| meta_doc.remove_slot!(slotname) }
+          new_doc.slotnames.each {|slotname| meta_doc[slotname] = new_doc[slotname]}
           meta_doc.save!
         end
       end

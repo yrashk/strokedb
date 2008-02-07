@@ -46,7 +46,7 @@ module StrokeDB
         do_initialize(*args)
       end
     end
-    
+
 
     def [](slotname)
       if slot = @slots[slotname.to_s]
@@ -233,7 +233,7 @@ module StrokeDB
 
 
 
-  
+
   module VersionedDocument
     def to_json(opts={})
       return "\"@##{uuid_version}\"" if opts[:slot_serialization]

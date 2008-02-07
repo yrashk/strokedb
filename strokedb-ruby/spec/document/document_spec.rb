@@ -1,5 +1,8 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
+# TODO:
+# * test calling callbacks from #new and .from_raw: after_initialize
+
 describe "Document" do
 
   before(:each) do
