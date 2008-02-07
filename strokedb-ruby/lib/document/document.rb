@@ -34,7 +34,7 @@ module StrokeDB
 
     end
 
-    def self.create(store, slots={})
+    def self.create!(store, slots={})
       new(store,slots).save!
     end
 

@@ -14,7 +14,7 @@ describe "Merging store" do
   end
   
   it "should pass new version of document as is if it's previous version is a last version in the store" do
-    @original_document = Document.create(@store, :slot1 => 1)
+    @original_document = Document.create!(@store, :slot1 => 1)
     @new_version = Document.from_raw(@merging_store,@original_document.uuid,@original_document.to_raw)
     @new_version[:slot1] = 2
 
@@ -23,7 +23,7 @@ describe "Merging store" do
   end
   
   it "should raise exception if document's previous version isn't the last version in the store and no merge strategy is specified" do
-    @original_document = Document.create(@store, :slot1 => 1)
+    @original_document = Document.create!(@store, :slot1 => 1)
     @new_version = Document.from_raw(@merging_store,@original_document.uuid,@original_document.to_raw)
     @original_document[:slot2] = 2
     @original_document.save!
@@ -38,8 +38,8 @@ describe "Merging store" do
     Object.send!(:remove_const,'SomeMerge') if defined?(SomeMerge)
     SomeMerge = Class.new(MergeStrategy)
 
-    @meta = Document.create(@store,:__merge_strategy__ => 'some_merge')
-    @original_document = Document.create(@store, :slot1 => 1, :__meta__ => @meta)
+    @meta = Document.create!(@store,:__merge_strategy__ => 'some_merge')
+    @original_document = Document.create!(@store, :slot1 => 1, :__meta__ => @meta)
     @new_version = Document.from_raw(@merging_store,@original_document.uuid,@original_document.to_raw)
     @original_document[:slot2] = 2
     @original_document.save!
@@ -65,7 +65,7 @@ describe "SimplePatchMergeStrategy" do
   end
   
   it "should patch new document against changes between its previous version and last version in the store" do
-    @document = Document.create(@store, :data => "abcdef")
+    @document = Document.create!(@store, :data => "abcdef")
     @new_version = Document.from_raw(@another_store,@document.uuid,@document.to_raw)
     @new_version[:a] = 1
     @new_version.save!

@@ -9,7 +9,7 @@ describe "Document" do
   it "should be able to be created instantly" do
     @store.should_receive(:save!).with(anything)
     @store.should_receive(:exists?).with(anything).any_number_of_times.and_return(false)
-    @document = Document.create(@store,:slot1 => 1)
+    @document = Document.create!(@store,:slot1 => 1)
   end
   
 end
