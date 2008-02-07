@@ -261,15 +261,34 @@ describe "Valid Document's JSON with multiple meta names specified" do
   end
 
   it "should load all available meta modules" do
-    Object.send!(:remove_const,'SomeDocument0') if defined?(SomeDocument1)
-    SomeDocument0 = Module.new
-    Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument3)
-    SomeDocument2 = Module.new
-    
+    Object.send!(:remove_const,'SomeDocument0') if defined?(SomeDocument0)
+    SomeDocument0 = Meta.new
+    Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
+    SomeDocument2 = Meta.new
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     doc.should be_a_kind_of(SomeDocument0)
     doc.should be_a_kind_of(SomeDocument2)
   end
+  
+  it "should call all on_meta_initialization callbacks for all available meta modules" do
+    Object.send!(:remove_const,'SomeDocument0') if defined?(SomeDocument0)
+    SomeDocument0 = Meta.new do
+        on_meta_initialization do |doc|
+          doc.instance_variable_set(:@callback_0_called,true)
+        end
+    end
+    Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
+    SomeDocument2 = Meta.new do
+      on_meta_initialization do |doc|
+        doc.instance_variable_set(:@callback_2_called,true)
+      end
+    end
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc.instance_variable_get(:@callback_0_called).should be_true
+    doc.instance_variable_get(:@callback_2_called).should be_true
+  end
+  
+  
 
 end
 
