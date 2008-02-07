@@ -11,7 +11,7 @@ module MetaModuleSpecHelper
 end
 
 describe "Meta module", :shared => true do
-  it "should be able to instantiate new StrokeObject which is also SomeName" do
+  it "should be able to instantiate new Document which is also SomeName" do
     obj = SomeName.new
     obj.should be_a_kind_of(Document)
     obj.should be_a_kind_of(SomeName)
