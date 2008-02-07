@@ -91,6 +91,7 @@ describe "Meta module with on_meta_initialization callback" do
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
       on_meta_initialization do |obj|
+        obj.instance_variable_set(:@obj,obj)
         send!(:hello!)
       end
     end
@@ -99,6 +100,7 @@ describe "Meta module with on_meta_initialization callback" do
   it "should call callback block on meta instantiation" do
     SomeName.should_receive(:hello!)
     s = SomeName.new
+    s.instance_variable_get(:@obj).should == s
   end
 
 end
