@@ -24,7 +24,6 @@ else
   puts "We've found him!"
 end
 
-puts u.meta.is_a?(StrokeDB::Meta)
 puts u
 
 puts config.stores[:default].map{|d| d.to_json }.join
