@@ -26,6 +26,8 @@ else
 end
 puts u
 
+puts config.stores[:default].map{|d| d.to_json }.join
+
 config[:mem].sync_chained_storages!
 
  

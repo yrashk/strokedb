@@ -7,12 +7,12 @@ module StrokeDB
       @cut_level = cut_level
       @index_store = index_store
     end
-    
+
     def self.get_new(storage, options = {})
       raise "Missing cut_level" unless options[:cut_level]
       new(storage, options[:cut_level], options[:index])
     end
-    
+
     def find(uuid, version=nil)
       uuid_version = uuid + (version ? ".#{version}" : "") 
       master_chunk = @chunk_storage.find('MASTER')
@@ -44,9 +44,9 @@ module StrokeDB
 
       insert_with_cut(doc.uuid,         doc, master_chunk)
       insert_with_cut(doc.uuid_version, doc, master_chunk)
-      
+
       @chunk_storage.save!(master_chunk)
-      
+
       # Update index
       if @index_store
         if doc.previous_version
@@ -57,7 +57,7 @@ module StrokeDB
         @index_store.save!
       end
     end  
-  
+
     def full_dump
       puts "Full storage dump:"
       m = @chunk_storage.find('MASTER')
@@ -74,16 +74,34 @@ module StrokeDB
         end
       end
     end
-  
-  private
+
+    def each(options = {})
+      return nil unless m = @chunk_storage.find('MASTER')  # no master chunk yet
+      m.each do |node|
+        chunk = @chunk_storage.find(node.value)
+        chunk.each  do |node| 
+          if node.key.match(/#{UUID_RE}$/) || (options[:include_versions] && node.key.match(/#{UUID_RE}.#{VERSION_RE}/) )
+            yield Document.from_raw(self, node.key, node.value) 
+          end
+        end if chunk
+      end
+    end
     
+    def each_with_versions(&block)
+      each(:include_versions => true,&block)
+    end
+
+    include Enumerable
+
+    private
+
     def insert_with_cut(uuid, doc, master_chunk)
       chunk_uuid = master_chunk.find_nearest(uuid)
       unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
         chunk = Chunk.new(@cut_level)
       end
       a, b = chunk.insert(uuid, doc.to_raw)
-      
+
       # if split
       if b
         # rename chunk if the first chunk inconsistency detected 
@@ -106,7 +124,7 @@ module StrokeDB
         master_chunk.insert(a.uuid, a.uuid)
       end
     end
-  
+
     def find_or_create_master_chunk
       if master_chunk = @chunk_storage.find('MASTER')
         return master_chunk 
@@ -116,6 +134,6 @@ module StrokeDB
       @chunk_storage.save!(master_chunk)
       master_chunk
     end
-    
+
   end
 end

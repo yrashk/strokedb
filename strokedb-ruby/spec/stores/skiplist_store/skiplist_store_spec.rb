@@ -41,6 +41,65 @@ describe "Empty chunk store" do
 end
 
 
+describe "Non-empty chunk store" do
+
+  before(:each) do
+    # Mock documents, mock chunk storages.
+    # But don't mock Chunk. Chunk is an essential part of skiplist technology™
+
+    chunk_storage = MemoryChunkStorage.new
+    @store = SkiplistStore.new(chunk_storage, 4)
+    
+    @documents = []
+    10.times do |i|
+      document = mock("Document")
+      uuid = Util.random_uuid
+      ver = Array.new(64,'1').join
+      document.stub!(:uuid).and_return uuid
+      document.stub!(:to_raw).and_return({:stuff => i})
+      document.stub!(:version).and_return ver
+      document.stub!(:uuid_version).and_return "#{uuid}.#{ver}"
+      document.stub!(:all_versions).and_return [ver]
+      document.should_receive(:versions).any_number_of_times.and_return(ver => "version of #{uuid}")
+      @documents << document
+      Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i}).any_number_of_times.and_return(document) 
+      Document.should_receive(:from_raw).with(@store, "#{uuid}.#{ver}", {:stuff => i}).any_number_of_times.and_return("version of #{uuid}") 
+    end
+    
+    @documents.each {|document| @store.save!(document) }
+  end
+  
+  it "should iterate over all stored documents" do
+    iterated_documents = []
+    @store.each do |doc|
+      iterated_documents << doc
+    end
+    iterated_documents.to_set.should == @documents.to_set
+  end
+
+  it "should iterate over all stored documents and their versions if told so" do
+    iterated_documents = []
+    @store.each_with_versions do |doc|
+      iterated_documents << doc
+    end
+    documents_with_versions = @documents.clone
+    @documents.each do |doc|
+      doc.all_versions.each do |v|
+        documents_with_versions << doc.versions[v]
+      end
+    end
+    iterated_documents.to_set.should == documents_with_versions.to_set
+  end
+  
+  it "should be Enumerable" do
+    @store.should be_a_kind_of(Enumerable)
+  end
+
+  
+  
+
+end
+
 
 describe "[Regression] First chunk cut" do
 
