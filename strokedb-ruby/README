@@ -11,3 +11,4 @@ REQUIREMENTS
 
 $ sudo gem install diff-lcs activesupport uuidtools
 
+Note: There is no need in uuidtools for JRuby version
