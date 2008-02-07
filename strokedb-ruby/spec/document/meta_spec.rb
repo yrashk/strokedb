@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 module MetaModuleSpecHelper
 
@@ -13,7 +13,7 @@ end
 describe "Meta module", :shared => true do
   it "should be able to instantiate new StrokeObject which is also SomeName" do
     obj = SomeName.new
-    obj.should be_a_kind_of(StrokeObject)
+    obj.should be_a_kind_of(Document)
     obj.should be_a_kind_of(SomeName)
   end
 
@@ -48,8 +48,8 @@ describe "Meta module with name" do
   before(:each) do
     setup_index
     @mem_storage = StrokeDB::MemoryChunkStorage.new
-    Stroke.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(@mem_storage,6,@index))
-    @index.document_store = Stroke.default_store
+    StrokeDB.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(@mem_storage,6,@index))
+    @index.document_store = StrokeDB.default_store
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     @meta = Meta.new(:name => "SomeName")  
@@ -66,8 +66,8 @@ describe "Meta instantiation without name" do
   before(:each) do
     setup_index
     @mem_storage = StrokeDB::MemoryChunkStorage.new
-    Stroke.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(@mem_storage,6,@index))
-    @index.document_store = Stroke.default_store
+    StrokeDB.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(@mem_storage,6,@index))
+    @index.document_store = StrokeDB.default_store
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new

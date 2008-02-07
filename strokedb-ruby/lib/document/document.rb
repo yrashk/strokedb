@@ -7,6 +7,13 @@ module StrokeDB
       @meta_name = meta_name
     end
   end
+  class SlotNotFoundError < Exception 
+    attr_reader :slotname
+    def initialize(slotname)
+      @slotname = slotname
+    end
+  end
+
   class Document
     attr_reader :uuid, :store
 
@@ -31,12 +38,15 @@ module StrokeDB
       new(store,slots).save!
     end
 
-    def initialize(store, slots={})
-      @store = store
-      @uuid = Util.random_uuid
-      initialize_slots(slots)
-      after_initialize
+    def initialize(*args)
+      if args.first.is_a?(Hash) || args.empty?
+        raise NoDefaultStoreError.new unless StrokeDB.default_store
+        do_initialize(StrokeDB.default_store,*args)
+      else
+        do_initialize(*args)
+      end
     end
+    
 
     def [](slotname)
       if slot = @slots[slotname.to_s]
@@ -108,7 +118,7 @@ module StrokeDB
     def self.from_raw(store, uuid, raw_slots)
       doc = new(store, raw_slots)
       raise VersionMismatchError.new if raw_slots['__version__'] != doc.send!(:calculate_version)
-      
+
       meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
       meta_modules.each do |meta_module|
         doc.extend(meta_module)
@@ -170,7 +180,24 @@ module StrokeDB
       uuid + (version ? ".#{version}" : "")
     end
 
+    def method_missing(sym,*args,&block)
+      sym = sym.to_s
+      if sym.ends_with?('=')
+        send(:[]=,sym.chomp('='),*args)
+      else
+        raise SlotNotFoundError.new(sym) unless slotnames.include?(sym)
+        send(:[],sym)
+      end
+    end
+
     protected
+
+    def do_initialize(store, slots={})
+      @store = store
+      @uuid = Util.random_uuid
+      initialize_slots(slots)
+      after_initialize
+    end
 
     def initialize_slots(slots)
       @slots = Util::HashWithSortedKeys.new
@@ -187,7 +214,7 @@ module StrokeDB
 
     def after_initialize
     end
-    
+
     def self.collect_meta_modules(store,meta)
       meta_names = []
       meta = 
@@ -204,6 +231,9 @@ module StrokeDB
 
   end
 
+
+
+  
   module VersionedDocument
     def to_json(opts={})
       return "\"@##{uuid_version}\"" if opts[:slot_serialization]

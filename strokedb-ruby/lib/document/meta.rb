@@ -1,4 +1,4 @@
-module Stroke
+module StrokeDB
 
   module Meta
 
@@ -17,10 +17,10 @@ module Stroke
       end
 
       def document(store=nil)
-        store ||= Stroke.default_store
-        raise NoDefaultStoreError.new unless Stroke.default_store
+        store ||= StrokeDB.default_store
+        raise NoDefaultStoreError.new unless StrokeDB.default_store
         unless meta_doc = store.find(NIL_UUID)
-          meta_doc = StrokeObject.new(store,:name => '::Stroke::Meta')
+          meta_doc = Document.new(store,:name => '::Stroke::Meta')
           meta_doc.instance_variable_set(:@uuid,NIL_UUID) # hack that ensures that meta meta is uniquely identified by nil uuid
           meta_doc.save!
         end
@@ -40,7 +40,7 @@ module Stroke
     end
 
     def new(*args)
-      doc = StrokeObject.new(*args)
+      doc = Document.new(*args)
       doc.extend(self)
       doc[:__meta__] = document(doc.store)
       doc
@@ -53,8 +53,8 @@ module Stroke
 
 
     def document(store=nil)
-      store ||= Stroke.default_store
-      raise NoDefaultStoreError.new unless Stroke.default_store
+      store ||= StrokeDB.default_store
+      raise NoDefaultStoreError.new unless StrokeDB.default_store
       args = @args.clone
       args.unshift(store) if args.first.is_a?(Hash)
       args << {} unless args.last.is_a?(Hash)
@@ -62,11 +62,11 @@ module Stroke
       args.last[:name] ||= name
       unless meta_doc = store.index_store ? store.index_store.find(:name => args.last[:name], 
         :__meta__ => Meta.document(store)).first : nil
-        meta_doc = StrokeObject.new(*args)
+        meta_doc = Document.new(*args)
         meta_doc.extend(Meta)
         meta_doc.save!
       else
-        if (diff = StrokeObject.new(*args).diff(meta_doc)).different?
+        if (diff = Document.new(*args).diff(meta_doc)).different?
           diff.patch!(meta_doc)
           meta_doc.save!
         end

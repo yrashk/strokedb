@@ -11,6 +11,7 @@ describe "Document" do
     @store.should_receive(:exists?).with(anything).any_number_of_times.and_return(false)
     @document = Document.create(@store,:slot1 => 1)
   end
+  
 end
 
 describe "Newly created Document" do
@@ -288,3 +289,67 @@ describe "Invalid Document's JSON (i.e. incorrect __version__)" do
     end.should raise_error(VersionMismatchError)
   end
 end
+
+
+describe "Document initialization with store omitted", :shared => true do
+
+  it "should raise an exception if no default store available" do
+    StrokeDB.stub!(:default_store).and_return(nil)
+    lambda { Document.new(*@args) }.should raise_error(NoDefaultStoreError)
+  end
+
+  it "should use default store if available" do
+    StrokeDB.stub!(:default_store).and_return(mock("Store"))
+    doc = Document.new(*@args)
+    doc.store.should == StrokeDB.default_store
+  end
+
+end
+
+describe "Document initialization with store omitted but with some slots specified" do
+
+  before(:each) do
+    @args = [{:slot1 => 1}]
+  end
+  
+  it_should_behave_like "Document initialization with store omitted"
+
+end
+
+describe "Document initialization with store omitted but with no slots specified" do
+
+  before(:each) do
+    @args = []
+  end
+  
+  it_should_behave_like "Document initialization with store omitted"
+
+end
+
+describe "Document", :shared => true do
+  it "should allow to read slot by reader method" do
+    @doc.slot1.should == 1
+  end
+
+  it "should raise an exception if slot not found when trying to read it" do
+    lambda { @doc.slot_that_never_can_exist }.should raise_error(SlotNotFoundError)
+  end
+
+  it "should allow to write slot by writer method" do
+    @doc.slot1 = 2
+    @doc.slot1.should == 2
+  end
+  
+end
+
+describe "Newly created Document" do
+
+  before(:each) do
+    @store = mock("Store")
+    @doc = Document.new(@store,:slot1 => 1)
+  end
+
+  it_should_behave_like "Document"
+
+end
+
