@@ -18,6 +18,13 @@ describe "Meta module", :shared => true do
     obj.should be_a_kind_of(SomeName)
   end
   
+  it "should be able to instantiate new Document and save it" do
+    new_doc = mock("new doc")
+    new_doc.should_receive(:save!)
+    SomeName.should_receive(:new).and_return(new_doc)
+    obj = SomeName.create!
+  end
+  
   it "should have corresponding document" do
     doc = SomeName.document
     doc.should_not be_nil

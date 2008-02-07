@@ -51,6 +51,10 @@ module StrokeDB
       @on_meta_initialization_block.call(doc) if @on_meta_initialization_block
       doc
     end
+    
+    def create!(*args)
+      new(*args).save!
+    end
 
     def inspect
       "<META #{name}>"
