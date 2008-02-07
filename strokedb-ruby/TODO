@@ -11,6 +11,7 @@
 [x] Chained storages
 [x] Add reverse chaining for storages
 [ ] add created_at/updated_at to Document by default?
+[ ] Convert Diff to meta
 
 Config:
 
