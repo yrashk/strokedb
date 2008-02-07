@@ -196,7 +196,6 @@ module StrokeDB
       @store = store
       @uuid = Util.random_uuid
       initialize_slots(slots)
-      after_initialize
     end
 
     def initialize_slots(slots)
@@ -212,8 +211,6 @@ module StrokeDB
       Util.sha(to_json(:except => '__version__'))
     end
 
-    def after_initialize
-    end
 
     def self.collect_meta_modules(store,meta)
       meta_names = []
