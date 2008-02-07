@@ -9,5 +9,5 @@ $ rake bench
 
 REQUIREMENTS
 
-$ sudo gem install diff-lcs activesupport
+$ sudo gem install diff-lcs activesupport uuidtools
 
