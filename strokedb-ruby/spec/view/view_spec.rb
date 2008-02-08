@@ -13,17 +13,7 @@ describe "View without map_with and reduce_with blocks" do
     10.times do |i|
       @documents << Document.create!(:i => i)
     end
-    # vd = @view.documents.sort_by {|z| z.version}
-    # d = (@documents + [Meta.document,View.document]).sort_by {|z| z.version}
-    # vd.each_with_index do |vde,i|
-    #   puts "#{i} #{vde == d[i]}"
-    #   unless vde == d[i]
-    #     puts "mismatch: #{vde} #{d[i]} // #{vde.uuid} #{d[i].uuid}" 
-    #     puts "#{vde.class} #{d[i].class}"
-    #   end
-    # end
     @view.documents.sort_by {|doc| doc.uuid}.should == (@documents + [Meta.document,View.document]).sort_by {|doc| doc.uuid}
-    # @view.documents.to_set.should == (@documents + [Meta.document,View.document]).to_set
   end
 
 end
