@@ -3,20 +3,15 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe "Diffing documents with slot changed and slot's diff strategy is specified on meta" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
     Object.send!(:remove_const,'Slot1Diff') if defined?(Slot1Diff)
     Slot1Diff = Class.new(SlotDiffStrategy)
     Slot1Diff.should_receive(:diff).with(1,2).and_return(3)
 
-    @meta = Document.new @store, :__diff_strategy_slot1__ => 'slot_1_diff'
+    @meta = Document.create! :__diff_strategy_slot1__ => 'slot_1_diff'
 
-    @store.should_receive(:find).with(@meta.uuid).any_number_of_times.and_return(@meta)
-
-    @from = Document.new @store, :slot1 => 1, :__meta__ => @meta
-    @to = Document.new @store, :slot1 => 2, :__meta__ => @meta
-
-    @store.should_receive(:find).with(@from.uuid).any_number_of_times.and_return(@from)
-    @store.should_receive(:find).with(@to.uuid).any_number_of_times.and_return(@to)
+    @from = Document.create! :slot1 => 1, :__meta__ => @meta
+    @to = Document.create! :slot1 => 2, :__meta__ => @meta
 
     @diff = @to.diff(@from)
   end
@@ -31,19 +26,14 @@ end
 describe "Diffing documents with slot changed and slot's diff strategy is specified on meta, but there is no such diff strategy" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
+
     Object.send!(:remove_const,'Slot1Diff') if defined?(Slot1Diff)
+    @meta = Document.create! :__diff_strategy_slot1__ => 'slot_1_diff'
 
-    @meta = Document.new @store, :__diff_strategy_slot1__ => 'slot_1_diff'
-    @store.should_receive(:find).with(@meta.uuid).any_number_of_times.and_return(@meta)
-
-    @from = Document.new @store, :slot1 => 1, :__meta__ => @meta
-    @to = Document.new @store, :slot1 => 2, :__meta__ => @meta
+    @from = Document.create! :slot1 => 1, :__meta__ => @meta
+    @to = Document.create! :slot1 => 2, :__meta__ => @meta
     
-    @store.should_receive(:find).with(@from.uuid).any_number_of_times.and_return(@from)
-    @store.should_receive(:find).with(@to.uuid).any_number_of_times.and_return(@to)
-    
-
     @diff = @to.diff(@from)
   end
 
@@ -56,22 +46,16 @@ end
 describe "Diffing documents with slot changed and slot's diff strategy is specified on meta, but diff strategy is invalid" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
     Object.send!(:remove_const,'Slot1Diff') if defined?(Slot1Diff)
 
     Slot1Diff = Class.new
 
-    @meta = Document.new @store, :__diff_strategy_slot1__ => 'slot_1_diff'
+    @meta = Document.create! :__diff_strategy_slot1__ => 'slot_1_diff'
 
-    @store.should_receive(:find).with(@meta.uuid).any_number_of_times.and_return(@meta)
-
-    @from = Document.new @store, :slot1 => 1, :__meta__ => @meta
-    @to = Document.new @store, :slot1 => 2, :__meta__ => @meta
+    @from = Document.create! :slot1 => 1, :__meta__ => @meta
+    @to = Document.create! :slot1 => 2, :__meta__ => @meta
     
-    @store.should_receive(:find).with(@from.uuid).any_number_of_times.and_return(@from)
-    @store.should_receive(:find).with(@to.uuid).any_number_of_times.and_return(@to)
-    
-
     @diff = @to.diff(@from)
   end
 

@@ -1,3 +1,6 @@
+require 'rake'
+require 'spec/rake/spectask'
+
 task :default => [:ci, :jci, :bench]
 
 task :bench => [:benchmarks]
@@ -20,4 +23,23 @@ task :jci do
   else
     puts "jruby was not found in PATH (`which jruby` gives nothing)"
   end
+end
+
+desc "Run all examples with RCov"
+Spec::Rake::SpecTask.new('spec_rcov') do |t|
+  t.spec_files = FileList['spec/**/*.rb']
+  t.rcov = true
+  t.rcov_opts = ['--exclude', 'spec,strokedb.rb','--sort','coverage','--xrefs']
+end
+
+STATS_DIRECTORIES = [
+  %w(Code        lib),
+  %w(Specs       spec)
+].collect { |name, dir| [ name, "#{File.dirname(__FILE__)}/#{dir}" ] }.select { |name, dir| File.directory?(dir) }
+
+desc "Report code statistics (KLOCs, etc) from the application"
+task :stats do
+  require 'code_statistics'
+  CodeStatistics.const_set(:TEST_TYPES,%w(Specs))
+  CodeStatistics.new(*STATS_DIRECTORIES).to_s
 end

@@ -1,6 +1,5 @@
-$:.unshift File.dirname(__FILE__) + "/../../strokedb-ruby"
 $:.unshift File.dirname(__FILE__) + "/.."
-require "strokeobject"
+require "strokedb"
 
 config = StrokeDB::Config.new(true)
 
@@ -16,15 +15,18 @@ config.add_index :default, :inverted_list, :index_storage
 config.add_store :default, :skiplist, :mem, :cut_level => 4
 
 
-User = Stroke::Meta.new
+User = StrokeDB::Meta.new
 unless u = config.indexes[:default].find(:__meta__ => User.document, :email => "yrashk@gmail.com").first
   puts "User not found, creating new user"
-  u = User.new :email => "yrashk@gmail.com"
-  u.save!
+  u = User.create! :email => "yrashk@gmail.com"
 else
   puts "We've found him!"
 end
+
+au = User.create! :email => "#{rand(100)}@gmail.com"
+
 puts u
+puts u.diff(au)
 
 config[:mem].sync_chained_storages!
 

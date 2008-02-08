@@ -62,19 +62,18 @@ module StrokeDB
     end
   end
 
-  class Diff < Document
-    def initialize(store,from,to)
-      @from, @to = from, to
-      super(store, :__from__ => from, :__to__ => to)
-      compute_diff
+  Diff = Meta.new do
+
+    on_meta_initialization do |diff|
+      diff.send!(:compute_diff) if diff.new?
     end
-    
+
     def from
-      @from || self[:__from__]
+      self[:__from__]
     end
-    
+
     def to
-      @to || self[:__to__]
+      self[:__to__]
     end
 
     def removed_slots
@@ -88,7 +87,7 @@ module StrokeDB
     def updated_slots
       find_slots 'updateslot'
     end
-    
+
     def different?
       !updated_slots.empty? || !removed_slots.empty? || !added_slots.empty?
     end
@@ -102,12 +101,13 @@ module StrokeDB
       end
       updated_slots.each do |update|
         if sk = strategy_class_for(update)
-            document[update] = sk.patch(document[update],updated_slots[update])
+          document[update] = sk.patch(document[update],updated_slots[update])
         else
           document[update] = updated_slots[update]
         end
       end
     end
+
 
     protected
 
@@ -129,7 +129,7 @@ module StrokeDB
         end
       end
     end
-    
+
     def strategy_class_for(slotname)
       if from.meta && strategy = from.meta["__diff_strategy_#{slotname}__"]
         _strategy_class = strategy.camelize.constantize rescue nil
@@ -137,7 +137,7 @@ module StrokeDB
       end
       false
     end
-    
+
     module SlotAccessor
       def [](name)
         return at(name) if name.is_a?(Numeric)
@@ -160,4 +160,5 @@ module StrokeDB
     end
 
   end
+  
 end

@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 module MetaModuleSpecHelper
 
@@ -11,12 +11,20 @@ module MetaModuleSpecHelper
 end
 
 describe "Meta module", :shared => true do
-  it "should be able to instantiate new StrokeObject which is also SomeName" do
+
+  it "should be able to instantiate new Document which is also SomeName" do
     obj = SomeName.new
-    obj.should be_a_kind_of(StrokeObject)
+    obj.should be_a_kind_of(Document)
     obj.should be_a_kind_of(SomeName)
   end
-
+  
+  it "should be able to instantiate new Document and save it" do
+    new_doc = mock("new doc")
+    new_doc.should_receive(:save!)
+    SomeName.should_receive(:new).and_return(new_doc)
+    obj = SomeName.create!
+  end
+  
   it "should have corresponding document" do
     doc = SomeName.document
     doc.should_not be_nil
@@ -47,9 +55,8 @@ describe "Meta module with name" do
   
   before(:each) do
     setup_index
-    @mem_storage = StrokeDB::MemoryChunkStorage.new
-    Stroke.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(@mem_storage,6,@index))
-    @index.document_store = Stroke.default_store
+    setup_default_store
+    @index.document_store = StrokeDB.default_store
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     @meta = Meta.new(:name => "SomeName")  
@@ -59,15 +66,14 @@ describe "Meta module with name" do
 
 end
 
-describe "Meta instantiation without name" do
+describe "Meta module without name" do
   
   include MetaModuleSpecHelper
   
   before(:each) do
     setup_index
-    @mem_storage = StrokeDB::MemoryChunkStorage.new
-    Stroke.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(@mem_storage,6,@index))
-    @index.document_store = Stroke.default_store
+    setup_default_store
+    @index.document_store = StrokeDB.default_store
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new
@@ -79,4 +85,29 @@ describe "Meta instantiation without name" do
     SomeName.document.name.should == 'SomeName'
   end
   
+end
+
+describe "Meta module with on_meta_initialization callback" do
+  include MetaModuleSpecHelper
+  
+  before(:each) do
+    setup_index
+    setup_default_store
+    @index.document_store = StrokeDB.default_store
+    
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new do
+      on_meta_initialization do |obj|
+        obj.instance_variable_set(:@obj,obj)
+        send!(:hello!)
+      end
+    end
+  end
+  
+  it "should call callback block on meta instantiation" do
+    SomeName.should_receive(:hello!)
+    s = SomeName.new
+    s.instance_variable_get(:@obj).should == s
+  end
+
 end

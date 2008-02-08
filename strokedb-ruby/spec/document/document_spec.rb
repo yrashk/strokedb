@@ -9,9 +9,11 @@ describe "Document" do
   it "should be able to be created instantly" do
     @store.should_receive(:save!).with(anything)
     @store.should_receive(:exists?).with(anything).any_number_of_times.and_return(false)
-    @document = Document.create(@store,:slot1 => 1)
+    @document = Document.create!(@store,:slot1 => 1)
   end
+  
 end
+
 
 describe "Newly created Document" do
 
@@ -72,6 +74,20 @@ describe "Newly created Document" do
 
   it "should have no versions" do
     @document.versions.should be_empty
+  end
+
+  it "should raise an exception if slot not found when trying to read it" do
+    lambda { @document.slot_that_never_can_exist }.should raise_error(SlotNotFoundError)
+  end
+  
+  it "should allow to write slot by writer method" do
+    @document.slot1 = 2
+    @document[:slot1].should == 2
+  end
+  
+  it "should allow to read slot by reader method" do
+    @document[:slot1] = 1
+    @document.slot1.should == 1
   end
 
 end
@@ -156,15 +172,13 @@ end
 describe "Document with multiple metas" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
     @metas = []
     3.times do |i|
-      @metas << Document.new(@store, :a => i, i => i)
-      @store.should_receive(:find).with(@metas.last.uuid).any_number_of_times.and_return(@metas.last)
+      @metas << Document.create!(:a => i, i => i)
     end
     
-    @document = Document.new(@store, :__meta__ => @metas)
-    @store.should_receive(:exists?).with(@document.uuid).any_number_of_times.and_return(false)
+    @document = Document.new(:__meta__ => @metas)
   end
 
   it "should return single merged meta" do
@@ -260,15 +274,34 @@ describe "Valid Document's JSON with multiple meta names specified" do
   end
 
   it "should load all available meta modules" do
-    Object.send!(:remove_const,'SomeDocument0') if defined?(SomeDocument1)
-    SomeDocument0 = Module.new
-    Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument3)
-    SomeDocument2 = Module.new
-    
+    Object.send!(:remove_const,'SomeDocument0') if defined?(SomeDocument0)
+    SomeDocument0 = Meta.new
+    Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
+    SomeDocument2 = Meta.new
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     doc.should be_a_kind_of(SomeDocument0)
     doc.should be_a_kind_of(SomeDocument2)
   end
+  
+  it "should call all on_meta_initialization callbacks for all available meta modules" do
+    Object.send!(:remove_const,'SomeDocument0') if defined?(SomeDocument0)
+    SomeDocument0 = Meta.new do
+        on_meta_initialization do |doc|
+          doc.instance_variable_set(:@callback_0_called,true)
+        end
+    end
+    Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
+    SomeDocument2 = Meta.new do
+      on_meta_initialization do |doc|
+        doc.instance_variable_set(:@callback_2_called,true)
+      end
+    end
+    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc.instance_variable_get(:@callback_0_called).should be_true
+    doc.instance_variable_get(:@callback_2_called).should be_true
+  end
+  
+  
 
 end
 
@@ -287,4 +320,60 @@ describe "Invalid Document's JSON (i.e. incorrect __version__)" do
       Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     end.should raise_error(VersionMismatchError)
   end
+end
+
+
+describe "Document initialization with store omitted", :shared => true do
+
+  it "should raise an exception if no default store available" do
+    StrokeDB.stub!(:default_store).and_return(nil)
+    lambda { Document.new(*@args) }.should raise_error(NoDefaultStoreError)
+  end
+
+  it "should use default store if available" do
+    StrokeDB.stub!(:default_store).and_return(mock("Store"))
+    doc = Document.new(*@args)
+    doc.store.should == StrokeDB.default_store
+  end
+
+end
+
+describe "Document initialization with store omitted but with some slots specified" do
+
+  before(:each) do
+    @args = [{:slot1 => 1}]
+  end
+  
+  it_should_behave_like "Document initialization with store omitted"
+
+end
+
+describe "Document initialization with store omitted but with no slots specified" do
+
+  before(:each) do
+    @args = []
+  end
+  
+  it_should_behave_like "Document initialization with store omitted"
+
+end
+
+describe "Document with version" do
+  
+  before(:each) do
+    setup_default_store
+    @document = Document.new(:some_data => 1)
+  end
+  
+  it "should be equal to another document with the same version and uuid" do
+    @another_document = Document.new(:some_data => 1)
+    @another_document.stub!(:uuid).and_return(@document.uuid)
+    @document.should == @another_document
+  end
+
+  it "should not be equal to another document with the same version but another uuid" do
+    @another_document = Document.new(:some_data => 1)
+    @document.should_not == @another_document
+  end
+  
 end

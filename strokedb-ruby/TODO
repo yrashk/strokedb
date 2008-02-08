@@ -10,6 +10,9 @@
 [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
 [x] Chained storages
 [x] Add reverse chaining for storages
+[ ] add created_at/updated_at to Document by default?
+[x] Convert Diff to meta
+[ ] Pool new UUIDs
 
 Config:
 
