@@ -121,13 +121,45 @@ describe InvertedList, " with numeric attributes" do
     @il.find(:x => 20.6).should == [@ps[8][:uuid]].to_set
   end
   
-  
 end
 
-def new_doc(meta, slots)
+describe InvertedList, " with multivalue slots" do
+  before(:all) do
+    @il = InvertedList.new
+    @ab   = new_doc(%w[A B])
+    @a    = new_doc(%w[A])
+    @b    = new_doc(%w[B])
+    @c    = new_doc(%w[C])
+    insert_doc(@il, @ab)
+    insert_doc(@il, @a)
+    insert_doc(@il, @b)
+    insert_doc(@il, @c)
+  end
+  
+  it "should find multivalue objects by a single value" do
+    @il.find(:__meta__ => proc{|v| v.include? 'A' }).should == [@a[:uuid], @ab[:uuid]].to_set
+    @il.find(:__meta__ => proc{|v| v.include? 'B' }).should == [@b[:uuid], @ab[:uuid]].to_set
+  end
+  
+  it "should not find by scalar value" do
+    @il.find(:__meta__ => 'A').should == [ ].to_set
+    @il.find(:__meta__ => 'B').should == [ ].to_set
+  end
+  
+  it "should find multivalue objects with a complex predicate" do
+    @il.find(:__meta__ => proc{|v| v.include?('A') && !v.include?('B') }).should == [@a[:uuid]].to_set
+    @il.find(:__meta__ => proc{|v| v.include?('A') || v.include?('B') }).should == 
+      [@a[:uuid], @ab[:uuid], @b[:uuid]].to_set
+    @il.find(:__meta__ => proc{|v| v.include?('A') && v.include?('B') }).should == [@ab[:uuid]].to_set
+  end
+end
+
+
+
+def new_doc(meta, slots = {})
   slots[:__meta__] = meta
   slots[:__version__] = 'v1' + rand(10000000).to_s
-  {:uuid => meta + rand(1000000).to_s, :slots => slots}
+  {:uuid => meta.to_s + '-' + rand(1000000).to_s, :slots => slots}
 end
 
 def insert_doc(il, doc)
