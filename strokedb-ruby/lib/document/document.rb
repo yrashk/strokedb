@@ -12,6 +12,9 @@ module StrokeDB
     def initialize(slotname)
       @slotname = slotname
     end
+    def message
+      "SlotNotFoundError: Can't find slot #{@slotname}"
+    end
   end
 
   class Document

@@ -29,7 +29,7 @@ module StrokeDB
         meta_doc
       end
       
-      
+
       private
 
       def extract_meta_name(*args)
@@ -46,16 +46,23 @@ module StrokeDB
       @on_meta_initialization_block = block
     end
 
-    def new(*args)
+    def new(*args,&block)
       doc = Document.new(*args)
       doc.extend(self)
       doc[:__meta__] = document(doc.store)
-      @on_meta_initialization_block.call(doc) if @on_meta_initialization_block
+      if @on_meta_initialization_block
+        case @on_meta_initialization_block.arity
+        when 2
+          @on_meta_initialization_block.call(doc,block)
+        when 1
+          @on_meta_initialization_block.call(doc) 
+        end
+      end
       doc
     end
-    
-    def create!(*args)
-      new(*args).save!
+
+    def create!(*args,&block)
+      new(*args,&block).save!
     end
 
     def inspect

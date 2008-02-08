@@ -1,15 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-module MetaModuleSpecHelper
-
-  def setup_index
-    index_storage = StrokeDB::InvertedListFileStorage.new('test/storages/inverted_list_storage')
-    index_storage.clear!
-    @index = StrokeDB::InvertedListIndex.new(index_storage)
-  end
-  
-end
-
 describe "Meta module", :shared => true do
 
   it "should be able to instantiate new Document which is also SomeName" do
@@ -50,14 +40,11 @@ describe "Meta module", :shared => true do
 end
 
 describe "Meta module with name" do
-
-  include MetaModuleSpecHelper
   
   before(:each) do
-    setup_index
     setup_default_store
-    @index.document_store = StrokeDB.default_store
-    
+    setup_index
+
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     @meta = Meta.new(:name => "SomeName")  
   end
@@ -67,13 +54,10 @@ describe "Meta module with name" do
 end
 
 describe "Meta module without name" do
-  
-  include MetaModuleSpecHelper
-  
+    
   before(:each) do
-    setup_index
     setup_default_store
-    @index.document_store = StrokeDB.default_store
+    setup_index
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new
@@ -88,12 +72,10 @@ describe "Meta module without name" do
 end
 
 describe "Meta module with on_meta_initialization callback" do
-  include MetaModuleSpecHelper
   
   before(:each) do
-    setup_index
     setup_default_store
-    @index.document_store = StrokeDB.default_store
+    setup_index
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do

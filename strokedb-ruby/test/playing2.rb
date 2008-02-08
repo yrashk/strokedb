@@ -24,9 +24,10 @@ else
 end
 
 au = User.create! :email => "#{rand(100)}@gmail.com"
-
 puts u
-puts u.diff(au)
+
+view = StrokeDB::View.create!(:name => "all users") {|doc| doc.is_a?(User) ? doc : nil  }.reduce_with {|doc| !doc.nil? }
+puts view.documents.inspect
 
 config[:mem].sync_chained_storages!
 

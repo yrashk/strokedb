@@ -64,7 +64,7 @@ module StrokeDB
 
   Diff = Meta.new do
 
-    on_meta_initialization do |diff|
+    on_meta_initialization do |diff, block|
       diff.send!(:compute_diff) if diff.new?
     end
 

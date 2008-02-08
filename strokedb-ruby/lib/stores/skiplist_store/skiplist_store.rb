@@ -1,5 +1,6 @@
 module StrokeDB
   class SkiplistStore < Store
+    include Enumerable
     attr_accessor :chunk_storage, :cut_level, :index_store
 
     def initialize(chunk_storage, cut_level, index_store = nil)
@@ -91,7 +92,6 @@ module StrokeDB
       each(:include_versions => true,&block)
     end
 
-    include Enumerable
 
     private
 
