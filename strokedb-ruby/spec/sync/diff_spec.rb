@@ -26,9 +26,9 @@ describe "Diffing documents with slot added" do
   end
 
   it "should list added slot" do
-    @diff.slotnames.to_set.should == ['__version__','__meta__','__diff_addslot_slot2__','from','to'].to_set
+    @diff.slotnames.to_set.should == ['__version__','__meta__','addslot_slot2','from','to'].to_set
     @diff.added_slots.to_set.should == ['slot2'].to_set
-    @diff['__diff_addslot_slot2__'].should == 2
+    @diff['addslot_slot2'].should == 2
     @diff.added_slots[:slot2].should == 2
   end
 
@@ -54,9 +54,9 @@ describe "Diffing documents with slot removed" do
   end
 
   it "should list removed slot" do
-    @diff.slotnames.to_set.should == ['__version__','__meta__','__diff_dropslot_slot2__','from','to'].to_set
+    @diff.slotnames.to_set.should == ['__version__','__meta__','dropslot_slot2','from','to'].to_set
     @diff.removed_slots.to_set.should == ['slot2'].to_set
-    @diff['__diff_dropslot_slot2__'].should == 2
+    @diff['dropslot_slot2'].should == 2
     @diff.removed_slots[:slot2].should == 2
   end
   
@@ -84,9 +84,9 @@ describe "Diffing documents with slot changed" do
   end
 
   it "should list updated slot" do
-    @diff.slotnames.to_set.should == ['__version__','__meta__','__diff_updateslot_slot1__','from','to'].to_set
+    @diff.slotnames.to_set.should == ['__version__','__meta__','updateslot_slot1','from','to'].to_set
     @diff.updated_slots.to_set.should == ['slot1'].to_set
-    @diff['__diff_updateslot_slot1__'].should == 2
+    @diff['updateslot_slot1'].should == 2
     @diff.updated_slots[:slot1].should == 2
   end
   
@@ -116,7 +116,7 @@ end
       Slot1Diff.should_receive(:patch).with("abcdef","1").any_number_of_times.and_return("abcdef1")
       
 
-      @meta = Document.create! :__diff_strategy_slot1__ => strategy
+      @meta = Document.create! :strategy_slot1 => strategy
 
       @from = Document.create! :slot1 => "abcdef", :__meta__ => @meta
       @to = Document.create! :slot1 => "abcdef1", :__meta__ => @meta

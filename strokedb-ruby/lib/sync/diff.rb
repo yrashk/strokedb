@@ -106,24 +106,24 @@ module StrokeDB
     def compute_diff
       additions = to.slotnames - from.slotnames 
       additions.each do |addition|
-        self["__diff_addslot_#{addition}__"] = to[addition]
+        self["addslot_#{addition}"] = to[addition]
       end
       removals = from.slotnames - to.slotnames
       removals.each do |removal|
-        self["__diff_dropslot_#{removal}__"] = from[removal]
+        self["dropslot_#{removal}"] = from[removal]
       end
       updates = (to.slotnames - additions - ['__version__']).select {|slotname| to[slotname] != from[slotname]}
       updates.each do |update|
         unless sk = strategy_class_for(update)
-          self["__diff_updateslot_#{update}__"] = to[update]
+          self["updateslot_#{update}"] = to[update]
         else
-          self["__diff_updateslot_#{update}__"] = sk.diff(from[update],to[update]) 
+          self["updateslot_#{update}"] = sk.diff(from[update],to[update]) 
         end
       end
     end
 
     def strategy_class_for(slotname)
-      if from.meta && strategy = from.meta["__diff_strategy_#{slotname}__"]
+      if from.meta && strategy = from.meta["diff_strategy_#{slotname}"]
         _strategy_class = strategy.camelize.constantize rescue nil
         return _strategy_class if _strategy_class && _strategy_class.ancestors.include?(SlotDiffStrategy)
       end
@@ -133,17 +133,17 @@ module StrokeDB
     module SlotAccessor
       def [](name)
         return at(name) if name.is_a?(Numeric)
-        @diff["__diff_#{@keyword}_#{name}__"]
+        @diff["#{@keyword}_#{name}"]
       end
       def clear!
         @diff.slotnames.each do |slotname|
-          @diff.remove_slot!(slotname) if slotname.match(/^__diff_#{@keyword}_(.+)__$/)
+          @diff.remove_slot!(slotname) if slotname.match(/^#{@keyword}_(.+)$/)
         end
       end
     end
 
     def find_slots(keyword)
-      re = /^__diff_#{keyword}_(.+)__$/
+      re = /^#{keyword}_(.+)$/
       slots = slotnames.select {|slotname| slotname.match(re)}.map{|slotname| slotname.gsub(re,'\\1') }
       slots.extend(SlotAccessor)
       slots.instance_variable_set(:@diff,self)
