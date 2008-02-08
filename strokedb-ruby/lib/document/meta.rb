@@ -5,6 +5,8 @@ module StrokeDB
     class <<self
       def new(*args,&block)
         mod = Module.new
+        args = args.unshift(nil) if args.empty? || args.first.is_a?(Hash) 
+        args << {} unless args.last.is_a?(Hash)
         mod.module_eval do
           extend Meta
           @args = args
@@ -66,8 +68,7 @@ module StrokeDB
       store ||= StrokeDB.default_store
       raise NoDefaultStoreError.new unless StrokeDB.default_store
       args = @args.clone
-      args.unshift(store) if args.first.is_a?(Hash)
-      args << {} unless args.last.is_a?(Hash)
+      args[0] = store
       args.last[:__meta__] = Meta.document(store)
       args.last[:name] ||= name
       unless meta_doc = (store.respond_to?(:index_store) && store.index_store) ? store.index_store.find(:name => args.last[:name], 
