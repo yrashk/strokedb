@@ -22,7 +22,7 @@ module StrokeDB
         store ||= StrokeDB.default_store
         raise NoDefaultStoreError.new unless StrokeDB.default_store
         unless meta_doc = store.find(NIL_UUID)
-          meta_doc = Document.new(store,:name => '::StrokeDB::Meta')
+          meta_doc = Document.new(store,:name => Meta.name)
           meta_doc.instance_variable_set(:@uuid,NIL_UUID) # hack that ensures that meta meta is uniquely identified by nil uuid
           meta_doc.save!
         end
