@@ -122,7 +122,7 @@ describe InvertedList, " with numeric attributes" do
   end
   
 end
-
+=begin
 describe InvertedList, " with multivalue slots" do
   before(:all) do
     @il = InvertedList.new
@@ -153,7 +153,7 @@ describe InvertedList, " with multivalue slots" do
     @il.find(:__meta__ => proc{|v| v.include?('A') && v.include?('B') }).should == [@ab[:uuid]].to_set
   end
 end
-
+=end
 
 
 def new_doc(meta, slots = {})
