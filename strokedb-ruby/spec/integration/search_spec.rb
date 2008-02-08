@@ -16,9 +16,8 @@ describe "Database search" do
     @index.document_store = @f_store
     @index2.document_store = @f_store
     
-    @profile_meta = @f_store.new_doc :name => 'Profile', 
-                                     'non_indexable_slots' => [ :bio, :__version__, :__previous_version__ ]
-    @profile_meta.save!
+    @profile_meta = Document.create!(@f_store, :name => 'Profile', 
+                                               :non_indexable_slots => [ :bio, :__version__, :__previous_version__ ])
   end
   
   # Leave for investigation
@@ -27,8 +26,7 @@ describe "Database search" do
   # end
   
   it "should add new doc" do
-    doc = @f_store.new_doc :name => "Oleg", :state => 'Russia', :age => 21, :__meta__ => @profile_meta
-    doc.save!
+    doc = Document.create!(@f_store, :name => "Oleg", :state => 'Russia', :age => 21, :__meta__ => @profile_meta)
     doc.uuid.should_not be_nil
     @oleg_uuid = doc.uuid
     results = @index.find(:name => "Oleg")
@@ -43,7 +41,7 @@ describe "Database search" do
   end
   
   it "should store & find several docs" do
-    doc = @f_store.new_doc :name => "Yurii", :state => 'Ukraine', :__meta__ => @profile_meta
+    doc = Document.create!(@f_store, :name => "Yurii", :state => 'Ukraine', :__meta__ => @profile_meta)
     doc.save!
     @yura_uuid = doc.uuid
     results = @index.find(:name => "Yurii")

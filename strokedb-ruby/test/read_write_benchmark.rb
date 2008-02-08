@@ -24,15 +24,13 @@ M = 10
 bm(28) do |x| 
   
   test_storage x, N/100, "Write (#{N/100} documents)       " do |i|
-    d = f_store.new_doc :index => i
-    d.save!
+    d = Document.create!(f_store, :index => i)
   end
   
   some_random_uuids = []
   all_docs = []
   test_storage x, N,     "Write (#{N} with cache)     " do |i|
-    d = store.new_doc :index => i
-    d.save!
+    d = Document.create!(store, :index => i)
     some_random_uuids << d.uuid if some_random_uuids.size < M
     all_docs << d.uuid
   end

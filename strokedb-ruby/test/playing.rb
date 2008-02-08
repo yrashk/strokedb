@@ -17,8 +17,8 @@ mem_storage.add_chained_storage!(file_storage)
 _d = nil
 25.times do |i|
   puts i
-  _d1 = store.new_doc :welcome => 1
-  _d = store.new_doc :hello => "once#{i}", :__meta__ => "Beliberda", :_d1 => _d1
+  _d1 = StrokeDB::Document.new(store, :welcome => 1)
+  _d = StrokeDB::Document.new(store, :hello => "once#{i}", :__meta__ => "Beliberda", :_d1 => _d1)
   _d.save!
   _d1.save!
 end

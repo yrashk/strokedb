@@ -105,7 +105,7 @@ describe "[Regression] First chunk cut" do
 
 
   def mock_doc(uuid, s)
-    document = s.new_doc(:stuff => 123)
+    document = Document.new(s,:stuff => 123)
     document.stub!(:uuid).and_return uuid
     document
   end

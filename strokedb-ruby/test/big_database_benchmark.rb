@@ -26,20 +26,15 @@ puts "Creating #{N} documents..."
 bm(10) do |x| 
   
   test_cut_level(x, N, 4) do |i|
-    d = $store.new_doc :index => i
-    d.save!
+    d = Document.create!($store, :index => i)
   end  
 
   test_cut_level(x, N, 6) do |i|
-    
-    d = $store.new_doc :index => i
-    d.save!
+    d = Document.create!($store, :index => i)
   end  
   
   test_cut_level(x, N, 8) do |i|
-
-    d = $store.new_doc :index => i
-    d.save!
+    d = Document.create!($store, :index => i)
   end
 
 end
