@@ -75,7 +75,7 @@ module StrokeDB
     end
 
     def diff(from)
-      Diff.new(store,:__from__ => from, :__to__ => self)
+      Diff.new(store,:from => from, :to => self)
     end
 
     def to_json(opts={})
