@@ -69,15 +69,15 @@ module StrokeDB
     end
 
     def removed_slots
-      find_slots 'dropslot'
+      find_slots 'drop_slot'
     end    
 
     def added_slots
-      find_slots 'addslot'
+      find_slots 'add_slot'
     end    
 
     def updated_slots
-      find_slots 'updateslot'
+      find_slots 'update_slot'
     end
 
     def different?
@@ -106,18 +106,18 @@ module StrokeDB
     def compute_diff
       additions = to.slotnames - from.slotnames 
       additions.each do |addition|
-        self["addslot_#{addition}"] = to[addition]
+        self["add_slot_#{addition}"] = to[addition]
       end
       removals = from.slotnames - to.slotnames
       removals.each do |removal|
-        self["dropslot_#{removal}"] = from[removal]
+        self["drop_slot_#{removal}"] = from[removal]
       end
       updates = (to.slotnames - additions - ['__version__']).select {|slotname| to[slotname] != from[slotname]}
       updates.each do |update|
         unless sk = strategy_class_for(update)
-          self["updateslot_#{update}"] = to[update]
+          self["update_slot_#{update}"] = to[update]
         else
-          self["updateslot_#{update}"] = sk.diff(from[update],to[update]) 
+          self["update_slot_#{update}"] = sk.diff(from[update],to[update]) 
         end
       end
     end
