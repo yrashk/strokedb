@@ -75,6 +75,20 @@ describe "Newly created Document" do
     @document.versions.should be_empty
   end
 
+  it "should raise an exception if slot not found when trying to read it" do
+    lambda { @document.slot_that_never_can_exist }.should raise_error(SlotNotFoundError)
+  end
+  
+  it "should allow to write slot by writer method" do
+    @document.slot1 = 2
+    @document[:slot1].should == 2
+  end
+  
+  it "should allow to read slot by reader method" do
+    @document[:slot1] = 1
+    @document.slot1.should == 1
+  end
+
 end
 
 
@@ -344,31 +358,3 @@ describe "Document initialization with store omitted but with no slots specified
   it_should_behave_like "Document initialization with store omitted"
 
 end
-
-describe "Document", :shared => true do
-  it "should allow to read slot by reader method" do
-    @doc.slot1.should == 1
-  end
-
-  it "should raise an exception if slot not found when trying to read it" do
-    lambda { @doc.slot_that_never_can_exist }.should raise_error(SlotNotFoundError)
-  end
-
-  it "should allow to write slot by writer method" do
-    @doc.slot1 = 2
-    @doc.slot1.should == 2
-  end
-  
-end
-
-describe "Newly created Document" do
-
-  before(:each) do
-    @store = mock("Store")
-    @doc = Document.new(@store,:slot1 => 1)
-  end
-
-  it_should_behave_like "Document"
-
-end
-
