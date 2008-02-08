@@ -1,8 +1,8 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "Diffing documents", :shared => true do
-  it "should have __from__ and __to__ specified" do
-    [:__from__,:__to__].each do |slotname|
+  it "should have from and to specified" do
+    [:from,:to].each do |slotname|
       @diff[slotname].should be_a_kind_of(Document)
     end
   end
@@ -26,7 +26,7 @@ describe "Diffing documents with slot added" do
   end
 
   it "should list added slot" do
-    @diff.slotnames.to_set.should == ['__version__','__meta__','__diff_addslot_slot2__','__from__','__to__'].to_set
+    @diff.slotnames.to_set.should == ['__version__','__meta__','__diff_addslot_slot2__','from','to'].to_set
     @diff.added_slots.to_set.should == ['slot2'].to_set
     @diff['__diff_addslot_slot2__'].should == 2
     @diff.added_slots[:slot2].should == 2
@@ -54,7 +54,7 @@ describe "Diffing documents with slot removed" do
   end
 
   it "should list removed slot" do
-    @diff.slotnames.to_set.should == ['__version__','__meta__','__diff_dropslot_slot2__','__from__','__to__'].to_set
+    @diff.slotnames.to_set.should == ['__version__','__meta__','__diff_dropslot_slot2__','from','to'].to_set
     @diff.removed_slots.to_set.should == ['slot2'].to_set
     @diff['__diff_dropslot_slot2__'].should == 2
     @diff.removed_slots[:slot2].should == 2
@@ -84,7 +84,7 @@ describe "Diffing documents with slot changed" do
   end
 
   it "should list updated slot" do
-    @diff.slotnames.to_set.should == ['__version__','__meta__','__diff_updateslot_slot1__','__from__','__to__'].to_set
+    @diff.slotnames.to_set.should == ['__version__','__meta__','__diff_updateslot_slot1__','from','to'].to_set
     @diff.updated_slots.to_set.should == ['slot1'].to_set
     @diff['__diff_updateslot_slot1__'].should == 2
     @diff.updated_slots[:slot1].should == 2

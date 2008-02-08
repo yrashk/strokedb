@@ -68,14 +68,6 @@ module StrokeDB
       diff.send!(:compute_diff) if diff.new?
     end
 
-    def from
-      self[:__from__]
-    end
-
-    def to
-      self[:__to__]
-    end
-
     def removed_slots
       find_slots 'dropslot'
     end    
