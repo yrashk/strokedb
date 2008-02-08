@@ -29,7 +29,7 @@ desc "Run all examples with RCov"
 Spec::Rake::SpecTask.new('spec_rcov') do |t|
   t.spec_files = FileList['spec/**/*.rb']
   t.rcov = true
-  t.rcov_opts = ['--exclude', 'spec,strokedb.rb']
+  t.rcov_opts = ['--exclude', 'spec,strokedb.rb','--sort','coverage','--xrefs']
 end
 
 STATS_DIRECTORIES = [
