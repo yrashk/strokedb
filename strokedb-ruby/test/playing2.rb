@@ -23,9 +23,10 @@ else
   puts "We've found him!"
 end
 
-puts u
+au = User.create! :email => "#{rand(100)}@gmail.com"
 
-puts config.stores[:default].map{|d| d.to_json }.join
+puts u
+puts u.diff(au)
 
 config[:mem].sync_chained_storages!
 

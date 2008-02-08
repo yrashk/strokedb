@@ -60,7 +60,7 @@ describe "SimplePatchMergeStrategy" do
   
   before(:each) do 
     @strategy = SimplePatchMergeStrategy
-    @store = SkiplistStore.new(MemoryChunkStorage.new,4)
+    @store = setup_default_store
     @another_store = SkiplistStore.new(MemoryChunkStorage.new,4)
   end
   

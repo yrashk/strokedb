@@ -62,12 +62,10 @@ module StrokeDB
     end
   end
 
-  class Diff < Document
+  Diff = Meta.new do
 
-    def initialize(store,from,to)
-      @from, @to = from, to
-      super(store, :__from__ => from, :__to__ => to)
-      compute_diff
+    on_meta_initialization do |diff|
+      diff.send!(:compute_diff) if diff.new?
     end
 
     def from
@@ -162,4 +160,5 @@ module StrokeDB
     end
 
   end
+  
 end

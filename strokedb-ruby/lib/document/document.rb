@@ -34,8 +34,8 @@ module StrokeDB
 
     end
 
-    def self.create!(store, slots={})
-      new(store,slots).save!
+    def self.create!(*args)
+      new(*args).save!
     end
 
     def initialize(*args)
@@ -75,7 +75,7 @@ module StrokeDB
     end
 
     def diff(from)
-      Diff.new(store,from,self)
+      Diff.new(store,:__from__ => from, :__to__ => self)
     end
 
     def to_json(opts={})
@@ -183,6 +183,10 @@ module StrokeDB
       uuid + (version ? ".#{version}" : "")
     end
 
+    def ==(doc)
+      doc.uuid == uuid && doc.version == version
+    end
+    
     def method_missing(sym,*args,&block)
       sym = sym.to_s
       if sym.ends_with?('=')

@@ -14,6 +14,7 @@ describe "Document" do
   
 end
 
+
 describe "Newly created Document" do
 
   before(:each) do
@@ -171,15 +172,13 @@ end
 describe "Document with multiple metas" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
     @metas = []
     3.times do |i|
-      @metas << Document.new(@store, :a => i, i => i)
-      @store.should_receive(:find).with(@metas.last.uuid).any_number_of_times.and_return(@metas.last)
+      @metas << Document.create!(:a => i, i => i)
     end
     
-    @document = Document.new(@store, :__meta__ => @metas)
-    @store.should_receive(:exists?).with(@document.uuid).any_number_of_times.and_return(false)
+    @document = Document.new(:__meta__ => @metas)
   end
 
   it "should return single merged meta" do
@@ -357,4 +356,24 @@ describe "Document initialization with store omitted but with no slots specified
   
   it_should_behave_like "Document initialization with store omitted"
 
+end
+
+describe "Document with version" do
+  
+  before(:each) do
+    setup_default_store
+    @document = Document.new(:some_data => 1)
+  end
+  
+  it "should be equal to another document with the same version and uuid" do
+    @another_document = Document.new(:some_data => 1)
+    @another_document.stub!(:uuid).and_return(@document.uuid)
+    @document.should == @another_document
+  end
+
+  it "should not be equal to another document with the same version but another uuid" do
+    @another_document = Document.new(:some_data => 1)
+    @document.should_not == @another_document
+  end
+  
 end
