@@ -6,7 +6,7 @@ module StrokeDB
   
   class <<self
     def default_store
-      StrokeDB.default_config.stores[:default]
+      StrokeDB.default_config.stores[:default] rescue nil
     end
   end
   
