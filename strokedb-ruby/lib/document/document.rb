@@ -224,7 +224,6 @@ module StrokeDB
 
     def self.collect_meta_modules(store,meta)
       meta_names = []
-      meta = 
       case meta
       when /@##{UUID_RE}.#{VERSION_RE}/
         meta_names << store.find($1,$2)[:name] if store.find($1,$2)
