@@ -2,7 +2,7 @@ module StrokeDB
 
   module Meta
 
-    class <<self
+    class << self
       def new(*args,&block)
         mod = Module.new
         args = args.unshift(nil) if args.empty? || args.first.is_a?(Hash) 

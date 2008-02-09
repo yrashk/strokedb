@@ -2,11 +2,13 @@ module StrokeDB
   class SkiplistStore < Store
     include Enumerable
     attr_accessor :chunk_storage, :cut_level, :index_store
-
+    attr_reader :uuid
+    
     def initialize(chunk_storage, cut_level, index_store = nil)
       @chunk_storage = chunk_storage
       @cut_level = cut_level
       @index_store = index_store
+      @uuid = Util.random_uuid
     end
 
     def self.get_new(storage, options = {})
@@ -42,6 +44,8 @@ module StrokeDB
 
     def save!(doc)
       master_chunk = find_or_create_master_chunk
+      lts = lamport_timestamp + 1
+      self.lamport_timestamp = doc.__lamport_timestamp__ = lts
 
       insert_with_cut(doc.uuid,         doc, master_chunk)
       insert_with_cut(doc.uuid_version, doc, master_chunk)
@@ -92,6 +96,12 @@ module StrokeDB
       each(:include_versions => true,&block)
     end
 
+    def lamport_timestamp
+        find_or_create_master_chunk.lamport_timestamp || 0
+    end
+    def lamport_timestamp=(timestamp)
+        find_or_create_master_chunk.lamport_timestamp = timestamp
+    end
 
     private
 
@@ -131,6 +141,7 @@ module StrokeDB
       end
       master_chunk = Chunk.new(999)
       master_chunk.uuid = 'MASTER'
+      master_chunk.store_uuid = @uuid
       @chunk_storage.save!(master_chunk)
       master_chunk
     end

@@ -64,7 +64,7 @@ module StrokeDB
         prev_version = @__previous_version__ ; @__previous_version__ = nil
         self[:__previous_version__] = prev_version
       end
-      set_version unless slotname == :__version__ 
+      set_version unless [:__version__,:__lamport_timestamp__].include?(slotname)
     end
 
     def remove_slot!(slotname)
@@ -218,7 +218,7 @@ module StrokeDB
     end
 
     def calculate_version
-      Util.sha(to_json(:except => '__version__'))
+      Util.sha(to_json(:except => ['__version__','__lamport_timestamp__']))
     end
 
 

@@ -12,10 +12,18 @@ describe "Empty chunk store" do
     @document.stub!(:to_raw).and_return({:stuff => '...'})
     @document.stub!(:version).and_return '1234'
     @document.stub!(:uuid_version).and_return "#{@uuid}.1234"
-
+    @document.stub!(:__lamport_timestamp__=).with(anything).and_return 0
     chunk_storage = MemoryChunkStorage.new
     @store = SkiplistStore.new(chunk_storage, 4)
     
+  end
+  
+  it "should have its own UUID" do
+    @store.uuid.should match(/^#{UUID_RE}$/)
+  end
+  
+  it "should have 0 lamport_timestamp" do
+    @store.lamport_timestamp.should == 0
   end
   
   it "should contain no documents" do
@@ -30,13 +38,19 @@ describe "Empty chunk store" do
     @store.find(@uuid).should == @document
     @store.find(@uuid).should_not be_a_kind_of(VersionedDocument)
   end
+
+  it "should increment lamport_timestamp when storing a document" do
+    lambda do 
+        Document.stub!(:from_raw).and_return(@document) 
+        @store.save!(@document)
+    end.should change(@store,:lamport_timestamp).by(1)
+  end
   
   it "should find a versioned document" do
     Document.stub!(:from_raw).and_return(@document) 
     @store.save!(@document)
     @store.find(@uuid,@document.version).should be_a_kind_of(VersionedDocument)
   end
-  
 
 end
 
@@ -60,6 +74,7 @@ describe "Non-empty chunk store" do
       document.stub!(:version).and_return ver
       document.stub!(:uuid_version).and_return "#{uuid}.#{ver}"
       document.stub!(:all_versions).and_return [ver]
+      document.stub!(:__lamport_timestamp__=).with(anything).and_return 0
       document.should_receive(:versions).any_number_of_times.and_return(ver => "version of #{uuid}")
       @documents << document
       Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i}).any_number_of_times.and_return(document) 

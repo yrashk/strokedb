@@ -1,7 +1,8 @@
 module StrokeDB
   class Chunk
-    attr_accessor :skiplist, :next_chunk, :prev_chunk, :uuid, :cut_level 
+    attr_accessor :skiplist, :next_chunk, :prev_chunk, :uuid, :cut_level, :lamport_timestamp 
     attr_accessor :next_chunk_uuid
+    attr_accessor :store_uuid 
     def initialize(cut_level)
       @skiplist, @cut_level = Skiplist.new({}, nil, cut_level), cut_level
     end
@@ -52,6 +53,8 @@ module StrokeDB
   	  chunk.uuid       = raw['uuid']
   	  chunk.next_chunk = nil
       chunk.next_chunk_uuid = raw['next_uuid']
+      chunk.lamport_timestamp = raw['lamport_timestamp']
+      chunk.store_uuid = raw['store_uuid']
       chunk.skiplist.raw_insert(raw['nodes']) do |rn|
   	    [rn['key'], rn['value'], rn['forward'].size]
   	  end
@@ -77,7 +80,9 @@ module StrokeDB
         'cut_level' => @cut_level, 
         'uuid'      => @uuid,
         # TODO: may not be needed
-        'next_uuid' => next_chunk ? next_chunk.uuid : nil
+        'next_uuid' => next_chunk ? next_chunk.uuid : nil,
+        'lamport_timestamp' => @lamport_timestamp,
+        'store_uuid'        => @store_uuid
       }
   	end
   	
