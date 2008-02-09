@@ -89,3 +89,21 @@ describe "View with reduce_with" do
   end
 
 end
+
+describe "View with reduce_with (with extra arguments)" do
+
+  before(:each) do
+    setup_default_store
+    setup_index
+    @view = View.new(:name => "with reduce_with (with extra arguments)").reduce_with {|doc,slotname| doc.slotnames.include?(slotname.to_s) }
+  end
+
+  it "should return all documents plus two nils" do
+    @documents = []
+    10.times do |i|
+      @documents << Document.create!(:i => i)
+    end
+    @view.documents(:i).sort_by {|doc| doc.uuid}.should == @documents.sort_by {|doc| doc.uuid}
+  end
+
+end
