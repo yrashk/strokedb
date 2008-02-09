@@ -26,7 +26,7 @@ describe "Diffing documents with slot added" do
   end
 
   it "should list added slot" do
-    @diff.slotnames.to_set.should == ['__version__','__meta__','add_slot_slot2','from','to','update_slot___lamport_timestamp__'].to_set
+    @diff.slotnames.to_set.should == ['__version__','__meta__','add_slot_slot2','from','to'].to_set
     @diff.added_slots.to_set.should == ['slot2'].to_set
     @diff['add_slot_slot2'].should == 2
     @diff.added_slots[:slot2].should == 2
@@ -54,7 +54,7 @@ describe "Diffing documents with slot removed" do
   end
 
   it "should list removed slot" do
-    @diff.slotnames.to_set.should == ['__version__','__meta__','drop_slot_slot2','from','to','update_slot___lamport_timestamp__'].to_set
+    @diff.slotnames.to_set.should == ['__version__','__meta__','drop_slot_slot2','from','to'].to_set
     @diff.removed_slots.to_set.should == ['slot2'].to_set
     @diff['drop_slot_slot2'].should == 2
     @diff.removed_slots[:slot2].should == 2
@@ -84,8 +84,8 @@ describe "Diffing documents with slot changed" do
   end
 
   it "should list updated slot" do
-    @diff.slotnames.to_set.should == ['__version__','__meta__','update_slot_slot1','from','to','update_slot___lamport_timestamp__'].to_set
-    @diff.updated_slots.to_set.should == ['slot1','__lamport_timestamp__'].to_set
+    @diff.slotnames.to_set.should == ['__version__','__meta__','update_slot_slot1','from','to'].to_set
+    @diff.updated_slots.to_set.should == ['slot1'].to_set
     @diff['update_slot_slot1'].should == 2
     @diff.updated_slots[:slot1].should == 2
   end
