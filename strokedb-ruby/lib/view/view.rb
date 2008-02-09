@@ -10,7 +10,7 @@ module StrokeDB
       self
     end
 
-    def documents(*args) 
+    def emit(*args) 
       mapped = store.map {|doc| map_with_proc.call(doc,*args) } 
       @reduce_with_block ? mapped.select {|doc| @reduce_with_block.call(doc,*args) } : mapped
     end

@@ -27,9 +27,9 @@ au = User.create! :email => "#{rand(100)}@gmail.com"
 puts u
 
 view = StrokeDB::View.create!(:name => "all users") {|doc| doc.is_a?(User) ? doc : nil  }.reduce_with {|doc| !doc.nil? }
-puts view.documents.inspect
+puts view.emit.inspect
 view = StrokeDB::View.create!(:name => "all users").reduce_with{|doc| doc.is_a?(User) }
-puts view.documents.inspect
+puts view.emit.inspect
 
 config[:mem].sync_chained_storages!
 
