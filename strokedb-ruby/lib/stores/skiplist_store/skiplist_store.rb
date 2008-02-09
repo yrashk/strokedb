@@ -111,7 +111,10 @@ module StrokeDB
         chunk = Chunk.new(@cut_level)
       end
       a, b = chunk.insert(uuid, doc.to_raw)
-
+      [a,b].compact.each do |chunk|
+        chunk.store_uuid = self.uuid
+        chunk.lamport_timestamp = lamport_timestamp
+      end
       # if split
       if b
         # rename chunk if the first chunk inconsistency detected 

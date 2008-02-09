@@ -46,6 +46,15 @@ describe "Empty chunk store" do
     end.should change(@store,:lamport_timestamp).by(1)
   end
   
+  it "should put store_uuid and lamport_timestamp into each chunk it saves" do
+    Document.stub!(:from_raw).and_return(@document) 
+    @store.save!(@document)
+    [@uuid].map{|uuid| @store.chunk_storage.find(uuid)}.compact.each do |chunk|
+      chunk.store_uuid.should == @store.uuid
+      chunk.lamport_timestamp.should == @store.lamport_timestamp
+    end
+  end
+  
   it "should find a versioned document" do
     Document.stub!(:from_raw).and_return(@document) 
     @store.save!(@document)
