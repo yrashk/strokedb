@@ -6,6 +6,7 @@ describe "View without map_with and reduce_with blocks" do
     setup_default_store
     setup_index
     @view = View.new(:name => "without block")
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
   it "should return all documents plus Meta and View" do
@@ -13,7 +14,7 @@ describe "View without map_with and reduce_with blocks" do
     10.times do |i|
       @documents << Document.create!(:i => i)
     end
-    @view.emit.to_a.sort_by {|doc| doc.uuid}.should == (@documents + [Meta.document,View.document]).sort_by {|doc| doc.uuid}
+    @view.emit.to_a.sort_by {|doc| doc.__lamport_timestamp__}.should == (@documents + [Meta.document,View.document,ViewCut.document]).sort_by {|doc| doc.__lamport_timestamp__}
   end
 
 end
@@ -24,14 +25,15 @@ describe "View with map_with (without extra arguments)" do
     setup_default_store
     setup_index
     @view = View.new(:name => "with map_with (without extra arguments)") {|doc| doc.slotnames.include?('i') ? doc : nil}
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
-  it "should return all documents plus two nils" do
+  it "should return all documents plus three nils" do
     @documents = []
     10.times do |i|
       @documents << Document.create!(:i => i)
     end
-    @view.emit.to_a.sort_by {|doc| doc.nil? ? "0" : doc.uuid}.should == (@documents + [nil,nil]).sort_by {|doc| doc.nil? ? "0" :  doc.uuid}
+    @view.emit.to_a.sort_by {|doc| doc.nil? ? "0" : doc.uuid}.should == (@documents + [nil,nil,nil]).sort_by {|doc| doc.nil? ? "0" :  doc.uuid}
   end
 
 end
@@ -42,14 +44,15 @@ describe "View with map_with (with extra arguments)" do
     setup_default_store
     setup_index
     @view = View.new(:name => "with map_with (with extra arguments)") {|doc,slotname| doc.slotnames.include?(slotname.to_s) ? doc : nil}
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
-  it "should return all documents plus two nils" do
+  it "should return all documents plus three nils" do
     @documents = []
     10.times do |i|
       @documents << Document.create!(:i => i)
     end
-    @view.emit(:i).to_a.sort_by {|doc| doc.nil? ? "0" : doc.uuid}.should == (@documents + [nil,nil]).sort_by {|doc| doc.nil? ? "0" :  doc.uuid}
+    @view.emit(:i).to_a.sort_by {|doc| doc.nil? ? "0" : doc.uuid}.should == (@documents + [nil,nil,nil]).sort_by {|doc| doc.nil? ? "0" :  doc.uuid}
   end
 
 end
@@ -60,6 +63,7 @@ describe "View with map_with and reduce_with" do
     setup_default_store
     setup_index
     @view = View.new(:name => "with map_with and reduce_with") {|doc| doc.slotnames.include?('i') ? doc : nil}.reduce_with{|doc| !doc.nil? }
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
   it "should return all documents" do
@@ -78,6 +82,7 @@ describe "View with reduce_with" do
     setup_default_store
     setup_index
     @view = View.new(:name => "with reduce_with").reduce_with{|doc| doc.slotnames.include?('i') }
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
   it "should return all documents" do
@@ -96,6 +101,7 @@ describe "View with reduce_with (with extra arguments)" do
     setup_default_store
     setup_index
     @view = View.new(:name => "with reduce_with (with extra arguments)").reduce_with {|doc,slotname| doc.slotnames.include?(slotname.to_s) }
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
   it "should return all documents plus two nils" do
@@ -114,10 +120,10 @@ describe "View" do
     setup_default_store
     setup_index
     @view = View.new(:name => "incremental view").reduce_with{|doc| doc.slotnames.include?('i') }
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
   it "should make documents VersionedDocuments" do
-    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
     @documents = []
     10.times do |i|
       @documents << Document.create!(:i => i)
@@ -126,7 +132,6 @@ describe "View" do
   end
   
   it "should be able to return new documents incrementally" do
-    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
     @documents = []
     10.times do |i|
       @documents << Document.create!(:i => i)
