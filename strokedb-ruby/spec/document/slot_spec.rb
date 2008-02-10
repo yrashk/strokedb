@@ -15,7 +15,6 @@ describe "Slot" do
   
   it "should store Document reference if value is a new Document" do
     some_doc = Document.new(mock("Store"))
-    @store.should_receive(:find).with(some_doc.uuid).and_return(nil)
     @slot.value = some_doc
     @slot.value.should == some_doc
     @slot.raw_value.should match(/@##{UUID_RE}/)
@@ -25,7 +24,6 @@ describe "Slot" do
     some_doc = Document.new(mock("Store"))
     some_doc.extend(VersionedDocument)
     some_doc[:something] = 1
-    @store.should_receive(:find).with(some_doc.uuid,some_doc.version).and_return(nil)
     @slot.value = some_doc
     @slot.value.should == some_doc
     @slot.raw_value.should match(/@##{UUID_RE}.#{VERSION_RE}/)
@@ -33,10 +31,41 @@ describe "Slot" do
 
   it "should store Document reference if value is a saved Document" do
     some_doc = Document.new(mock("Store"))
-    @store.should_receive(:find).with(some_doc.uuid).and_return(some_doc)
     @slot.value = some_doc
     @slot.value.should == some_doc
     @slot.raw_value.should match(/@##{UUID_RE}/)
+  end
+  
+end
+
+describe "Slot that directly references document" do
+  
+  before(:each) do
+    setup_default_store
+    @another_doc = Document.create! :some_data => "1"
+    @doc = Document.create! :another_doc => @another_doc
+  end
+  
+  it "should load the same Ruby object each time" do
+    doc = @doc.reload
+    doc_obj = doc.another_doc
+    doc.another_doc.object_id.should == doc_obj.object_id
+  end
+  
+end
+
+describe "Slot that indirectly references document" do
+  
+  before(:each) do
+    setup_default_store
+    @another_doc = Document.create! :some_data => "1"
+    @doc = Document.create! :another_docs => [@another_doc]
+  end
+  
+  it "should load the same Ruby object each time" do
+    doc = @doc.reload
+    doc_obj = doc.another_docs.first
+    doc.another_docs.first.object_id.should == doc_obj.object_id
   end
   
 end

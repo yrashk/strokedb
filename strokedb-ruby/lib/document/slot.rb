@@ -22,9 +22,9 @@ module StrokeDB
     def value
       case @value
       when /@##{UUID_RE}.#{VERSION_RE}/
-        doc.store.find($1,$2) || @cached_value || "@##{$1}.#{$2}"
+        @cached_value || @cached_value = doc.store.find($1,$2) || "@##{$1}.#{$2}"
       when /@##{UUID_RE}/
-        doc.store.find($1) || @cached_value || "@##{$1}"
+        @cached_value || @cached_value = doc.store.find($1) || "@##{$1}"
       else
         @value
       end
