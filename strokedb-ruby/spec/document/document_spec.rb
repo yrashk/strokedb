@@ -1,15 +1,43 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe "Document" do
+describe "Store" do
 
   before(:each) do
-    @store = mock("Store")
+    setup_default_store
   end
 
-  it "should be able to be created instantly" do
-    @store.should_receive(:save!).with(anything)
-    @store.should_receive(:exists?).with(anything).any_number_of_times.and_return(false)
-    @document = Document.create!(@store,:slot1 => 1)
+  it "should store created document immediately" do
+    StrokeDB.default_store.should_receive(:save!).with(anything)
+    @document = Document.create!(:slot1 => 1)
+  end
+  
+end
+
+describe "Saved Document" do
+
+  before(:each) do
+    setup_default_store
+    @document = Document.create!(:some_data => 1)
+  end
+  
+  it "should be reloadable" do
+    StrokeDB.default_store.should_receive(:find).with(@document.uuid)
+    @document.reload
+  end
+  
+end
+
+describe "Saved VersionedDocument" do
+
+  before(:each) do
+    setup_default_store
+    @document = Document.create!(:some_data => 1)
+    @versioned_document = @document.versions[@document.version]
+  end
+  
+  it "should be reloadable" do
+    StrokeDB.default_store.should_receive(:find).with(@document.uuid,@document.version)
+    @versioned_document.reload
   end
   
 end
@@ -378,3 +406,4 @@ describe "Document with version" do
   
   
 end
+

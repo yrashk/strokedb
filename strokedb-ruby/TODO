@@ -23,7 +23,7 @@
 [x] Convert Diff to meta
 [ ] Pool new UUIDs
 [ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
-[ ] Spec Document#reload and VersionedDocument#reload
+[x] Spec Document#reload and VersionedDocument#reload
 [ ] Improve tracing references on stack in Document#to_s (I don't like it) [yrashk]
 [ ] Import PointQuery (I really don't like it) [yrashk]
 
