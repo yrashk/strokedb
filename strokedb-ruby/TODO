@@ -19,14 +19,14 @@
 [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
 [x] Chained storages
 [x] Add reverse chaining for storages
-[ ] add created_at/updated_at to Document by default?
+[ ] add created_at/updated_at to Document by default? (in addition to lamport ;)
 [x] Convert Diff to meta
 [ ] Pool new UUIDs
 [ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
 [x] Spec Document#reload and VersionedDocument#reload
 [ ] Improve tracing references on stack in Document#to_s (I don't like it) [yrashk]
-[ ] Import PointQuery (I really don't like it) [yrashk]
-[ ] Add (few?) typical configurations that could be re-used with single line of code
+[ ] Improve PointQuery (I really don't like it) [yrashk]
+[ ] Add (few?) typical configuration(s) that could be re-used with single line of code
 
 Config:
 
