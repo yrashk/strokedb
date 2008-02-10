@@ -13,6 +13,8 @@
 [ ] add created_at/updated_at to Document by default?
 [x] Convert Diff to meta
 [ ] Pool new UUIDs
+[ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
+[ ] Find new versions of earlier documents in View::Cut.emit
 
 Config:
 
