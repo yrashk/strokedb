@@ -90,8 +90,8 @@ module StrokeDB
         
         chunk.each  do |node| 
           next if after && (node.value['__lamport_timestamp__']||0) <= (after||0)
-          if node.key.match(/#{UUID_RE}$/) || (include_versions && node.key.match(/#{UUID_RE}.#{VERSION_RE}/) )
-            node_key = node.key.match(/#{UUID_RE}.#{VERSION_RE}/) ? $1 : node.key
+          if uuid_match = node.key.match(/#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}.#{VERSION_RE}/) )
+            node_key = uuid_match[1]
             yield Document.from_raw(self, node_key, node.value) 
           end
         end if chunk
