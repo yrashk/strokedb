@@ -128,7 +128,7 @@ describe "Meta module with after_save callback" do
     end
   end
   
-  it "should call callback block on Document#save! (before actually saving it)" do
+  it "should call callback block on Document#save! (after actually saving it)" do
     s = SomeName.new
     s.save!
     s.instance_variable_get(:@saved).should == false
