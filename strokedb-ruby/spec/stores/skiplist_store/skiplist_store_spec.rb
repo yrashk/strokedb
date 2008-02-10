@@ -143,6 +143,32 @@ describe "Non-empty chunk store" do
     iterated_documents.to_set.should == @new_documents.to_set
   end
   
+  it "should iterate over all newly stored versions if told so" do
+    timestamp = @store.lamport_timestamp
+    @new_documents = []
+    @documents.each_with_index do |document,i|
+      ver = "newver"
+      uuid = document.uuid
+      document.stub!(:to_raw).and_return({:stuff => i, :__lamport_timestamp__ => (timestamp + 1 + i)})
+      document.stub!(:version).and_return ver
+      document.stub!(:uuid_version).and_return "#{uuid}.#{ver}"
+      document.stub!(:all_versions).and_return [ver]
+      document.stub!(:__lamport_timestamp__=).with(anything).and_return(timestamp + 1 + i)
+      document.stub!(:__lamport_timestamp__).and_return(timestamp + 1 + i)
+      document.should_receive(:versions).any_number_of_times.and_return(ver => "version of #{uuid}")
+      @new_documents << document
+      Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i, :__lamport_timestamp__ => (timestamp + 1 + i)}).any_number_of_times.and_return(document) 
+      Document.should_receive(:from_raw).with(@store, "#{uuid}.#{ver}", {:stuff => i, :__lamport_timestamp__ => (timestamp + 1 + i)}).any_number_of_times.and_return("version of #{uuid}") 
+      @store.save!(document)
+    end
+    
+    iterated_documents = []
+    @store.each(:after_lamport_timestamp => timestamp, :include_versions => true) do |doc|
+      iterated_documents << doc
+    end
+    iterated_documents.to_set.should == @new_documents.to_set
+  end
+  
   it "should be Enumerable" do
     @store.should be_a_kind_of(Enumerable)
   end
