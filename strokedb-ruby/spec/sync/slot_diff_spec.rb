@@ -77,7 +77,7 @@ end
       strategy.diff(@string1, @string2).should be_a_kind_of(Array)
     end
     
-    it "should patch string back" do
+    it "should patch String back" do
       strategy.patch(@string1,strategy.diff(@string1, @string2)).should == @string2
     end
 
@@ -93,7 +93,7 @@ end
       strategy.diff(@array1, @array2).should be_a_kind_of(Array)
     end
     
-    it "should patch string back" do
+    it "should patch Array back" do
       strategy.patch(@array1,strategy.diff(@array1, @array2)).should == @array2
     end
   end
@@ -108,7 +108,7 @@ end
       strategy.diff(@hash1, @hash2).should be_a_kind_of(Array)
     end
     
-    it "should patch string back" do
+    it "should patch Hash back" do
       strategy.patch(@hash1,strategy.diff(@hash1, @hash2)).should == @hash2
     end
   end  
@@ -124,7 +124,7 @@ end
       strategy.diff(@ref1, @ref2).should be_a_kind_of(String)
     end
     
-    it "should patch string back" do
+    it "should patch document reference back" do
       strategy.patch(@ref1,strategy.diff(@ref1, @ref2)).should == @ref2
     end
   end  
@@ -141,8 +141,24 @@ end
       strategy.diff(@num1, @num2).should be_a_kind_of(Numeric)
     end
     
-    it "should patch string back" do
+    it "should patch number back" do
       strategy.patch(@num1,strategy.diff(@num1, @num2)).should == @num2
     end
+  end
+  
+  describe "#{strategy.name} for different types" do
+    before(:each) do
+      @val1 = 1
+      @val2 = "a"
+    end
+    
+    it "should diff to target value" do
+      strategy.diff(@val1, @val2).should == @val2
+    end
+    
+    it "should patch number back" do
+      strategy.patch(@val1,strategy.diff(@val1, @val2)).should == @val2
+    end
+
   end
 end
