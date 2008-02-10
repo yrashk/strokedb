@@ -116,6 +116,15 @@ describe "View" do
     @view = View.new(:name => "incremental view").reduce_with{|doc| doc.slotnames.include?('i') }
   end
 
+  it "should make documents VersionedDocuments" do
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
+    @documents = []
+    10.times do |i|
+      @documents << Document.create!(:i => i)
+    end
+    @view.emit.to_a.each {|d| d.should be_a_kind_of(VersionedDocument)}
+  end
+  
   it "should be able to return new documents incrementally" do
     ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
     @documents = []
@@ -127,7 +136,9 @@ describe "View" do
     10.times do |i|
       @documents << Document.create!(:i => i+100)
     end
-    cut.emit.to_a.sort_by {|doc| doc.uuid }.should == @documents.sort_by {|doc| doc.uuid }
+    a = cut.emit.to_a
+    a.sort_by {|doc| doc.uuid }.should == @documents.sort_by {|doc| doc.uuid }
+    a.each {|d| d.should be_a_kind_of(VersionedDocument)} # make sure next emit produces VersionedDocuments as well
   end
 
 end
