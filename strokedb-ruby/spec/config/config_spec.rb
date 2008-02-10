@@ -48,17 +48,23 @@ describe "Config" do
     @paths << (@root_path + "file_chunk_storage_chain")
     @config.add_storage :mem1, :memory_chunk
     @config.add_storage :mem2, :memory_chunk
+    @config.add_storage :mem3, :memory_chunk
     @config.add_storage :fs, :file_chunk, @paths.last
     @config.chain :mem1, :mem2, :fs
-    @config.storages[:mem1].has_chained_storage?(@config.storages[:mem2]).should be_true
-    @config.storages[:mem2].has_chained_storage?(@config.storages[:fs]).should be_true
-    @config.storages[:fs].has_chained_storage?(@config.storages[:mem2]).should be_true
-    @config.storages[:mem2].has_chained_storage?(@config.storages[:mem1]).should be_true
-    @config.storages[:mem1].has_chained_storage?(@config.storages[:mem1]).should be_false
-    @config.storages[:mem2].has_chained_storage?(@config.storages[:mem2]).should be_false
-    @config.storages[:fs].has_chained_storage?(@config.storages[:fs]).should be_false
-    @config.storages[:mem1].has_chained_storage?(@config.storages[:fs]).should be_false
-    @config.storages[:fs].has_chained_storage?(@config.storages[:mem1]).should be_false
+    @config.chain :mem2, :mem3
+    @config.storages[:mem1].should have_chained_storage(@config.storages[:mem2])
+    @config.storages[:mem2].should have_chained_storage(@config.storages[:fs])
+    @config.storages[:fs].should have_chained_storage(@config.storages[:mem2])
+    @config.storages[:mem2].should have_chained_storage(@config.storages[:mem1])
+    @config.storages[:mem1].should_not have_chained_storage(@config.storages[:mem1])
+    @config.storages[:mem2].should_not have_chained_storage(@config.storages[:mem2])
+    @config.storages[:fs].should_not have_chained_storage(@config.storages[:fs])
+    @config.storages[:mem1].should_not have_chained_storage(@config.storages[:fs])
+    @config.storages[:fs].should_not have_chained_storage(@config.storages[:mem1])
+    @config.storages[:mem2].should have_chained_storage(@config.storages[:mem3])
+    @config.storages[:mem3].should have_chained_storage(@config.storages[:mem2])
+    @config.storages[:mem1].should_not have_chained_storage(@config.storages[:mem3])
+    @config.storages[:fs].should_not have_chained_storage(@config.storages[:mem3])
   end
 
   it "should add an index" do
