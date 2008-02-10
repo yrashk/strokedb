@@ -118,6 +118,12 @@ describe "Newly created Document" do
     @document.slot1.should == 1
   end
 
+  it "should not be reloadable" do
+    StrokeDB.default_store.should_not_receive(:find).with(@document.uuid)
+    @document.reload.should == @document
+  end
+
+
 end
 
 

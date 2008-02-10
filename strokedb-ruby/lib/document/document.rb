@@ -143,7 +143,7 @@ module StrokeDB
     end
 
     def reload
-      store.find(uuid)
+      new? ? self : store.find(uuid)
     end
 
     def new?
