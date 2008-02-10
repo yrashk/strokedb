@@ -123,7 +123,7 @@ describe "Non-empty chunk store" do
       uuid = Util.random_uuid
       ver = Array.new(64,'1').join
       document.stub!(:uuid).and_return uuid
-      document.stub!(:to_raw).and_return({:stuff => i, :__lamport_timestamp__ => (timestamp + 1 + i)})
+      document.stub!(:to_raw).and_return({:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)})
       document.stub!(:version).and_return ver
       document.stub!(:uuid_version).and_return "#{uuid}.#{ver}"
       document.stub!(:all_versions).and_return [ver]
@@ -131,8 +131,8 @@ describe "Non-empty chunk store" do
       document.stub!(:__lamport_timestamp__).and_return(timestamp + 1 + i)
       document.should_receive(:versions).any_number_of_times.and_return(ver => "version of #{uuid}")
       @new_documents << document
-      Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i, :__lamport_timestamp__ => (timestamp + 1 + i)}).any_number_of_times.and_return(document) 
-      Document.should_receive(:from_raw).with(@store, "#{uuid}.#{ver}", {:stuff => i, :__lamport_timestamp__ => (timestamp + 1 + i)}).any_number_of_times.and_return("version of #{uuid}") 
+      Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i,'__lamport_timestamp__' => (timestamp + 1 + i)}).any_number_of_times.and_return(document) 
+      Document.should_receive(:from_raw).with(@store, "#{uuid}.#{ver}", {:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)}).any_number_of_times.and_return("version of #{uuid}") 
       @store.save!(document)
     end
     
@@ -149,7 +149,7 @@ describe "Non-empty chunk store" do
     @documents.each_with_index do |document,i|
       ver = "newver"
       uuid = document.uuid
-      document.stub!(:to_raw).and_return({:stuff => i, :__lamport_timestamp__ => (timestamp + 1 + i)})
+      document.stub!(:to_raw).and_return({:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)})
       document.stub!(:version).and_return ver
       document.stub!(:uuid_version).and_return "#{uuid}.#{ver}"
       document.stub!(:all_versions).and_return [ver]
@@ -157,8 +157,8 @@ describe "Non-empty chunk store" do
       document.stub!(:__lamport_timestamp__).and_return(timestamp + 1 + i)
       document.should_receive(:versions).any_number_of_times.and_return(ver => "version of #{uuid}")
       @new_documents << document
-      Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i, :__lamport_timestamp__ => (timestamp + 1 + i)}).any_number_of_times.and_return(document) 
-      Document.should_receive(:from_raw).with(@store, "#{uuid}.#{ver}", {:stuff => i, :__lamport_timestamp__ => (timestamp + 1 + i)}).any_number_of_times.and_return("version of #{uuid}") 
+      Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)}).any_number_of_times.and_return(document) 
+      Document.should_receive(:from_raw).with(@store, "#{uuid}.#{ver}", {:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)}).any_number_of_times.and_return("version of #{uuid}") 
       @store.save!(document)
     end
     
