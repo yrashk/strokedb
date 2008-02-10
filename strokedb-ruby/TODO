@@ -13,10 +13,10 @@ Completed items are removed.
 [ ] add created_at/updated_at to Document by default? (in addition to lamport ;)
 [ ] Pool new UUIDs
 [ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
-[ ] Improve tracing references on stack in Document#to_s (I don't like it) [yrashk]
-[ ] Improve PointQuery (I really don't like it) [yrashk]
+[ ] Improve tracing references on stack in Document#to_s (I don't like it) 
+[ ] Improve PointQuery (I really don't like it)
 [ ] Get rid of SkiplistStore.get_new; it doesn't look really nice. May be #initialize should be options-based 
-	(and all code needs to be updated), or... don't know, but I really don't like this .get_new [yrashk]
+	(and all code needs to be updated), or... don't know, but I really don't like this .get_new
 [ ] Add (few?) typical configuration(s) that could be re-used with single line of code
 
 
