@@ -1,10 +1,11 @@
 module StrokeDB
   View = Meta.new do
     attr_accessor :map_with_proc
+    attr_reader :reduce_with_block
     on_meta_initialization do |view, block|
       view.map_with_proc = block || proc {|doc, *args| doc }
     end
-    
+
     def reduce_with(&block)
       @reduce_with_block = block
       self
@@ -12,7 +13,32 @@ module StrokeDB
 
     def emit(*args) 
       mapped = store.map {|doc| map_with_proc.call(doc,*args) } 
-      @reduce_with_block ? mapped.select {|doc| @reduce_with_block.call(doc,*args) } : mapped
+      ViewCut.new(store, :documents => (@reduce_with_block ? mapped.select {|doc| @reduce_with_block.call(doc,*args) } : mapped),
+      :view => self,
+      :args => args,
+      :lamport_timestamp_state => store.lamport_timestamp)
+    end
+
+  end
+  ViewCut = Meta.new do
+    on_meta_initialization do |cut|
+      if cut.new?
+        cut.instance_eval do
+          @map_with_proc = view.map_with_proc
+          @reduce_with_block = view.map_with_proc
+        end
+      end
+    end
+    def emit
+      mapped = []
+      store.each(:include_versions => false, :after_lamport_timestamp => lamport_timestamp_state) {|doc| mapped << @map_with_proc.call(doc,*args) } # FIXME: include_versions
+      ViewCut.new(store, :documents => (@reduce_with_block ? mapped.select {|doc| @reduce_with_block.call(doc,*args) } : mapped),
+      :view => view,
+      :args => args,
+      :lamport_timestamp_state => store.lamport_timestamp)
+    end
+    def to_a
+      documents
     end
   end
 end
