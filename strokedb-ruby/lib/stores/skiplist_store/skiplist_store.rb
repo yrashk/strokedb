@@ -92,10 +92,6 @@ module StrokeDB
       end
     end
     
-    def each_with_versions(&block)
-      each(:include_versions => true,&block)
-    end
-
     def lamport_timestamp
         find_or_create_master_chunk.lamport_timestamp || 0
     end

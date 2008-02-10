@@ -103,7 +103,7 @@ describe "Non-empty chunk store" do
 
   it "should iterate over all stored documents and their versions if told so" do
     iterated_documents = []
-    @store.each_with_versions do |doc|
+    @store.each(:include_versions => true) do |doc|
       iterated_documents << doc
     end
     documents_with_versions = @documents.clone
