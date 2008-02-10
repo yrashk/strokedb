@@ -60,6 +60,10 @@ describe "Empty chunk store" do
     @store.save!(@document)
     @store.find(@uuid,@document.version).should be_a_kind_of(VersionedDocument)
   end
+  
+  it "should return nil as last_version for unexistent document (well there is no documents at all)" do
+    @store.last_version(Util.random_uuid).should be_nil
+  end
 
 end
 
