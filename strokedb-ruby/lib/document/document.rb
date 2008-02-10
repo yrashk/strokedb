@@ -94,15 +94,23 @@ module StrokeDB
     end
 
     def to_s
-      s = "<#{self.class.name} "
-      to_raw.each_pair do |k,v|
-        if %w(__version__ __previous_version__).member?(k)
-          s << "#{k}: #{v[0,5]}... "
-        else
-          s << "#{k}: #{self[k].inspect} "
+        Util.catch_circular_reference(self) do
+        s = "<Doc "
+        to_raw.each_pair do |k,v|
+          if %w(__version__ __previous_version__).member?(k)
+            s << "#{k}: #{v[0,5]}... "
+          else
+              stack = Thread.current['StrokeDB.reference_stack'] ||= []
+              stack << self[k]
+              s << "#{k}: #{self[k]} "
+              stack.pop
+          end
         end
+        s << ">"
+        return s
       end
-      s << ">"
+      rescue Util::CircularReferenceCondition
+        "<Doc #{uuid[0,5]} (l)>"
     end
 
     alias :inspect :to_s
@@ -132,6 +140,10 @@ module StrokeDB
       doc.instance_variable_set(:@__previous_version__, doc.version)
       doc.instance_variable_set(:@uuid, uuid)
       doc
+    end
+
+    def reload
+      store.find(uuid)
     end
 
     def new?
@@ -189,9 +201,10 @@ module StrokeDB
     end
 
     def ==(doc)
+      return false unless doc.is_a?(Document)
       doc.uuid == uuid && doc.version == version
     end
-    
+
     def method_missing(sym,*args,&block)
       sym = sym.to_s
       if sym.ends_with?('=')
@@ -203,7 +216,7 @@ module StrokeDB
     end
 
     protected
-    
+
     def execute_callbacks(name)
       (callbacks[name.to_s]||[]).each do |callback|
         callback.call(self)
@@ -256,5 +269,9 @@ module StrokeDB
       _to_json = [uuid.to_s,@slots] if opts[:transmittal]
       _to_json.to_json(opts)
     end
+    def reload
+      store.find(uuid,version)
+    end
+    
   end
 end

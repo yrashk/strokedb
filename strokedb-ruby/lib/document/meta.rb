@@ -77,7 +77,7 @@ module StrokeDB
     end
 
     def inspect
-      "<META #{name}>"
+      "{#{name}}"
     end
     alias :to_s :inspect
 

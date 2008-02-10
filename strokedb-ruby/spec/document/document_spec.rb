@@ -376,4 +376,5 @@ describe "Document with version" do
     @document.should_not == @another_document
   end
   
+  
 end

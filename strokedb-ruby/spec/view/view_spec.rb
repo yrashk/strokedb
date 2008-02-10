@@ -147,3 +147,57 @@ describe "View" do
   end
 
 end
+
+describe "Newly created View" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    @view = View.new
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
+  end
+  
+  it "should reference first cut as last cut when it is saved" do
+    cut = @view.emit
+    cut.save!
+    @view.last_cut.should == cut
+  end
+  
+  it "save view on first cut save" do
+    cut = @view.emit
+    cut.save!
+    @view.should_not be_new
+  end
+  
+end
+
+describe "View with cut(s) available" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    @view = View.new
+    ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
+    @cut = @view.emit
+    @cut.save!
+  end
+  
+  it "should refer to newly emitted cut as last cut (when it is saved)" do
+    new_cut = @cut.emit
+    @view.reload.last_cut.should == @cut
+    new_cut.save!
+    @view.reload.last_cut.should == new_cut
+  end
+
+  it "should not refer to newly emitted cut as last cut (when it is saved) if this cut isn't really last" do
+    pending("not finished yet")
+    new_cut = @cut.emit
+    new_cut.save!
+    @view.reload.last_cut.should == new_cut
+    another_cut = @cut.emit
+    another_cut.save!
+    puts another_cut.previous == new_cut
+    @view.reload.last_cut.should == new_cut
+  end
+  
+end

@@ -2,8 +2,9 @@ module StrokeDB
   View = Meta.new do
     attr_accessor :map_with_proc
     attr_reader :reduce_with_proc
+    
     on_initialization do |view, block|
-      view.map_with_proc = block || proc {|doc, *args| doc }
+      view.map_with_proc = block || proc {|doc, *args| doc } 
     end
 
     def reduce_with(&block)
@@ -17,14 +18,26 @@ module StrokeDB
 
   end
   ViewCut = Meta.new do
+    
     on_initialization do |cut|
       if cut.new?
         cut.instance_eval do
-          @map_with_proc = view.map_with_proc
-          @reduce_with_proc = view.reduce_with_proc
+          if view.is_a?(View)
+            @map_with_proc = view.map_with_proc
+            @reduce_with_proc = view.reduce_with_proc
+          end
         end
       end
     end
+    
+    before_save do |cut|
+      view = cut.view
+      cut.previous = view.last_cut if view[:last_cut]
+      view.last_cut = cut if view[:last_cut].nil? or (cut[:previous] && view.last_cut == cut.previous)
+      view.save!
+    end
+    
+    
     def emit
       mapped = []
       store.each(:after_lamport_timestamp => lamport_timestamp_state) {|doc| mapped << @map_with_proc.call(doc,*args) }
