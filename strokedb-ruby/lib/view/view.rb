@@ -31,7 +31,7 @@ module StrokeDB
     end
     def emit
       mapped = []
-      store.each(:include_versions => false, :after_lamport_timestamp => lamport_timestamp_state) {|doc| mapped << @map_with_proc.call(doc,*args) } # FIXME: include_versions
+      store.each(:after_lamport_timestamp => lamport_timestamp_state) {|doc| mapped << @map_with_proc.call(doc,*args) }
       ViewCut.new(store, :documents => (@reduce_with_block ? mapped.select {|doc| @reduce_with_block.call(doc,*args) } : mapped),
       :view => view,
       :args => args,
