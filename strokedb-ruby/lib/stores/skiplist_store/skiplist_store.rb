@@ -82,12 +82,13 @@ module StrokeDB
 
     def each(options = {})
       return nil unless m = @chunk_storage.find('MASTER')  # no master chunk yet
+      after = options[:after_lamport_timestamp]
       m.each do |node|
         chunk = @chunk_storage.find(node.value)
-        next if (after = options[:after_lamport_timestamp]) && chunk && chunk.lamport_timestamp <= (after||0)
+        next if after && chunk && chunk.lamport_timestamp <= (after||0)
         
         chunk.each  do |node| 
-          next if (after = options[:after_lamport_timestamp]) && (node.value['__lamport_timestamp__']||0) <= (after||0)
+          next if after && (node.value['__lamport_timestamp__']||0) <= (after||0)
           if node.key.match(/#{UUID_RE}$/) || (options[:include_versions] && node.key.match(/#{UUID_RE}.#{VERSION_RE}/) )
             node_key = node.key.match(/#{UUID_RE}.#{VERSION_RE}/) ? $1 : node.key
             yield Document.from_raw(self, node_key, node.value) 
