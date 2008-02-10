@@ -101,7 +101,7 @@ describe "Meta module with before_save callback" do
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
       before_save do |obj|
-        obj.instance_variable_set(:@saved,obj.new?)
+        obj.instance_variable_set(:@not_saved,obj.new?)
       end
     end
   end
@@ -109,7 +109,7 @@ describe "Meta module with before_save callback" do
   it "should call callback block on Document#save! (before actually saving it)" do
     s = SomeName.new
     s.save!
-    s.instance_variable_get(:@saved).should == true
+    s.instance_variable_get(:@not_saved).should == true
   end
 
 end
@@ -123,7 +123,7 @@ describe "Meta module with after_save callback" do
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
       after_save do |obj|
-        obj.instance_variable_set(:@saved,obj.new?)
+        obj.instance_variable_set(:@not_saved,obj.new?)
       end
     end
   end
@@ -131,7 +131,7 @@ describe "Meta module with after_save callback" do
   it "should call callback block on Document#save! (after actually saving it)" do
     s = SomeName.new
     s.save!
-    s.instance_variable_get(:@saved).should == false
+    s.instance_variable_get(:@not_saved).should == false
   end
 
 end
