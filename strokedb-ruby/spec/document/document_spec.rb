@@ -283,16 +283,16 @@ describe "Valid Document's JSON with multiple meta names specified" do
     doc.should be_a_kind_of(SomeDocument2)
   end
   
-  it "should call all on_meta_initialization callbacks for all available meta modules" do
+  it "should call all on_initialization callbacks for all available meta modules" do
     Object.send!(:remove_const,'SomeDocument0') if defined?(SomeDocument0)
     SomeDocument0 = Meta.new do
-        on_meta_initialization do |doc|
+        on_initialization do |doc|
           doc.instance_variable_set(:@callback_0_called,true)
         end
     end
     Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
     SomeDocument2 = Meta.new do
-      on_meta_initialization do |doc|
+      on_initialization do |doc|
         doc.instance_variable_set(:@callback_2_called,true)
       end
     end

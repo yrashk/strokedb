@@ -71,7 +71,7 @@ describe "Meta module without name" do
   
 end
 
-describe "Meta module with on_meta_initialization callback" do
+describe "Meta module with on_initialization callback" do
   
   before(:each) do
     setup_default_store
@@ -79,7 +79,7 @@ describe "Meta module with on_meta_initialization callback" do
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
-      on_meta_initialization do |obj|
+      on_initialization do |obj|
         obj.instance_variable_set(:@obj,obj)
         send!(:hello!)
       end

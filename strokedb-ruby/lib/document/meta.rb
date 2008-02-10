@@ -42,20 +42,20 @@ module StrokeDB
 
     end
 
-    def on_meta_initialization(&block)
-      @on_meta_initialization_block = block
+    def on_initialization(&block)
+      @on_initialization_block = block
     end
 
     def new(*args,&block)
       doc = Document.new(*args)
       doc.extend(self)
       doc[:__meta__] = document(doc.store)
-      if @on_meta_initialization_block
-        case @on_meta_initialization_block.arity
+      if @on_initialization_block
+        case @on_initialization_block.arity
         when 2
-          @on_meta_initialization_block.call(doc,block)
+          @on_initialization_block.call(doc,block)
         when 1
-          @on_meta_initialization_block.call(doc) 
+          @on_initialization_block.call(doc) 
         end
       end
       doc

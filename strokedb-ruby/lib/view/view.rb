@@ -2,7 +2,7 @@ module StrokeDB
   View = Meta.new do
     attr_accessor :map_with_proc
     attr_reader :reduce_with_proc
-    on_meta_initialization do |view, block|
+    on_initialization do |view, block|
       view.map_with_proc = block || proc {|doc, *args| doc }
     end
 
@@ -17,7 +17,7 @@ module StrokeDB
 
   end
   ViewCut = Meta.new do
-    on_meta_initialization do |cut|
+    on_initialization do |cut|
       if cut.new?
         cut.instance_eval do
           @map_with_proc = view.map_with_proc

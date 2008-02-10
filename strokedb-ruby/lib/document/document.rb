@@ -125,8 +125,8 @@ module StrokeDB
       meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
       meta_modules.each do |meta_module|
         doc.extend(meta_module)
-        if on_meta_initialization_block = meta_module.instance_variable_get(:@on_meta_initialization_block)
-          on_meta_initialization_block.call(doc)
+        if on_initialization_block = meta_module.instance_variable_get(:@on_initialization_block)
+          on_initialization_block.call(doc)
         end
       end
       doc.instance_variable_set(:@__previous_version__, doc.version)
