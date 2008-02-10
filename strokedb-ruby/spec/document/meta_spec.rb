@@ -81,15 +81,57 @@ describe "Meta module with on_initialization callback" do
     SomeName = Meta.new do
       on_initialization do |obj|
         obj.instance_variable_set(:@obj,obj)
-        send!(:hello!)
       end
     end
   end
   
   it "should call callback block on meta instantiation" do
-    SomeName.should_receive(:hello!)
     s = SomeName.new
     s.instance_variable_get(:@obj).should == s
+  end
+
+end
+
+describe "Meta module with before_save callback" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new do
+      before_save do |obj|
+        obj.instance_variable_set(:@saved,obj.new?)
+      end
+    end
+  end
+  
+  it "should call callback block on Document#save! (before actually saving it)" do
+    s = SomeName.new
+    s.save!
+    s.instance_variable_get(:@saved).should == true
+  end
+
+end
+
+describe "Meta module with after_save callback" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new do
+      after_save do |obj|
+        obj.instance_variable_set(:@saved,obj.new?)
+      end
+    end
+  end
+  
+  it "should call callback block on Document#save! (before actually saving it)" do
+    s = SomeName.new
+    s.save!
+    s.instance_variable_get(:@saved).should == false
   end
 
 end

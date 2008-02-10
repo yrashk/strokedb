@@ -18,7 +18,7 @@ module StrokeDB
   end
 
   class Document
-    attr_reader :uuid, :store
+    attr_reader :uuid, :store, :callbacks
 
     class Versions
       attr_reader :document
@@ -141,7 +141,9 @@ module StrokeDB
     def save!
       raise UnversionedDocumentError.new unless version
       self[:__previous_version__] ||= (@__previous_version__ || store.last_version(uuid)) unless new?
+      execute_callbacks :before_save
       store.save!(self)
+      execute_callbacks :after_save
       self
     end
 
@@ -201,8 +203,15 @@ module StrokeDB
     end
 
     protected
+    
+    def execute_callbacks(name)
+      (callbacks[name.to_s]||[]).each do |callback|
+        callback.call(self)
+      end
+    end
 
     def do_initialize(store, slots={})
+      @callbacks = {}
       @store = store
       @uuid = Util.random_uuid
       initialize_slots(slots)

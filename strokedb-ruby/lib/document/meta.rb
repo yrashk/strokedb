@@ -28,7 +28,7 @@ module StrokeDB
         end
         meta_doc
       end
-      
+
 
       private
 
@@ -42,8 +42,13 @@ module StrokeDB
 
     end
 
-    def on_initialization(&block)
-      @on_initialization_block = block
+    CALLBACKS = %w(on_initialization before_save after_save)
+    CALLBACKS.each do |callback_name|
+      module_eval %{
+        def #{callback_name}(&block)
+          @#{callback_name}_block = block
+        end
+      }
     end
 
     def new(*args,&block)
@@ -56,6 +61,12 @@ module StrokeDB
           @on_initialization_block.call(doc,block)
         when 1
           @on_initialization_block.call(doc) 
+        end
+      end
+      CALLBACKS.each do |callback_name| 
+        if callback = instance_variable_get("@#{callback_name}_block")
+          doc.callbacks[callback_name] ||= []
+          doc.callbacks[callback_name] << callback
         end
       end
       doc
