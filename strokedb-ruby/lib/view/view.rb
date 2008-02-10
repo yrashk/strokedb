@@ -14,7 +14,8 @@ module StrokeDB
       mapped = store.map {|doc| map_with_proc.call(doc,*args) } 
       Cut.new(store, :documents => (@reduce_with_block ? mapped.select {|doc| @reduce_with_block.call(doc,*args) } : mapped),
                      :view => self,
-                     :args => args)
+                     :args => args,
+                     :lamport_timestamp_state => store.lamport_timestamp)
     end
     
     Cut = Meta.new do
