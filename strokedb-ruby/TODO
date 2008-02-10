@@ -1,3 +1,12 @@
+[ ] Cache Document-typed slot values
+
+    Example:
+
+    doc.some_doc
+    doc.some_doc
+
+    currently they are different Ruby objects, which is definitely kinda unexpected behaviour
+
 [x] Skiplist chunking of objects
 [ ] JSON library dependency: wrong sha256 version when libs changes behavior (draft own ActiveSupport-compatible JSON implementation?)
 [x] MASTER chunk for chunked skiplists (for faster access)
