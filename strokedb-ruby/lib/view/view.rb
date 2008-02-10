@@ -32,7 +32,6 @@ module StrokeDB
     
     before_save do |cut|
       view = cut.view
-      cut.previous = view.last_cut if view[:last_cut]
       view.last_cut = cut if view[:last_cut].nil? or (cut[:previous] && view.last_cut == cut.previous)
       view.save!
     end
@@ -41,8 +40,8 @@ module StrokeDB
     def emit
       mapped = []
       store.each(:after_lamport_timestamp => lamport_timestamp_state) {|doc| mapped << @map_with_proc.call(doc,*args) }
-      documents = (@reduce_with_proc ? mapped.select {|doc| @reduce_with_proc.call(doc,*args) } : mapped).map{|d| d.extend(VersionedDocument)}
-      ViewCut.new(store, :documents => documents, :view => view, :args => args, :lamport_timestamp_state => store.lamport_timestamp)
+      documents = (@reduce_with_proc ? mapped.select {|doc| @reduce_with_proc.call(doc,*args) } : mapped).map{|d| d.is_a?(Document) ? d.extend(VersionedDocument) : d}
+      ViewCut.new(store, :documents => documents, :view => view, :args => args, :lamport_timestamp_state => store.lamport_timestamp, :previous => self)
     end
     def to_a
       documents

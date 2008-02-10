@@ -190,13 +190,11 @@ describe "View with cut(s) available" do
   end
 
   it "should not refer to newly emitted cut as last cut (when it is saved) if this cut isn't really last" do
-    pending("not finished yet")
     new_cut = @cut.emit
     new_cut.save!
     @view.reload.last_cut.should == new_cut
     another_cut = @cut.emit
     another_cut.save!
-    puts another_cut.previous == new_cut
     @view.reload.last_cut.should == new_cut
   end
   
