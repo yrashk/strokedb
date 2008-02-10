@@ -86,15 +86,15 @@ module StrokeDB
       include_versions = options[:include_versions]
       m.each do |node|
         chunk = @chunk_storage.find(node.value)
-        next if after && chunk && chunk.lamport_timestamp <= (after||0)
+        next unless chunk
+        next if after && chunk.lamport_timestamp <= after
         
-        chunk.each  do |node| 
-          next if after && (node.value['__lamport_timestamp__']||0) <= (after||0)
+        chunk.each do |node| 
+          next if after && (node.value['__lamport_timestamp__'] <= after)
           if uuid_match = node.key.match(/#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}.#{VERSION_RE}/) )
-            node_key = uuid_match[1]
-            yield Document.from_raw(self, node_key, node.value) 
+            yield Document.from_raw(self, uuid_match[1], node.value) 
           end
-        end if chunk
+        end
       end
     end
     
