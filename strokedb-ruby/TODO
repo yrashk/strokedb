@@ -1,54 +1,24 @@
-[x] Cache Document-typed slot values
+Legend:
+[ ] NOT DONE
+[*] MAY BE
+[-] ?
+Completed items are removed.
+============================
 
-    Example:
-
-    doc.some_doc
-    doc.some_doc
-
-    currently they are different Ruby objects, which is definitely kinda unexpected behaviour
-
-[x] Skiplist chunking of objects
 [ ] JSON library dependency: wrong sha256 version when libs changes behavior (draft own ActiveSupport-compatible JSON implementation?)
-[x] MASTER chunk for chunked skiplists (for faster access)
-[X] Fix bad UUID implementation in pure ruby version
+[*] Fix bad UUID implementation in pure ruby version
 [ ] Read/Write benchmarks showing dependency of data size
 [-] K-d skiplist & specs
-[x] Add slot value diffing
-[x] Add document patching
-[x] Add slot value patching
 [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
-[x] Chained storages
-[x] Add reverse chaining for storages
 [ ] add created_at/updated_at to Document by default? (in addition to lamport ;)
-[x] Convert Diff to meta
 [ ] Pool new UUIDs
 [ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
-[x] Spec Document#reload and VersionedDocument#reload
 [ ] Improve tracing references on stack in Document#to_s (I don't like it) [yrashk]
 [ ] Improve PointQuery (I really don't like it) [yrashk]
-[ ] Add (few?) typical configuration(s) that could be re-used with single line of code
-
-Config:
-
-[x] Allow to chain any number of storages:
-	
-	config.chain :mem, :memcached, :fs
-	config.chain :memcached, :network
-	
-	These two calls made sequentially should build the following structure:
-	
-	mem <-> memcached <-> fs
-				^
-				|
-				V
-			 network
-	
-[x] ...and split chaining and authoritative source, they are basically an orthogonal concepts.
-
-	config[:mem].authoritative_source = config[:fs]
-	
 [ ] Get rid of SkiplistStore.get_new; it doesn't look really nice. May be #initialize should be options-based 
 	(and all code needs to be updated), or... don't know, but I really don't like this .get_new [yrashk]
+[ ] Add (few?) typical configuration(s) that could be re-used with single line of code
+
 
 InvertedList index:
 
