@@ -19,6 +19,35 @@ manipulate with versions, diffs and timestamps.
 
 
 
+
+LOG FILE (not finished)
+
+We have 4 major mutation types:
+1) Creation
+2) Deletion
+3) Update (dumb overwrite)
+4) Custom
+
+Example:
+
+[ lamport_timestamp, "create", uuid, raw_doc ]  # [10, "create", "12345678...", {'__meta__'=> ...}]
+[ lamport_timestamp, "delete", uuid ]
+[ lamport_timestamp, "update", uuid, raw_doc ]
+(or [ lamport_timestamp, "update", uuid, version_from, raw_diff ]) # TODO: find out what's easier
+[ lamport_timestamp, "custom", raw_mutation_doc]
+
+Mutation doc is a doc specifing a transactional mutation. 
+E.g. "debit 1% to an account". Operation +1% could be implemented as 
+an overwriting update (i.e. "take value", "increment value", 
+"store new value"), but it is not merged well in case of concurrent
+operations on the same data in a separate storage. To fix this, we 
+implement Mutation Docs. 
+Meta of the doc specifies type of mutation and its algorithms. 
+Doc's slots specify parameters of the mutation.
+
+TODO: specify log merging and rerunning 
+
+
 SKIPLIST
 
 For the best search speed, probability should be 1/E 
