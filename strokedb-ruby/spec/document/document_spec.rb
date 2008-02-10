@@ -6,49 +6,18 @@ describe "Store" do
     setup_default_store
   end
 
-  it "should store created document immediately" do
+  it "should save created document immediately" do
     StrokeDB.default_store.should_receive(:save!).with(anything)
     @document = Document.create!(:slot1 => 1)
   end
   
 end
 
-describe "Saved Document" do
+describe "New Document" do
 
   before(:each) do
     setup_default_store
-    @document = Document.create!(:some_data => 1)
-  end
-  
-  it "should be reloadable" do
-    StrokeDB.default_store.should_receive(:find).with(@document.uuid)
-    @document.reload
-  end
-  
-end
-
-describe "Saved VersionedDocument" do
-
-  before(:each) do
-    setup_default_store
-    @document = Document.create!(:some_data => 1)
-    @versioned_document = @document.versions[@document.version]
-  end
-  
-  it "should be reloadable" do
-    StrokeDB.default_store.should_receive(:find).with(@document.uuid,@document.version)
-    @versioned_document.reload
-  end
-  
-end
-
-
-describe "Newly created Document" do
-
-  before(:each) do
-    @store = mock("Store")
-    @document = Document.new(@store)
-    @store.should_receive(:exists?).with(@document.uuid).any_number_of_times.and_return(false)
+    @document = Document.new
   end
 
   it "should have UUID" do
@@ -118,13 +87,80 @@ describe "Newly created Document" do
     @document.slot1.should == 1
   end
 
-  it "should not be reloadable" do
-    StrokeDB.default_store.should_not_receive(:find).with(@document.uuid)
-    @document.reload.should == @document
+  it "should be reloadable to itself" do
+    reloaded_doc = @document.reload
+    reloaded_doc.object_id.should == @document.object_id
+    reloaded_doc.should be_new
+  end
+
+end
+
+describe "New Document with slots supplied" do
+
+  before(:each) do
+    setup_default_store
+    @document = Document.new(:slot1 => "val1", :slot2 => "val2")
+  end
+
+  it "should have version" do
+    @document.version.should_not be_nil
+    @document.version.should match(/^#{VERSION_RE}$/)
+  end
+
+  it "should have corresponding slotnames, including __version__ slotname" do
+    @document.slotnames.to_set.should == ['__version__','slot1','slot2'].to_set
+  end
+
+  it "should update slot value" do
+    @document[:slot1] = "someval"
+    @document[:slot1].should == "someval"
+  end
+
+  it "should update version each time slots are updated" do
+    lambda do
+      @document[:slot1] = "newval"
+    end.should change(@document,:version)
+  end
+
+  it "should be saveable" do
+    @document.save!
+    @document.should_not be_new
   end
 
 
 end
+
+
+
+describe "Saved Document" do
+
+  before(:each) do
+    setup_default_store
+    @document = Document.create!(:some_data => 1)
+  end
+  
+  it "should be reloadable" do
+    StrokeDB.default_store.should_receive(:find).with(@document.uuid)
+    @document.reload
+  end
+  
+end
+
+describe "Saved VersionedDocument" do
+
+  before(:each) do
+    setup_default_store
+    @document = Document.create!(:some_data => 1)
+    @versioned_document = @document.versions[@document.version]
+  end
+  
+  it "should be reloadable" do
+    StrokeDB.default_store.should_receive(:find).with(@document.uuid,@document.version)
+    @versioned_document.reload
+  end
+  
+end
+
 
 
 describe "Document with previous version" do
@@ -149,40 +185,6 @@ describe "Document with previous version" do
 end
 
 
-describe "Newly created Document with slots supplied" do
-
-  before(:each) do
-    @store = mock("Store")
-    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2")
-    @store.should_receive(:exists?).with(@document.uuid).any_number_of_times.and_return(false)
-  end
-
-  it "should have version" do
-    @document.version.should_not be_nil
-  end
-
-  it "should have corresponding slotnames, including __version__ slotname" do
-    @document.slotnames.to_set.should == ['__version__','slot1','slot2'].to_set
-  end
-
-  it "should update slot value" do
-    @document[:slot1] = "someval"
-    @document[:slot1].should == "someval"
-  end
-
-  it "should update version each time slots are updated" do
-    lambda do
-      @document[:slot1] = "newval"
-    end.should change(@document,:version)
-  end
-
-  it "should save itself" do
-    @store.should_receive(:save!).with(@document)
-    @document.save!
-  end
-
-
-end
 
 describe "Document with single meta" do
 
@@ -227,6 +229,62 @@ describe "Document with multiple metas" do
 
 end 
 
+
+describe "Document initialization with store omitted", :shared => true do
+
+  it "should raise an exception if no default store available" do
+    StrokeDB.stub!(:default_store).and_return(nil)
+    lambda { Document.new(*@args) }.should raise_error(NoDefaultStoreError)
+  end
+
+  it "should use default store if available" do
+    StrokeDB.stub!(:default_store).and_return(mock("Store"))
+    doc = Document.new(*@args)
+    doc.store.should == StrokeDB.default_store
+  end
+
+end
+
+describe "Document initialization with store omitted but with some slots specified" do
+
+  before(:each) do
+    @args = [{:slot1 => 1}]
+  end
+  
+  it_should_behave_like "Document initialization with store omitted"
+
+end
+
+describe "Document initialization with store omitted but with no slots specified" do
+
+  before(:each) do
+    @args = []
+  end
+  
+  it_should_behave_like "Document initialization with store omitted"
+
+end
+
+describe "Document with version" do
+  
+  before(:each) do
+    setup_default_store
+    @document = Document.new(:some_data => 1)
+  end
+  
+  it "should be equal to another document with the same version and uuid" do
+    @another_document = Document.new(:some_data => 1)
+    @another_document.stub!(:uuid).and_return(@document.uuid)
+    @document.should == @another_document
+  end
+
+  it "should not be equal to another document with the same version but another uuid" do
+    @another_document = Document.new(:some_data => 1)
+    @document.should_not == @another_document
+  end
+  
+  
+end
 
 describe "Valid Document's JSON" do
 
@@ -334,12 +392,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     doc.instance_variable_get(:@callback_0_called).should be_true
     doc.instance_variable_get(:@callback_2_called).should be_true
   end
-  
-  
-
 end
-
-
 
 describe "Invalid Document's JSON (i.e. incorrect __version__)" do
 
@@ -355,61 +408,3 @@ describe "Invalid Document's JSON (i.e. incorrect __version__)" do
     end.should raise_error(VersionMismatchError)
   end
 end
-
-
-describe "Document initialization with store omitted", :shared => true do
-
-  it "should raise an exception if no default store available" do
-    StrokeDB.stub!(:default_store).and_return(nil)
-    lambda { Document.new(*@args) }.should raise_error(NoDefaultStoreError)
-  end
-
-  it "should use default store if available" do
-    StrokeDB.stub!(:default_store).and_return(mock("Store"))
-    doc = Document.new(*@args)
-    doc.store.should == StrokeDB.default_store
-  end
-
-end
-
-describe "Document initialization with store omitted but with some slots specified" do
-
-  before(:each) do
-    @args = [{:slot1 => 1}]
-  end
-  
-  it_should_behave_like "Document initialization with store omitted"
-
-end
-
-describe "Document initialization with store omitted but with no slots specified" do
-
-  before(:each) do
-    @args = []
-  end
-  
-  it_should_behave_like "Document initialization with store omitted"
-
-end
-
-describe "Document with version" do
-  
-  before(:each) do
-    setup_default_store
-    @document = Document.new(:some_data => 1)
-  end
-  
-  it "should be equal to another document with the same version and uuid" do
-    @another_document = Document.new(:some_data => 1)
-    @another_document.stub!(:uuid).and_return(@document.uuid)
-    @document.should == @another_document
-  end
-
-  it "should not be equal to another document with the same version but another uuid" do
-    @another_document = Document.new(:some_data => 1)
-    @document.should_not == @another_document
-  end
-  
-  
-end
-
