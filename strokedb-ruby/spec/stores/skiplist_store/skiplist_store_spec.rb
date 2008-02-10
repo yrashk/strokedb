@@ -70,27 +70,12 @@ describe "Non-empty chunk store" do
     # Mock documents, mock chunk storages.
     # But don't mock Chunk. Chunk is an essential part of skiplist technology™
 
-    chunk_storage = MemoryChunkStorage.new
-    @store = SkiplistStore.new(chunk_storage, 4)
+    @store = setup_default_store
     
     @documents = []
     10.times do |i|
-      document = mock("Document")
-      uuid = Util.random_uuid
-      ver = Array.new(64,'1').join
-      document.stub!(:uuid).and_return uuid
-      document.stub!(:to_raw).and_return({:stuff => i})
-      document.stub!(:version).and_return ver
-      document.stub!(:uuid_version).and_return "#{uuid}.#{ver}"
-      document.stub!(:all_versions).and_return [ver]
-      document.stub!(:__lamport_timestamp__=).with(anything).and_return 0
-      document.should_receive(:versions).any_number_of_times.and_return(ver => "version of #{uuid}")
-      @documents << document
-      Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i}).any_number_of_times.and_return(document) 
-      Document.should_receive(:from_raw).with(@store, "#{uuid}.#{ver}", {:stuff => i}).any_number_of_times.and_return("version of #{uuid}") 
+      @documents << Document.create!(:stuff => i)
     end
-    
-    @documents.each {|document| @store.save!(document) }
   end
   
   it "should iterate over all stored documents" do
@@ -98,7 +83,7 @@ describe "Non-empty chunk store" do
     @store.each do |doc|
       iterated_documents << doc
     end
-    iterated_documents.to_set.should == @documents.to_set
+    iterated_documents.sort_by {|doc| doc.__lamport_timestamp__}.should == @documents.sort_by {|doc| doc.__lamport_timestamp__}
   end
 
   it "should iterate over all stored documents and their versions if told so" do
@@ -112,61 +97,36 @@ describe "Non-empty chunk store" do
         documents_with_versions << doc.versions[v]
       end
     end
-    iterated_documents.to_set.should == documents_with_versions.to_set
+    iterated_documents.sort_by {|doc| doc.__lamport_timestamp__}.should == documents_with_versions.sort_by {|doc| doc.__lamport_timestamp__}
   end
   
   it "should iterate over all newly stored documents if told so" do
     timestamp = @store.lamport_timestamp
     @new_documents = []
     10.times do |i|
-      document = mock("Document")
-      uuid = Util.random_uuid
-      ver = Array.new(64,'1').join
-      document.stub!(:uuid).and_return uuid
-      document.stub!(:to_raw).and_return({:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)})
-      document.stub!(:version).and_return ver
-      document.stub!(:uuid_version).and_return "#{uuid}.#{ver}"
-      document.stub!(:all_versions).and_return [ver]
-      document.stub!(:__lamport_timestamp__=).with(anything).and_return(timestamp + 1 + i)
-      document.stub!(:__lamport_timestamp__).and_return(timestamp + 1 + i)
-      document.should_receive(:versions).any_number_of_times.and_return(ver => "version of #{uuid}")
-      @new_documents << document
-      Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i,'__lamport_timestamp__' => (timestamp + 1 + i)}).any_number_of_times.and_return(document) 
-      Document.should_receive(:from_raw).with(@store, "#{uuid}.#{ver}", {:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)}).any_number_of_times.and_return("version of #{uuid}") 
-      @store.save!(document)
+      @new_documents << Document.create!(:stuff => i)
     end
     
     iterated_documents = []
     @store.each(:after_lamport_timestamp => timestamp) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.to_set.should == @new_documents.to_set
+    iterated_documents.sort_by {|doc| doc.__lamport_timestamp__}.should == @new_documents.sort_by {|doc| doc.__lamport_timestamp__}
   end
   
   it "should iterate over all newly stored versions if told so" do
     timestamp = @store.lamport_timestamp
     @new_documents = []
     @documents.each_with_index do |document,i|
-      ver = "newver"
-      uuid = document.uuid
-      document.stub!(:to_raw).and_return({:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)})
-      document.stub!(:version).and_return ver
-      document.stub!(:uuid_version).and_return "#{uuid}.#{ver}"
-      document.stub!(:all_versions).and_return [ver]
-      document.stub!(:__lamport_timestamp__=).with(anything).and_return(timestamp + 1 + i)
-      document.stub!(:__lamport_timestamp__).and_return(timestamp + 1 + i)
-      document.should_receive(:versions).any_number_of_times.and_return(ver => "version of #{uuid}")
-      @new_documents << document
-      Document.should_receive(:from_raw).with(@store, uuid, {:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)}).any_number_of_times.and_return(document) 
-      Document.should_receive(:from_raw).with(@store, "#{uuid}.#{ver}", {:stuff => i, '__lamport_timestamp__' => (timestamp + 1 + i)}).any_number_of_times.and_return("version of #{uuid}") 
-      @store.save!(document)
+      document.stuff = i+100
+      @new_documents << document.save!
     end
     
     iterated_documents = []
     @store.each(:after_lamport_timestamp => timestamp, :include_versions => true) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.to_set.should == @new_documents.to_set
+    iterated_documents.sort_by {|doc| doc.__lamport_timestamp__}.should == (@documents + @new_documents).sort_by {|doc| doc.__lamport_timestamp__}
   end
   
   it "should be Enumerable" do
