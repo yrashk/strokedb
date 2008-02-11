@@ -139,6 +139,10 @@ describe "Saved Document" do
     @document = Document.create!(:some_data => 1)
   end
   
+  it "should not be new" do
+    @document.should_not be_new
+  end
+  
   it "should be reloadable" do
     StrokeDB.default_store.should_receive(:find).with(@document.uuid)
     @document.reload
