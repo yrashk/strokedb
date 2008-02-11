@@ -110,7 +110,7 @@ module StrokeDB
         return s
       end
       rescue Util::CircularReferenceCondition
-        "<Doc #{uuid[0,5]} (l)>"
+        "<Doc #{uuid[0,5]}*>"
     end
 
     alias :inspect :to_s
