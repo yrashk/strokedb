@@ -11,6 +11,11 @@ module StrokeDB
       @reduce_with_proc = block
       self
     end
+    
+    def map_with(&block)
+      @map_with_proc = block
+      self
+    end
 
     def emit(*args) 
       ViewCut.new(store, :view => self, :args => args, :lamport_timestamp_state => 0).emit

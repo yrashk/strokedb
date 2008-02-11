@@ -24,7 +24,7 @@ describe "View with map_with (without extra arguments)" do
   before(:each) do
     setup_default_store
     setup_index
-    @view = View.new(:name => "with map_with (without extra arguments)") {|doc| doc.slotnames.include?('i') ? doc : nil}
+    @view = View.new(:name => "with map_with (without extra arguments)").map_with {|doc| doc.slotnames.include?('i') ? doc : nil}
     ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
@@ -43,7 +43,7 @@ describe "View with map_with (with extra arguments)" do
   before(:each) do
     setup_default_store
     setup_index
-    @view = View.new(:name => "with map_with (with extra arguments)") {|doc,slotname| doc.slotnames.include?(slotname.to_s) ? doc : nil}
+    @view = View.new(:name => "with map_with (with extra arguments)").map_with {|doc,slotname| doc.slotnames.include?(slotname.to_s) ? doc : nil}
     ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
@@ -62,7 +62,7 @@ describe "View with map_with and reduce_with" do
   before(:each) do
     setup_default_store
     setup_index
-    @view = View.new(:name => "with map_with and reduce_with") {|doc| doc.slotnames.include?('i') ? doc : nil}.reduce_with{|doc| !doc.nil? }
+    @view = View.new(:name => "with map_with and reduce_with").map_with {|doc| doc.slotnames.include?('i') ? doc : nil}.reduce_with{|doc| !doc.nil? }
     ViewCut.document # this is to ensure that ViewCut document is created prior to emitting more data in cuts
   end
 
