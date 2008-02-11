@@ -16,7 +16,7 @@ config.add_store :default, :skiplist, :mem, :cut_level => 4
 
 
 User = StrokeDB::Meta.new
-unless u = config.indexes[:default].find(:__meta__ => User.document, :email => "yrashk@gmail.com").first
+unless u = User.find(:email => "yrashk@gmail.com").first
   puts "User not found, creating new user"
   u = User.create! :email => "yrashk@gmail.com"
 else
