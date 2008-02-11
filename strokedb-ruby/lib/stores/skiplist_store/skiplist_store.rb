@@ -3,7 +3,7 @@ module StrokeDB
     include Enumerable
     attr_accessor :chunk_storage, :cut_level, :index_store
     attr_reader :uuid
-    
+
     def initialize(chunk_storage, cut_level, index_store = nil)
       @chunk_storage = chunk_storage
       @cut_level = cut_level
@@ -17,13 +17,31 @@ module StrokeDB
     end
 
     def find(uuid, version=nil)
-      uuid_version = uuid + (version ? ".#{version}" : "") 
       master_chunk = @chunk_storage.find('MASTER')
       return nil unless master_chunk  # no master chunk yet
-      chunk_uuid = master_chunk.find_nearest(uuid_version, nil)
+      chunk_uuid = master_chunk.find_nearest(uuid, nil)
       return nil unless chunk_uuid # no chunks in master chunk yet
       chunk = @chunk_storage.find(chunk_uuid)
-      raw_doc = chunk.find(uuid_version)
+      return nil unless chunk
+      if version
+        chunk_node = chunk.find_node(uuid)
+        val = nil
+        until chunk_node.nil?
+          break if ((val = chunk_node.value) && val['__version__'] == version)
+          val = nil
+          if chunk_node.is_a?(Skiplist::TailNode)
+            chunk = chunk.next_chunk 
+            break if chunk.nil? || chunk.uuid[0,uuid.length] != uuid
+            chunk_node = chunk.first_node
+          else
+            chunk_node = chunk_node.next
+          end
+        end
+        return nil unless val
+        raw_doc = val
+      else
+        raw_doc = chunk.find(uuid)
+      end
       if raw_doc
         doc = Document.from_raw(self,uuid,raw_doc.freeze)
         doc.extend(VersionedDocument) if version
@@ -88,7 +106,7 @@ module StrokeDB
         chunk = @chunk_storage.find(node.value)
         next unless chunk
         next if after && chunk.lamport_timestamp <= after
-        
+
         chunk.each do |node| 
           next if after && (node.value['__lamport_timestamp__'] <= after)
           if uuid_match = node.key.match(/#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}.#{VERSION_RE}/) )
@@ -97,12 +115,12 @@ module StrokeDB
         end
       end
     end
-    
+
     def lamport_timestamp
-        find_or_create_master_chunk.lamport_timestamp || 0
+      find_or_create_master_chunk.lamport_timestamp || 0
     end
     def lamport_timestamp=(timestamp)
-        find_or_create_master_chunk.lamport_timestamp = timestamp
+      find_or_create_master_chunk.lamport_timestamp = timestamp
     end
 
     private

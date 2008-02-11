@@ -29,12 +29,20 @@ module StrokeDB
       skiplist.find(uuid, default)
     end
     
+    def find_node(uuid)
+      skiplist.find_node(uuid)
+    end
+    
     def find_nearest(uuid, default = nil)
       skiplist.find_nearest(uuid, default)
     end
     
     def first_uuid
       skiplist.first_node.key
+    end
+
+    def first_node
+      skiplist.first_node
     end
     
     def size
@@ -51,13 +59,14 @@ module StrokeDB
   	def self.from_raw(raw)
   	  chunk = Chunk.new(raw['cut_level'])
   	  chunk.uuid       = raw['uuid']
-  	  chunk.next_chunk = nil
+      # chunk.next_chunk = nil
       chunk.next_chunk_uuid = raw['next_uuid']
       chunk.lamport_timestamp = raw['lamport_timestamp']
       chunk.store_uuid = raw['store_uuid']
       chunk.skiplist.raw_insert(raw['nodes']) do |rn|
   	    [rn['key'], rn['value'], rn['forward'].size]
   	  end
+  	  yield(chunk) if block_given?
   	  chunk
   	end
  
