@@ -45,6 +45,14 @@ module StrokeDB
     def >=(other)
       (self <=> other) >= 0
     end
+    def self.zero
+      ts = new(0)
+      ts.instance_variable_set(:@salt, 0)
+      ts
+    end
+    def self.zero_string
+      "0"*BASE_LENGTH*2
+    end
     class CounterOverflow < Exception; end
   private
     def generate_salt
