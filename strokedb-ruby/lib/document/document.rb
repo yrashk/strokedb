@@ -60,8 +60,8 @@ module StrokeDB
     def []=(slotname,value)
       slot = @slots[slotname.to_s] || @slots[slotname.to_s] = Slot.new(self)
       slot.value = value
-      if @__previous_version__
-        prev_version = @__previous_version__ ; @__previous_version__ = nil
+      if prev_version = @__previous_version__
+        @__previous_version__ = nil
         self[:__previous_version__] = prev_version
       end
       set_version unless ['__version__','__lamport_timestamp__'].include?(slotname.to_s)
