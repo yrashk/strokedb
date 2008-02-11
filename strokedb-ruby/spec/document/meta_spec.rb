@@ -37,6 +37,33 @@ describe "Meta module", :shared => true do
     new_doc.description.should == "Something"
   end
   
+  it "should search for specified slots with __meta__ reference merged in" do
+    a = SomeName.create!(:slot1 => 1, :slot2 => 2)
+    b = SomeName.create!(:slot1 => 1, :slot2 => 2)
+    c = SomeName.create!(:slot1 => 2, :slot2 => 2)
+
+    SomeName.find(:slot1 => 1, :slot2 =>2).sort_by {|d| d.uuid}.should == [a,b].sort_by {|d| d.uuid}
+  end
+
+  it "should find first document for specified slots with __meta__ reference merged in on #find_or_create" do
+    a = SomeName.create!(:slot1 => 1, :slot2 => 2)
+    b = SomeName.create!(:slot1 => 1, :slot2 => 2)
+    c = SomeName.create!(:slot1 => 2, :slot2 => 2)
+
+    search = SomeName.find_or_create(:slot1 => 1, :slot2 =>2)
+    (search == a || search == b).should be_true
+  end
+
+  it "should create document for specified slots with __meta__ reference merged in on #find_or_create if such document was not found" do
+    a = SomeName.create!(:slot1 => 1, :slot2 => 2)
+    b = SomeName.create!(:slot1 => 1, :slot2 => 2)
+    c = SomeName.create!(:slot1 => 2, :slot2 => 2)
+    
+    search = SomeName.find_or_create(:slot1 => 3, :slot2 =>2)
+    search.slot1.should == 3
+    search.should_not be_new
+  end
+  
 end
 
 describe "Meta module with name" do

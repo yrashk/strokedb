@@ -76,6 +76,19 @@ module StrokeDB
       new(*args,&block).save!
     end
 
+    def find(*args)
+      args = args.unshift(StrokeDB.default_store) if args.empty? || args.first.is_a?(Hash) 
+      args << {} unless args.last.is_a?(Hash)
+      store = args.first
+      raise NoDefaultStoreError.new unless StrokeDB.default_store
+      store.index_store.find(args.last.merge(:__meta__ => document(store)))
+    end
+    
+    def find_or_create(*args)
+      result = find(*args)
+      result.empty? ? create!(*args) : result.first
+    end
+
     def inspect
       "{#{name}}"
     end
