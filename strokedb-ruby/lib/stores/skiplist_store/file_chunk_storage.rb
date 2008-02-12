@@ -23,7 +23,8 @@ module StrokeDB
     
     def read(path)
       return nil unless File.exist?(path)
-      raw_chunk = ActiveSupport::JSON.decode(IO.read(path))
+      # raw_chunk = ActiveSupport::JSON.decode(IO.read(path))
+      raw_chunk = Marshal.load(IO.read(path))
       Chunk.from_raw(raw_chunk) do |chunk|
         chunk.next_chunk = find(chunk.next_chunk_uuid) if chunk.next_chunk_uuid
       end
@@ -31,7 +32,7 @@ module StrokeDB
     
     def write(path, chunk)
       File.open path, "w+" do |f|
-        f.write chunk.to_raw.to_json
+        f.write Marshal.dump(chunk.to_raw)
       end
     end
     
