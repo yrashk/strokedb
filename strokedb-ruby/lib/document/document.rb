@@ -257,7 +257,7 @@ module StrokeDB
 
     def ==(doc)
       return false unless doc.is_a?(Document)
-      doc.uuid == uuid && doc.version == version
+      doc.uuid == uuid && doc.to_raw == to_raw
     end
 
     def method_missing(sym,*args,&block)
