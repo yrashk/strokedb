@@ -39,9 +39,7 @@ module StrokeDB
           args[1][:name] unless args.empty?
         end
       end
-      
-      def setup_callbacks(doc)
-      end
+
 
     end
 

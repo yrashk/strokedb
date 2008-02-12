@@ -57,7 +57,7 @@ module StrokeDB
         end
         if _module
           @document.extend(_module)
-          _module.send!(:setup_callbacks,@document) 
+          _module.send!(:setup_callbacks,@document) if _module.respond_to?(:setup_callbacks)
           if on_initialization_block = _module.instance_variable_get(:@on_initialization_block)
             on_initialization_block.call(@document)
           end
@@ -176,7 +176,9 @@ module StrokeDB
           if on_initialization_block = meta_module.instance_variable_get(:@on_initialization_block)
             on_initialization_block.call(doc)
           end
-          meta_module.send!(:setup_callbacks,doc) unless opts[:skip_callbacks]
+          unless opts[:skip_callbacks]
+            meta_module.send!(:setup_callbacks,doc)  if meta_module.respond_to?(:setup_callbacks) 
+          end
         end
       end
       doc
