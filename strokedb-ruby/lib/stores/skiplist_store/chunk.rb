@@ -59,7 +59,6 @@ module StrokeDB
   	def self.from_raw(raw)
   	  chunk = Chunk.new(raw['cut_level'])
   	  chunk.uuid       = raw['uuid']
-      # chunk.next_chunk = nil
       chunk.next_chunk_uuid = raw['next_uuid']
       chunk.lamport_timestamp = raw['lamport_timestamp']
       chunk.store_uuid = raw['store_uuid']

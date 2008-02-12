@@ -62,11 +62,11 @@ module StrokeDB
 
     def save!(doc)
       master_chunk = find_or_create_master_chunk
-      lts = lamport_timestamp + 1
-      self.lamport_timestamp = doc.__lamport_timestamp__ = lts
+      next_lamport_timestamp
+      doc.__lamport_timestamp__ = lamport_timestamp.to_s
 
-      insert_with_cut(doc.uuid,         doc, master_chunk)
-      insert_with_cut(doc.uuid_version, doc, master_chunk)
+      insert_with_cut(doc.uuid, doc, master_chunk)
+      insert_with_cut("#{doc.uuid}.#{lamport_timestamp}", doc, master_chunk)
 
       @chunk_storage.save!(master_chunk)
 
@@ -106,10 +106,10 @@ module StrokeDB
         chunk = @chunk_storage.find(node.value)
         next unless chunk
         next if after && chunk.lamport_timestamp <= after
-
+        
         chunk.each do |node| 
           next if after && (node.value['__lamport_timestamp__'] <= after)
-          if uuid_match = node.key.match(/#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}.#{VERSION_RE}/) )
+          if uuid_match = node.key.match(/#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}./) )
             yield Document.from_raw(self, uuid_match[1], node.value) 
           end
         end
@@ -117,10 +117,10 @@ module StrokeDB
     end
 
     def lamport_timestamp
-      find_or_create_master_chunk.lamport_timestamp || 0
+      @lamport_timestamp ||= LamportTimestamp.new(0).marshal_load(find_or_create_master_chunk.lamport_timestamp || LamportTimestamp.zero.to_s)
     end
-    def lamport_timestamp=(timestamp)
-      find_or_create_master_chunk.lamport_timestamp = timestamp
+    def next_lamport_timestamp
+      @lamport_timestamp = lamport_timestamp.next
     end
 
     private
@@ -133,7 +133,7 @@ module StrokeDB
       a, b = chunk.insert(uuid, doc.to_raw)
       [a,b].compact.each do |chunk|
         chunk.store_uuid = self.uuid
-        chunk.lamport_timestamp = lamport_timestamp
+        chunk.lamport_timestamp = lamport_timestamp.to_s
       end
       # if split
       if b
