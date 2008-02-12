@@ -5,6 +5,7 @@ Legend:
 Completed items are removed.
 ============================
 
+[ ] ! Reorganize specs, drop using mockups where it makes little sense
 [ ] JSON library dependency: wrong sha256 version when libs changes behavior (draft own ActiveSupport-compatible JSON implementation?)
 [*] Fix bad UUID implementation in pure ruby version
 [ ] Read/Write benchmarks showing dependency of data size
@@ -22,6 +23,11 @@ Completed items are removed.
 [ ] Rename LamportTimestamp to LTS
 [ ] Create class method to replace LamportTimestamp.new(x).marshal_load (and don't delete marshal_load, because oleganza utterly needs it)
 [-] Finish RangeQuery (we've decided to drop it after ae6371e1f4ffeeb309771b5b6fa1a5233ca4888f)
+[ ] Test callbacks using messages (as it was done before). This way we can easily control number of callback calls
+[ ] Refactor Meta#document, fix bugs
+[ ] Think about non-index named meta lookup
+[ ] Think more about dropping __version__ as it is in favor of __lamport_timestamp__ (and renaming it to __version__ actually)
+[ ] Refactor callback stuff in Document
 
 InvertedList index:
 
