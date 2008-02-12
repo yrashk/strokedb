@@ -6,15 +6,22 @@ module StrokeDB
     
     attr_reader :counter, :salt
     
-    def initialize(c = 0)
+    def initialize(c = 0, __salt = nil)
       if c > MAX_COUNTER
         raise CounterOverflow.new, "Max counter value is 2**64"
       end
       @counter = c
-      @salt    = generate_salt
+      @salt    = __salt || generate_salt
     end
     def next
       LamportTimestamp.new(@counter + 1)
+    end
+    def next!
+      @counter += 1
+      self
+    end
+    def dup
+      LamportTimestamp.new(@counter, @salt)
     end
     def marshal_dump
       @counter.to_s(BASE).rjust(BASE_LENGTH, '0') + @salt.to_s(BASE).rjust(BASE_LENGTH, '0')
@@ -23,6 +30,15 @@ module StrokeDB
       @counter = dumped[0,           BASE_LENGTH].to_i(BASE)
       @salt    = dumped[BASE_LENGTH, BASE_LENGTH].to_i(BASE)
     end
+    
+    # Raw format
+    def self.from_raw(str)
+      
+    end
+    def to_raw
+      marshal_dump
+    end
+    
     def to_s
       marshal_dump
     end
