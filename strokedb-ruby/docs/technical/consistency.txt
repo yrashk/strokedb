@@ -1,0 +1,18 @@
+CONSISTENCY MODELS
+
+In a distributed system it's extremely hard to support storage consistency, 
+but it's possible to support client consistency.
+
+There're 4 flavors of client consistency:
+
+1) Monotonic read consistency: if process reads a value of X, next reads will
+                               return that value, or later value.
+2) Monotonic write: every write operation to X happens before every next write
+                    operations to X.
+3) Your-writes consistency: write operation to X always visible to further
+                            reads from X.
+4) Write-follow-reads consistency: write next to the read of X always happens
+                                   with just read or later value of X.
+                                   
+It should be possible to support all 4 models. To accomplish this, we have to 
+manipulate with versions, diffs and timestamps.
