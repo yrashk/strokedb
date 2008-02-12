@@ -19,6 +19,8 @@ Completed items are removed.
 	(and all code needs to be updated), or... don't know, but I really don't like this .get_new
 [ ] Add (few?) typical configuration(s) that could be re-used with single line of code
 [ ] Possible uniqueness issue: LamportTimestamp has max counter value 2**64. Salt is 64 bit also. (Total timestamp uniqueness is 128 bit.)
+[ ] Rename LamportTimestamp to LTS
+[ ] Create class method to replace LamportTimestamp.new(x).marshal_load (and don't delete marshal_load, because oleganza utterly needs it)
 
 InvertedList index:
 

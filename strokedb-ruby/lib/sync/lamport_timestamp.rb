@@ -29,6 +29,7 @@ module StrokeDB
     def marshal_load(dumped)
       @counter = dumped[0,           BASE_LENGTH].to_i(BASE)
       @salt    = dumped[BASE_LENGTH, BASE_LENGTH].to_i(BASE)
+      self
     end
     
     # Raw format

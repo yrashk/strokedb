@@ -23,7 +23,7 @@ describe "Empty chunk store" do
   end
   
   it "should have 0 lamport_timestamp" do
-    @store.lamport_timestamp.should == 0
+    @store.lamport_timestamp.should == LamportTimestamp.zero
   end
   
   it "should contain no documents" do
@@ -43,7 +43,7 @@ describe "Empty chunk store" do
     lambda do 
         Document.stub!(:from_raw).and_return(@document) 
         @store.save!(@document)
-    end.should change(@store,:lamport_timestamp).by(1)
+    end.should change(@store,:lamport_timestamp)
   end
   
   it "should put store_uuid and lamport_timestamp into each chunk it saves" do
@@ -51,7 +51,7 @@ describe "Empty chunk store" do
     @store.save!(@document)
     [@uuid].map{|uuid| @store.chunk_storage.find(uuid)}.compact.each do |chunk|
       chunk.store_uuid.should == @store.uuid
-      chunk.lamport_timestamp.should == @store.lamport_timestamp
+      chunk.lamport_timestamp.should_not be_nil
     end
   end
   
@@ -111,7 +111,7 @@ describe "Non-empty chunk store" do
   end
   
   it "should iterate over all newly stored documents if told so" do
-    timestamp = @store.lamport_timestamp
+    timestamp = @store.lamport_timestamp.to_s
     @new_documents = []
     10.times do |i|
       @new_documents << Document.create!(:stuff => i)
@@ -125,7 +125,7 @@ describe "Non-empty chunk store" do
   end
   
   it "should iterate over all newly stored versions if told so" do
-    timestamp = @store.lamport_timestamp
+    timestamp = @store.lamport_timestamp.to_s
     @new_documents = []
     @documents.each_with_index do |document,i|
       document.stuff = i+100
