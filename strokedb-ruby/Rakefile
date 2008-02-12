@@ -8,7 +8,7 @@ task :benchmarks do
   paths = Dir['benchmarks/**/*.rb']
   paths.each do |path| 
     ruby path
-    puts ""
+    puts ("-"*80)+"\n "
   end
 end
 
