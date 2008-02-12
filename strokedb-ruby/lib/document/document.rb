@@ -20,6 +20,10 @@ module StrokeDB
   class Document
     attr_reader :uuid, :store, :callbacks
 
+		#
+		# doc.versions #=> #<Versions>
+		# doc.versions[version_number] #=> #<Document>
+		#
     class Versions
       attr_reader :document
       def initialize(document)
@@ -34,13 +38,19 @@ module StrokeDB
       def empty?
         document.previous_version.nil?
       end
-
     end
 
+		#
+		# doc.metas #=> #<Metas>
+		# doc.metas is an Array
+		# doc.metas << Meta module
+		# doc.metas << Meta document
+		#
     class Metas < Array
       def initialize(document)
         @document = document
-        do_initialize
+        _meta = document[:__meta__]
+        concat [_meta].flatten
       end
 
       def <<(meta)
@@ -53,7 +63,7 @@ module StrokeDB
           push meta.document
           _module = meta
         else
-          raise InvalidMetaDocumentError.new
+          raise InvalidMetaDocumentError.new # FIXME: may be we should use another Error?
         end
         if _module
           @document.extend(_module)
@@ -65,13 +75,6 @@ module StrokeDB
         @document[:__meta__] = self
       end
 
-      private
-
-      def do_initialize
-        _meta = @document[:__meta__]
-        _meta = [_meta] unless _meta.kind_of?(Array)
-        concat _meta
-      end
     end
 
     def self.create!(*args)
@@ -166,7 +169,8 @@ module StrokeDB
 
     def self.from_raw(store, uuid, raw_slots,opts = {})
       doc = new(store, raw_slots)
-      raise VersionMismatchError.new if raw_slots['__version__'] != doc.send!(:calculate_version)
+      version = raw_slots['__version__']
+      raise VersionMismatchError.new unless doc.version == version
       doc.instance_variable_set(:@__previous_version__, doc.version)
       doc.instance_variable_set(:@uuid, uuid)
       meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
@@ -174,11 +178,9 @@ module StrokeDB
         unless doc.is_a?(meta_module)
           doc.extend(meta_module)
           if on_initialization_block = meta_module.instance_variable_get(:@on_initialization_block)
-            on_initialization_block.call(doc)
+            on_initialization_block.call(doc) unless opts[:skip_callbacks]
           end
-          unless opts[:skip_callbacks]
-            meta_module.send!(:setup_callbacks,doc) rescue nil
-          end
+           meta_module.send!(:setup_callbacks,doc) rescue nil
         end
       end
       doc
@@ -301,9 +303,9 @@ module StrokeDB
       meta_names = []
       case meta
       when /@##{UUID_RE}.#{VERSION_RE}/
-        meta_names << store.find($1,$2)[:name] if store.find($1,$2)
+        if m = store.find($1,$2); meta_names << m[:name]; end 
       when /@##{UUID_RE}/
-        meta_names << store.find($1)[:name] if store.find($1)
+        if m = store.find($1);    meta_names << m[:name]; end 
       when Array
         meta_names = meta.map {|m| collect_meta_modules(store,m) }.flatten
       when Document
