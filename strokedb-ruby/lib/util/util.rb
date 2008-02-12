@@ -29,6 +29,8 @@ module StrokeDB
         ::UUID.random_create.to_s
       end
     end
+    
+    
 
     class CircularReferenceCondition < Exception ; end
     class <<self
