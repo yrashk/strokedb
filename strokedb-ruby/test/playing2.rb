@@ -1,6 +1,8 @@
 $:.unshift File.dirname(__FILE__) + "/.."
 require "strokedb"
 
+StrokeDB.serialization_method = :json
+
 config = StrokeDB::Config.new(true)
 
 config.add_storage :mem, :memory_chunk

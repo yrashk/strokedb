@@ -9,6 +9,7 @@ module StrokeDB
       StrokeDB.default_config.stores[:default] rescue nil
     end
   end
+
   
   class NoDefaultStoreError < Exception ; end
   

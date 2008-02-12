@@ -26,7 +26,7 @@ module StrokeDB
 
     def read(path)
       return InvertedList.new unless File.exist?(path)
-      raw_list = deserialize(IO.read(path))
+      raw_list = StrokeDB.deserialize(IO.read(path))
       list = InvertedList.new
       # TODO: Optimize!
       raw_list.each do |k, vs|
@@ -44,7 +44,7 @@ module StrokeDB
         raw_list[n.key] = n.values
       end
       File.open path, "w+" do |f|
-        f.write serialize(raw_list)
+        f.write StrokeDB.serialize(raw_list)
       end
     end
   
