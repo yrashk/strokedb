@@ -89,6 +89,16 @@ describe "LamportTimestamp comparison" do
   end
   
   it { 1000.times { t = LamportTimestamp.new(rand(2**64)); t.next.next.should > t.next } }
+  
+  it "should generate a list of successive timestamps with next!" do 
+    t = LamportTimestamp.new(rand(2**32))
+    1000.times do
+      t_ = t.dup
+      t.next!
+      t_.should < t
+      t_.salt.should == t.salt
+    end 
+  end
 end
 
 describe "LamportTimestamp maximum counter exception" do
@@ -104,6 +114,19 @@ describe "LamportTimestamp maximum counter exception" do
   end
   it "should not raise error on LamportTimestamp#next if no overflow occured" do
     lambda { LamportTimestamp.new(2**64 - 1).next }.should_not raise_error
+  end
+end
+
+
+describe "LamportTimestamp raw format" do
+  before(:each) do
+    @t = LamportTimestamp.new(123)
+  end
+  it "should convert to simple string" do
+    @t.to_raw.should == @t.to_s
+  end
+  it "should correctly convert end-to-end" do
+    LamportTimestamp.from_raw(@t.to_raw).should == @t 
   end
 end
 

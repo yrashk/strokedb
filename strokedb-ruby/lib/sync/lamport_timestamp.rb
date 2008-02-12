@@ -33,8 +33,8 @@ module StrokeDB
     end
     
     # Raw format
-    def self.from_raw(str)
-      
+    def self.from_raw(raw_string)
+      new.marshal_load(raw_string)
     end
     def to_raw
       marshal_dump
