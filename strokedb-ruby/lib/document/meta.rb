@@ -39,6 +39,9 @@ module StrokeDB
           args[1][:name] unless args.empty?
         end
       end
+      
+      def setup_callbacks(doc)
+      end
 
     end
 
@@ -63,12 +66,7 @@ module StrokeDB
           @on_initialization_block.call(doc) 
         end
       end
-      CALLBACKS.each do |callback_name| 
-        if callback = instance_variable_get("@#{callback_name}_block")
-          doc.callbacks[callback_name] ||= []
-          doc.callbacks[callback_name] << callback
-        end
-      end
+      setup_callbacks(doc)
       doc
     end
 
@@ -90,7 +88,7 @@ module StrokeDB
     end
 
     def inspect
-      "{#{name}}"
+        "{#{name}#{is_a?(Module) ? ' meta module' : ''}}"
     end
     alias :to_s :inspect
 
@@ -117,6 +115,16 @@ module StrokeDB
       meta_doc
     end
 
+    private
+    
+    def setup_callbacks(doc)
+      CALLBACKS.each do |callback_name| 
+        if callback = instance_variable_get("@#{callback_name}_block")
+          doc.callbacks[callback_name] ||= []
+          doc.callbacks[callback_name] << callback
+        end
+      end
+    end
   end
 
 end

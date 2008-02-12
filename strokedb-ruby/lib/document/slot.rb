@@ -7,16 +7,8 @@ module StrokeDB
     end
 
     def value=(v)
-      case v
-      when VersionedDocument
-        @value = "@##{v.uuid}.#{v.version}"
-        @cached_value = v # lets cache it locally
-      when Document
-        @value = "@##{v.uuid}"
-        @cached_value = v # lets cache it locally
-      else
-        @value = v
-      end
+      @value = process_value(v)
+      @cached_value = v if v.is_a?(Document)
     end
 
     def value
@@ -33,9 +25,27 @@ module StrokeDB
     def to_json(opts={})
       @value.to_json(opts.merge(:slot_serialization => true))
     end
-    
+
     def raw_value
-      @value
+      case @value
+      when Hash, Array
+        @value.map {|v| process_value(v) }
+      else
+        @value
+      end
+    end
+
+    private
+
+    def process_value(v)
+      case v
+      when VersionedDocument
+        "@##{v.uuid}.#{v.version}"
+      when Document
+        "@##{v.uuid}"
+      else
+        v
+      end
     end
   end
 end

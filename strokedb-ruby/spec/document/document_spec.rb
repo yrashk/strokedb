@@ -144,8 +144,9 @@ describe "Saved Document" do
   end
   
   it "should be reloadable" do
-    StrokeDB.default_store.should_receive(:find).with(@document.uuid)
-    @document.reload
+    reloaded_doc = @document.reload
+    reloaded_doc.should == @document
+    reloaded_doc.object_id.should_not == @document.object_id
   end
   
 end
@@ -213,9 +214,16 @@ describe "Document with multiple metas" do
 
   before(:each) do
     @store = setup_default_store
+    setup_index
     @metas = []
     3.times do |i|
-      @metas << Document.create!(:a => i, i => i)
+      @metas << Document.create!(:a => i, i => i, :name => i.to_s)
+    end
+    Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+    SomeMeta = Meta.new do
+      on_initialization do |doc|
+        doc.hello = 'world'
+      end
     end
     
     @document = Document.new(:__meta__ => @metas)
@@ -228,7 +236,24 @@ describe "Document with multiple metas" do
     meta[0].should == 0
     meta[1].should == 1
     meta[2].should == 2
+    meta.name.should == "0,1,2"
     @document[:__meta__].should be_a_kind_of(Array)
+  end
+  
+  it "should be able to return metas collection" do
+    @document.metas.should be_a_kind_of(Array)
+  end
+
+  it "should be able add meta by pushing its document to metas" do
+    @document.metas << SomeMeta.document
+    @document.hello.should == 'world'
+    @document.metas.should include(SomeMeta.document)
+  end
+
+  it "should be able add meta by pushing its module to metas" do
+    @document.metas << SomeMeta
+    @document.hello.should == 'world'
+    @document.metas.should include(SomeMeta.document)
   end
 
 end 

@@ -37,6 +37,43 @@ module StrokeDB
 
     end
 
+    class Metas < Array
+      def initialize(document)
+        @document = document
+        do_initialize
+      end
+
+      def <<(meta)
+        _module = nil
+        case meta
+        when Document
+          push meta
+          _module = StrokeDB::Document.collect_meta_modules(@document.store,meta).first
+        when Meta
+          push meta.document
+          _module = meta
+        else
+          raise InvalidMetaDocumentError.new
+        end
+        if _module
+          @document.extend(_module)
+          _module.send!(:setup_callbacks,@document) 
+          if on_initialization_block = _module.instance_variable_get(:@on_initialization_block)
+            on_initialization_block.call(@document)
+          end
+        end
+        @document[:__meta__] = self
+      end
+
+      private
+
+      def do_initialize
+        _meta = @document[:__meta__]
+        _meta = [_meta] unless _meta.kind_of?(Array)
+        concat _meta
+      end
+    end
+
     def self.create!(*args)
       new(*args).save!
     end
@@ -94,23 +131,24 @@ module StrokeDB
     end
 
     def to_s
-        Util.catch_circular_reference(self) do
-        s = "<Doc "
-        to_raw.each_pair do |k,v|
+      Util.catch_circular_reference(self) do
+        s = "<"
+        s << (self[:__meta__] ? "#{meta} " : "Doc ")
+        to_raw.except('__meta__').each_pair do |k,v|
           if %w(__version__ __previous_version__).member?(k)
             s << "#{k}: #{v[0,5]}... "
           else
-              stack = Thread.current['StrokeDB.reference_stack'] ||= []
-              stack << self[k]
-              s << "#{k}: #{self[k]} "
-              stack.pop
+            stack = Thread.current['StrokeDB.reference_stack'] ||= []
+            stack << self[k]
+            s << "#{k}: #{self[k]} "
+            stack.pop
           end
         end
         s << ">"
         return s
       end
-      rescue Util::CircularReferenceCondition
-        "<Doc #{uuid[0,5]}*>"
+    rescue Util::CircularReferenceCondition
+      "<Doc #{uuid[0,5]}*>"
     end
 
     alias :inspect :to_s
@@ -126,19 +164,21 @@ module StrokeDB
       raw_slots
     end
 
-    def self.from_raw(store, uuid, raw_slots)
+    def self.from_raw(store, uuid, raw_slots,opts = {})
       doc = new(store, raw_slots)
       raise VersionMismatchError.new if raw_slots['__version__'] != doc.send!(:calculate_version)
-
-      meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
-      meta_modules.each do |meta_module|
-        doc.extend(meta_module)
-        if on_initialization_block = meta_module.instance_variable_get(:@on_initialization_block)
-          on_initialization_block.call(doc)
-        end
-      end
       doc.instance_variable_set(:@__previous_version__, doc.version)
       doc.instance_variable_set(:@uuid, uuid)
+      meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
+      meta_modules.each do |meta_module|
+        unless doc.is_a?(meta_module)
+          doc.extend(meta_module)
+          if on_initialization_block = meta_module.instance_variable_get(:@on_initialization_block)
+            on_initialization_block.call(doc)
+          end
+          meta_module.send!(:setup_callbacks,doc) unless opts[:skip_callbacks]
+        end
+      end
       doc
     end
 
@@ -162,15 +202,26 @@ module StrokeDB
     def meta
       _meta = self[:__meta__]
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
-      metas = _meta.clone
-      collected_meta = metas.shift
-      metas.each do |next_meta|
+      _metas = _meta.to_a
+      collected_meta = _metas.shift
+      collected_meta = store.find(collected_meta[2,collected_meta.length]) if collected_meta.is_a?(String)
+      names = []
+      names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
+      _metas.each do |next_meta|
+        next_meta = store.find(next_meta[2,next_meta.length]) if next_meta.is_a?(String)
         diff = next_meta.diff(collected_meta)
         diff.removed_slots.clear!
         diff.patch!(collected_meta)
+        names << next_meta.name if next_meta[:name] 
       end
+      collected_meta.name = names.uniq.join(',')
       collected_meta
     end
+
+    def metas
+      Metas.new(self)
+    end
+
 
     def previous_version
       self[:__previous_version__]
@@ -253,6 +304,8 @@ module StrokeDB
         meta_names << store.find($1)[:name] if store.find($1)
       when Array
         meta_names = meta.map {|m| collect_meta_modules(store,m) }.flatten
+      when Document
+        meta_names << meta[:name]
       end
       meta_names.collect {|m| m.is_a?(String) ? (m.constantize rescue nil) : m }.compact
     end
@@ -272,6 +325,6 @@ module StrokeDB
     def reload
       store.find(uuid,version)
     end
-    
+
   end
 end

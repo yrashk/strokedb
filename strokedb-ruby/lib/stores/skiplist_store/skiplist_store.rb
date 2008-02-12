@@ -16,7 +16,7 @@ module StrokeDB
       new(storage, options[:cut_level], options[:index])
     end
 
-    def find(uuid, version=nil)
+    def find(uuid, version=nil, opts = {})
       master_chunk = @chunk_storage.find('MASTER')
       return nil unless master_chunk  # no master chunk yet
       chunk_uuid = master_chunk.find_nearest(uuid, nil)
@@ -43,6 +43,7 @@ module StrokeDB
         raw_doc = chunk.find(uuid)
       end
       if raw_doc
+        return raw_doc if opts[:no_instantiation]
         doc = Document.from_raw(self,uuid,raw_doc.freeze)
         doc.extend(VersionedDocument) if version
         return doc
@@ -51,12 +52,12 @@ module StrokeDB
     end
 
     def exists?(uuid)
-      !!find(uuid)
+      !!find(uuid,nil,:no_instantiation => true)
     end
 
     def last_version(uuid)
-      raw_doc = find(uuid)
-      return raw_doc.version if raw_doc
+      raw_doc = find(uuid,nil,:no_instantiation => true)
+      return raw_doc['__version__'] if raw_doc
       nil
     end
 
@@ -73,7 +74,9 @@ module StrokeDB
       # Update index
       if @index_store
         if doc.previous_version
-          pdoc = doc.versions[doc.previous_version]
+          raw_pdoc = find(doc.uuid,doc.previous_version,:no_instantiation => true)
+          pdoc = Document.from_raw(self,doc.uuid,raw_pdoc.freeze,:skip_callbacks => true)
+          pdoc.extend(VersionedDocument)
           @index_store.delete(pdoc)
         end
         @index_store.insert(doc)
