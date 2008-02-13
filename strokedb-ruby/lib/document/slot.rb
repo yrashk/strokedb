@@ -51,7 +51,7 @@ module StrokeDB
         else
           @cached_value || @cached_value = doc.store.find($1,$2) || "@##{$1}.#{$2}"
         end
-      when /@##{UUID_RE}.(0){16}#{UUID_RE}/
+      when /@##{UUID_RE}.0000000000000000#{UUID_RE}/
         @cached_value || @cached_value = doc.versions[doc.store.find($1).previos_versions.last] || "@##{$1}"
       when Hash, Array
         v.map {|v| decode_value(v) }
