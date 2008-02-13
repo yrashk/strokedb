@@ -132,7 +132,7 @@ module StrokeDB
         s << (self[:__meta__] ? "#{meta} " : "Doc ")
         to_raw.except('__meta__').each_pair do |k,v|
           if %w(__version__ __previous_version__).member?(k)
-            s << "#{k}: #{v[0,5]}... "
+            s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}... "
           else
             stack = Thread.current['StrokeDB.reference_stack'] ||= []
             stack << self[k]

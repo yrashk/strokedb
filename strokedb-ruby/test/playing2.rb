@@ -4,12 +4,12 @@ require "strokedb"
 config = StrokeDB::Config.new(true)
 
 config.add_storage :mem, :memory_chunk
-config.add_storage :fs, :file_chunk, 'test/storages/test'
+config.add_storage :fs, :file_chunk, 'test/storages/test2'
 
 config.chain :mem, :fs
 config[:mem].authoritative_source = config[:fs]
 
-config.add_storage :index_storage, :inverted_list_file, 'test/storages/index'
+config.add_storage :index_storage, :inverted_list_file, 'test/storages/index2'
 config.add_index :default, :inverted_list, :index_storage
 
 config.add_store :default, :skiplist, :mem, :cut_level => 4
