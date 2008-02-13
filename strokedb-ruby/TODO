@@ -6,6 +6,7 @@ Legend:
 Completed items are removed.
 ============================
 
+[ ] Refactor Slot!
 [ ] ! Reorganize specs, drop using mockups where it makes little sense
 [*] Fix bad UUID implementation in pure ruby version
 [ ] Read/Write benchmarks showing dependency of data size
