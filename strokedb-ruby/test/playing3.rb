@@ -16,7 +16,7 @@ config.add_store :default, :skiplist, :mem, :cut_level => 4
 
 User = StrokeDB::Meta.new do
   def to_s
-    name
+    self[:name]
   end
 end
 Buyer = StrokeDB::Meta.new do
@@ -60,7 +60,7 @@ Product = StrokeDB::Meta.new do
 end
 
 puts "Creating user..."
-u = User.create!(:name => "Yurii")
+u = User.new(:name => "Yurii")
 u.metas << Buyer
 u.save!
 apple = Product.create!(:name => "green apple", :price => 2,:quantity => 100)
