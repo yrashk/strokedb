@@ -16,8 +16,6 @@ describe "Initial LamportTimestamp" do
   it "should pass generated uuid on #next" do
     @t0.next.uuid.should == @t0.uuid
   end
-
-
 end
 
 
@@ -37,7 +35,6 @@ describe "Initial LamportTimestamp with uuid specified" do
   it "should pass uuid on #next" do
     @t0.next.uuid.should == @t0.uuid
   end
-
 end
 
 
@@ -126,6 +123,7 @@ describe "Lesser and greater LamportTimestamps" do
   end
 end
 
+
 describe "LamportTimestamp maximum counter exception" do
   it "should raise error if counter is too big" do
     lambda { LamportTimestamp.new(2**64 + 1) }.should raise_error(LamportTimestamp::CounterOverflow)
@@ -152,6 +150,15 @@ describe "LamportTimestamp raw format" do
   end
   it "should correctly convert end-to-end" do
     LamportTimestamp.from_raw(@t.to_raw).should == @t 
+  end
+  it "should compare raw representation exactly like object representation" do
+    1000.times do
+      t1 = LTS.new(rand(2**32))
+      t2 = LTS.new(rand(2**32))
+      object_comparison = (t1 <=> t2)
+      raw_comparison = (t1.to_raw <=> t2.to_raw)
+      object_comparison.should == raw_comparison
+    end
   end
 end
 
