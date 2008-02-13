@@ -17,7 +17,7 @@ task :ci do
 end
 
 task :ci_indefinitely do
-   i=0;loop{i+=1;puts i ; t=`spec spec`;if t =~ /\.F\./ ; puts t ; break ; end }
+   i=0;loop{i+=1;puts i ; t=`spec spec`;if t =~ /[\.F]F|F[\.F]/ ; puts t ; break ; end }
 end
 
 task :jci do
