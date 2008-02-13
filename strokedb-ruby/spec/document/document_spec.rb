@@ -1,17 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe "Store" do
-
-  before(:each) do
-    setup_default_store
-  end
-
-  it "should save created document immediately" do
-    StrokeDB.default_store.should_receive(:save!).with(anything)
-    @document = Document.create!(:slot1 => 1)
-  end
-  
-end
 
 describe "New Document" do
 
@@ -28,6 +16,10 @@ describe "New Document" do
     @document.should be_new
   end
 
+  it "should not be head" do
+    @document.should_not be_head
+  end
+  
   it "should have no version" do
     @document.version.should be_nil
   end
@@ -122,9 +114,12 @@ describe "Saved Document" do
     @document.version.should match(/#{VERSION_RE}/)
   end
   
-  
   it "should not be new" do
     @document.should_not be_new
+  end
+
+  it "should be head" do
+    @document.should be_head
   end
   
   it "should be reloadable" do
@@ -135,12 +130,43 @@ describe "Saved Document" do
   
 end
 
+describe "Head Document with references" do
+
+  before(:each) do
+    setup_default_store
+    @doc1 = Document.create!(:one => 1)
+    @doc2 = Document.create!(:two => 2)
+    @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2])
+    @document.test = :yes
+    @document.save!
+  end
+
+  it "should link to specific versions" do
+    @document.should be_head
+    @document.some_link.should_not be_a_kind_of(VersionedDocument)
+    @document.some_indirect_link.first.should_not be_a_kind_of(VersionedDocument)
+  end
+
+  it "should link to specific versions when reloaded" do
+    @document = @document.reload
+    @document.should be_head
+    @document.some_link.should_not be_a_kind_of(VersionedDocument)
+    @document.some_indirect_link.first.should_not be_a_kind_of(VersionedDocument)
+  end
+
+
+end
+
 describe "Saved VersionedDocument" do
 
   before(:each) do
     setup_default_store
     @document = Document.create!(:some_data => 1)
     @versioned_document = @document.versions[@document.version]
+  end
+  
+  it "should not be head" do
+    @versioned_document.should_not be_head
   end
   
   it "should be reloadable" do
@@ -151,11 +177,28 @@ describe "Saved VersionedDocument" do
 end
 
 
+describe "VersionedDocument with references" do
+
+  before(:each) do
+    setup_default_store
+    @doc1 = Document.create!(:one => 1)
+    @doc2 = Document.create!(:two => 2)
+    @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2])
+    @versioned_document = @document.versions[@document.version]
+  end
+
+  it "should link to specific versions" do
+    @versioned_document.some_link.should be_a_kind_of(VersionedDocument)
+    @versioned_document.some_indirect_link.first.should be_a_kind_of(VersionedDocument)
+  end
+
+end
+
 
 describe "Document with previous version" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
     @document = Document.new(@store)
     @previous_version = 'eb2dee7f2758cc60823f2d1a4034d98f605c1f793db2b9a1df1394891eb4512e'
     @document.stub!(:previous_version).and_return(@previous_version)
@@ -164,6 +207,7 @@ describe "Document with previous version" do
   it "should have versions" do
     @document.versions.should_not be_empty
   end
+
 
   it "should be able to access previous version" do
     @document_with_previous_version = mock("Document with previous version")
@@ -178,7 +222,7 @@ end
 describe "Document with single meta" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
     @meta = Document.new(@store)
     @store.should_receive(:find).with(@meta.uuid).any_number_of_times.and_return(@meta)
     
@@ -296,7 +340,6 @@ describe "Document with version" do
     @document.should_not == @another_document
   end
   
-  
 end
 
 describe "Valid Document's JSON" do
@@ -338,11 +381,10 @@ end
 describe "Valid Document's JSON with meta name specified" do
 
   before(:each) do
-    @store = mock("Store")
-    @meta = Document.new(@store,:name => 'SomeDocument')
+    @store = setup_default_store
+    @meta = Document.create!(:name => 'SomeDocument')
     @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :__meta__ => @meta)
     @json = @document.to_json
-    @store.should_receive(:find).with(@meta.uuid).any_number_of_times.and_return(@meta)
   end
 
   it "should load meta's module if it is available" do

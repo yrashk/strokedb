@@ -7,19 +7,14 @@ module StrokeDB
     end
 
     def value=(v)
-      @value = process_value(v)
-      @cached_value = v if v.is_a?(Document)
+      @value = encode_value(v)
+      if v.is_a?(Document)
+        @cached_value = v
+      end
     end
 
     def value
-      case @value
-      when /@##{UUID_RE}.#{VERSION_RE}/
-        @cached_value || @cached_value = doc.store.find($1,$2) || "@##{$1}.#{$2}"
-      when /@##{UUID_RE}/
-        @cached_value || @cached_value = doc.store.find($1) || "@##{$1}"
-      else
-        @value
-      end
+      decode_value(@value)
     end
 
     def to_json(opts={})
@@ -29,7 +24,7 @@ module StrokeDB
     def raw_value
       case @value
       when Hash, Array
-        @value.map {|v| process_value(v) }
+        @value.map {|v| encode_value(v) }
       else
         @value
       end
@@ -37,15 +32,34 @@ module StrokeDB
 
     private
 
-    def process_value(v)
+    def encode_value(v)
       case v
       when VersionedDocument
         "@##{v.uuid}.#{v.version}"
       when Document
-        "@##{v.uuid}"
+        v.new? ? "@##{v.uuid}.0000000000000000#{v.store.uuid}" : "@##{v.uuid}.#{v.version}"
       else
         v
       end
     end
+
+    def decode_value(v)
+      case v
+      when /@##{UUID_RE}.#{VERSION_RE}/
+        if doc.head?
+          @cached_value || @cached_value = doc.store.find($1) || "@##{$1}.#{$2}"
+        else
+          @cached_value || @cached_value = doc.store.find($1,$2) || "@##{$1}.#{$2}"
+        end
+      when /@##{UUID_RE}.(0){16}#{UUID_RE}/
+        @cached_value || @cached_value = doc.versions[doc.store.find($1).previos_versions.last] || "@##{$1}"
+      when Hash, Array
+        v.map {|v| decode_value(v) }
+      else
+        v
+      end
+    end
+    
   end
+  
 end

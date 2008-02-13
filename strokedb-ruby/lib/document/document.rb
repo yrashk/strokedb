@@ -180,6 +180,11 @@ module StrokeDB
     def new?
       version.nil?
     end
+    
+    def head?
+      return false if new? || is_a?(VersionedDocument)
+      store.last_version(uuid) == version
+    end
 
     def save!
       self[:__previous_version__] = store.last_version(uuid) unless new?

@@ -4,7 +4,7 @@ describe "Slot" do
 
   before(:each) do
     @store = setup_default_store
-    @document = Document.new(@store)
+    @document = Document.new
     @slot = Slot.new(@document)
   end
   
@@ -13,14 +13,22 @@ describe "Slot" do
     @slot.value.should == "some value"
   end
   
-  it "should store Document reference if value is a new Document" do
-    some_doc = Document.new(mock("Store"))
+  it "should store Document 'first-version' reference if value is a new Document" do
+    some_doc = Document.new
     @slot.value = some_doc
     @slot.value.should == some_doc
-    @slot.raw_value.should match(/@##{UUID_RE}/)
+    @slot.raw_value.should match(/@##{UUID_RE}.(0){16}#{@store.uuid}/)
   end
 
-  it "should store VersionedDocument reference if value is a new Document" do
+  it "should store VersionedDocument reference if value is a saved Document" do
+    some_doc = Document.create!(:something => 1)
+    some_doc.save!
+    @slot.value = some_doc
+    @slot.value.should == some_doc
+    @slot.raw_value.should match(/@##{UUID_RE}.#{VERSION_RE}/)
+  end
+
+  it "should store VersionedDocument reference if value is a VersionedDocument" do
     some_doc = Document.new(:something => 1)
     some_doc.extend(VersionedDocument)
     some_doc.save!
@@ -30,7 +38,7 @@ describe "Slot" do
   end
 
   it "should store Document reference if value is a saved Document" do
-    some_doc = Document.new(mock("Store"))
+    some_doc = Document.new
     @slot.value = some_doc
     @slot.value.should == some_doc
     @slot.raw_value.should match(/@##{UUID_RE}/)

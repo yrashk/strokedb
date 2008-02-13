@@ -17,8 +17,8 @@ module StrokeDB
     def initialize(slots)
       @slots = slots
       @slots.each do |k, v|
-        @slots[k] = "@\##{v.uuid}" if v.is_a? Document
-        @slots[k] = v.map {|e| e.is_a?(Document) ? "@\##{e.uuid}" : e} if v.is_a?(Enumerable)
+        @slots[k] = "@\##{v.uuid}.#{v.version}" if v.is_a? Document
+        @slots[k] = v.map {|e| e.is_a?(Document) ? "@\##{e.uuid}.#{e.version}" : e} if v.is_a?(Enumerable)
       end
     end
   end
