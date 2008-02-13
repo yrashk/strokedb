@@ -8,7 +8,7 @@ module StrokeDB
 
     def value=(v)
       @value = encode_value(v)
-      if v.is_a?(Document)
+      if v.is_a?(Document) 
         @cached_value = v
       end
     end
@@ -45,14 +45,14 @@ module StrokeDB
 
     def decode_value(v)
       case v
+      when /@##{UUID_RE}.0000000000000000#{UUID_RE}/
+          @cached_value || ((@cached_value = doc.store.find($1)) && (doc.head? && @cached_value = @cached_value) || @cached_value.versions[@cached_value.all_versions.last]) || "@##{$1}"
       when /@##{UUID_RE}.#{VERSION_RE}/
         if doc.head?
           @cached_value || @cached_value = doc.store.find($1) || "@##{$1}.#{$2}"
         else
           @cached_value || @cached_value = doc.store.find($1,$2) || "@##{$1}.#{$2}"
         end
-      when /@##{UUID_RE}.0000000000000000#{UUID_RE}/
-        @cached_value || @cached_value = doc.versions[doc.store.find($1).previos_versions.last] || "@##{$1}"
       when Hash, Array
         v.map {|v| decode_value(v) }
       else

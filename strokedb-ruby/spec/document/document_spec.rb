@@ -136,21 +136,25 @@ describe "Head Document with references" do
     setup_default_store
     @doc1 = Document.create!(:one => 1)
     @doc2 = Document.create!(:two => 2)
-    @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2])
+    @doc3 = Document.new(:three => 3)
+    @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2], :some_other_link => @doc3)
     @document.test = :yes
     @document.save!
+    @doc3.save!
   end
 
-  it "should link to specific versions" do
+  it "should not link to specific versions" do
     @document.should be_head
     @document.some_link.should_not be_a_kind_of(VersionedDocument)
+    @document.some_other_link.should_not be_a_kind_of(VersionedDocument)
     @document.some_indirect_link.first.should_not be_a_kind_of(VersionedDocument)
   end
 
-  it "should link to specific versions when reloaded" do
+  it "should not link to specific versions when reloaded" do
     @document = @document.reload
     @document.should be_head
     @document.some_link.should_not be_a_kind_of(VersionedDocument)
+    @document.some_other_link.should_not be_a_kind_of(VersionedDocument)
     @document.some_indirect_link.first.should_not be_a_kind_of(VersionedDocument)
   end
 
@@ -183,12 +187,15 @@ describe "VersionedDocument with references" do
     setup_default_store
     @doc1 = Document.create!(:one => 1)
     @doc2 = Document.create!(:two => 2)
-    @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2])
+    @doc3 = Document.new(:three => 3)
+    @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2], :some_other_link => @doc3)
+    @doc3.save!
     @versioned_document = @document.versions[@document.version]
   end
 
   it "should link to specific versions" do
     @versioned_document.some_link.should be_a_kind_of(VersionedDocument)
+    @versioned_document.some_other_link.should be_a_kind_of(VersionedDocument)
     @versioned_document.some_indirect_link.first.should be_a_kind_of(VersionedDocument)
   end
 
