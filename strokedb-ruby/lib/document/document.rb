@@ -126,7 +126,7 @@ module StrokeDB
       from_raw(store,uuid,json_decoded)
     end
 
-    def to_s
+    def inspect
       Util.catch_circular_reference(self) do
         s = "<"
         s << (self[:__meta__] ? "#{meta} " : "Doc ")
@@ -136,7 +136,7 @@ module StrokeDB
           else
             stack = Thread.current['StrokeDB.reference_stack'] ||= []
             stack << self[k]
-            s << "#{k}: #{self[k]} "
+            s << "#{k}: #{self[k].inspect} "
             stack.pop
           end
         end
@@ -147,7 +147,7 @@ module StrokeDB
       "<Doc #{uuid[0,5]}*>"
     end
 
-    alias :inspect :to_s
+    alias :to_s :inspect
 
 
     # Primary serialization
