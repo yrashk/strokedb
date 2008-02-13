@@ -62,6 +62,6 @@ suggestion: have a special slot "__backrefs__" in any part of the document:
 
 4. SEE ALSO
 
-[1] http://spectator.ru/technology/html/hypertext
+[1] http://spectator.ru/technology/html/hypertext (in Russian)
 
 
