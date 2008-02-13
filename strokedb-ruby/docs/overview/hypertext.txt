@@ -1,0 +1,67 @@
+HYPERTEXT
+
+1. VERSIONS & REFERENCES
+
+Every document may have references to other documents. At least, there are 
+references to metadocuments. 
+Also, each document has a number of versions marked by Lamport timestamp.
+Versions are stored in such way: 
+  "uuid" -> latest_doc, "uuid.1" -> doc1, "uuid.2" -> doc2, ...
+
+"<uuid>"             key (without version) identifies latest version (aka "head")
+"<uuid>.<timestamp>" key identifies particular version
+
+Reference contains both UUID and timestamp ("<uuid>.<timestamp>").
+
+You may interpret references in 3 different ways:
+
+1) HEAD interpretation: you throw away timestamp and just fetch latest 
+   version of the referenced document. This is very straightforward: 
+   if you look at the HEAD document you suppose to go to the latest 
+   version of the any referenced document.
+   
+2) Strict interpretation: you go to the specific (locked) document version.
+   This is useful when you need to see exactly the version your document
+   referenced to when it was revisited (in case later reference versions 
+   contain contradictions to your the current document version). 
+   
+3) Time-shifting: reference's timestamp is ignored, but you fetch a version
+   less or equal to the current document version timestamp.
+   In instance, you go one month back to some article, and then see a 
+   one-month earlier database snapshot through the references.
+
+The latter is a really cool feature, since it has no overhead to use, it is
+easy to implement and it is always supported, even if you don't design 
+your application to use this feature from the very start.
+
+TODO: implementation suggestions:
+1) mode for document version via VersionedDocument
+  doc.versions[..]        # => time-shifting/HEAD interpretation mode
+  doc.versions[..].strict # => strict references interpretation
+2) choose mode when reference is actually accessed:
+  doc.another_doc           # => #<Reference:0x8fa78be4 ...>
+  doc.another_doc.some_slot # lazily loads time-shifted document (may be HEAD)
+  doc.another_doc(:locked)  # loads particular version (stored in a doc)
+
+
+2. DOCUMENT PART REFERENCES
+
+TODO: think of how to efficiently refer to a part of the document
+
+suggestion: "<uuid>.<version>/<slot>/<subslot>"
+
+
+3. TWO-WAY REFERENCES
+
+TODO: think of how to efficiently implement "backtrack" references.
+
+suggestion: have a special slot "__backrefs__" in any part of the document:
+
+{"__backrefs__" => ["<uuid>.<version>/<some>/<part>", ...]}
+
+
+4. SEE ALSO
+
+[1] http://spectator.ru/technology/html/hypertext
+
+
