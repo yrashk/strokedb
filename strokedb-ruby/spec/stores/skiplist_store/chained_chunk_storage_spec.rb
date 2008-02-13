@@ -5,15 +5,15 @@ ChunkStorage.subclasses.map(&:constantize).each do |storage|
 
     before(:each) do
       @path = 'test/storages/file_chunk_storage_spec'
-      @storage = storage.new(@path)
+      @storage = storage.new(:path => @path)
 
       @chunk = Chunk.new(99)
       @chunk.insert('34b030ab-03a5-a08a-4d97-a7b27daf0897', {'a' => 1, 'b' => 2})
       
-      @target_storage = storage.new("#{@path}_chained")
+      @target_storage = storage.new(:path => "#{@path}_chained")
       @target_storage.clear!
       
-      @target_storage1 = storage.new("#{@path}_chained_1")
+      @target_storage1 = storage.new(:path => "#{@path}_chained_1")
       @target_storage1.clear!
       
     end

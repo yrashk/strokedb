@@ -2,8 +2,9 @@ module StrokeDB
   class FileChunkStorage < ChunkStorage
     attr_accessor :path
 
-    def initialize(path)
-      @path = path
+    def initialize(opts={})
+      opts = opts.stringify_keys 
+      @path = opts['path']
     end
     
     def delete!(chunk_uuid)

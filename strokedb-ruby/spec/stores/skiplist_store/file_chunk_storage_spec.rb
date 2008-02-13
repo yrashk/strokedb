@@ -5,7 +5,7 @@ describe "FileChunkStorage" do
 
   before(:each) do
     @path = 'test/storages/file_chunk_storage_spec'
-    @storage = FileChunkStorage.new(@path)
+    @storage = FileChunkStorage.new(:path => @path)
     @storage.clear!
 
     @chunk = Chunk.new(99)

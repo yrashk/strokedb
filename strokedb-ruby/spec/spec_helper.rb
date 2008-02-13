@@ -21,7 +21,7 @@ end
 
 def setup_index(store=nil)
   store ||= StrokeDB.default_store
-  index_storage = StrokeDB::InvertedListFileStorage.new('test/storages/inverted_list_storage')
+  index_storage = StrokeDB::InvertedListFileStorage.new(:path => 'test/storages/inverted_list_storage')
   index_storage.clear!
   @index = StrokeDB::InvertedListIndex.new(index_storage)
   @index.document_store = store

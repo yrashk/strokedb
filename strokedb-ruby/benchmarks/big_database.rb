@@ -5,7 +5,7 @@ require 'benchmark'
 include Benchmark 
 
 $m_storage = MemoryChunkStorage.new 
-$storage = FileChunkStorage.new "test/storages/big_storage"
+$storage = FileChunkStorage.new :path => "test/storages/big_storage"
 $m_storage.add_chained_storage!($storage)
 
 def test_cut_level(bm, n, cutlevel, &block)

@@ -2,7 +2,7 @@ module StrokeDB
   class MemoryChunkStorage < ChunkStorage
     attr_accessor :chunks_cache
 
-    def initialize(*args)
+    def initialize(opts={})
       @chunks_cache = {}
     end
     

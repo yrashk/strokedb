@@ -5,8 +5,9 @@ module StrokeDB
 
     attr_accessor :path
 
-    def initialize(path)
-      @path = path
+    def initialize(opts={})
+      opts = opts.stringify_keys 
+      @path = opts['path']
     end
 
     def find_list

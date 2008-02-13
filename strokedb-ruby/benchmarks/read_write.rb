@@ -4,7 +4,7 @@ include StrokeDB
 require 'benchmark'
 include Benchmark 
 
-$f_storage = FileChunkStorage.new "test/storages/rw_bench_storage"
+$f_storage = FileChunkStorage.new :path =>  "test/storages/rw_bench_storage"
 $f_storage.clear!
 $storage = MemoryChunkStorage.new
 $storage.add_chained_storage!($f_storage)
