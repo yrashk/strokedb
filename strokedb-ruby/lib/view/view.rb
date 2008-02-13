@@ -3,8 +3,8 @@ module StrokeDB
     attr_accessor :map_with_proc
     attr_reader :reduce_with_proc
     
-    on_initialization do |view, block|
-      view.map_with_proc = block || proc {|doc, *args| doc } 
+    on_initialization do |view|
+      view.map_with_proc = proc {|doc, *args| doc } 
     end
 
     def reduce_with(&block)

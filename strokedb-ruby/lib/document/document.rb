@@ -20,10 +20,10 @@ module StrokeDB
   class Document
     attr_reader :uuid, :store, :callbacks
 
-		#
-		# doc.versions #=> #<Versions>
-		# doc.versions[version_number] #=> #<Document>
-		#
+    #
+    # doc.versions #=> #<Versions>
+    # doc.versions[version_number] #=> #<Document>
+    #
     class Versions
       attr_reader :document
       def initialize(document)
@@ -40,12 +40,12 @@ module StrokeDB
       end
     end
 
-		#
-		# doc.metas #=> #<Metas>
-		# doc.metas is an Array
-		# doc.metas << Meta module
-		# doc.metas << Meta document
-		#
+    #
+    # doc.metas #=> #<Metas>
+    # doc.metas is an Array
+    # doc.metas << Meta module
+    # doc.metas << Meta document
+    #
     class Metas < Array
       def initialize(document)
         @document = document
@@ -68,9 +68,7 @@ module StrokeDB
         if _module
           @document.extend(_module)
           _module.send!(:setup_callbacks,@document) rescue nil
-          if on_initialization_block = _module.instance_variable_get(:@on_initialization_block)
-            on_initialization_block.call(@document)
-          end
+          @document.send!(:execute_callbacks, :on_initialization)
         end
         @document[:__meta__] = self
       end
@@ -167,10 +165,8 @@ module StrokeDB
       meta_modules.each do |meta_module|
         unless doc.is_a?(meta_module)
           doc.extend(meta_module)
-          if on_initialization_block = meta_module.instance_variable_get(:@on_initialization_block)
-            on_initialization_block.call(doc) unless opts[:skip_callbacks]
-          end
-           meta_module.send!(:setup_callbacks,doc) rescue nil
+          meta_module.send!(:setup_callbacks,doc) rescue nil
+          doc.send!(:execute_callbacks,:on_initialization) unless opts[:skip_callbacks]
         end
       end
       doc
@@ -231,7 +227,7 @@ module StrokeDB
     def version
       self[:__version__]
     end
-    
+
     def version=(v)
       self[:__version__] = v
     end

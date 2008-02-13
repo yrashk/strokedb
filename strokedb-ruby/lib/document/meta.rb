@@ -53,18 +53,11 @@ module StrokeDB
     end
 
     def new(*args,&block)
-      doc = Document.new(*args)
+      doc = Document.new(*args,&block)
       doc.extend(self)
       doc[:__meta__] = document(doc.store)
-      if @on_initialization_block
-        case @on_initialization_block.arity
-        when 2
-          @on_initialization_block.call(doc,block)
-        when 1
-          @on_initialization_block.call(doc) 
-        end
-      end
       setup_callbacks(doc)
+      doc.send(:execute_callbacks,:on_initialization)
       doc
     end
 
