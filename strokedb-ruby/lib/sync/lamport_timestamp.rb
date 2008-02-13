@@ -4,31 +4,31 @@ module StrokeDB
     BASE        = 16
     BASE_LENGTH = 16
     
-    attr_reader :counter, :salt
+    attr_reader :counter, :uuid
     
-    def initialize(c = 0, __salt = Util.random_uuid)
+    def initialize(c = 0, __uuid = Util.random_uuid)
       if c > MAX_COUNTER
         raise CounterOverflow.new, "Max counter value is 2**64"
       end
       @counter = c
-      @salt    = __salt 
+      @uuid    = __uuid 
     end
     def next
-      LamportTimestamp.new(@counter + 1, @salt)
+      LamportTimestamp.new(@counter + 1, @uuid)
     end
     def next!
       @counter += 1
       self
     end
     def dup
-      LamportTimestamp.new(@counter, @salt)
+      LamportTimestamp.new(@counter, @uuid)
     end
     def marshal_dump
-      @counter.to_s(BASE).rjust(BASE_LENGTH, '0') + @salt
+      @counter.to_s(BASE).rjust(BASE_LENGTH, '0') + @uuid
     end 
     def marshal_load(dumped)
       @counter = dumped[0,           BASE_LENGTH].to_i(BASE)
-      @salt    = dumped[BASE_LENGTH, 36]
+      @uuid    = dumped[BASE_LENGTH, 36]
       self
     end
     
@@ -45,10 +45,10 @@ module StrokeDB
     end
     def <=>(other)
       primary = (@counter <=> other.counter)
-      primary == 0 ? (@salt <=> other.salt) : primary
+      primary == 0 ? (@uuid <=> other.uuid) : primary
     end
     def ==(other)
-      @counter == other.counter && @salt == other.salt
+      @counter == other.counter && @uuid == other.uuid
     end
     def <(other)
       (self <=> other) < 0
@@ -62,9 +62,9 @@ module StrokeDB
     def >=(other)
       (self <=> other) >= 0
     end
-    def self.zero(__salt = Util.random_uuid)
+    def self.zero(__uuid = Util.random_uuid)
       ts = new(0)
-      ts.instance_variable_set(:@salt, __salt)
+      ts.instance_variable_set(:@uuid, __uuid)
       ts
     end
     def self.zero_string

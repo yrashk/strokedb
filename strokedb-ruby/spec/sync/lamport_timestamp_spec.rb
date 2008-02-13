@@ -9,14 +9,14 @@ describe "Initial LamportTimestamp" do
     @t0.counter.should == 0
   end
   
-  it "should have UUID-based salt" do
-    @t0.salt.should match(UUID_RE)
+  it "should have UUID-based uuid" do
+    @t0.uuid.should match(UUID_RE)
   end
   
 end
 
 
-describe "Initial LamportTimestamp with salt specified" do
+describe "Initial LamportTimestamp with uuid specified" do
   before(:each) do
     @t0   = LamportTimestamp.new(0,NIL_UUID)
   end
@@ -25,12 +25,12 @@ describe "Initial LamportTimestamp with salt specified" do
     @t0.counter.should == 0
   end
   
-  it "should have UUID-based salt as defined" do
-    @t0.salt.should == NIL_UUID
+  it "should have UUID-based uuid as defined" do
+    @t0.uuid.should == NIL_UUID
   end
   
-  it "should pass salt on #next" do
-    @t0.next.salt.should == @t0.salt
+  it "should pass uuid on #next" do
+    @t0.next.uuid.should == @t0.uuid
   end
   
 end
@@ -48,9 +48,9 @@ describe "Preset LamportTimestamp" do
     (@t123 <=> @t234).should  == -1
   end
 
-  it "should have UUID-based salt" do
-    @t123.salt.should match(UUID_RE)
-    @t234.salt.should match(UUID_RE)
+  it "should have UUID-based uuid" do
+    @t123.uuid.should match(UUID_RE)
+    @t234.uuid.should match(UUID_RE)
   end
 end
 
@@ -116,7 +116,7 @@ describe "LamportTimestamp comparison" do
       t_ = t.dup
       t.next!
       t_.should < t
-      t_.salt.should == t.salt
+      t_.uuid.should == t.uuid
     end 
   end
 end
