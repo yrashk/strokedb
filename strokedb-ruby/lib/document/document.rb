@@ -79,7 +79,8 @@ module StrokeDB
       new(*args).save!
     end
 
-    def initialize(*args)
+    def initialize(*args,&block)
+      @initialization_block = block
       if args.first.is_a?(Hash) || args.empty?
         raise NoDefaultStoreError.new unless StrokeDB.default_store
         do_initialize(StrokeDB.default_store,*args)
