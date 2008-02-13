@@ -118,6 +118,11 @@ describe "Saved Document" do
     @document = Document.create!(:some_data => 1)
   end
   
+  it "should have version" do
+    @document.version.should match(/#{VERSION_RE}/)
+  end
+  
+  
   it "should not be new" do
     @document.should_not be_new
   end
