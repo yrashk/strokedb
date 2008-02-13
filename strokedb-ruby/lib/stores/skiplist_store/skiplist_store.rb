@@ -103,7 +103,7 @@ module StrokeDB
     end
 
     def lamport_timestamp
-      @lamport_timestamp ||= (lts = find_or_create_master_chunk.lamport_timestamp) ? LamportTimestamp.from_raw(lts) : LamportTimestamp.zero(uuid)
+      @lamport_timestamp ||= (lts = find_or_create_master_chunk.lamport_timestamp) ? LTS.from_raw(lts) : LTS.zero(uuid)
     end
     def next_lamport_timestamp
       @lamport_timestamp = lamport_timestamp.next

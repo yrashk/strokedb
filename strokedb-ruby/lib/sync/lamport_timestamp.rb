@@ -3,9 +3,9 @@ module StrokeDB
     MAX_COUNTER = 2**64
     BASE        = 16
     BASE_LENGTH = 16
-    
+
     attr_reader :counter, :uuid
-    
+
     def initialize(c = 0, __uuid = Util.random_uuid)
       if c > MAX_COUNTER
         raise CounterOverflow.new, "Max counter value is 2**64"
@@ -31,7 +31,7 @@ module StrokeDB
       @uuid    = dumped[BASE_LENGTH, 36]
       self
     end
-    
+
     # Raw format
     def self.from_raw(raw_string)
       new.marshal_load(raw_string)
@@ -39,7 +39,7 @@ module StrokeDB
     def to_raw
       marshal_dump
     end
-    
+
     def to_s
       marshal_dump
     end
@@ -72,4 +72,6 @@ module StrokeDB
     end
     class CounterOverflow < Exception; end
   end
+  LTS = LamportTimestamp
 end
+

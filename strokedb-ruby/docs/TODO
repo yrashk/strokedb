@@ -20,7 +20,6 @@ Completed items are removed.
 [ ] Get rid of SkiplistStore.get_new; it doesn't look really nice. May be #initialize should be options-based 
 	(and all code needs to be updated), or... don't know, but I really don't like this .get_new
 [ ] Add (few?) typical configuration(s) that could be re-used with single line of code
-[ ] Rename LamportTimestamp to LTS
 [ ] Create class method to replace LamportTimestamp.new(x).marshal_load (and don't delete marshal_load, because oleganza utterly needs it)
 [-] Finish RangeQuery (we've decided to drop it after ae6371e1f4ffeeb309771b5b6fa1a5233ca4888f)
 [ ] Refactor Meta#document, fix bugs

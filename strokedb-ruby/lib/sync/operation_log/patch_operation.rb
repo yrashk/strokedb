@@ -13,7 +13,7 @@ module StrokeDB
     end
     def self.from_raw(store, raw_content)
       new(raw_content[0], 
-          LamportTimestamp.from_raw(raw_content[1]), 
+          LTS.from_raw(raw_content[1]), 
           Document.from_raw(store, raw_content[2], raw_content[3]))
     end
     def self.code

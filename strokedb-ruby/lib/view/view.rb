@@ -18,7 +18,7 @@ module StrokeDB
     end
 
     def emit(*args) 
-      ViewCut.new(store, :view => self, :args => args, :lamport_timestamp_state => LamportTimestamp.zero_string).emit
+      ViewCut.new(store, :view => self, :args => args, :lamport_timestamp_state => LTS.zero_string).emit
     end
 
   end
