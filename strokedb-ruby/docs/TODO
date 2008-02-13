@@ -7,6 +7,7 @@ Completed items are removed.
 ============================
 
 [ ] ! Reorganize specs, drop using mockups where it makes little sense
+[ ] Reference meta in versioned form always, but in head version of doc, "monkey-load" meta's head
 [*] Fix bad UUID implementation in pure ruby version
 [ ] Read/Write benchmarks showing dependency of data size
 [-] K-d skiplist & specs
