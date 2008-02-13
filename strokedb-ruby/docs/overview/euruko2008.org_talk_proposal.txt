@@ -1,0 +1,23 @@
+StrokeDB is a yet another approach to decentralized document database. Each party maintains its own copy of data set which is relevant to that party.
+
+The main features are:
+
+* Tight integration with application runtime
+* Schemaless data structures
+* Built-in version control
+* Pluggable indexes 
+* Chainable storages
+* Asynchronous replication and merge
+* Metadocuments
+* Incremental views
+
+Also kernel is basically simple enough to port to another languages (e.g. Javascript or ActionScript)
+
+We had investigated another approaches (like CouchDB, ThruDB, SimpleDB) and we find them rather limited and not fitting our requirements. We've been also inspired by Git version control system as an approach for data decentralization.
+
+We're trying to achieve two rather different goals:
+
+* Spreading databases over end-clients
+* Building scalable high-load databases for web applications
+
+This talk is going to be presented by both Yurii Rashkovskii (yrashk) and Oleg Andreev (oleganza).
