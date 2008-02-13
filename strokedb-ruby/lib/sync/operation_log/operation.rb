@@ -6,12 +6,8 @@ module StrokeDB
       "P" => PatchOperation,
       "T" => Transaction
     }
-    OPERATION_CLASSES_TO_TAGS = {
-      CreateOperation => "C",
-      DeleteOperation => "D",
-      PatchOperation  => "P",
-      Transaction     => "T"
-    }
+    OPERATION_CLASSES_TO_TAGS = Hash[*TAGS_TO_OPERATION_CLASSES.map{|op| [op.last,op.first]}.flatten]
+    
     attr_accessor :timestamp
     def initialize
       if self.class == Operation
