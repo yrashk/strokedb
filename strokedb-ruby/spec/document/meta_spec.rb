@@ -107,14 +107,14 @@ describe "Meta module with on_initialization callback" do
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
       on_initialization do |obj|
-        obj.instance_variable_set(:@obj,obj)
+        Kernel.send!(:on_initialization_called,obj.new?)
       end
     end
   end
   
   it "should call callback block on meta instantiation" do
+    Kernel.should_receive(:on_initialization_called).with(true)
     s = SomeName.new
-    s.instance_variable_get(:@obj).should == s
   end
 
 end
@@ -128,15 +128,15 @@ describe "Meta module with before_save callback" do
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
       before_save do |obj|
-        obj.instance_variable_set(:@not_saved,obj.new?)
+        Kernel.send!(:before_save_called,obj.new?)
       end
     end
   end
   
   it "should call callback block on Document#save! (before actually saving it)" do
+    Kernel.should_receive(:before_save_called).with(true)
     s = SomeName.new
     s.save!
-    s.instance_variable_get(:@not_saved).should == true
   end
 
 end
@@ -150,15 +150,15 @@ describe "Meta module with after_save callback" do
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
       after_save do |obj|
-        obj.instance_variable_set(:@not_saved,obj.new?)
+        Kernel.send!(:after_save_called,obj.new?)
       end
     end
   end
   
   it "should call callback block on Document#save! (after actually saving it)" do
+    Kernel.should_receive(:after_save_called).with(false)
     s = SomeName.new
     s.save!
-    s.instance_variable_get(:@not_saved).should == false
   end
 
 end
