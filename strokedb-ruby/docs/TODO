@@ -2,6 +2,7 @@ Legend:
 [ ] NOT DONE
 [*] MAY BE
 [-] Look into git history, may be you'll find something about it
+[.] IN PROGRESS
 Completed items are removed.
 ============================
 
@@ -25,7 +26,7 @@ Completed items are removed.
 [ ] Test callbacks using messages (as it was done before). This way we can easily control number of callback calls
 [ ] Refactor Meta#document, fix bugs
 [ ] Think about non-index named meta lookup
-[ ] Refactor callback stuff in Document
+[.] Refactor callback stuff in Document
 
 InvertedList index:
 
