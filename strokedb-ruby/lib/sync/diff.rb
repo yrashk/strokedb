@@ -112,7 +112,7 @@ module StrokeDB
       removals.each do |removal|
         self["drop_slot_#{removal}"] = from[removal]
       end
-      updates = (to.slotnames - additions - ['__version__','__lamport_timestamp__']).select {|slotname| to[slotname] != from[slotname]}
+      updates = (to.slotnames - additions - ['__version__']).select {|slotname| to[slotname] != from[slotname]}
       updates.each do |update|
         unless sk = strategy_class_for(update)
           self["update_slot_#{update}"] = to[update]

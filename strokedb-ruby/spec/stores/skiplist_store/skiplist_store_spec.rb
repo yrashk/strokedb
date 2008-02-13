@@ -12,7 +12,7 @@ describe "Empty chunk store" do
     @document.stub!(:to_raw).and_return({'stuff' => '...', '__version__' => '1234'})
     @document.stub!(:version).and_return '1234'
     @document.stub!(:uuid_version).and_return "#{@uuid}.1234"
-    @document.stub!(:__lamport_timestamp__=).with(anything).and_return 0
+    @document.stub!(:version=).with(anything).and_return 0
     chunk_storage = MemoryChunkStorage.new
     @store = SkiplistStore.new(chunk_storage, 4)
     
@@ -93,7 +93,7 @@ describe "Non-empty chunk store" do
     @store.each do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.__lamport_timestamp__}.should == @documents.sort_by {|doc| doc.__lamport_timestamp__}
+    iterated_documents.sort_by {|doc| doc.version}.should == @documents.sort_by {|doc| doc.version}
   end
 
   it "should iterate over all stored documents and their versions if told so" do
@@ -107,7 +107,7 @@ describe "Non-empty chunk store" do
         documents_with_versions << doc.versions[v]
       end
     end
-    iterated_documents.sort_by {|doc| doc.__lamport_timestamp__}.should == documents_with_versions.sort_by {|doc| doc.__lamport_timestamp__}
+    iterated_documents.sort_by {|doc| doc.version}.should == documents_with_versions.sort_by {|doc| doc.version}
   end
   
   it "should iterate over all newly stored documents if told so" do
@@ -121,7 +121,7 @@ describe "Non-empty chunk store" do
     @store.each(:after_lamport_timestamp => timestamp) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.__lamport_timestamp__}.should == @new_documents.sort_by {|doc| doc.__lamport_timestamp__}
+    iterated_documents.sort_by {|doc| doc.version}.should == @new_documents.sort_by {|doc| doc.version}
   end
   
   it "should iterate over all newly stored versions if told so" do
@@ -136,7 +136,7 @@ describe "Non-empty chunk store" do
     @store.each(:after_lamport_timestamp => timestamp, :include_versions => true) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.__lamport_timestamp__}.should == (@documents + @new_documents).sort_by {|doc| doc.__lamport_timestamp__}
+    iterated_documents.sort_by {|doc| doc.version}.should == (@documents + @new_documents).sort_by {|doc| doc.version}
   end
   
   it "should be Enumerable" do

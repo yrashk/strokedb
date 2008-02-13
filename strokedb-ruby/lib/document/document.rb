@@ -100,17 +100,10 @@ module StrokeDB
     def []=(slotname,value)
       slot = @slots[slotname.to_s] || @slots[slotname.to_s] = Slot.new(self)
       slot.value = value
-      if prev_version = @__previous_version__
-        @__previous_version__ = nil
-        self[:__previous_version__] = prev_version
-      end
-      set_version unless ['__version__','__lamport_timestamp__'].include?(slotname.to_s)
     end
 
     def remove_slot!(slotname)
       @slots.delete slotname.to_s
-      set_version
-      @slots.delete '__version__' if slotnames == ['__version__']
     end
 
     def slotnames
@@ -169,9 +162,6 @@ module StrokeDB
 
     def self.from_raw(store, uuid, raw_slots,opts = {})
       doc = new(store, raw_slots)
-      version = raw_slots['__version__']
-      raise VersionMismatchError.new unless doc.version == version
-      doc.instance_variable_set(:@__previous_version__, doc.version)
       doc.instance_variable_set(:@uuid, uuid)
       meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
       meta_modules.each do |meta_module|
@@ -191,12 +181,11 @@ module StrokeDB
     end
 
     def new?
-      !store.exists?(uuid)
+      version.nil?
     end
 
     def save!
-      raise UnversionedDocumentError.new unless version
-      self[:__previous_version__] ||= (@__previous_version__ || store.last_version(uuid)) unless new?
+      self[:__previous_version__] = store.last_version(uuid) unless new?
       execute_callbacks :before_save
       store.save!(self)
       execute_callbacks :after_save
@@ -241,6 +230,10 @@ module StrokeDB
 
     def version
       self[:__version__]
+    end
+    
+    def version=(v)
+      self[:__version__] = v
     end
 
     def all_versions
@@ -290,15 +283,6 @@ module StrokeDB
       slots.each {|name,value| self[name] = value }
     end
 
-    def set_version
-      self[:__version__] = calculate_version
-    end
-
-    def calculate_version
-      Util.sha(to_json(:except => ['__version__','__lamport_timestamp__']))
-    end
-
-
     def self.collect_meta_modules(store,meta)
       meta_names = []
       case meta
@@ -315,9 +299,6 @@ module StrokeDB
     end
 
   end
-
-
-
 
   module VersionedDocument
     def to_json(opts={})

@@ -14,7 +14,7 @@ describe "View without map_with and reduce_with blocks" do
     10.times do |i|
       @documents << Document.create!(:i => i)
     end
-    @view.emit.to_a.sort_by {|doc| doc.__lamport_timestamp__}.should == (@documents + [Meta.document,View.document,ViewCut.document]).sort_by {|doc| doc.__lamport_timestamp__}
+    @view.emit.to_a.sort_by {|doc| doc.version}.should == (@documents + [Meta.document,View.document,ViewCut.document]).sort_by {|doc| doc.version}
   end
 
 end

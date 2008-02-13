@@ -17,31 +17,14 @@ module StrokeDB
     end
 
     def find(uuid, version=nil, opts = {})
+      uuid_version = uuid + (version ? ".#{version}" : "")
       master_chunk = @chunk_storage.find('MASTER')
       return nil unless master_chunk  # no master chunk yet
-      chunk_uuid = master_chunk.find_nearest(uuid, nil)
+      chunk_uuid = master_chunk.find_nearest(uuid_version, nil)
       return nil unless chunk_uuid # no chunks in master chunk yet
       chunk = @chunk_storage.find(chunk_uuid)
       return nil unless chunk
-      if version
-        chunk_node = chunk.find_node(uuid)
-        val = nil
-        until chunk_node.nil?
-          break if ((val = chunk_node.value) && val['__version__'] == version)
-          val = nil
-          if chunk_node.is_a?(Skiplist::TailNode)
-            chunk = chunk.next_chunk 
-            break if chunk.nil? || chunk.uuid[0,uuid.length] != uuid
-            chunk_node = chunk.first_node
-          else
-            chunk_node = chunk_node.next
-          end
-        end
-        return nil unless val
-        raw_doc = val
-      else
-        raw_doc = chunk.find(uuid)
-      end
+      raw_doc = chunk.find(uuid_version)
       if raw_doc
         return raw_doc if opts[:no_instantiation]
         doc = Document.from_raw(self,uuid,raw_doc.freeze)
@@ -64,10 +47,10 @@ module StrokeDB
     def save!(doc)
       master_chunk = find_or_create_master_chunk
       next_lamport_timestamp
-      doc.__lamport_timestamp__ = lamport_timestamp.to_s
+      doc.version = lamport_timestamp.to_s
 
       insert_with_cut(doc.uuid, doc, master_chunk)
-      insert_with_cut("#{doc.uuid}.#{lamport_timestamp}", doc, master_chunk)
+      insert_with_cut("#{doc.uuid}.#{doc.version}", doc, master_chunk)
 
       @chunk_storage.save!(master_chunk)
 
@@ -111,7 +94,7 @@ module StrokeDB
         next if after && chunk.lamport_timestamp <= after
         
         chunk.each do |node| 
-          next if after && (node.value['__lamport_timestamp__'] <= after)
+          next if after && (node.value['__version__'] <= after)
           if uuid_match = node.key.match(/#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}./) )
             yield Document.from_raw(self, uuid_match[1], node.value) 
           end

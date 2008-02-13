@@ -3,7 +3,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe "Slot" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
     @document = Document.new(@store)
     @slot = Slot.new(@document)
   end
@@ -21,9 +21,9 @@ describe "Slot" do
   end
 
   it "should store VersionedDocument reference if value is a new Document" do
-    some_doc = Document.new(mock("Store"))
+    some_doc = Document.new(:something => 1)
     some_doc.extend(VersionedDocument)
-    some_doc[:something] = 1
+    some_doc.save!
     @slot.value = some_doc
     @slot.value.should == some_doc
     @slot.raw_value.should match(/@##{UUID_RE}.#{VERSION_RE}/)
