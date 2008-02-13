@@ -23,7 +23,7 @@ describe "Empty chunk store" do
   end
   
   it "should have 0 lamport_timestamp" do
-    @store.lamport_timestamp.should == LamportTimestamp.zero
+    @store.lamport_timestamp.should == LamportTimestamp.zero(@store.uuid)
   end
   
   it "should contain no documents" do

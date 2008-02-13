@@ -6,15 +6,15 @@ module StrokeDB
     
     attr_reader :counter, :salt
     
-    def initialize(c = 0, __salt = nil)
+    def initialize(c = 0, __salt = Util.random_uuid)
       if c > MAX_COUNTER
         raise CounterOverflow.new, "Max counter value is 2**64"
       end
       @counter = c
-      @salt    = __salt || generate_salt
+      @salt    = __salt 
     end
     def next
-      LamportTimestamp.new(@counter + 1)
+      LamportTimestamp.new(@counter + 1, @salt)
     end
     def next!
       @counter += 1
@@ -24,11 +24,11 @@ module StrokeDB
       LamportTimestamp.new(@counter, @salt)
     end
     def marshal_dump
-      @counter.to_s(BASE).rjust(BASE_LENGTH, '0') + @salt.to_s(BASE).rjust(BASE_LENGTH, '0')
+      @counter.to_s(BASE).rjust(BASE_LENGTH, '0') + @salt
     end 
     def marshal_load(dumped)
       @counter = dumped[0,           BASE_LENGTH].to_i(BASE)
-      @salt    = dumped[BASE_LENGTH, BASE_LENGTH].to_i(BASE)
+      @salt    = dumped[BASE_LENGTH, 36]
       self
     end
     
@@ -62,18 +62,14 @@ module StrokeDB
     def >=(other)
       (self <=> other) >= 0
     end
-    def self.zero
+    def self.zero(__salt = Util.random_uuid)
       ts = new(0)
-      ts.instance_variable_set(:@salt, 0)
+      ts.instance_variable_set(:@salt, __salt)
       ts
     end
     def self.zero_string
-      "0"*BASE_LENGTH*2
+      "0"*BASE_LENGTH + NIL_UUID
     end
     class CounterOverflow < Exception; end
-  private
-    def generate_salt
-      rand(2**64)
-    end
   end
 end

@@ -9,9 +9,30 @@ describe "Initial LamportTimestamp" do
     @t0.counter.should == 0
   end
   
-  it "should have random salt" do
-    @t0.salt.should > -1
+  it "should have UUID-based salt" do
+    @t0.salt.should match(UUID_RE)
   end
+  
+end
+
+
+describe "Initial LamportTimestamp with salt specified" do
+  before(:each) do
+    @t0   = LamportTimestamp.new(0,NIL_UUID)
+  end
+  
+  it "should have counter == 0" do
+    @t0.counter.should == 0
+  end
+  
+  it "should have UUID-based salt as defined" do
+    @t0.salt.should == NIL_UUID
+  end
+  
+  it "should pass salt on #next" do
+    @t0.next.salt.should == @t0.salt
+  end
+  
 end
 
 
@@ -27,9 +48,9 @@ describe "Preset LamportTimestamp" do
     (@t123 <=> @t234).should  == -1
   end
 
-  it "should have random salt" do
-    @t123.salt.should > -1
-    @t234.salt.should > -1
+  it "should have UUID-based salt" do
+    @t123.salt.should match(UUID_RE)
+    @t234.salt.should match(UUID_RE)
   end
 end
 
@@ -55,7 +76,6 @@ describe "LamportTimestamp equality" do
   it { LamportTimestamp.new().should_not == LamportTimestamp.new() }
   it { LamportTimestamp.new(123).should_not == LamportTimestamp.new(123) }
   it { LamportTimestamp.new(234).should_not == LamportTimestamp.new(234) }
-  it { 1000.times { @t.next.should_not == @t.next  } }
 end
 
 

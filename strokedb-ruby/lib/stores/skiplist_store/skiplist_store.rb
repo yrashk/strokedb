@@ -92,10 +92,10 @@ module StrokeDB
         chunk = @chunk_storage.find(node.value)
         next unless chunk
         next if after && chunk.lamport_timestamp <= after
-        
+
         chunk.each do |node| 
           next if after && (node.value['__version__'] <= after)
-          if uuid_match = node.key.match(/#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}./) )
+          if uuid_match = node.key.match(/^#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}./) )
             yield Document.from_raw(self, uuid_match[1], node.value) 
           end
         end
@@ -103,7 +103,7 @@ module StrokeDB
     end
 
     def lamport_timestamp
-      @lamport_timestamp ||= LamportTimestamp.new(0).marshal_load(find_or_create_master_chunk.lamport_timestamp || LamportTimestamp.zero.to_s)
+      @lamport_timestamp ||= (lts = find_or_create_master_chunk.lamport_timestamp) ? LamportTimestamp.from_raw(lts) : LamportTimestamp.zero(uuid)
     end
     def next_lamport_timestamp
       @lamport_timestamp = lamport_timestamp.next
