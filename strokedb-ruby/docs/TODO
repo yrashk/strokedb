@@ -6,7 +6,6 @@ Completed items are removed.
 ============================
 
 [ ] ! Reorganize specs, drop using mockups where it makes little sense
-[ ] JSON library dependency: wrong sha256 version when libs changes behavior (draft own ActiveSupport-compatible JSON implementation?)
 [*] Fix bad UUID implementation in pure ruby version
 [ ] Read/Write benchmarks showing dependency of data size
 [-] K-d skiplist & specs
@@ -26,7 +25,6 @@ Completed items are removed.
 [ ] Test callbacks using messages (as it was done before). This way we can easily control number of callback calls
 [ ] Refactor Meta#document, fix bugs
 [ ] Think about non-index named meta lookup
-[x] Think more about dropping __version__ as it is in favor of __lamport_timestamp__ (and renaming it to __version__ actually)
 [ ] Refactor callback stuff in Document
 
 InvertedList index:
