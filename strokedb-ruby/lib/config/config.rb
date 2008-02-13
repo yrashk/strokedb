@@ -3,6 +3,38 @@ module StrokeDB
   class UnknownIndexTypeError < Exception ; end
   class UnknownStoreTypeError < Exception ; end
   class Config
+    
+    
+    class << self
+      
+      def build(opts={})
+        opts = opts.stringify_keys
+        config = new(opts['default'])
+        storages = opts['storages'] || [:memory_chunk, :file_chunk]
+        initialized_storages = []
+        storages.each do |storage|
+          initialized_storages << config.add_storage(storage,storage,:path => File.join(opts['base_path']||'./',storage.to_s))
+        end
+        config.chain(*storages)  if storages.size >= 2
+        initialized_storages[0,initialized_storages.size-1].each_with_index do |storage,index|
+          storage.authoritative_source = initialized_storages[index+1]
+        end
+        index_storages = opts['index_storages'] || [:inverted_list_file]
+        index_storages.each do |index|
+          config.add_storage(index,index,:path => File.join(opts['base_path']||'./',index.to_s))
+        end
+        index = opts['index'] || :inverted_list
+        config.add_index(:default,index,index_storages.first)
+        unless store = opts['store'] 
+          config.add_store(:default,:skiplist,:storage => storages.first)
+        else 
+          config.add_store(:default,store,:storage => storages.first)
+        end
+        config
+      end
+      
+    end
+    
     attr_reader :storages, :indexes, :stores
     def initialize(default = false)
       @storages, @indexes, @stores = {}, {}, {}

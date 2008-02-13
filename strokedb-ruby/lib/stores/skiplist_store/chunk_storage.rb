@@ -4,6 +4,9 @@ module StrokeDB
 
     attr_accessor :authoritative_source
 
+    def initialize(opts={})
+    end
+
     def find(uuid)
       unless result = read(chunk_path(uuid)) 
         if authoritative_source

@@ -1,18 +1,7 @@
 $:.unshift File.dirname(__FILE__) + "/.."
 require "strokedb"
 
-config = StrokeDB::Config.new(true)
-
-config.add_storage :mem, :memory_chunk
-config.add_storage :fs, :file_chunk, 'test/storages/test2'
-
-config.chain :mem, :fs
-config[:mem].authoritative_source = config[:fs]
-
-config.add_storage :index_storage, :inverted_list_file, 'test/storages/index2'
-config.add_index :default, :inverted_list, :index_storage
-
-config.add_store :default, :skiplist, :mem, :cut_level => 4
+config = StrokeDB::Config.build :default => true, :base_path => 'test/storages/playing2'
 
 
 User = StrokeDB::Meta.new
@@ -30,7 +19,7 @@ view = StrokeDB::View.find_or_create(:name => "all users").reduce_with{|doc| doc
 puts view.uuid
 puts view.emit.to_json
 
-config[:mem].sync_chained_storages!
+config[:memory_chunk].sync_chained_storages!
 
  
 

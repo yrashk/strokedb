@@ -104,3 +104,113 @@ describe "Config" do
   end
 
 end
+
+describe "Config builder" do
+
+  it "should make config default if told so" do
+    config = StrokeDB::Config.build :default => true
+    StrokeDB.default_config.should == config
+  end
+
+  it "should not make config default if told so" do
+    config = StrokeDB::Config.build 
+    StrokeDB.default_config.should_not == config
+  end
+  
+  it "should use skiplist store by default" do
+    config = StrokeDB::Config.build 
+    config.stores[:default].should be_a_kind_of(SkiplistStore)
+  end
+
+  it "should use specified store if told so" do
+    StrokeDB.send!(:remove_const,'SomeFunnyStore') if defined?(SomeFunnyStore)
+    StrokeDB::SomeFunnyStore = Class.new(SkiplistStore)
+    config = StrokeDB::Config.build :store => :some_funny
+    config.stores[:default].should be_a_kind_of(SomeFunnyStore)
+  end
+
+  it "should add storages as he is told to" do
+    StrokeDB.send!(:remove_const,'Chunk1Storage') if defined?(Chunk1Storage)
+    StrokeDB.send!(:remove_const,'Chunk2Storage') if defined?(Chunk2Storage)
+    StrokeDB::Chunk1Storage = Class.new(ChunkStorage)
+    StrokeDB::Chunk2Storage = Class.new(ChunkStorage)
+    config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2]
+    config.storages[:chunk_1].should be_a_kind_of(Chunk1Storage)
+    config.storages[:chunk_2].should be_a_kind_of(Chunk2Storage)
+  end
+  
+  it "should initialize all storages with base_path+storage_name" do
+    StrokeDB.send!(:remove_const,'Chunk1Storage') if defined?(Chunk1Storage)
+    StrokeDB.send!(:remove_const,'Chunk2Storage') if defined?(Chunk2Storage)
+    StrokeDB::Chunk1Storage = Class.new(ChunkStorage)
+    StrokeDB::Chunk2Storage = Class.new(ChunkStorage)
+    Chunk1Storage.should_receive(:new).with(:path => 'test/chunk_1').and_return(MemoryChunkStorage.new)
+    Chunk2Storage.should_receive(:new).with(:path => 'test/chunk_2').and_return(MemoryChunkStorage.new)
+    config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2], :base_path => 'test'
+  end
+  
+  it "should add :memory_chunk and :file_chunk by default" do
+    config = StrokeDB::Config.build :base_path => 'test'
+    config.storages[:memory_chunk].should be_a_kind_of(MemoryChunkStorage)
+    config.storages[:file_chunk].should be_a_kind_of(FileChunkStorage)
+  end
+
+  it "should chain given storages sequentially" do
+    StrokeDB.send!(:remove_const,'Chunk1Storage') if defined?(Chunk1Storage)
+    StrokeDB.send!(:remove_const,'Chunk2Storage') if defined?(Chunk2Storage)
+    StrokeDB.send!(:remove_const,'Chunk3Storage') if defined?(Chunk3Storage)
+    StrokeDB::Chunk1Storage = Class.new(ChunkStorage)
+    StrokeDB::Chunk2Storage = Class.new(ChunkStorage)
+    StrokeDB::Chunk3Storage = Class.new(ChunkStorage)
+    config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2,:chunk_3], :base_path => 'test'
+    config.storages[:chunk_1].should have_chained_storage(config[:chunk_2])
+    config.storages[:chunk_2].should have_chained_storage(config[:chunk_1])
+    config.storages[:chunk_3].should have_chained_storage(config[:chunk_2])
+    config.storages[:chunk_2].should have_chained_storage(config[:chunk_3])
+  end
+
+  it "should set authoritative sources for storages sequentially" do
+    StrokeDB.send!(:remove_const,'Chunk1Storage') if defined?(Chunk1Storage)
+    StrokeDB.send!(:remove_const,'Chunk2Storage') if defined?(Chunk2Storage)
+    StrokeDB.send!(:remove_const,'Chunk3Storage') if defined?(Chunk3Storage)
+    StrokeDB::Chunk1Storage = Class.new(ChunkStorage)
+    StrokeDB::Chunk2Storage = Class.new(ChunkStorage)
+    StrokeDB::Chunk3Storage = Class.new(ChunkStorage)
+    config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2,:chunk_3], :base_path => 'test'
+    config.storages[:chunk_1].authoritative_source.should == config[:chunk_2]
+    config.storages[:chunk_2].authoritative_source.should == config[:chunk_3]
+    config.storages[:chunk_3].authoritative_source.should be_nil
+  end
+  
+  it "should use InvertedListIndex by default" do
+    config = StrokeDB::Config.build 
+    config.indexes[:default].should be_a_kind_of(InvertedListIndex)
+  end
+
+  it "should use specific index if told so by default" do
+    StrokeDB.send!(:remove_const,'SomeFunnyIndex') if defined?(SomeFunnyIndex)
+    StrokeDB::SomeFunnyIndex = Class.new(InvertedListIndex)
+    config = StrokeDB::Config.build :index => :some_funny
+    config.indexes[:default].should be_a_kind_of(SomeFunnyIndex)
+  end
+
+  it "should use InvertedListFileStorage index storage by default" do
+    config = StrokeDB::Config.build
+    config.storages[:inverted_list_file].should be_a_kind_of(InvertedListFileStorage)
+  end
+
+  it "should use specific index storage if told so" do
+    StrokeDB.send!(:remove_const,'SomeFunnyIndexStorage') if defined?(SomeFunnyIndexStorage)
+    StrokeDB::SomeFunnyIndexStorage = Class.new(InvertedListIndex)
+    config = StrokeDB::Config.build :index_storages => [:some_funny_index]
+    config.storages[:some_funny_index].should be_a_kind_of(SomeFunnyIndexStorage)
+  end
+
+  it "should initialize index storage with base_path+storage_name" do
+    StrokeDB.send!(:remove_const,'SomeFunnyIndexStorage') if defined?(SomeFunnyIndexStorage)
+    StrokeDB::SomeFunnyIndexStorage = Class.new(InvertedListIndex)
+    SomeFunnyIndexStorage.should_receive(:new).with(:path => 'test/some_funny_index')
+    config = StrokeDB::Config.build :index_storages => [:some_funny_index], :base_path => 'test'
+  end
+  
+end
