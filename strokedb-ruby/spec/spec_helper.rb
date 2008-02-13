@@ -8,7 +8,7 @@ def setup_default_store(store=nil)
     return store
   end
   @mem_storage = StrokeDB::MemoryChunkStorage.new
-  StrokeDB.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(@mem_storage,6,@index))
+  StrokeDB.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(:storage => @mem_storage,:index => @index))
   StrokeDB.default_store
 end
 

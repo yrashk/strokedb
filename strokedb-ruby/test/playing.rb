@@ -11,7 +11,7 @@ require 'strokedb'
 mem_storage = StrokeDB::MemoryChunkStorage.new 
 file_storage = StrokeDB::FileChunkStorage.new "test/storages/some_path_playing"
 file_storage.clear!
-store = StrokeDB::SkiplistStore.new mem_storage, 4
+store = StrokeDB::SkiplistStore.new :storage => mem_storage
 mem_storage.add_chained_storage!(file_storage)
 
 _d = nil

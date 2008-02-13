@@ -8,8 +8,8 @@ $f_storage = FileChunkStorage.new "test/storages/rw_bench_storage"
 $f_storage.clear!
 $storage = MemoryChunkStorage.new
 $storage.add_chained_storage!($f_storage)
-store = SkiplistStore.new($storage, 4)
-f_store = SkiplistStore.new($f_storage, 4)
+store = SkiplistStore.new(:storage => $storage, :cut_level => 4)
+f_store = SkiplistStore.new(:storage => $f_storage, :cut_level => 4)
 
 def test_storage(bm, n, title, &block)
   $storage.clear!

@@ -12,7 +12,7 @@ describe "Database search" do
     @index  = InvertedListIndex.new(@index_storage)
     @index2 = InvertedListIndex.new(@index_storage)
     
-    @f_store = SkiplistStore.new(@f_storage, 4, @index)
+    @f_store = SkiplistStore.new(:storage => @f_storage, :cut_level => 4, :index => @index)
     @index.document_store = @f_store
     @index2.document_store = @f_store
     

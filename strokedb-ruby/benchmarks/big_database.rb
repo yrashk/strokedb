@@ -11,7 +11,7 @@ $m_storage.add_chained_storage!($storage)
 def test_cut_level(bm, n, cutlevel, &block)
   $m_storage.clear!
   $storage.clear!
-  $store = SkiplistStore.new($m_storage, cutlevel)
+  $store = SkiplistStore.new(:storage => $m_storage, :cut_level => cutlevel)
   GC.start
   bm.report("Cut level = #{cutlevel}") do
     n.times &block

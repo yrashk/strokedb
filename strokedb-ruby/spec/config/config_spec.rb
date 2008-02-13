@@ -83,7 +83,7 @@ describe "Config" do
   it "should add a store" do
     @paths << (@root_path + "file_chunk_storage")
     @config.add_storage :fs, :file_chunk, @paths.last
-    @config.add_store :store, :skiplist, :fs, :cut_level => 4
+    @config.add_store :store, :skiplist, :storage => :fs, :cut_level => 4
     @config.stores[:store].should be_an_instance_of(SkiplistStore)
     @config.stores[:store].chunk_storage.should == @config.storages[:fs]
   end
@@ -94,7 +94,7 @@ describe "Config" do
     @paths << (@root_path + "inverted_list_file_default_index")
     @config.add_storage :index_storage, :inverted_list_file, @paths.last
     @config.add_index :default, :inverted_list, :index_storage
-    @config.add_store :default, :skiplist, :fs, :cut_level => 4
+    @config.add_store :default, :skiplist, :storage => :fs, :cut_level => 4
     @config.stores[:default].should be_an_instance_of(SkiplistStore)
     @config.indexes[:default].document_store.should == @config.stores[:default]
   end

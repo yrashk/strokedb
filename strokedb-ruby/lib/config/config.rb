@@ -35,12 +35,12 @@ module StrokeDB
       @indexes[key] = index_instance
     end
     
-    def add_store(key, type, storage = nil, options = {})
+    def add_store(key, type, options = {})
       store_class = constantize(:store,type)
-      storage = @storages[storage||:default]
+      storage = options[:storage] = @storages[options[:storage]||:default]
       raise "Missing storage for store #{key}" unless storage
-      options[:index] ||= @indexes[:default]
-      store_instance = store_class.get_new(storage, options)
+      options[:index] ||= @indexes[options[:index]||:default]
+      store_instance = store_class.new(options)
       index = options[:index]
       index.document_store = store_instance if index
       @stores[key] = store_instance

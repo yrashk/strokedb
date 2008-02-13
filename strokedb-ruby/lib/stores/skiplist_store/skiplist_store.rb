@@ -4,16 +4,13 @@ module StrokeDB
     attr_accessor :chunk_storage, :cut_level, :index_store
     attr_reader :uuid
 
-    def initialize(chunk_storage, cut_level, index_store = nil)
-      @chunk_storage = chunk_storage
-      @cut_level = cut_level
-      @index_store = index_store
+    def initialize(opts={})
+      opts = opts.stringify_keys
+      @chunk_storage = opts['storage']
+      @cut_level = opts['cut_level'] || 8
+      @index_store = opts['index']
       @uuid = Util.random_uuid
-    end
-
-    def self.get_new(storage, options = {})
-      raise "Missing cut_level" unless options[:cut_level]
-      new(storage, options[:cut_level], options[:index])
+      raise "Missing chunk storage" unless @chunk_storage
     end
 
     def find(uuid, version=nil, opts = {})

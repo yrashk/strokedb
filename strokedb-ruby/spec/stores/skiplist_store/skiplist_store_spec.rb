@@ -14,7 +14,7 @@ describe "Empty chunk store" do
     @document.stub!(:uuid_version).and_return "#{@uuid}.1234"
     @document.stub!(:version=).with(anything).and_return 0
     chunk_storage = MemoryChunkStorage.new
-    @store = SkiplistStore.new(chunk_storage, 4)
+    @store = SkiplistStore.new(:storage => chunk_storage, :cut_level => 4)
     
   end
   
@@ -163,7 +163,7 @@ describe "[Regression] First chunk cut" do
     # But don't mock Chunk. Chunk is an essential part of skiplist technology™
     
     chunk_storage = MemoryChunkStorage.new
-    @store = SkiplistStore.new(chunk_storage, 4)
+    @store = SkiplistStore.new(:storage => chunk_storage, :cut_level => 4)
     @doc1 = mock_doc("100", @store)
     @doc2 = mock_doc("200", @store)
     @doc3 = mock_doc("300", @store)
