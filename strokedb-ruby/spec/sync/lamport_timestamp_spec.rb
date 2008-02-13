@@ -2,17 +2,22 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "Initial LamportTimestamp" do
   before(:each) do
-    @t0   = LamportTimestamp.new()
+    @t0   = LamportTimestamp.new
   end
-  
+
   it "should have counter == 0" do
     @t0.counter.should == 0
   end
-  
+
   it "should have UUID-based uuid" do
     @t0.uuid.should match(UUID_RE)
   end
-  
+
+  it "should pass generated uuid on #next" do
+    @t0.next.uuid.should == @t0.uuid
+  end
+
+
 end
 
 
@@ -20,19 +25,19 @@ describe "Initial LamportTimestamp with uuid specified" do
   before(:each) do
     @t0   = LamportTimestamp.new(0,NIL_UUID)
   end
-  
+
   it "should have counter == 0" do
     @t0.counter.should == 0
   end
-  
+
   it "should have UUID-based uuid as defined" do
     @t0.uuid.should == NIL_UUID
   end
-  
+
   it "should pass uuid on #next" do
     @t0.next.uuid.should == @t0.uuid
   end
-  
+
 end
 
 
@@ -42,7 +47,7 @@ describe "Preset LamportTimestamp" do
     @t123 = LamportTimestamp.new(123)
     @t234 = LamportTimestamp.new(234)
   end
-  
+
   it "should be compared properly" do
     (@t0   <=> @t123).should  == -1
     (@t123 <=> @t234).should  == -1
@@ -61,7 +66,7 @@ describe "LamportTimestamp equality" do
     @t_dumped = Marshal.dump(@t)
     @t_loaded = Marshal.load(@t_dumped)
   end
-  
+
   # Positive
   it { @t.should == @t }
   it { @t.should == @t_loaded }
@@ -71,7 +76,7 @@ describe "LamportTimestamp equality" do
       t.should == Marshal.load(Marshal.dump(t))
     end
   end
-  
+
   # Negative
   it { LamportTimestamp.new().should_not == LamportTimestamp.new() }
   it { LamportTimestamp.new(123).should_not == LamportTimestamp.new(123) }
@@ -79,37 +84,37 @@ describe "LamportTimestamp equality" do
 end
 
 
-describe "LamportTimestamp comparison" do
+describe "Lesser and greater LamportTimestamps" do
   before(:each) do
     @t0   = LamportTimestamp.new()
     @t123 = LamportTimestamp.new(123)
   end
-  
-  it "should be compared with <" do
+
+  it "should be comparable with <" do
     @t0.should < @t123
     @t123.should_not < @t0
   end
-  
-  it "should be compared with <=" do
+
+  it "should be comparable with <=" do
     @t0.should <= @t123
     @t123.should <= @t123
     @t123.should_not <= @t0
   end
 
-  it "should be compared with >" do
+  it "should be comparable with >" do
     @t123.should > @t0
     @t123.should_not > @t123
     @t0.should_not > @t123
   end
-  
-  it "should be compared with >=" do
+
+  it "should be comparable with >=" do
     @t123.should >= @t0
     @t123.should >= @t123
     @t0.should_not >= @t123
   end
-  
+
   it { 1000.times { t = LamportTimestamp.new(rand(2**64)); t.next.next.should > t.next } }
-  
+
   it "should generate a list of successive timestamps with next!" do 
     t = LamportTimestamp.new(rand(2**32))
     1000.times do
