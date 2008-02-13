@@ -16,6 +16,10 @@ task :ci do
   sh 'spec spec'
 end
 
+task :ci_indefinitely do
+   i=0;loop{i+=1;puts i ; t=`spec spec`;if t =~ /\.F\./ ; puts t ; break ; end }
+end
+
 task :jci do
   unless (which_jruby = `which jruby`).empty?
     jruby_bin_dir = File.dirname(which_jruby)
