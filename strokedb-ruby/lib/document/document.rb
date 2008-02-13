@@ -167,9 +167,9 @@ module StrokeDB
         unless doc.is_a?(meta_module)
           doc.extend(meta_module)
           meta_module.send!(:setup_callbacks,doc) rescue nil
-          doc.send!(:execute_callbacks,:on_initialization) unless opts[:skip_callbacks]
         end
       end
+      doc.send!(:execute_callbacks,:on_initialization) unless opts[:skip_callbacks]
       doc
     end
 
