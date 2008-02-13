@@ -12,5 +12,8 @@ module StrokeDB
     def self.from_raw(store, raw_content)
       new(Document.from_raw(store, raw_content[0], raw_content[1]))
     end
+    def self.code
+      'T'
+    end
   end
 end

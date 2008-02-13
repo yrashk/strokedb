@@ -11,5 +11,8 @@ module StrokeDB
     def self.from_raw(store, raw_uuid)
       new(raw_uuid)
     end
+    def self.code
+      'D'
+    end
   end
 end

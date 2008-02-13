@@ -1,13 +1,17 @@
 module StrokeDB
   class Operation
-    TAGS_TO_OPERATION_CLASSES = {
-      "C" => CreateOperation,
-      "D" => DeleteOperation,
-      "P" => PatchOperation,
-      "T" => Transaction
-    }
-    OPERATION_CLASSES_TO_TAGS = Hash[*TAGS_TO_OPERATION_CLASSES.map{|op| [op.last,op.first]}.flatten]
-    
+
+    class << self
+      def tags_to_operation_classes
+         @tags_to_operation_classes ||= Hash[*subclasses.map{|classname| [(kl=classname.constantize).code, kl]  }.flatten]
+      end
+      def operation_classes_to_tags
+        @operation_classes_to_tags ||= Hash[*subclasses.map{|classname| [kl=classname.constantize, kl.code]  }.flatten]
+      end
+      def inherited(subclass)
+        @tags_to_operation_classes, @operation_classes_to_tags = nil, nil
+      end
+    end
     attr_accessor :timestamp
     def initialize
       if self.class == Operation
@@ -15,11 +19,11 @@ module StrokeDB
       end
     end
     def to_raw(custom_raw)
-      [ OPERATION_CLASSES_TO_TAGS[self.class], custom_raw ]
+      [ operation_classes_to_tags[self.class], custom_raw ]
     end
     def self.from_raw(store, raw_content)
       tag, custom_raw = raw_content
-      TAGS_TO_OPERATION_CLASSES[tag].from_raw(store, custom_raw)
+      tags_to_operation_classes[tag].from_raw(store, custom_raw)
     end
     class AbstractClassInstantiation < Exception; end
   end

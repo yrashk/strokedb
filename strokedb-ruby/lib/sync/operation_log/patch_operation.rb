@@ -16,5 +16,9 @@ module StrokeDB
           LamportTimestamp.from_raw(raw_content[1]), 
           Document.from_raw(store, raw_content[2], raw_content[3]))
     end
+    def self.code
+      'P'
+    end
+    
   end
 end
