@@ -127,7 +127,7 @@ module StrokeDB
 
     def inspect
       Util.catch_circular_reference(self) do
-        s = "<"
+        s = "#<"
         s << (self[:__meta__] ? "#{meta} " : "Doc ")
         to_raw.except('__meta__').each_pair do |k,v|
           if %w(__version__ __previous_version__).member?(k)
@@ -139,11 +139,12 @@ module StrokeDB
             stack.pop
           end
         end
+        s.chop!
         s << ">"
         return s
       end
     rescue Util::CircularReferenceCondition
-      "<Doc #{uuid[0,5]}*>"
+      "#<Doc #{uuid[0,5]}*>"
     end
 
     alias :to_s :inspect
