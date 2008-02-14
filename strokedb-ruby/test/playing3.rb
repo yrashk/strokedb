@@ -55,10 +55,6 @@ u.save!
 apple = Product.create!(:name => "green apple", :price => 2,:quantity => 100)
 pizza = Product.create!(:name => "big pizza", :price => 15,:quantity => 5)
 u.buy!(apple)
-puts u.to_raw.inspect
 u.buy!(pizza)
 
 puts u.inspect
-
-# config[:mem].sync_chained_storages!
-# config.storages[:index_storage].clear!
