@@ -29,6 +29,7 @@ Buyer = StrokeDB::Meta.new do
     product.checkout!
     self.products_bought << product
     self.balance -= product.price
+    puts self.inspect
     save!
   end
 end

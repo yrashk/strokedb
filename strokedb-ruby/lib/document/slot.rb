@@ -7,6 +7,7 @@ module StrokeDB
     end
 
     def value=(v)
+      @cached_value = nil
       @value = encode_value(v)
       if v.is_a?(Document) 
         @cached_value = v
@@ -14,7 +15,7 @@ module StrokeDB
     end
 
     def value
-      decode_value(@value)
+      @cached_value ||= decode_value(@value)
     end
 
     def to_json(opts={})
