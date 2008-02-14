@@ -7,6 +7,16 @@ module StrokeDB
       original.each {|k,v| self[k] = v } 
     end
     
+    def map_with(&block)
+      @encoder = block
+      self
+    end
+
+    def unmap_with(&block)
+      @decoder = block
+      self
+    end
+    
     alias :_square_brackets :[]
     def [](k)
       @encoder.call(_square_brackets(@decoder.call(k)))

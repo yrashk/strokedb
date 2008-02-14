@@ -22,8 +22,10 @@ describe "LazyMappingHash instance with block specified" do
   before(:each) do
     @original = Hash[1,2,3,4,5,6]
     @decoder = proc {|k| k.is_a?(Hash) && k[:struct] || k }
-    @encoder = proc {|k| {:struct => k} }
-    @lash = LazyMappingHash.new(@original, @decoder, @encoder) 
+    @encoder = proc {|k| {:struct => k}  }
+    
+    @lash = LazyMappingHash.new(@original).map_with(&@encoder).unmap_with(&@decoder)
+    
   end
 
   it "should call mapping proc on #[key]" do
@@ -73,3 +75,5 @@ describe "LazyMappingHash instance with block specified" do
   # TODO: zip support
   
 end
+
+
