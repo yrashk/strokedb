@@ -27,7 +27,13 @@ describe "LazyMappingHash instance with block specified" do
     @lash = LazyMappingHash.new(@original).map_with(&@encoder).unmap_with(&@decoder)
     
   end
-
+  it "should call unmapping proc on #[key]=" do
+    @lash[1] = { :struct => :x }
+    Hash[@lash][1].should == :x
+    @lash[{:struct => :x}] = 1
+    Hash[@lash][:x].should == 1
+  end
+  
   it "should call mapping proc on #[key]" do
     @lash[1].should == @encoder.call(@original[1])
     @lash[2].should == @encoder.call(@original[2])

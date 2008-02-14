@@ -21,6 +21,11 @@ module StrokeDB
     def [](k)
       @encoder.call(_square_brackets(@decoder.call(k)))
     end
+    
+    alias :_square_brackets_set :[]=
+    def []=(k,v)
+      _square_brackets_set(@decoder.call(k),@decoder.call(v))
+    end
    
     alias :_each :each
     def each
