@@ -69,9 +69,13 @@ module StrokeDB
       result = encode_value(@value)
       case result
       when Array
-        result.map{|v| v}
+        result.map{|v| encode_value(v)}
       when Hash
-        Hash[*result.map{|val| val.map{|v| v.is_a?(Document) ? encode_value(v) : v } }.flatten]
+        h = {}
+        result.each_pair do |k,v|
+          h[encode_value(k)] = encode_value(v)
+        end
+        h
       else
         result
       end
