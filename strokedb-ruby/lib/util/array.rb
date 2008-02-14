@@ -32,14 +32,14 @@ module StrokeDB
     alias :_each :each
     def each
       _each do |val| 
-        block_given? ? yield(@map_proc.call(val)) : val
+        yield @map_proc.call(val)
       end
     end
     
     alias :_map :map
     def map
       _map do |val|
-        block_given? ? yield(@map_proc.call(val)) : val
+        yield @map_proc.call(val)
       end
     end
    
