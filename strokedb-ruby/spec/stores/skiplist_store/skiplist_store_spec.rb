@@ -152,21 +152,15 @@ end
 describe "[Regression] First chunk cut" do
 
 
-  def mock_doc(uuid, s)
-    document = Document.new(s,:stuff => 123)
-    document.stub!(:uuid).and_return uuid
-    document
-  end
-
   before(:all) do
     # Mock documents, mock chunk storages.
     # But don't mock Chunk. Chunk is an essential part of skiplist technology™
     
     chunk_storage = MemoryChunkStorage.new
     @store = SkiplistStore.new(:storage => chunk_storage, :cut_level => 4)
-    @doc1 = mock_doc("100", @store)
-    @doc2 = mock_doc("200", @store)
-    @doc3 = mock_doc("300", @store)
+    @doc1 = Document.new(@store,:stuff => 123)
+    @doc2 = Document.new(@store,:stuff => 123)
+    @doc3 = Document.new(@store,:stuff => 123)
   end
   
   it "should store a document with big uuid in a first chunk" do

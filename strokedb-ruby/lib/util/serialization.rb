@@ -10,6 +10,7 @@ module StrokeDB
 
   module MarshalSerializationMethod
     def serialize(x)
+      x = x.to_raw if x.respond_to?(:to_raw)
       Marshal.dump(x)
     end
     def deserialize(x)

@@ -8,7 +8,7 @@ module StrokeDB
     alias :_square_brackets :[]
     def [](*args)
       r = _square_brackets(*args)
-      if r.is_a?(Array)
+      if (args.first.is_a?(Range) || args.size == 2) && r.is_a?(Array)
         Array.new(r).map {|v| @map_proc.call(v) }
       else
         @map_proc.call(r)

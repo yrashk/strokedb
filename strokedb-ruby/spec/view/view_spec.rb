@@ -195,7 +195,9 @@ describe "View with cut(s) available" do
     @view.reload.last_cut.should == new_cut
     another_cut = @cut.emit
     another_cut.save!
-    @view.reload.last_cut.should == new_cut
+    @view.reload.last_cut.should == new_cut.reload # we are reloading new_cut to let it have DocRefs instead of loaded documents
+                                                   # just for the sake of this comparison
+                                                   # However TODO: investigate this
   end
   
 end

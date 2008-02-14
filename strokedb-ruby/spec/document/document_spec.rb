@@ -191,6 +191,8 @@ describe "VersionedDocument with references" do
     @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2], :some_other_link => @doc3)
     @doc3.save!
     @versioned_document = @document.versions[@document.version]
+    @versioned_document.should be_a_kind_of(VersionedDocument)
+    @versioned_document.should_not be_head
   end
 
   it "should link to specific versions" do

@@ -144,7 +144,7 @@ module StrokeDB
         return s
       end
     rescue Util::CircularReferenceCondition
-      "#<Doc #{uuid[0,5]}*>"
+      "#<#{(self[:__meta__] ? "#{meta}" : "Doc")} #{uuid[0,5]}*>"
     end
 
     alias :to_s :inspect
@@ -181,7 +181,7 @@ module StrokeDB
     def new?
       version.nil?
     end
-    
+
     def head?
       return false if new? || is_a?(VersionedDocument)
       store.last_version(uuid) == version
@@ -252,8 +252,14 @@ module StrokeDB
     end
 
     def ==(doc)
-      return false unless doc.is_a?(Document)
-      doc.uuid == uuid && doc.to_raw == to_raw
+      case doc
+      when Document
+        doc.uuid == uuid && doc.to_raw == to_raw
+      when DocumentReferenceValue
+        self == doc.load
+      else
+        false
+      end
     end
 
     def method_missing(sym,*args,&block)

@@ -6,10 +6,9 @@ module StrokeDB
   end
 
   class DocumentReferenceValue < String
-    attr_reader :doc
+    attr_reader :doc, :str
     def initialize(str,doc)
-      @doc = doc
-      @str = str
+      @str, @doc = str, doc
       super(str)
     end
     def load
@@ -27,6 +26,20 @@ module StrokeDB
     def inspect
       "#<DocRef #{self[0,5]}..>"
     end
+    alias :to_raw :str
+
+    def ==(doc)
+      case doc
+      when DocumentReferenceValue
+        doc.str == str
+      when Document
+        doc == self
+      else
+        str == doc
+      end
+    end
+        
+    
   end
 
   class Slot
@@ -34,6 +47,7 @@ module StrokeDB
 
     def initialize(doc)
       @doc = doc
+      @decoded = {}
     end
 
     def value=(v)
@@ -42,7 +56,7 @@ module StrokeDB
         @cached_value = v
       end
     end
-    
+
     def value
       @value.is_a?(DocumentReferenceValue) ? @value.load : @value
     end
@@ -84,13 +98,12 @@ module StrokeDB
 
     def decode_value(v)
       case v
-      when /@##{UUID_RE}.0000000000000000#{UUID_RE}/
-        DocumentReferenceValue.new(v,doc)
-      when /@##{UUID_RE}.#{VERSION_RE}/
+      when /@##{UUID_RE}.0000000000000000#{UUID_RE}/, /@##{UUID_RE}.#{VERSION_RE}/
         DocumentReferenceValue.new(v,doc)
       when Array
         LazyMappingArray.new(v) do |element| 
-          element.is_a?(DocumentReferenceValue) ? element.load : element
+          decoded = decode_value(element)
+          @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
         end
       when Hash
         # v.each_pair do |key, val|
