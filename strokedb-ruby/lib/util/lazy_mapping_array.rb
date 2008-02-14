@@ -1,8 +1,19 @@
 module StrokeDB
   class LazyMappingArray < Array
-    def initialize(*args,&block)
-      @map_proc = block || proc {|v| v}
+    def initialize(*args)
+      @map_proc = proc {|v| v}
+      @unmap_proc = proc {|v| v}
       super(*args)
+    end
+
+    def map_with(&block)
+      @map_proc = block
+      self
+    end
+    
+    def unmap_with(&block)
+      @unmap_proc = block
+      self
     end
 
     alias :_square_brackets :[]
@@ -15,6 +26,11 @@ module StrokeDB
       end
     end
     alias :slice :[]
+    
+    alias :_square_brackets_set :[]=
+    def []=(index,value)
+      _square_brackets_set(index,@unmap_proc.call(value))
+    end
     
     alias :_at :at
     def at(index)

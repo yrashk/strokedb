@@ -90,8 +90,10 @@ module StrokeDB
       when Document
         v.new? ? DocumentReferenceValue.new("@##{v.uuid}.0000000000000000#{v.store.uuid}",doc) : DocumentReferenceValue.new("@##{v.uuid}.#{v.version}",doc)
       when Array
-        LazyMappingArray.new(v) do |element| 
+        LazyMappingArray.new(v).map_with do |element| 
           element.is_a?(Document) ? encode_value(element) : element
+        end.unmap_with do |element|
+          decode_value(element)
         end
       when Hash
         LazyMappingHash.new(v, proc {|key| key.is_a?(Document) ? encode_value(key) : key }, proc {|key, val| [encode_value(key),encode_value(val)]  })
@@ -105,9 +107,11 @@ module StrokeDB
       when /@##{UUID_RE}.0000000000000000#{UUID_RE}/, /@##{UUID_RE}.#{VERSION_RE}/
         DocumentReferenceValue.new(v,doc)
       when Array
-        LazyMappingArray.new(v) do |element| 
+        LazyMappingArray.new(v).map_with do |element| 
           decoded = decode_value(element)
           @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
+        end.unmap_with do |element|
+          encode_value(element)
         end
       when Hash
         LazyMappingHash.new(v, proc {|key| decode_value(key)  }, proc {|key, val| [decode_value(key),decode_value(val)]  })
