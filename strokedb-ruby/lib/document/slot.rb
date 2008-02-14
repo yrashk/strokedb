@@ -70,6 +70,8 @@ module StrokeDB
       case result
       when Array
         result.map{|v| v}
+      when Hash
+        Hash[*result.map{|val| val.map{|v| v.is_a?(Document) ? encode_value(v) : v } }.flatten]
       else
         result
       end
@@ -91,6 +93,8 @@ module StrokeDB
         LazyMappingArray.new(v) do |element| 
           element.is_a?(Document) ? encode_value(element) : element
         end
+      when Hash
+        LazyMappingHash.new(v, proc {|key| key.is_a?(Document) ? encode_value(key) : key }, proc {|key, val| [encode_value(key),encode_value(val)]  })
       else
         v
       end
@@ -106,10 +110,7 @@ module StrokeDB
           @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
         end
       when Hash
-        # v.each_pair do |key, val|
-        #   v[key] = decode_value(val)
-        # end
-        v
+        LazyMappingHash.new(v, proc {|key| decode_value(key)  }, proc {|key, val| [decode_value(key),decode_value(val)]  })
       else
         v
       end
