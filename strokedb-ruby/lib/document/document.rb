@@ -135,11 +135,11 @@ module StrokeDB
           else
             stack = Thread.current['StrokeDB.reference_stack'] ||= []
             stack << self[k]
-            s << "#{k}: #{self[k].inspect} "
+            s << "#{k}: #{self[k].inspect}, "
             stack.pop
           end
         end
-        s.chop!
+        s.chomp!(', ')
         s << ">"
         return s
       end
