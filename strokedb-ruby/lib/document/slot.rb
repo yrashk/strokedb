@@ -28,14 +28,14 @@ module StrokeDB
     end
     alias :to_raw :str
 
-    def ==(doc)
-      case doc
+    def ==(v)
+      case v
       when DocumentReferenceValue
-        doc.str == str
+        v.str == str
       when Document
-        doc == self
+        v == self
       else
-        str == doc
+        str == v
       end
     end
         
