@@ -116,7 +116,7 @@ end
       Slot1Diff.should_receive(:patch).with("abcdef","1").any_number_of_times.and_return("abcdef1")
       
 
-      @meta = Document.create! :strategy_slot1 => strategy
+      @meta = Document.create! :diff_strategy_slot1 => strategy # TODO: fix this spec, it willn't care if I say strategy_slot1
 
       @from = Document.create! :slot1 => "abcdef", :__meta__ => @meta
       @to = Document.create! :slot1 => "abcdef1", :__meta__ => @meta
