@@ -31,6 +31,10 @@ module StrokeDB
       @uuid    = dumped[BASE_LENGTH, 36]
       self
     end
+    
+    def to_json
+      marshal_dump.to_json
+    end
 
     # Raw format
     def self.from_raw(raw_string)

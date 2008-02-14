@@ -155,14 +155,14 @@ module StrokeDB
     def to_raw
       raw_slots = {}
       @slots.each_pair do |k,v|
-        raw_slots[k.to_s] = v.raw_value 
+        raw_slots[k.to_s] = v.raw_value
       end
       raw_slots
     end
 
     def self.from_raw(store, uuid, raw_slots,opts = {})
-      doc = new(store, raw_slots)
-      doc.instance_variable_set(:@uuid, uuid)
+      doc = new(store, raw_slots, uuid)
+      # doc.instance_variable_set(:@uuid, uuid)
       meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
       meta_modules.each do |meta_module|
         unless doc.is_a?(meta_module)
@@ -274,16 +274,30 @@ module StrokeDB
       end
     end
 
-    def do_initialize(store, slots={})
+    def do_initialize(store, slots={}, uuid=nil)
       @callbacks = {}
       @store = store
-      @uuid = Util.random_uuid
-      initialize_slots(slots)
+      if uuid && uuid.match(/#{UUID_RE}/)
+        @uuid = uuid
+        initialize_raw_slots(slots)
+      else
+        @uuid = Util.random_uuid
+        initialize_slots(slots)
+      end
     end
 
     def initialize_slots(slots)
       @slots = Util::HashWithSortedKeys.new
       slots.each {|name,value| self[name] = value }
+    end
+
+    def initialize_raw_slots(slots)
+      @slots = Util::HashWithSortedKeys.new
+      slots.each do |name,value| 
+        s = Slot.new(self)
+        s.raw_value = value
+        @slots[name.to_s] = s
+      end
     end
 
     def self.collect_meta_modules(store,meta)

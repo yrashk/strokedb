@@ -12,6 +12,16 @@ describe "Slot" do
     @slot.value = "some value"
     @slot.value.should == "some value"
   end
+
+  it "should store arbitrary value" do
+    @slot.value = "some value"
+    @slot.value.should == "some value"
+  end
+
+  it "should preserve Ruby object for a complex value" do
+    @slot.value = ["some value"]
+    @slot.value.object_id.should == @slot.value.object_id
+  end
   
   it "should store Document 'first-version' reference if value is a new Document" do
     some_doc = Document.new

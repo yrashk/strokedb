@@ -29,7 +29,6 @@ Buyer = StrokeDB::Meta.new do
     product.checkout!
     self.products_bought << product
     self.balance -= product.price
-    puts self.inspect
     save!
   end
 end
@@ -56,6 +55,7 @@ u.save!
 apple = Product.create!(:name => "green apple", :price => 2,:quantity => 100)
 pizza = Product.create!(:name => "big pizza", :price => 15,:quantity => 5)
 u.buy!(apple)
+puts u.to_raw.inspect
 u.buy!(pizza)
 
 puts u.inspect
