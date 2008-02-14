@@ -38,8 +38,8 @@ module StrokeDB
         str == v
       end
     end
-        
-    
+
+
   end
 
   class Slot
@@ -91,12 +91,16 @@ module StrokeDB
         v.new? ? DocumentReferenceValue.new("@##{v.uuid}.0000000000000000#{v.store.uuid}",doc) : DocumentReferenceValue.new("@##{v.uuid}.#{v.version}",doc)
       when Array
         LazyMappingArray.new(v).map_with do |element| 
-          element.is_a?(Document) ? encode_value(element) : element
+          encode_value(element)
         end.unmap_with do |element|
           decode_value(element)
         end
       when Hash
-        LazyMappingHash.new(v, proc {|key| key.is_a?(Document) ? encode_value(key) : key }, proc {|key, val| [encode_value(key),encode_value(val)]  })
+        LazyMappingHash.new(v).map_with do |element| 
+          encode_value(element)
+        end.unmap_with do |element|
+          decode_value(element)
+        end
       else
         v
       end
@@ -114,7 +118,12 @@ module StrokeDB
           encode_value(element)
         end
       when Hash
-        LazyMappingHash.new(v, proc {|key| decode_value(key)  }, proc {|key, val| [decode_value(key),decode_value(val)]  })
+        LazyMappingHash.new(v).map_with do |element|
+          decoded = decode_value(element)
+          @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
+        end.unmap_with do |element|
+          encode_value(element)
+        end
       else
         v
       end
