@@ -324,9 +324,7 @@ module StrokeDB
   module VersionedDocument
     def to_json(opts={})
       return "\"@##{uuid_version}\"" if opts[:slot_serialization]
-      _to_json = @slots
-      _to_json = [uuid.to_s,@slots] if opts[:transmittal]
-      _to_json.to_json(opts)
+      to_raw.to_json(opts)
     end
     def reload
       store.find(uuid,version)
