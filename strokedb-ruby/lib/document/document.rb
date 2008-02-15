@@ -246,8 +246,8 @@ module StrokeDB
       @versions ||= Versions.new(self)
     end
 
-    def uuid_version
-      uuid + (__version__ ? ".#{__version__}" : "")
+    def __reference__
+      "@#" + uuid + (__version__ ? ".#{__version__}" : "")
     end
 
     def ==(doc)
@@ -324,7 +324,7 @@ module StrokeDB
 
   module VersionedDocument
     def to_json(opts={})
-      return "\"@##{uuid_version}\"" if opts[:slot_serialization]
+      return "\"#{__reference__}\"" if opts[:slot_serialization]
       to_raw.to_json(opts)
     end
     def reload
