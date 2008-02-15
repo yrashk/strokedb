@@ -21,7 +21,7 @@ Buyer = StrokeDB::Meta.new do
   end
   
   after_save do |buyer|
-    puts "Now #{buyer} has #{buyer.products_bought.empty? ? 'nothing' : buyer.products_bought.map(&:name).to_sentence} (and his balance is $#{buyer.balance})"
+    puts "Now #{buyer} has #{buyer.products_bought.empty? ? 'nothing' : buyer.products_bought.map{|e| e.name}.to_sentence} (and his balance is $#{buyer.balance})"
   end
   
   def buy!(product)

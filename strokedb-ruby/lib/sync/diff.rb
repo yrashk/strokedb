@@ -22,7 +22,7 @@ module StrokeDB
             end
           end
         when Hash
-          ::Diff::LCS.diff(from.sort_by(&:to_s),to.sort_by(&:to_s)).map do |d|
+          ::Diff::LCS.diff(from.sort_by{|e| e.to_s},to.sort_by{|e| e.to_s}).map do |d|
             d.map do |change|
               [change.to_a.first,{change.to_a.last.first => change.to_a.last.last}]
             end
@@ -50,7 +50,7 @@ module StrokeDB
             ::Diff::LCS::Change.from_a([change.first,index,[change.last.keys.first,change.last.values.first]])
           end
         end
-        diff = ::Diff::LCS.patch!(from.sort_by(&:to_s),lcs_patch)
+        diff = ::Diff::LCS.patch!(from.sort_by{|e| e.to_s},lcs_patch)
         hash = {}
         diff.each do |v|
           hash[v.first] = v.last
