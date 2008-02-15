@@ -34,13 +34,13 @@ module StrokeDB
 
     class CircularReferenceCondition < Exception ; end
     class <<self
-      def catch_circular_reference(*values)
+      def catch_circular_reference(value)
         stack = Thread.current['StrokeDB.reference_stack'] ||= []
-        raise CircularReferenceCondition if stack.find{|v| values.member?(v)}
-        stack.concat values
+        raise CircularReferenceCondition if stack.find{|v| value == v}
+        stack << value
         yield
       ensure
-        values.size.times { stack.pop }
+        stack.pop
       end
     end
   end
