@@ -26,6 +26,7 @@ Completed items are removed.
 [ ] Fix bug with some documents being "inspected" as causing recursion (#<Doc uuid... *>)
 [ ] Add #[index] API to Document::Versions, with negative indexes as well.
 [ ] Add Document::Versions#previous, #first, #last, #all, #preceding (all previous)
+[ ] Replace 0000000000000000 with (0){16} in regexps (when http://jira.codehaus.org/browse/JRUBY-2113 will be released)
 
 InvertedList index:
 
