@@ -13,6 +13,10 @@ module StrokeDB
       raise "Missing chunk storage" unless @chunk_storage
     end
 
+    def empty?
+      !@chunk_storage.find('MASTER')
+    end
+
     def find(uuid, version=nil, opts = {})
       uuid_version = uuid + (version ? ".#{version}" : "")
       master_chunk = @chunk_storage.find('MASTER')
@@ -31,6 +35,7 @@ module StrokeDB
       nil
     end
 
+    
     def exists?(uuid)
       !!find(uuid,nil,:no_instantiation => true)
     end

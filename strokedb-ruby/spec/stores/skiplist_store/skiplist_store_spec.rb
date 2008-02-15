@@ -1,13 +1,40 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
-describe "Empty chunk store" do
+describe "Skiplist store", :shared => true  do
+
+  it "should increment lamport_timestamp when storing a document" do
+    @document = Document.new :stuff => '...'
+    lambda do 
+        @store.save!(@document)
+    end.should change(@store,:lamport_timestamp)
+  end
+  
+  it "should store a document" do
+    @document = Document.new :stuff => '...'
+    @store.save!(@document)
+    (doc = @store.find(@document.uuid)).should == @document
+    doc.should_not be_a_kind_of(VersionedDocument)
+  end
+  
+  it "should be Enumerable" do
+    @store.should be_a_kind_of(Enumerable)
+  end
+  
+  it "should put store_uuid and lamport_timestamp into each chunk it saves" do
+    @document = Document.new :stuff => '...'
+    @store.save!(@document)
+    [@uuid].map{|uuid| @store.chunk_storage.find(uuid)}.compact.each do |chunk|
+      chunk.store_uuid.should == @store.uuid
+      chunk.lamport_timestamp.should_not be_nil
+    end
+  end
+  
+end
+
+describe "Empty skiplist chunk store" do
 
   before(:each) do
-    # Don't mock Chunk. Chunk is an essential part of skiplist technology™
-    
     @store = setup_default_store
-    @document = Document.new :stuff => '...'
-    @uuid = @document.uuid
   end
   
   it "should have its own UUID" do
@@ -18,44 +45,15 @@ describe "Empty chunk store" do
     @store.lamport_timestamp.should == LTS.zero(@store.uuid)
   end
   
-  it "should contain no documents" do
-    @store.find(@uuid).should be_nil
-    @store.exists?(@uuid).should be_false
-  end
-  
-  it "should store a document" do
-    @store.save!(@document)
-    @store.find(@uuid).should == @document
-    @store.find(@uuid).should_not be_a_kind_of(VersionedDocument)
+  it "should be empty" do
+    @store.should be_empty
   end
 
-  it "should increment lamport_timestamp when storing a document" do
-    lambda do 
-        @store.save!(@document)
-    end.should change(@store,:lamport_timestamp)
-  end
-  
-  it "should put store_uuid and lamport_timestamp into each chunk it saves" do
-    @store.save!(@document)
-    [@uuid].map{|uuid| @store.chunk_storage.find(uuid)}.compact.each do |chunk|
-      chunk.store_uuid.should == @store.uuid
-      chunk.lamport_timestamp.should_not be_nil
-    end
-  end
-  
-  it "should find a versioned document" do
-    @store.save!(@document)
-    @store.find(@uuid,@document.version).should be_a_kind_of(VersionedDocument)
-  end
-
-  it "should not find a versioned document with version that does not exist" do
-    @store.save!(@document)
-    @store.find(@uuid,'absolutely absurd version').should be_nil
-  end
-  
   it "should return nil as last_version for unexistent document (well there is no documents at all)" do
     @store.last_version(Util.random_uuid).should be_nil
   end
+  
+  it_should_behave_like "Skiplist store"
 
 end
 
@@ -63,9 +61,6 @@ end
 describe "Non-empty chunk store" do
 
   before(:each) do
-    # Mock documents, mock chunk storages.
-    # But don't mock Chunk. Chunk is an essential part of skiplist technology™
-
     @store = setup_default_store
     
     @documents = []
@@ -73,6 +68,20 @@ describe "Non-empty chunk store" do
       @documents << Document.create!(:stuff => i)
     end
   end
+  
+  it "should not be empty" do
+    @store.should_not be_empty
+  end
+  
+  it "should find a versioned document" do
+    (doc = @store.find(@documents.first.uuid,@documents.first.version)).should == @documents.first
+    doc.should be_a_kind_of(VersionedDocument)
+  end
+
+  it "should not find a versioned document with version that does not exist" do
+    @store.find(@documents.first.uuid,'absolutely absurd version').should be_nil
+  end
+  
   
   it "should iterate over all stored documents" do
     iterated_documents = []
@@ -125,11 +134,8 @@ describe "Non-empty chunk store" do
     iterated_documents.sort_by {|doc| doc.version}.should == (@documents + @new_documents).sort_by {|doc| doc.version}
   end
   
-  it "should be Enumerable" do
-    @store.should be_a_kind_of(Enumerable)
-  end
-
   
+  it_should_behave_like "Skiplist store"
   
 
 end
@@ -139,11 +145,7 @@ describe "[Regression] First chunk cut" do
 
 
   before(:all) do
-    # Mock documents, mock chunk storages.
-    # But don't mock Chunk. Chunk is an essential part of skiplist technology™
-    
-    chunk_storage = MemoryChunkStorage.new
-    @store = SkiplistStore.new(:storage => chunk_storage, :cut_level => 4)
+    @store = setup_default_store
     @doc1 = Document.new(@store,:stuff => 123)
     @doc2 = Document.new(@store,:stuff => 123)
     @doc3 = Document.new(@store,:stuff => 123)
