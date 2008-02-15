@@ -1,6 +1,6 @@
 Legend:
 [ ] NOT DONE
-[*] MAY BE
+[?] MAY BE
 [-] Look into git history, may be you'll find something about it
 [.] IN PROGRESS
 Completed items are removed.
@@ -8,21 +8,20 @@ Completed items are removed.
 
 [ ] Refactor Slot!
 [ ] ! Reorganize specs, drop using mockups where it makes little sense
-[*] Fix bad UUID implementation in pure ruby version
+[?] Fix bad UUID implementation in pure ruby version
 [ ] Read/Write benchmarks showing dependency of data size
 [-] K-d skiplist & specs
 [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
 [ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
-[ ] Pool new UUIDs
+[?] Pool new UUIDs
 [ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
 [ ] Improve tracing references on stack in Document#to_s (I don't like it) 
 [ ] Improve PointQuery (I really don't like it)
-[ ] Create class method to replace LamportTimestamp.new(x).marshal_load (and don't delete marshal_load, because oleganza utterly needs it)
 [-] Finish RangeQuery (we've decided to drop it after ae6371e1f4ffeeb309771b5b6fa1a5233ca4888f)
 [ ] Refactor Meta#document, fix bugs
 [ ] Think about non-index named meta lookup
 [.] Refactor callback stuff in Document — call on_initialization only for specified meta (add param to execute_callbacks?)
-[ ] Drop :marshal serialization method or get out why it is not really working now
+[ ] Drop :marshal serialization method or figure out why it is not really working now
 
 InvertedList index:
 
