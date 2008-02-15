@@ -124,22 +124,25 @@ module StrokeDB
     end
 
     def inspect
+      slots = to_raw.except('__meta__')
       s = "#<"
       s << (self[:__meta__] ? "#{meta} " : "Doc ")
-      to_raw.except('__meta__').each_pair do |k,v|
+      Util.catch_circular_reference(self) do
+      slots.each_pair do |k,v|
         if %w(__version__ __previous_version__).member?(k)
           s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
         else
-          Util.catch_circular_reference(self[k]) do
+            # Util.catch_circular_reference(*slots.keys.map{|k| self[k]}) do
             s << "#{k}: #{self[k].inspect}, "
-          end
+          # end
         end
       end
       s.chomp!(', ')
       s << ">"
       s
+    end
     rescue Util::CircularReferenceCondition
-      "#<#{(self[:__meta__] ? "#{meta}" : "Doc")} #{uuid[0,5]}*>"
+      "#(#{(self[:__meta__] ? "#{meta}" : "Doc")} #{('@#'+uuid)[0,5]}...)"
     end
 
     alias :to_s :inspect
