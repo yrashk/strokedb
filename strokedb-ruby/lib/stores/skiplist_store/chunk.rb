@@ -44,6 +44,8 @@ module StrokeDB
         chunk = chunk.next_chunk 
         unless chunk.nil? && chunk.uuid[0,uuid.length] != uuid
           chunk_node = chunk.first_node
+        else
+          chunk_node = nil
         end
       end
       chunk_node
