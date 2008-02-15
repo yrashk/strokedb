@@ -25,7 +25,23 @@ module StrokeDB
       return nil unless chunk_uuid # no chunks in master chunk yet
       chunk = @chunk_storage.find(chunk_uuid)
       return nil unless chunk
-      raw_doc = chunk.find(uuid_version)
+
+      raw_doc = nil
+
+      case version
+      when /^0000000000000000#{UUID_RE}/ # first version
+        chunk_node = chunk.find_node(uuid).next
+        if chunk_node.is_a?(Skiplist::TailNode)
+            chunk = chunk.next_chunk 
+            unless chunk.nil && chunk.uuid[0,uuid.length] != uuid
+              chunk_node = chunk.first_node
+            end
+        end
+        raw_doc = chunk_node.value
+      when /^#{VERSION_RE}/, nil # any other or no version
+        raw_doc = chunk.find(uuid_version)
+      end
+      
       if raw_doc
         return raw_doc if opts[:no_instantiation]
         doc = Document.from_raw(self,uuid,raw_doc.freeze)
@@ -35,7 +51,7 @@ module StrokeDB
       nil
     end
 
-    
+
     def exists?(uuid)
       !!find(uuid,nil,:no_instantiation => true)
     end

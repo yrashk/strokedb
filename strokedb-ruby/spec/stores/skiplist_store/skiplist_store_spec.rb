@@ -73,6 +73,14 @@ describe "Non-empty chunk store" do
     @store.should_not be_empty
   end
   
+  it "should find first version of document" do
+    document = @documents.first
+    (doc = @store.find(document.uuid,"0"*16+@store.uuid)).should be_a_kind_of(VersionedDocument)
+    doc.version.should == document.version
+  end
+
+  
+  
   it "should find a versioned document" do
     (doc = @store.find(@documents.first.uuid,@documents.first.version)).should == @documents.first
     doc.should be_a_kind_of(VersionedDocument)
