@@ -418,11 +418,10 @@ end
 describe "Valid Document's JSON with multiple meta names specified" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
     @metas = []
     3.times do |i|
-      @metas << Document.new(@store, :name => "SomeDocument#{i}")
-      @store.should_receive(:find).with(@metas.last.uuid).any_number_of_times.and_return(@metas.last)
+      @metas << Document.create!(@store, :name => "SomeDocument#{i}")
     end
     @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :__meta__ => @metas)
     @json = @document.to_json
@@ -433,7 +432,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     SomeDocument0 = Meta.new
     Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
     SomeDocument2 = Meta.new
-    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc = Document.from_json(@store,@document.uuid,@json)
     doc.should be_a_kind_of(SomeDocument0)
     doc.should be_a_kind_of(SomeDocument2)
   end

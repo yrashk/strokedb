@@ -114,12 +114,10 @@ module StrokeDB
     end
 
     def to_json(opts={})
-      return "\"@##{uuid}\"" if opts[:slot_serialization]
-      _to_json = @slots
-      _to_json = [uuid.to_s,@slots] if opts[:transmittal]
-      _to_json.to_json(opts)
+      return "\"@##{uuid}.#{version}\"" if opts[:slot_serialization]
+      to_raw.to_json(opts)
     end
-
+    
     def self.from_json(store,uuid,json)
       json_decoded = ActiveSupport::JSON.decode(json)
       from_raw(store,uuid,json_decoded)

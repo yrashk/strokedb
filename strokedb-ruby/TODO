@@ -25,7 +25,6 @@ Completed items are removed.
 [ ] Fix bug with some documents being "inspected" as causing recursion (#<Doc uuid... *>)
 [ ] Add #[index] API to Document::Versions, with negative indexes as well.
 [ ] Add Document::Versions#previous, #first, #last, #all, #preceding (all previous)
-[ ] Drop Document#to_json (or make it do to_raw.to_json)
 
 InvertedList index:
 
