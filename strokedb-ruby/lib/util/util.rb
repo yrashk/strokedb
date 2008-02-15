@@ -39,7 +39,6 @@ module StrokeDB
         raise CircularReferenceCondition if stack.find{|v| value == v}
         stack << value
         yield
-      ensure
         stack.pop
       end
     end

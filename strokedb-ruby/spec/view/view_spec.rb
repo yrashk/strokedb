@@ -186,12 +186,10 @@ describe "View with cut(s) available" do
     new_cut = @cut.emit
     @view.reload.last_cut.should == @cut
     new_cut.save!
-    pending("circular reference problem")
     @view.reload.last_cut.should == new_cut
   end
 
   it "should not refer to newly emitted cut as last cut (when it is saved) if this cut isn't really last" do
-    pending("circular reference problem")
     new_cut = @cut.emit
     new_cut.save!
     @view.reload.last_cut.should == new_cut
