@@ -3,19 +3,11 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 describe "Empty chunk store" do
 
   before(:each) do
-    # Mock documents, mock chunk storages.
-    # But don't mock Chunk. Chunk is an essential part of skiplist technology™
+    # Don't mock Chunk. Chunk is an essential part of skiplist technology™
     
-    @uuid = '34b030ab-03a5-4d97-a08a-a7b27daf0897'
-    @document = mock("Document")
-    @document.stub!(:uuid).and_return @uuid
-    @document.stub!(:to_raw).and_return({'stuff' => '...', '__version__' => '1234'})
-    @document.stub!(:version).and_return '1234'
-    @document.stub!(:uuid_version).and_return "#{@uuid}.1234"
-    @document.stub!(:version=).with(anything).and_return 0
-    chunk_storage = MemoryChunkStorage.new
-    @store = SkiplistStore.new(:storage => chunk_storage, :cut_level => 4)
-    
+    @store = setup_default_store
+    @document = Document.new :stuff => '...'
+    @uuid = @document.uuid
   end
   
   it "should have its own UUID" do
@@ -27,13 +19,11 @@ describe "Empty chunk store" do
   end
   
   it "should contain no documents" do
-    Document.stub!(:from_raw).and_return(@document) 
     @store.find(@uuid).should be_nil
     @store.exists?(@uuid).should be_false
   end
   
   it "should store a document" do
-    Document.stub!(:from_raw).and_return(@document) 
     @store.save!(@document)
     @store.find(@uuid).should == @document
     @store.find(@uuid).should_not be_a_kind_of(VersionedDocument)
@@ -41,13 +31,11 @@ describe "Empty chunk store" do
 
   it "should increment lamport_timestamp when storing a document" do
     lambda do 
-        Document.stub!(:from_raw).and_return(@document) 
         @store.save!(@document)
     end.should change(@store,:lamport_timestamp)
   end
   
   it "should put store_uuid and lamport_timestamp into each chunk it saves" do
-    Document.stub!(:from_raw).and_return(@document) 
     @store.save!(@document)
     [@uuid].map{|uuid| @store.chunk_storage.find(uuid)}.compact.each do |chunk|
       chunk.store_uuid.should == @store.uuid
@@ -56,13 +44,11 @@ describe "Empty chunk store" do
   end
   
   it "should find a versioned document" do
-    Document.stub!(:from_raw).and_return(@document) 
     @store.save!(@document)
     @store.find(@uuid,@document.version).should be_a_kind_of(VersionedDocument)
   end
 
   it "should not find a versioned document with version that does not exist" do
-    Document.stub!(:from_raw).and_return(@document) 
     @store.save!(@document)
     @store.find(@uuid,'absolutely absurd version').should be_nil
   end
