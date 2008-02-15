@@ -31,7 +31,6 @@ module StrokeDB
       case version
       when /^0000000000000000#{UUID_RE}/ # first version
         return nil unless chunk_node = chunk.find_node(uuid)
-        # chunk_node = find_next_chunk_node(chunk,chunk_node)
         chunk_node = chunk.find_next_node(chunk_node)
         raw_doc = chunk_node.value
       when /^#{VERSION_RE}/, nil # any other or no version
@@ -121,6 +120,10 @@ module StrokeDB
     end
     def next_lamport_timestamp
       @lamport_timestamp = lamport_timestamp.next
+    end
+    
+    def inspect
+      "#<Skiplist store #{uuid}#{empty? ? " (empty)" : ""}>"
     end
 
     private

@@ -22,6 +22,10 @@ def find(*args)
   StrokeDB.default_store.find(*args)
 end
 
+def store
+  StrokeDB.default_store
+end
+
 def h(*args)
   puts %{
     Commands:
@@ -33,6 +37,7 @@ def h(*args)
     Aliases:
     
     Doc         -- StrokeDB::Document
+    store       -- current store
   }
 end
 
