@@ -14,7 +14,7 @@ SLOT_VALUE_SIZE = (ENV['SLOT_VALUE_SIZE'] || 5).to_i
 def generate_names(n, name_size)
   a = (name_size*0.7).ceil
   b = (name_size*1.5).floor
-  Symbol.all_symbols.select{|s| s=s.to_s; (s =~ /^[a-zA-Z_]{#{a},#{b}}$/)}.map(&:to_s).sort{rand-0.5}[0,n]
+  Symbol.all_symbols.select{|s| s=s.to_s; (s =~ /^[a-zA-Z_]{#{a},#{b}}$/)}.map{|e| e.to_s}.sort{rand-0.5}[0,n]
 end
 
 def insert_random_doc(list, nslots)

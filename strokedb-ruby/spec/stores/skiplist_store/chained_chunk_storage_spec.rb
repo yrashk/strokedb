@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
-ChunkStorage.subclasses.map(&:constantize).each do |storage|
+ChunkStorage.subclasses.map{|e| e.constantize}.each do |storage|
   describe "Chained chunk storage" do
 
     before(:each) do

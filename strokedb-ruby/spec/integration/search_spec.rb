@@ -52,13 +52,13 @@ describe "Database search" do
   it "should find all profiles" do
     results = @index.find(:__meta__ => @profile_meta)
     results.should_not be_empty
-    results.map(&:uuid).to_set == [ @yura_uuid, @oleg_uuid ].to_set 
+    results.map{|e| e.uuid}.to_set == [ @yura_uuid, @oleg_uuid ].to_set 
   end
   
   it "should find all profiles from Ukraine" do
     results = @index.find(:__meta__ => @profile_meta, :state => 'Ukraine')
     results.should_not be_empty
-    results.map(&:uuid).to_set == [ @yura_uuid ].to_set 
+    results.map{|e| e.uuid}.to_set == [ @yura_uuid ].to_set 
   end
   
   it "should remove info from index" do

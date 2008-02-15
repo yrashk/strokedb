@@ -46,7 +46,7 @@ module StrokeDB
       mapped = []
       store.each(:after_lamport_timestamp => lamport_timestamp_state) {|doc| mapped << @map_with_proc.call(doc,*args) }
       documents = (@reduce_with_proc ? mapped.select {|doc| @reduce_with_proc.call(doc,*args) } : mapped).map{|d| d.is_a?(Document) ? d.extend(VersionedDocument) : d}
-      ViewCut.new(store, :documents => documents, :view => view, :args => args, :lamport_timestamp_state => store.lamport_timestamp.to_s, :previous => self)
+      ViewCut.new(store, :documents => documents, :view => view, :args => args, :lamport_timestamp_state => store.lamport_timestamp.to_s, :previous => lamport_timestamp_state == 0 ? nil : self)
     end
     def to_a
       documents

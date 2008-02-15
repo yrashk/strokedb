@@ -35,7 +35,7 @@ d_[:something_else] = 2
 d_.save!
 puts d_
 puts d_[:_d1]
-puts d_.previous_versions.inspect
+puts d_.__previous_version__.inspect
 
 puts "replica::::"
 r = store.new_replica
@@ -52,7 +52,7 @@ puts "[[[[[[[]]]]]]]"
 puts r.to_packet
 puts "----------"
 puts r
-puts r[d_.uuid].member?(d_.version)
+puts r[d_.uuid].member?(d_.__version__)
 r.sync_chained_storage!(d_)
 puts r
 r.sync_chained_storage!(d_)

@@ -15,16 +15,16 @@ Completed items are removed.
 [ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
 [?] Pool new UUIDs
 [ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
-[ ] Improve tracing references on stack in Document#to_s (I don't like it) 
 [ ] Improve PointQuery (I really don't like it)
 [-] Finish RangeQuery (we've decided to drop it after ae6371e1f4ffeeb309771b5b6fa1a5233ca4888f)
 [ ] Refactor Meta#document, fix bugs
 [ ] Think about non-index named meta lookup
 [.] Refactor callback stuff in Document — call on_initialization only for specified meta (add param to execute_callbacks?)
-[ ] Drop :marshal serialization method or figure out why it is not really working now
-[ ] Fix bug with some documents being "inspected" as causing recursion (#<Doc uuid... *>)
+[ ] "Valid Document's JSON with multiple meta names specified" spec should check callback through message sending, not instance vars
+[ ] Drop :marshal serialization method or figure out why it is not really working now (run test/playing2.rb with :marshal and see)
 [ ] Add #[index] API to Document::Versions, with negative indexes as well.
-[ ] Add Document::Versions#previous, #first, #last, #all, #preceding (all previous)
+[ ] Add Document::Versions#first, #last (?)
+[ ] Replace 0000000000000000 with (0){16} in regexps (when http://jira.codehaus.org/browse/JRUBY-2113 will be released)
 
 InvertedList index:
 

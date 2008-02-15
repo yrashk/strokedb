@@ -22,7 +22,7 @@ module StrokeDB
 
     #
     # doc.versions #=> #<Versions>
-    # doc.versions[version_number] #=> #<Document>
+    # doc.__versions__[version_number] #=> #<Document>
     #
     class Versions
       attr_reader :document
@@ -34,9 +34,22 @@ module StrokeDB
       def [](version)
         @cache[version] ||= @document.store.find(document.uuid,version)
       end
+      
+      def all
+        [document.__version__,*all_preceding]
+      end
+      
+      
+      def all_preceding
+        if previous_version = document.__previous_version__
+          [previous_version, *versions[previous_version].all_preceding]
+        else
+          []
+        end
+      end
 
       def empty?
-        document.previous_version.nil?
+        document.__previous_version__.nil?
       end
     end
 
@@ -114,10 +127,8 @@ module StrokeDB
     end
 
     def to_json(opts={})
-      return "\"@##{uuid}\"" if opts[:slot_serialization]
-      _to_json = @slots
-      _to_json = [uuid.to_s,@slots] if opts[:transmittal]
-      _to_json.to_json(opts)
+      return "\"@##{uuid}.#{version}\"" if opts[:slot_serialization]
+      to_raw.to_json(opts)
     end
 
     def self.from_json(store,uuid,json)
@@ -126,25 +137,25 @@ module StrokeDB
     end
 
     def inspect
+      slots = to_raw.except('__meta__')
+      s = "#<"
       Util.catch_circular_reference(self) do
-        s = "#<"
         s << (self[:__meta__] ? "#{meta} " : "Doc ")
-        to_raw.except('__meta__').each_pair do |k,v|
+        slots.each_pair do |k,v|
           if %w(__version__ __previous_version__).member?(k)
             s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
           else
-            stack = Thread.current['StrokeDB.reference_stack'] ||= []
-            stack << self[k]
             s << "#{k}: #{self[k].inspect}, "
-            stack.pop
           end
         end
         s.chomp!(', ')
+        s.chomp!(' ')
         s << ">"
-        return s
+        s
       end
+      s
     rescue Util::CircularReferenceCondition
-      "#<#{(self[:__meta__] ? "#{meta}" : "Doc")} #{uuid[0,5]}*>"
+      "#(#{(self[:__meta__] ? "#{meta}" : "Doc")} #{('@#'+uuid)[0,5]}...)"
     end
 
     alias :to_s :inspect
@@ -179,12 +190,12 @@ module StrokeDB
     end
 
     def new?
-      version.nil?
+      __version__.nil?
     end
 
     def head?
       return false if new? || is_a?(VersionedDocument)
-      store.last_version(uuid) == version
+      store.last_version(uuid) == __version__
     end
 
     def save!
@@ -206,7 +217,7 @@ module StrokeDB
       _metas.each do |next_meta|
         next_meta = store.find(next_meta[2,next_meta.length]) if next_meta.is_a?(String)
         diff = next_meta.diff(collected_meta)
-        diff.removed_slots.clear!
+        diff.removed_slots = {}
         diff.patch!(collected_meta)
         names << next_meta.name if next_meta[:name] 
       end
@@ -219,36 +230,24 @@ module StrokeDB
     end
 
 
-    def previous_version
+    def __version__
+      self[:__version__]
+    end
+    
+    def __previous_version__
       self[:__previous_version__]
     end
 
-    def previous_versions
-      if previous_version
-        [previous_version] + versions[previous_version].previous_versions
-      else
-        []
-      end
-    end
-
-    def version
-      self[:__version__]
-    end
-
-    def version=(v)
+    def __version__=(v)
       self[:__version__] = v
     end
 
-    def all_versions
-      [version] + previous_versions
-    end
-
-    def versions
+    def __versions__
       @versions ||= Versions.new(self)
     end
 
-    def uuid_version
-      uuid + (version ? ".#{version}" : "")
+    def __reference__
+      "@#" + uuid + (__version__ ? ".#{__version__}" : "")
     end
 
     def ==(doc)
@@ -325,13 +324,11 @@ module StrokeDB
 
   module VersionedDocument
     def to_json(opts={})
-      return "\"@##{uuid_version}\"" if opts[:slot_serialization]
-      _to_json = @slots
-      _to_json = [uuid.to_s,@slots] if opts[:transmittal]
-      _to_json.to_json(opts)
+      return "\"#{__reference__}\"" if opts[:slot_serialization]
+      to_raw.to_json(opts)
     end
     def reload
-      store.find(uuid,version)
+      store.find(uuid,__version__)
     end
 
   end

@@ -13,6 +13,10 @@ module StrokeDB
       raise "Missing chunk storage" unless @chunk_storage
     end
 
+    def empty?
+      !@chunk_storage.find('MASTER')
+    end
+
     def find(uuid, version=nil, opts = {})
       uuid_version = uuid + (version ? ".#{version}" : "")
       master_chunk = @chunk_storage.find('MASTER')
@@ -21,7 +25,18 @@ module StrokeDB
       return nil unless chunk_uuid # no chunks in master chunk yet
       chunk = @chunk_storage.find(chunk_uuid)
       return nil unless chunk
-      raw_doc = chunk.find(uuid_version)
+
+      raw_doc = nil
+
+      case version
+      when /^0000000000000000#{UUID_RE}/ # first version
+        return nil unless chunk_node = chunk.find_node(uuid)
+        chunk_node = find_next_chunk_node(chunk,chunk_node)
+        raw_doc = chunk_node.value
+      when /^#{VERSION_RE}/, nil # any other or no version
+        raw_doc = chunk.find(uuid_version)
+      end
+      
       if raw_doc
         return raw_doc if opts[:no_instantiation]
         doc = Document.from_raw(self,uuid,raw_doc.freeze)
@@ -30,6 +45,7 @@ module StrokeDB
       end
       nil
     end
+
 
     def exists?(uuid)
       !!find(uuid,nil,:no_instantiation => true)
@@ -44,17 +60,17 @@ module StrokeDB
     def save!(doc)
       master_chunk = find_or_create_master_chunk
       next_lamport_timestamp
-      doc.version = lamport_timestamp.to_s
+      doc.__version__ = lamport_timestamp.to_s
 
       insert_with_cut(doc.uuid, doc, master_chunk)
-      insert_with_cut("#{doc.uuid}.#{doc.version}", doc, master_chunk)
+      insert_with_cut("#{doc.uuid}.#{doc.__version__}", doc, master_chunk)
 
       @chunk_storage.save!(master_chunk)
 
       # Update index
       if @index_store
-        if doc.previous_version
-          raw_pdoc = find(doc.uuid,doc.previous_version,:no_instantiation => true)
+        if doc.__previous_version__
+          raw_pdoc = find(doc.uuid,doc.__previous_version__,:no_instantiation => true)
           pdoc = Document.from_raw(self,doc.uuid,raw_pdoc.freeze,:skip_callbacks => true)
           pdoc.extend(VersionedDocument)
           @index_store.delete(pdoc)
@@ -150,6 +166,17 @@ module StrokeDB
       master_chunk.store_uuid = @uuid
       @chunk_storage.save!(master_chunk)
       master_chunk
+    end
+    
+    def find_next_chunk_node(chunk,chunk_node)
+      chunk_node = chunk_node.next
+      if chunk_node.is_a?(Skiplist::TailNode)
+        chunk = chunk.next_chunk 
+        unless chunk.nil && chunk.uuid[0,uuid.length] != uuid
+          chunk_node = chunk.first_node
+        end
+      end
+      chunk_node
     end
 
   end

@@ -21,7 +21,11 @@ describe "New Document" do
   end
   
   it "should have no version" do
-    @document.version.should be_nil
+    @document.__version__.should be_nil
+  end
+
+  it "should have no previous version" do
+    @document.__previous_version__.should be_nil
   end
 
   it "should have no slotnames" do
@@ -47,12 +51,8 @@ describe "New Document" do
     @document.slotnames.should == original_slotnames
   end
 
-  it "should have no previous version" do
-    @document.previous_version.should be_nil
-  end
-
   it "should have no versions" do
-    @document.versions.should be_empty
+    @document.__versions__.should be_empty
   end
 
   it "should raise an exception if slot not found when trying to read it" do
@@ -111,7 +111,7 @@ describe "Saved Document" do
   end
   
   it "should have version" do
-    @document.version.should match(/#{VERSION_RE}/)
+    @document.__version__.should match(/#{VERSION_RE}/)
   end
   
   it "should not be new" do
@@ -166,7 +166,7 @@ describe "Saved VersionedDocument" do
   before(:each) do
     setup_default_store
     @document = Document.create!(:some_data => 1)
-    @versioned_document = @document.versions[@document.version]
+    @versioned_document = @document.__versions__[@document.__version__]
   end
   
   it "should not be head" do
@@ -174,7 +174,7 @@ describe "Saved VersionedDocument" do
   end
   
   it "should be reloadable" do
-    StrokeDB.default_store.should_receive(:find).with(@document.uuid,@document.version)
+    StrokeDB.default_store.should_receive(:find).with(@document.uuid,@document.__version__)
     @versioned_document.reload
   end
   
@@ -190,7 +190,7 @@ describe "VersionedDocument with references" do
     @doc3 = Document.new(:three => 3)
     @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2], :some_other_link => @doc3)
     @doc3.save!
-    @versioned_document = @document.versions[@document.version]
+    @versioned_document = @document.__versions__[@document.__version__]
     @versioned_document.should be_a_kind_of(VersionedDocument)
     @versioned_document.should_not be_head
   end
@@ -208,20 +208,18 @@ describe "Document with previous version" do
 
   before(:each) do
     @store = setup_default_store
-    @document = Document.new(@store)
-    @previous_version = 'eb2dee7f2758cc60823f2d1a4034d98f605c1f793db2b9a1df1394891eb4512e'
-    @document.stub!(:previous_version).and_return(@previous_version)
+    @document = Document.create!
+    @document.new_slot = 1
+    @document.save!
   end
 
   it "should have versions" do
-    @document.versions.should_not be_empty
+    @document.__version__.should_not be_empty
   end
 
 
   it "should be able to access previous version" do
-    @document_with_previous_version = mock("Document with previous version")
-    @store.should_receive(:find).with(@document.uuid,@previous_version).and_return(@document_with_previous_version)
-    @document.versions[@previous_version].should == @document_with_previous_version
+    @document.__versions__[@document.__previous_version__].should == @store.find(@document.uuid,@document.__previous_version__)
   end
 
 end
@@ -367,21 +365,21 @@ describe "Valid Document's JSON" do
 
   it "should cache its version as previous version" do
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
-    doc.instance_variable_get(:@__previous_version__).should == @document.version
+    doc.instance_variable_get(:@__previous_version__).should == @document.__version__
   end
 
   it "should reuse cached previous version at first modification" do
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     doc[:hello] = 'world'
     doc[:hello] = 'world!'
-    doc[:__previous_version__].should == @document.version
+    doc[:__previous_version__].should == @document.__version__
   end
 
   it "should reuse cached previous version at save without any modification" do
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     @store.should_receive(:save!).with(doc)
     doc.save!
-    doc[:__previous_version__].should == @document.version
+    doc[:__previous_version__].should == @document.__version__
   end
 
 
@@ -418,11 +416,10 @@ end
 describe "Valid Document's JSON with multiple meta names specified" do
 
   before(:each) do
-    @store = mock("Store")
+    @store = setup_default_store
     @metas = []
     3.times do |i|
-      @metas << Document.new(@store, :name => "SomeDocument#{i}")
-      @store.should_receive(:find).with(@metas.last.uuid).any_number_of_times.and_return(@metas.last)
+      @metas << Document.create!(@store, :name => "SomeDocument#{i}")
     end
     @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :__meta__ => @metas)
     @json = @document.to_json
@@ -433,7 +430,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     SomeDocument0 = Meta.new
     Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
     SomeDocument2 = Meta.new
-    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc = Document.from_json(@store,@document.uuid,@json)
     doc.should be_a_kind_of(SomeDocument0)
     doc.should be_a_kind_of(SomeDocument2)
   end

@@ -13,8 +13,6 @@ module StrokeDB
     end
     def load
       case self
-      when /@##{UUID_RE}.0000000000000000#{UUID_RE}/
-        @cached_value || ((@cached_value = doc.store.find($1)) && (doc.head? && @cached_value = @cached_value) || (@cached_value && @cached_value.versions[@cached_value.all_versions.last])) || self
       when /@##{UUID_RE}.#{VERSION_RE}/
         if doc.head?
           @cached_value || @cached_value = doc.store.find($1) || "@##{$1}.#{$2}"
@@ -90,9 +88,9 @@ module StrokeDB
     def encode_value(v)
       case v
       when VersionedDocument
-        DocumentReferenceValue.new("@##{v.uuid}.#{v.version}",doc)
+        DocumentReferenceValue.new(v.__reference__,doc)
       when Document
-        v.new? ? DocumentReferenceValue.new("@##{v.uuid}.0000000000000000#{v.store.uuid}",doc) : DocumentReferenceValue.new("@##{v.uuid}.#{v.version}",doc)
+        v.new? ? DocumentReferenceValue.new("@##{v.uuid}.0000000000000000#{v.store.uuid}",doc) : DocumentReferenceValue.new("@##{v.uuid}.#{v.__version__}",doc)
       when Array
         LazyMappingArray.new(v).map_with do |element| 
           encode_value(element)
@@ -112,7 +110,7 @@ module StrokeDB
 
     def decode_value(v)
       case v
-      when /@##{UUID_RE}.0000000000000000#{UUID_RE}/, /@##{UUID_RE}.#{VERSION_RE}/
+      when /@##{UUID_RE}.#{VERSION_RE}/
         DocumentReferenceValue.new(v,doc)
       when Array
         LazyMappingArray.new(v).map_with do |element| 
