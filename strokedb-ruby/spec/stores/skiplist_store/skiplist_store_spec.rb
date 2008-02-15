@@ -106,7 +106,7 @@ describe "Non-empty chunk store" do
     end
     documents_with_versions = @documents.clone
     @documents.each do |doc|
-      doc.all_versions.each do |v|
+      doc.__versions__.all.each do |v|
         documents_with_versions << doc.__versions__[v]
       end
     end

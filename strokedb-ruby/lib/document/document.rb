@@ -35,6 +35,11 @@ module StrokeDB
         @cache[version] ||= @document.store.find(document.uuid,version)
       end
       
+      def all
+        [document.__version__,*all_preceding]
+      end
+      
+      
       def all_preceding
         if previous_version = document.__previous_version__
           [previous_version, *versions[previous_version].all_preceding]
@@ -235,10 +240,6 @@ module StrokeDB
 
     def version=(v)
       self[:__version__] = v
-    end
-
-    def all_versions
-      [__version__,*__versions__.all_preceding]
     end
 
     def __versions__
