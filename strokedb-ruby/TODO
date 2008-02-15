@@ -23,7 +23,7 @@ Completed items are removed.
 [ ] Think about non-index named meta lookup
 [.] Refactor callback stuff in Document — call on_initialization only for specified meta (add param to execute_callbacks?)
 [ ] Drop :marshal serialization method or get out why it is not really working now
-[ ] Spec LazyMappingArray#[range] or LazyMappingArray#[1,2] better
+
 InvertedList index:
 
 [ ] Optimize prefixes

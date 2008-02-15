@@ -20,7 +20,7 @@ end
 describe "LazyMappingArray instance with block specified" do
   
   before(:each) do
-    @original = [1,2,3]
+    @original = [1,2,3,[1],[2]]
     @mapper = proc {|arg| arg.to_s }
     @unmapper = proc {|arg| arg.to_i }
     @array = LazyMappingArray.new(@original).map_with(&@mapper).unmap_with(&@unmapper)
@@ -37,10 +37,12 @@ describe "LazyMappingArray instance with block specified" do
 
   it "should call mapping proc on #[start,length]" do
     @array[0,2].should == @original[0,2].map(&@mapper)
+    @array[3,2].should == @original[3,2].map(&@mapper)
   end
 
   it "should call mapping proc on #[range]" do
     @array[0..1].should == @original[0..1].map(&@mapper)
+    @array[3..4].should == @original[3..4].map(&@mapper)
   end
 
   it "should call mapping proc on #slice(index)" do
