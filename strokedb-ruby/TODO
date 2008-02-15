@@ -22,7 +22,7 @@ Completed items are removed.
 [ ] Think about non-index named meta lookup
 [.] Refactor callback stuff in Document — call on_initialization only for specified meta (add param to execute_callbacks?)
 [ ] "Valid Document's JSON with multiple meta names specified" spec should check callback through message sending, not instance vars
-[ ] Drop :marshal serialization method or figure out why it is not really working now
+[ ] Drop :marshal serialization method or figure out why it is not really working now (run test/playing2.rb with :marshal and see)
 [ ] Add #[index] API to Document::Versions, with negative indexes as well.
 [ ] Add Document::Versions#previous, #first, #last, #all, #preceding (all previous)
 [ ] Replace 0000000000000000 with (0){16} in regexps (when http://jira.codehaus.org/browse/JRUBY-2113 will be released)
