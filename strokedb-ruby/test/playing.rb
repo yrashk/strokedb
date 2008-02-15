@@ -52,7 +52,7 @@ puts "[[[[[[[]]]]]]]"
 puts r.to_packet
 puts "----------"
 puts r
-puts r[d_.uuid].member?(d_.version)
+puts r[d_.uuid].member?(d_.__version__)
 r.sync_chained_storage!(d_)
 puts r
 r.sync_chained_storage!(d_)

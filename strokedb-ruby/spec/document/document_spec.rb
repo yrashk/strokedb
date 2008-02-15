@@ -21,7 +21,7 @@ describe "New Document" do
   end
   
   it "should have no version" do
-    @document.version.should be_nil
+    @document.__version__.should be_nil
   end
 
   it "should have no slotnames" do
@@ -111,7 +111,7 @@ describe "Saved Document" do
   end
   
   it "should have version" do
-    @document.version.should match(/#{VERSION_RE}/)
+    @document.__version__.should match(/#{VERSION_RE}/)
   end
   
   it "should not be new" do
@@ -166,7 +166,7 @@ describe "Saved VersionedDocument" do
   before(:each) do
     setup_default_store
     @document = Document.create!(:some_data => 1)
-    @versioned_document = @document.versions[@document.version]
+    @versioned_document = @document.versions[@document.__version__]
   end
   
   it "should not be head" do
@@ -174,7 +174,7 @@ describe "Saved VersionedDocument" do
   end
   
   it "should be reloadable" do
-    StrokeDB.default_store.should_receive(:find).with(@document.uuid,@document.version)
+    StrokeDB.default_store.should_receive(:find).with(@document.uuid,@document.__version__)
     @versioned_document.reload
   end
   
@@ -190,7 +190,7 @@ describe "VersionedDocument with references" do
     @doc3 = Document.new(:three => 3)
     @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2], :some_other_link => @doc3)
     @doc3.save!
-    @versioned_document = @document.versions[@document.version]
+    @versioned_document = @document.versions[@document.__version__]
     @versioned_document.should be_a_kind_of(VersionedDocument)
     @versioned_document.should_not be_head
   end
@@ -367,21 +367,21 @@ describe "Valid Document's JSON" do
 
   it "should cache its version as previous version" do
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
-    doc.instance_variable_get(:@__previous_version__).should == @document.version
+    doc.instance_variable_get(:@__previous_version__).should == @document.__version__
   end
 
   it "should reuse cached previous version at first modification" do
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     doc[:hello] = 'world'
     doc[:hello] = 'world!'
-    doc[:__previous_version__].should == @document.version
+    doc[:__previous_version__].should == @document.__version__
   end
 
   it "should reuse cached previous version at save without any modification" do
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
     @store.should_receive(:save!).with(doc)
     doc.save!
-    doc[:__previous_version__].should == @document.version
+    doc[:__previous_version__].should == @document.__version__
   end
 
 

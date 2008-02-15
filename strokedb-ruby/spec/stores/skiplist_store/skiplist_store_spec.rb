@@ -76,13 +76,13 @@ describe "Non-empty chunk store" do
   it "should find first version of document" do
     document = @documents.first
     (doc = @store.find(document.uuid,"0"*16+@store.uuid)).should be_a_kind_of(VersionedDocument)
-    doc.version.should == document.version
+    doc.__version__.should == document.__version__
   end
 
   
   
   it "should find a versioned document" do
-    (doc = @store.find(@documents.first.uuid,@documents.first.version)).should == @documents.first
+    (doc = @store.find(@documents.first.uuid,@documents.first.__version__)).should == @documents.first
     doc.should be_a_kind_of(VersionedDocument)
   end
 
@@ -96,7 +96,7 @@ describe "Non-empty chunk store" do
     @store.each do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.version}.should == @documents.sort_by {|doc| doc.version}
+    iterated_documents.sort_by {|doc| doc.__version__}.should == @documents.sort_by {|doc| doc.__version__}
   end
 
   it "should iterate over all stored documents and their versions if told so" do
@@ -110,7 +110,7 @@ describe "Non-empty chunk store" do
         documents_with_versions << doc.versions[v]
       end
     end
-    iterated_documents.sort_by {|doc| doc.version}.should == documents_with_versions.sort_by {|doc| doc.version}
+    iterated_documents.sort_by {|doc| doc.__version__}.should == documents_with_versions.sort_by {|doc| doc.__version__}
   end
   
   it "should iterate over all newly stored documents if told so" do
@@ -124,7 +124,7 @@ describe "Non-empty chunk store" do
     @store.each(:after_lamport_timestamp => timestamp) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.version}.should == @new_documents.sort_by {|doc| doc.version}
+    iterated_documents.sort_by {|doc| doc.__version__}.should == @new_documents.sort_by {|doc| doc.__version__}
   end
   
   it "should iterate over all newly stored versions if told so" do
@@ -139,7 +139,7 @@ describe "Non-empty chunk store" do
     @store.each(:after_lamport_timestamp => timestamp, :include_versions => true) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.version}.should == (@documents + @new_documents).sort_by {|doc| doc.version}
+    iterated_documents.sort_by {|doc| doc.__version__}.should == (@documents + @new_documents).sort_by {|doc| doc.__version__}
   end
   
   

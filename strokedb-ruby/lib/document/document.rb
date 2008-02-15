@@ -177,12 +177,12 @@ module StrokeDB
     end
 
     def new?
-      version.nil?
+      __version__.nil?
     end
 
     def head?
       return false if new? || is_a?(VersionedDocument)
-      store.last_version(uuid) == version
+      store.last_version(uuid) == __version__
     end
 
     def save!
@@ -217,6 +217,10 @@ module StrokeDB
     end
 
 
+    def __version__
+      self[:__version__]
+    end
+    
     def previous_version
       self[:__previous_version__]
     end
@@ -229,16 +233,12 @@ module StrokeDB
       end
     end
 
-    def version
-      self[:__version__]
-    end
-
     def version=(v)
       self[:__version__] = v
     end
 
     def all_versions
-      [version] + previous_versions
+      [__version__] + previous_versions
     end
 
     def versions
@@ -246,7 +246,7 @@ module StrokeDB
     end
 
     def uuid_version
-      uuid + (version ? ".#{version}" : "")
+      uuid + (__version__ ? ".#{__version__}" : "")
     end
 
     def ==(doc)
@@ -327,7 +327,7 @@ module StrokeDB
       to_raw.to_json(opts)
     end
     def reload
-      store.find(uuid,version)
+      store.find(uuid,__version__)
     end
 
   end

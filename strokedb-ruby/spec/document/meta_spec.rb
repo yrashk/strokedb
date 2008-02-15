@@ -33,7 +33,7 @@ describe "Meta module", :shared => true do
     new_doc = SomeName.document
     new_doc.uuid.should == doc.uuid
     new_doc.previous_version.should_not be_nil
-    new_doc.previous_version.should == doc.version
+    new_doc.previous_version.should == doc.__version__
     new_doc.description.should == "Something"
   end
   

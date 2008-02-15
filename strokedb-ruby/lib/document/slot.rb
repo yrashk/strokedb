@@ -88,9 +88,9 @@ module StrokeDB
     def encode_value(v)
       case v
       when VersionedDocument
-        DocumentReferenceValue.new("@##{v.uuid}.#{v.version}",doc)
+        DocumentReferenceValue.new("@##{v.uuid}.#{v.__version__}",doc)
       when Document
-        v.new? ? DocumentReferenceValue.new("@##{v.uuid}.0000000000000000#{v.store.uuid}",doc) : DocumentReferenceValue.new("@##{v.uuid}.#{v.version}",doc)
+        v.new? ? DocumentReferenceValue.new("@##{v.uuid}.0000000000000000#{v.store.uuid}",doc) : DocumentReferenceValue.new("@##{v.uuid}.#{v.__version__}",doc)
       when Array
         LazyMappingArray.new(v).map_with do |element| 
           encode_value(element)
