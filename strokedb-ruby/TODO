@@ -6,7 +6,6 @@ Legend:
 Completed items are removed.
 ============================
 
-[ ] Implement first version search ( (0){16} ), it is next to head. but beware of chunking.
 [ ] Refactor Slot!
 [ ] ! Reorganize specs, drop using mockups where it makes little sense
 [?] Fix bad UUID implementation in pure ruby version
