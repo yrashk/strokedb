@@ -8,11 +8,12 @@ TodoList = StrokeDB::Meta.new do
   on_initialization do |list|
     list.items = [] unless list[:items]
   end
-  def print
-    puts "#{name}:"
+  def to_s
+    s = "#{name}:\n"
     items.each do |item|
-      puts "  #{item}"
+      s << "  #{item}"
     end
+    s
   end
 end
 
@@ -47,7 +48,7 @@ end
 def list_issues
   todo_lists = TodoList.find
   return [] if todo_lists.empty?
-  todo_lists.each { |list| list.print }
+  todo_lists.each { |list| puts list }
 end
 
 def extract_prefix_item(str)
