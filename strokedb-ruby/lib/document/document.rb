@@ -238,7 +238,7 @@ module StrokeDB
       self[:__previous_version__]
     end
 
-    def version=(v)
+    def __version__=(v)
       self[:__version__] = v
     end
 
