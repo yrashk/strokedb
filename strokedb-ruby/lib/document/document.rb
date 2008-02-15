@@ -22,7 +22,7 @@ module StrokeDB
 
     #
     # doc.versions #=> #<Versions>
-    # doc.versions[version_number] #=> #<Document>
+    # doc.__versions__[version_number] #=> #<Document>
     #
     class Versions
       attr_reader :document
@@ -36,7 +36,7 @@ module StrokeDB
       end
 
       def empty?
-        document.previous_version.nil?
+        document.__previous_version__.nil?
       end
     end
 
@@ -221,13 +221,13 @@ module StrokeDB
       self[:__version__]
     end
     
-    def previous_version
+    def __previous_version__
       self[:__previous_version__]
     end
 
     def previous_versions
-      if previous_version
-        [previous_version] + versions[previous_version].previous_versions
+      if __previous_version__
+        [previous_version, *versions[previous_version].previous_versions]
       else
         []
       end
@@ -238,10 +238,10 @@ module StrokeDB
     end
 
     def all_versions
-      [__version__] + previous_versions
+      [__version__,*previous_versions]
     end
 
-    def versions
+    def __versions__
       @versions ||= Versions.new(self)
     end
 

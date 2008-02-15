@@ -35,7 +35,7 @@ d_[:something_else] = 2
 d_.save!
 puts d_
 puts d_[:_d1]
-puts d_.previous_versions.inspect
+puts d_.__previous_version__.inspect
 
 puts "replica::::"
 r = store.new_replica

@@ -69,8 +69,8 @@ module StrokeDB
 
       # Update index
       if @index_store
-        if doc.previous_version
-          raw_pdoc = find(doc.uuid,doc.previous_version,:no_instantiation => true)
+        if doc.__previous_version__
+          raw_pdoc = find(doc.uuid,doc.__previous_version__,:no_instantiation => true)
           pdoc = Document.from_raw(self,doc.uuid,raw_pdoc.freeze,:skip_callbacks => true)
           pdoc.extend(VersionedDocument)
           @index_store.delete(pdoc)

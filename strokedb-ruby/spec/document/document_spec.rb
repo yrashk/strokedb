@@ -24,6 +24,10 @@ describe "New Document" do
     @document.__version__.should be_nil
   end
 
+  it "should have no previous version" do
+    @document.__previous_version__.should be_nil
+  end
+
   it "should have no slotnames" do
     @document.slotnames.should be_empty
   end
@@ -47,12 +51,8 @@ describe "New Document" do
     @document.slotnames.should == original_slotnames
   end
 
-  it "should have no previous version" do
-    @document.previous_version.should be_nil
-  end
-
   it "should have no versions" do
-    @document.versions.should be_empty
+    @document.__versions__.should be_empty
   end
 
   it "should raise an exception if slot not found when trying to read it" do
@@ -166,7 +166,7 @@ describe "Saved VersionedDocument" do
   before(:each) do
     setup_default_store
     @document = Document.create!(:some_data => 1)
-    @versioned_document = @document.versions[@document.__version__]
+    @versioned_document = @document.__versions__[@document.__version__]
   end
   
   it "should not be head" do
@@ -190,7 +190,7 @@ describe "VersionedDocument with references" do
     @doc3 = Document.new(:three => 3)
     @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2], :some_other_link => @doc3)
     @doc3.save!
-    @versioned_document = @document.versions[@document.__version__]
+    @versioned_document = @document.__versions__[@document.__version__]
     @versioned_document.should be_a_kind_of(VersionedDocument)
     @versioned_document.should_not be_head
   end
@@ -208,20 +208,18 @@ describe "Document with previous version" do
 
   before(:each) do
     @store = setup_default_store
-    @document = Document.new(@store)
-    @previous_version = 'eb2dee7f2758cc60823f2d1a4034d98f605c1f793db2b9a1df1394891eb4512e'
-    @document.stub!(:previous_version).and_return(@previous_version)
+    @document = Document.create!
+    @document.new_slot = 1
+    @document.save!
   end
 
   it "should have versions" do
-    @document.versions.should_not be_empty
+    @document.__version__.should_not be_empty
   end
 
 
   it "should be able to access previous version" do
-    @document_with_previous_version = mock("Document with previous version")
-    @store.should_receive(:find).with(@document.uuid,@previous_version).and_return(@document_with_previous_version)
-    @document.versions[@previous_version].should == @document_with_previous_version
+    @document.__versions__[@document.__previous_version__].should == @store.find(@document.uuid,@document.__previous_version__)
   end
 
 end
