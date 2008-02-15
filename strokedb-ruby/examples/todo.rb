@@ -11,7 +11,7 @@ TodoList = StrokeDB::Meta.new do
   def to_s
     s = "#{name}:\n"
     items.each do |item|
-      s << "  #{item}"
+      s << "  #{item}\n"
     end
     s
   end
