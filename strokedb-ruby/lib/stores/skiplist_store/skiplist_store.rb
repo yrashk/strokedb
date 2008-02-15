@@ -31,7 +31,8 @@ module StrokeDB
       case version
       when /^0000000000000000#{UUID_RE}/ # first version
         return nil unless chunk_node = chunk.find_node(uuid)
-        chunk_node = find_next_chunk_node(chunk,chunk_node)
+        # chunk_node = find_next_chunk_node(chunk,chunk_node)
+        chunk_node = chunk.find_next_node(chunk_node)
         raw_doc = chunk_node.value
       when /^#{VERSION_RE}/, nil # any other or no version
         raw_doc = chunk.find(uuid_version)
@@ -168,16 +169,6 @@ module StrokeDB
       master_chunk
     end
     
-    def find_next_chunk_node(chunk,chunk_node)
-      chunk_node = chunk_node.next
-      if chunk_node.is_a?(Skiplist::TailNode)
-        chunk = chunk.next_chunk 
-        unless chunk.nil && chunk.uuid[0,uuid.length] != uuid
-          chunk_node = chunk.first_node
-        end
-      end
-      chunk_node
-    end
 
   end
 end
