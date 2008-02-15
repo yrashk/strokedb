@@ -59,6 +59,10 @@ suggestion: have a special slot "__backrefs__" in any part of the document:
 
 {"__backrefs__" => ["<uuid>.<version>/<some>/<part>", ...]}
 
+To save a reference you have to pull the referenced document first. 
+Since we have a local copy of the document, we can update its __backrefs__ array.
+After that, remote server may pull this document back and add sync backrefs.
+
 
 4. SEE ALSO
 
