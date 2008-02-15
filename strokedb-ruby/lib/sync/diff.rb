@@ -64,20 +64,11 @@ module StrokeDB
 
   Diff = Meta.new do
 
-    on_initialization do |diff, block|
+    on_initialization do |diff|
+      diff.added_slots = {} unless diff[:added_slots]
+      diff.removed_slots = {} unless diff[:removed_slots]
+      diff.updated_slots = {} unless diff[:updated_slots] 
       diff.send!(:compute_diff) if diff.new?
-    end
-
-    def removed_slots
-      find_slots 'drop_slot'
-    end    
-
-    def added_slots
-      find_slots 'add_slot'
-    end    
-
-    def updated_slots
-      find_slots 'update_slot'
     end
 
     def different?
@@ -85,17 +76,17 @@ module StrokeDB
     end
 
     def patch!(document)
-      added_slots.each do |addition|
-        document[addition] = added_slots[addition]
+      added_slots.each_pair do |addition,value|
+        document[addition] = value
       end
-      removed_slots.each do |removal|
+      removed_slots.keys.each do |removal|
         document.remove_slot!(removal)
       end
-      updated_slots.each do |update|
+      updated_slots.each_pair do |update,value|
         if sk = strategy_class_for(update)
-          document[update] = sk.patch(document[update],updated_slots[update])
+          document[update] = sk.patch(document[update],value)
         else
-          document[update] = updated_slots[update]
+          document[update] =value
         end
       end
     end
@@ -106,18 +97,18 @@ module StrokeDB
     def compute_diff
       additions = to.slotnames - from.slotnames 
       additions.each do |addition|
-        self["add_slot_#{addition}"] = to[addition]
+        self.added_slots[addition] = to[addition]
       end
       removals = from.slotnames - to.slotnames
       removals.each do |removal|
-        self["drop_slot_#{removal}"] = from[removal]
+        self.removed_slots[removal] = from[removal]
       end
       updates = (to.slotnames - additions - ['__version__']).select {|slotname| to[slotname] != from[slotname]}
       updates.each do |update|
         unless sk = strategy_class_for(update)
-          self["update_slot_#{update}"] = to[update]
+          self.updated_slots[update] = to[update]
         else
-          self["update_slot_#{update}"] = sk.diff(from[update],to[update]) 
+          self.updated_slots[update] = sk.diff(from[update],to[update]) 
         end
       end
     end
@@ -128,27 +119,6 @@ module StrokeDB
         return _strategy_class if _strategy_class && _strategy_class.ancestors.include?(SlotDiffStrategy)
       end
       false
-    end
-
-    module SlotAccessor
-      def [](name)
-        return at(name) if name.is_a?(Numeric)
-        @diff["#{@keyword}_#{name}"]
-      end
-      def clear!
-        @diff.slotnames.each do |slotname|
-          @diff.remove_slot!(slotname) if slotname.match(/^#{@keyword}_(.+)$/)
-        end
-      end
-    end
-
-    def find_slots(keyword)
-      re = /^#{keyword}_(.+)$/
-      slots = slotnames.select {|slotname| slotname.match(re)}.map{|slotname| slotname.gsub(re,'\\1') }
-      slots.extend(SlotAccessor)
-      slots.instance_variable_set(:@diff,self)
-      slots.instance_variable_set(:@keyword,keyword)
-      slots
     end
 
   end

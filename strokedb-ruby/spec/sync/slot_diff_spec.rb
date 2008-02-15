@@ -17,7 +17,7 @@ describe "Diffing documents with slot changed and slot's diff strategy is specif
   end
 
   it "should diff slot value according to its strategy" do
-    @diff.updated_slots[:slot1].should == 3
+    @diff.updated_slots['slot1'].should == 3
   end
 
 end
@@ -38,7 +38,7 @@ describe "Diffing documents with slot changed and slot's diff strategy is specif
   end
 
   it "should not diff slot" do
-    @diff.updated_slots[:slot1].should == 2
+    @diff.updated_slots['slot1'].should == 2
   end
 
 end
@@ -60,7 +60,7 @@ describe "Diffing documents with slot changed and slot's diff strategy is specif
   end
 
   it "should not diff slot" do
-    @diff.updated_slots[:slot1].should == 2
+    @diff.updated_slots['slot1'].should == 2
   end
 
 end

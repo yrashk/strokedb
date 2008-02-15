@@ -204,7 +204,7 @@ module StrokeDB
       _metas.each do |next_meta|
         next_meta = store.find(next_meta[2,next_meta.length]) if next_meta.is_a?(String)
         diff = next_meta.diff(collected_meta)
-        diff.removed_slots.clear!
+        diff.removed_slots = {}
         diff.patch!(collected_meta)
         names << next_meta.name if next_meta[:name] 
       end
