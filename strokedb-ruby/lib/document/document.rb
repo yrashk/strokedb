@@ -117,30 +117,27 @@ module StrokeDB
       return "\"@##{uuid}.#{version}\"" if opts[:slot_serialization]
       to_raw.to_json(opts)
     end
-    
+
     def self.from_json(store,uuid,json)
       json_decoded = ActiveSupport::JSON.decode(json)
       from_raw(store,uuid,json_decoded)
     end
 
     def inspect
-      Util.catch_circular_reference(self) do
-        s = "#<"
-        s << (self[:__meta__] ? "#{meta} " : "Doc ")
-        to_raw.except('__meta__').each_pair do |k,v|
-          if %w(__version__ __previous_version__).member?(k)
-            s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
-          else
-            stack = Thread.current['StrokeDB.reference_stack'] ||= []
-            stack << self[k]
+      s = "#<"
+      s << (self[:__meta__] ? "#{meta} " : "Doc ")
+      to_raw.except('__meta__').each_pair do |k,v|
+        if %w(__version__ __previous_version__).member?(k)
+          s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
+        else
+          Util.catch_circular_reference(self[k]) do
             s << "#{k}: #{self[k].inspect}, "
-            stack.pop
           end
         end
-        s.chomp!(', ')
-        s << ">"
-        return s
       end
+      s.chomp!(', ')
+      s << ">"
+      s
     rescue Util::CircularReferenceCondition
       "#<#{(self[:__meta__] ? "#{meta}" : "Doc")} #{uuid[0,5]}*>"
     end
