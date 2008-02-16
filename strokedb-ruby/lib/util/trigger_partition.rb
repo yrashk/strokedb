@@ -12,7 +12,7 @@ module Enumerable
       partitions = []
       cont = @cont
       fill = @fill
-      @enum.inject(nil) do |part, elem|
+      p = @enum.inject(nil) do |part, elem|
         if part && cont.call(part, elem)
           fill.call(part, elem)
           part
@@ -21,6 +21,7 @@ module Enumerable
           yield(elem)
         end
       end
+      partitions << p if p
       partitions
     end
   end
