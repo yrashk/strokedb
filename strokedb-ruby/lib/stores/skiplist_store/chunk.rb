@@ -42,8 +42,10 @@ module StrokeDB
       chunk_node = chunk_node.next
       if chunk_node.is_a?(Skiplist::TailNode)
         chunk = chunk.next_chunk 
-        unless chunk.nil? && chunk.uuid[0,uuid.length] != uuid
+        unless chunk.nil?
           chunk_node = chunk.first_node
+        else
+          chunk_node = nil
         end
       end
       chunk_node

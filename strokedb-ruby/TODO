@@ -1,22 +1,18 @@
 Legend:
 [ ] NOT DONE
 [?] MAY BE
-[-] Look into git history, may be you'll find something about it
 [.] IN PROGRESS
 Completed items are removed.
 ============================
 
-[ ] Refactor Slot!
-[ ] ! Reorganize specs, drop using mockups where it makes little sense
-[?] Fix bad UUID implementation in pure ruby version
+[ ] Spec Chunk#find_next_node and then consider some refactoring (node => uuid, etc)
+[ ] Spec SkiplistStore is saving store_uuid to master chunk and loading it from there on initialization
+[ ] Create Store's self-descripting document
 [ ] Read/Write benchmarks showing dependency of data size
-[-] K-d skiplist & specs
 [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
 [ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
-[?] Pool new UUIDs
 [ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
 [ ] Improve PointQuery (I really don't like it)
-[-] Finish RangeQuery (we've decided to drop it after ae6371e1f4ffeeb309771b5b6fa1a5233ca4888f)
 [ ] Refactor Meta#document, fix bugs
 [ ] Think about non-index named meta lookup
 [.] Refactor callback stuff in Document — call on_initialization only for specified meta (add param to execute_callbacks?)
@@ -25,6 +21,7 @@ Completed items are removed.
 [ ] Add #[index] API to Document::Versions, with negative indexes as well.
 [ ] Add Document::Versions#first, #last (?)
 [ ] Replace 0000000000000000 with (0){16} in regexps (when http://jira.codehaus.org/browse/JRUBY-2113 will be released)
+[?] Pool new UUIDs
 
 InvertedList index:
 

@@ -20,7 +20,7 @@ module StrokeDB
 
       def document(store=nil)
         store ||= StrokeDB.default_store
-        raise NoDefaultStoreError.new unless StrokeDB.default_store
+        raise NoDefaultStoreError.new unless store
         unless meta_doc = store.find(NIL_UUID)
           meta_doc = Document.new(store,:name => Meta.name)
           meta_doc.instance_variable_set(:@uuid,NIL_UUID) # hack that ensures that meta meta is uniquely identified by nil uuid
@@ -86,7 +86,7 @@ module StrokeDB
 
     def document(store=nil)
       store ||= StrokeDB.default_store
-      raise NoDefaultStoreError.new unless StrokeDB.default_store
+      raise NoDefaultStoreError.new unless store
       args = @args.clone
       args[0] = store
       args.last[:__meta__] = Meta.document(store)

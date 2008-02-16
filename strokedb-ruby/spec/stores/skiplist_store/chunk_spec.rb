@@ -79,19 +79,32 @@ end
 describe "Chunks" do
   
   before(:each) do
-    head_chunk = Chunk.new(3)
+    @head_chunk = Chunk.new(3)
     @docs_by_uuid = {}
     @all_chunks = {} # uuid => chunk
     20.times do |i|
       uuid = "K#{100+i}"
       doc = {:i => i, :text => "Text."}
       @docs_by_uuid[uuid] = doc
-      a, b = head_chunk.insert(uuid, doc)
+      a, b = @head_chunk.insert(uuid, doc)
       head_chunk = b || a
       [a, b].each do |c|
         @all_chunks[c.uuid] = c if c
       end
     end
+  end
+
+  it "should find next chunk node to given node" do
+    pending
+    @head_chunk.find_next_node(@head_chunk.find_node("K100")).key.should == "K101"
+  end
+
+  it "should find next chunk node to given node if that node is just before tail node" do
+    pending
+    node = @head_chunk.find_node("K100")
+    node = node.next until node.next.is_a?(Skiplist::TailNode)
+    node.next.should be_a_kind_of(Skiplist::TailNode)
+    @head_chunk.find_next_node(node).key.should == "K#{node.key[1,3].to_i+1}"
   end
 
   it "should be serialized well" do
@@ -115,3 +128,4 @@ describe "Chunks" do
   end
   
 end
+
