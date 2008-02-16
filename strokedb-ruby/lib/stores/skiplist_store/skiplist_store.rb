@@ -30,6 +30,7 @@ module StrokeDB
       when /^0000000000000000#{UUID_RE}/ # first version
         return nil unless chunk_node = chunk.find_node(uuid)
         chunk_node = chunk.find_next_node(chunk_node)
+        return nil if chunk_node.key[0,uuid.length] != uuid
         raw_doc = chunk_node.value
       when /^#{VERSION_RE}/, nil # any other or no version
         raw_doc = chunk.find(uuid_version)
