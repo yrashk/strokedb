@@ -9,10 +9,11 @@ module StrokeDB
       @cut_level = opts['cut_level'] || 8
       @index_store = opts['index']
       raise "Missing chunk storage" unless @chunk_storage
+      # StrokeStore.new(self,{:kind => 'skiplist'},uuid)
     end
 
     def empty?
-      !@chunk_storage.find('MASTER')
+      !@chunk_storage.find('MASTER') || (map{|d| d} - [find(uuid)]).compact.empty?
     end
 
     def find(uuid, version=nil, opts = {})
@@ -128,7 +129,6 @@ module StrokeDB
       else
         @uuid = master_chunk.store_uuid
       end
-      @uuid
     end
     
     def inspect
@@ -180,7 +180,6 @@ module StrokeDB
       @chunk_storage.save!(master_chunk)
       master_chunk
     end
-    
 
   end
 end
