@@ -2,14 +2,12 @@ module StrokeDB
   class SkiplistStore < Store
     include Enumerable
     attr_accessor :chunk_storage, :cut_level, :index_store
-    attr_reader :uuid
 
     def initialize(opts={})
       opts = opts.stringify_keys
       @chunk_storage = opts['storage']
       @cut_level = opts['cut_level'] || 8
       @index_store = opts['index']
-      @uuid = Util.random_uuid
       raise "Missing chunk storage" unless @chunk_storage
     end
 
@@ -122,6 +120,17 @@ module StrokeDB
       @lamport_timestamp = lamport_timestamp.next
     end
     
+    def uuid
+      return @uuid if @uuid
+      master_chunk = @chunk_storage.find('MASTER')
+      unless master_chunk
+        @uuid = Util.random_uuid
+      else
+        @uuid = master_chunk.store_uuid
+      end
+      @uuid
+    end
+    
     def inspect
       "#<Skiplist store #{uuid}#{empty? ? " (empty)" : ""}>"
     end
@@ -167,7 +176,7 @@ module StrokeDB
       end
       master_chunk = Chunk.new(999)
       master_chunk.uuid = 'MASTER'
-      master_chunk.store_uuid = @uuid
+      master_chunk.store_uuid = uuid
       @chunk_storage.save!(master_chunk)
       master_chunk
     end
