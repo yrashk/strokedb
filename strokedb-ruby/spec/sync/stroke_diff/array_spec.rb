@@ -27,6 +27,13 @@ describe "Array diff" do
     end
   end
   
+  it "should correctly patch array with objects" do
+    arr = (1..10).to_a.map{ Object.new }
+    a = [arr[0], arr[2], arr[3], arr[4], arr[8]]
+    b = [arr[1], arr[2], arr[3], arr[8], arr[9], arr[4], arr[1]]
+    a.stroke_patch(a.stroke_diff(b)).should == b
+  end
+  
   def gen_str
     letters = %w(a b c d)
     str = ""
