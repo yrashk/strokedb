@@ -54,10 +54,7 @@ describe "Automerging hashes" do
   it "should do a trivial merge" do
     a = @base.merge :a => 2, :x => 1
     b = @base.merge :b => 3, :y => 2
-    c, r1, r2 = @base.stroke_merge(@base.stroke_diff(a), @base.stroke_diff(b))
-    c.should be_false
-    r1.should == r2
-    r2.should == @base.merge(:a => 2, :x => 1, :b => 3, :y => 2)
+    should_merge(@base, a, b, @base.merge(:a => 2, :x => 1, :b => 3, :y => 2))
   end
   
   it "should do a trivial merge with missing slots" do
@@ -65,39 +62,73 @@ describe "Automerging hashes" do
     b2 = @base.dup; b2.delete(:b)
     a = b1.merge :x => 2
     b = b2.merge :y => 3
-    c, r1, r2 = @base.stroke_merge(@base.stroke_diff(a), @base.stroke_diff(b))
-    c.should be_false
-    r1.should == r2
-    r2.should == {:c => @base[:c], :x => 2, :y => 3}
+    should_merge(@base, a, b, {:c => @base[:c], :x => 2, :y => 3})
   end
   
   it "should merge intersecting, but identical old slots" do
     a = @base.merge :a => 2, :c => 42
     b = @base.merge :b => 3, :c => 42
-    c, r1, r2 = @base.stroke_merge(@base.stroke_diff(a), @base.stroke_diff(b))
-    c.should be_false
-    r1.should == r2
-    r2.should == @base.merge(:a => 2, :b => 3, :c => 42)
+    should_merge(@base, a, b, @base.merge(:a => 2, :b => 3, :c => 42))
   end
   
   it "should merge intersecting, but identical new slots" do
     a = @base.merge :a => 2, :x => 42
     b = @base.merge :b => 3, :x => 42
-    c, r1, r2 = @base.stroke_merge(@base.stroke_diff(a), @base.stroke_diff(b))
-    c.should be_false
-    r1.should == r2
-    r2.should == @base.merge(:a => 2, :b => 3, :x => 42)
+    should_merge(@base, a, b, @base.merge(:a => 2, :b => 3, :x => 42))
   end
-    
+  
+  it "should merge mergable slots" do
+    base = {:s => { :a => 1 }}
+    a    = {:s => { :a => 2 }}
+    b    = {:s => { :a => 1, :b => 3 }}
+    should_merge(base, a, b, {:s => { :a => 2, :b => 3 }})
+  end
+  
+  def should_merge(base, a, b, r)
+    c, r1, r2 = base.stroke_merge(base.stroke_diff(a), base.stroke_diff(b))
+    c.should be_false
+    r1.should == r1
+    r2.should == r
+    # another order
+    c, r1, r2 = base.stroke_merge(base.stroke_diff(b), base.stroke_diff(a))
+    c.should be_false
+    r1.should == r1
+    r2.should == r
+  end
+  
 end
 
 describe "Merge conflicts in hashes" do
   
-  before(:each) do
-    @base = {:a => 1, :b => 2, :c =>3}
+  it "should yield a diff-diff conflict with partial merge" do
+    base = {:a => 1,   :b => 2,   :c =>3}
+    a    = {:a => 111, :b => 222, :c =>3}
+    b    = {:a => 222, :b => 2,   :c =>333}
+    ra   = {:a => 111, :b => 222, :c =>333}
+    rb   = {:a => 222, :b => 222, :c =>333}
+    should_yield_conflict(base, a, b, ra, rb)
+  end
+    
+  it "should yield a deletion-diff conflict with partial merge" do
+    base = {:a => 1,   :b => 2,   :c =>3}
+    a    = {           :b => 222, :c =>3}
+    b    = {:a => 222, :b => 2,   :c =>333}
+    ra   = {           :b => 222, :c =>333}
+    rb   = {:a => 222, :b => 222, :c =>333}
+    should_yield_conflict(base, a, b, ra, rb)
   end
   
-  
+  def should_yield_conflict(base, a, b, ra, rb)
+    c, r1, r2 = base.stroke_merge(base.stroke_diff(a), base.stroke_diff(b))
+    c.should be_true
+    r1.should == ra
+    r2.should == rb
+    # another order
+    c, r1, r2 = base.stroke_merge(base.stroke_diff(b), base.stroke_diff(a))
+    c.should be_true
+    r1.should == rb
+    r2.should == ra
+  end
 end
 
 

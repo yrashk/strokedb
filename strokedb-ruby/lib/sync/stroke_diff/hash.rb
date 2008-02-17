@@ -41,7 +41,7 @@ module StrokeDB
     #    (e.g. deleted v.s. inserted, deleted vs. diffed)
     # 2) If slot diff yields conflict
     #
-    def stroke_merge(patch1, patch2) # => [nil, result] | [result1, result2] (conflict == result1.diff(result2))
+    def stroke_merge(patch1, patch2)
       return _stroke_automerged(stroke_patch(patch1 || patch2)) unless patch1 && patch2
       
       del1, ins1, dif1 = patch1[0].dup, patch1[1].dup, patch1[2].dup
