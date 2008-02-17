@@ -59,6 +59,8 @@ module StrokeDB
     end
     def stroke_patch(patch)
       return self unless patch
+      return patch[1] if patch[0] == PATCH_REPLACE
+      
       #puts "#{self.inspect}.stroke_patch(#{patch.inspect}) "
       res = ""
       ai = bj = 0
@@ -228,8 +230,11 @@ if __FILE__ == $0
     str
   end
   
-  from = {:_ => 0, :a => 1, :b => Object.new, :c => %w(1 2 3)}
-  to   = {:a => 1, :b => Object.new, :c => %w(1 2)}
+  from = {:_ => 0, :a => 1, :b => Object.new, :c => "@#gnu"}
+  to   = {:a => 1, :b => Object.new, :c => "@#bsd"}
+  
+  #from = "@#abc"
+  #to   = "@#xyz"
   
   p from
   p to
