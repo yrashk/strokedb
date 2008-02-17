@@ -192,10 +192,10 @@ module StrokeDB
       diffed_slots   = {}
       
       all_keys.each do |k|
-        unless to[k]
+        unless to.key?(k)
           deleted_slots << k
         else
-          unless self[k]
+          unless self.key?(k)
             inserted_slots[k] = to[k] 
           else
             diff = self[k].stroke_diff(to[k]) 
