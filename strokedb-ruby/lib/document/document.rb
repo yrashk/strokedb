@@ -273,15 +273,15 @@ module StrokeDB
 
     protected
 
-    def execute_callbacks(name)
+    def execute_callbacks(name,*args)
       (callbacks[name.to_s]||[]).each do |callback|
-        callback.call(self)
+        callback.call(self,*args)
       end
     end
     
-    def execute_callbacks_for(origin,name)
+    def execute_callbacks_for(origin,name,*args)
       (callbacks[name.to_s]||[]).each do |callback|
-        callback.call(self) if callback.origin == origin
+        callback.call(self,*args) if callback.origin == origin
       end
     end
     
