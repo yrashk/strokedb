@@ -103,7 +103,7 @@ module StrokeDB
       return nil if self == to
       
       # sdiff:  +   -   !   = 
-      lcs_sdiff = Diff::LCS.sdiff(self, to)
+      lcs_sdiff = ::Diff::LCS.sdiff(self, to)
       patchset = []
       last_part = lcs_sdiff.inject(nil) do |part, change|
         a = SDATPTAGS[change.action]
