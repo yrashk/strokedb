@@ -9,7 +9,7 @@ module StrokeDB
       @block.call(*args)
     end
   end
-  
+
   module Meta
 
     class << self
@@ -57,7 +57,7 @@ module StrokeDB
     CALLBACKS.each do |callback_name|
       module_eval %{
         def #{callback_name}(&block)
-          @#{callback_name}_block = block
+          add_callback('#{callback_name}',&block)
         end
       }
     end
@@ -82,14 +82,14 @@ module StrokeDB
       raise NoDefaultStoreError.new unless StrokeDB.default_store
       store.index_store.find(args.last.merge(:__meta__ => document(store)))
     end
-    
+
     def find_or_create(*args)
       result = find(*args)
       result.empty? ? create!(*args) : result.first
     end
 
     def inspect
-        "{#{name}#{is_a?(Module) ? ' meta module' : ''}}"
+      "{#{name}#{is_a?(Module) ? ' meta module' : ''}}"
     end
     alias :to_s :inspect
 
@@ -118,16 +118,24 @@ module StrokeDB
     end
 
     private
+
+    def add_callback(name,&block)
+      @callbacks ||= {}
+      @callbacks[name] ||= []
+      @callbacks[name] << block
+    end
     
     def setup_callbacks(doc)
-      CALLBACKS.each do |callback_name| 
-        if callback = instance_variable_get("@#{callback_name}_block")
-          callback = Callback.new(self,&callback)
+      return unless @callbacks
+      @callbacks.each_pair do |callback_name, blocks|
+        blocks.each do |block|
+          callback = Callback.new(self,&block)
           doc.callbacks[callback_name] ||= []
           doc.callbacks[callback_name] << callback
         end
       end
     end
+    
   end
 
 end
