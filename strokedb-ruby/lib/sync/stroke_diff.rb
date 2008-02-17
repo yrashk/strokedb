@@ -2,9 +2,10 @@ require 'rubygems'
 require 'diff/lcs'
 
 module StrokeDB
-  PATCH_REPLACE      = 'R'.freeze
-  PATCH_STRING_PLUS  = '+'.freeze
-  PATCH_STRING_MINUS = '-'.freeze
+  PATCH_REPLACE = 'R'.freeze
+  PATCH_PLUS    = '+'.freeze
+  PATCH_MINUS   = '-'.freeze
+  PATCH_DIFF    = '!'.freeze
   
   class ::Object
     def stroke_diff(to)
@@ -43,9 +44,9 @@ module StrokeDB
       end.compact.inject([]) do |patches, ps|
         ps.map do |p|
           patches << if p[0] == '+'
-            [PATCH_STRING_PLUS,  p[1], p[2]]
+            [PATCH_PLUS,  p[1], p[2]]
           else
-            [PATCH_STRING_MINUS, p[1], p[2].size]
+            [PATCH_MINUS, p[1], p[2].size]
           end
         end
         patches
@@ -61,7 +62,7 @@ module StrokeDB
       patch.each do |change|
         action, position, element = change
         case action
-        when PATCH_STRING_MINUS
+        when PATCH_MINUS
           d = position - ai
           if d > 0
             res << self[ai, d]
@@ -69,13 +70,7 @@ module StrokeDB
             bj += d
           end
           ai += element # element == length
-          # while ai < position
-          #   res << self[ai, 1]
-          #   ai += 1
-          #   bj += 1
-          # end
-          # ai += 1
-        when PATCH_STRING_PLUS
+        when PATCH_PLUS
           d = position - bj
           if d > 0
             res << self[ai, d]
@@ -83,30 +78,100 @@ module StrokeDB
             bj += d
           end
           bj += element.size
-          # while bj < position
-          #   res << self[ai, 1]
-          #   ai += 1
-          #   bj += 1
-          # end
-          # bj += 1
           res << element
         end
       end
       d = self.size - ai
       res << self[ai, d] if d > 0
-
-      # while ai < src.size
-      #   res << self[ai, 1]
-      #   ai += 1
-      #   bj += 1
-      # end
-
       res
     end
   end
   
   class ::Array
+    SDATPTAGS = {
+      '-' => PATCH_MINUS,
+      '+' => PATCH_PLUS,
+      '!' => PATCH_DIFF
+    }.freeze
+    def stroke_diff(to)
+      return super(to) unless Array === to
+      return nil if self == to
+      
+      # sdiff:  +   -   !   = 
+      lcs_sdiff = Diff::LCS.sdiff(self, to)
+      patchset = []
+      last_part = lcs_sdiff.inject(nil) do |part, change|
+        a = SDATPTAGS[change.action]
+        if part && part[0] == a && a != PATCH_DIFF
+          if a == '+'
+            part[2] << change.new_element
+          else
+            part[2] += 1
+          end
+          part
+        else
+          patchset << part if part
+          # emit
+          if a == '!' 
+            [a, change.old_position, change.new_position, 
+                change.old_element.stroke_diff(change.new_element)]
+          elsif a == '-'
+            [a, change.old_position, 1]
+          elsif a == '+'
+            [a, change.new_position, [change.new_element]]
+          else 
+            nil
+          end
+        end
+      end
+      patchset << last_part if last_part
+      patchset.empty? ? nil : patchset
+    end
     
+    def stroke_patch(patch)
+      return self unless patch
+      #puts "#{self.inspect}.stroke_patch(#{patch.inspect}) "
+      res = []
+      ai = bj = 0
+      patch.each do |change|
+        action, position, element = change
+        case action
+        when PATCH_MINUS
+          d = position - ai
+          if d > 0
+            res += self[ai, d]
+            ai += d
+            bj += d
+          end
+          ai += element # element == length
+        when PATCH_PLUS
+          d = position - bj
+          if d > 0
+            res += self[ai, d]
+            ai += d
+            bj += d
+          end
+          bj += element.size
+          res += element
+        when PATCH_DIFF
+          action, pa, pb, diff = change
+          da = pa - ai
+          db = pb - bj
+          raise "Distances do not match!" if da != db
+          if da > 0
+            res += self[ai, da]
+            ai += da
+            bj += db
+          end
+          res << self[ai].stroke_patch(diff)
+          ai += 1
+          bj += 1
+        end
+      end
+      d = self.size - ai
+      res += self[ai, d] if d > 0
+      res
+    end
   end
   
   
@@ -153,9 +218,19 @@ if __FILE__ == $0
     }
     str
   end
+  
+  32.times {
+    from = gen_str(letters).split(//u)
+    to   = gen_str(letters).split(//u)
+   # p from
+   # p to
+   # p from.stroke_diff(to)
+   # p from.stroke_patch(from.stroke_diff(to))
+  #  puts "-"*40
+  }
   1000.times {
-    from = gen_str(letters)
-    to   = gen_str(letters)
+    from = gen_str(letters).split(//u)
+    to   = gen_str(letters).split(//u)
     begin
       if from.stroke_patch(from.stroke_diff(to)) != to
         puts "Bug in the stroke_diff/patch!"
