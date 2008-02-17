@@ -44,3 +44,61 @@ describe "Hash diff" do
     str
   end
 end
+
+describe "Automerging hashes" do
+  
+  before(:each) do
+    @base = {:a => 1, :b => 2, :c =>3}
+  end
+  
+  it "should do a trivial merge" do
+    a = @base.merge :a => 2, :x => 1
+    b = @base.merge :b => 3, :y => 2
+    c, r1, r2 = @base.stroke_merge(@base.stroke_diff(a), @base.stroke_diff(b))
+    c.should be_false
+    r1.should == r2
+    r2.should == @base.merge(:a => 2, :x => 1, :b => 3, :y => 2)
+  end
+  
+  it "should do a trivial merge with missing slots" do
+    b1 = @base.dup; b1.delete(:a)
+    b2 = @base.dup; b2.delete(:b)
+    a = b1.merge :x => 2
+    b = b2.merge :y => 3
+    c, r1, r2 = @base.stroke_merge(@base.stroke_diff(a), @base.stroke_diff(b))
+    c.should be_false
+    r1.should == r2
+    r2.should == {:c => @base[:c], :x => 2, :y => 3}
+  end
+  
+  it "should merge intersecting, but identical old slots" do
+    a = @base.merge :a => 2, :c => 42
+    b = @base.merge :b => 3, :c => 42
+    c, r1, r2 = @base.stroke_merge(@base.stroke_diff(a), @base.stroke_diff(b))
+    c.should be_false
+    r1.should == r2
+    r2.should == @base.merge(:a => 2, :b => 3, :c => 42)
+  end
+  
+  it "should merge intersecting, but identical new slots" do
+    a = @base.merge :a => 2, :x => 42
+    b = @base.merge :b => 3, :x => 42
+    c, r1, r2 = @base.stroke_merge(@base.stroke_diff(a), @base.stroke_diff(b))
+    c.should be_false
+    r1.should == r2
+    r2.should == @base.merge(:a => 2, :b => 3, :x => 42)
+  end
+    
+end
+
+describe "Merge conflicts in hashes" do
+  
+  before(:each) do
+    @base = {:a => 1, :b => 2, :c =>3}
+  end
+  
+  
+end
+
+
+
