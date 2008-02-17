@@ -267,10 +267,11 @@ module StrokeDB
         send(:[]=,sym.chomp('='),*args)
       else
         unless slotnames.include?(sym) 
-          raise SlotNotFoundError.new(sym) if (callbacks[:when_slot_not_found]||[]).empty?
+          raise SlotNotFoundError.new(sym) if (callbacks['when_slot_not_found']||[]).empty?
           execute_callbacks(:when_slot_not_found,sym)
+        else
+          send(:[],sym)
         end
-        send(:[],sym)
       end
     end
 

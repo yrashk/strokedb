@@ -23,9 +23,9 @@ describe "Document", :shared => true do
 
   
   it "should call when_slot_not_found callback on missing slot" do 
-    @document.callbacks[:when_slot_not_found] = [mock("callback")]
-    @document.should_receive(:execute_callbacks).with(:when_slot_not_found,'slot_that_surely_does_not_exist')
-    @document.slot_that_surely_does_not_exist
+    @document.callbacks['when_slot_not_found'] = [mock("callback")]
+    @document.should_receive(:execute_callbacks).with(:when_slot_not_found,'slot_that_surely_does_not_exist').and_return("Yes!")
+    @document.slot_that_surely_does_not_exist.should == "Yes!"
   end
 
   it "should raise an exception if slot not found when trying to read it" do
