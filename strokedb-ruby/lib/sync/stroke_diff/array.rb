@@ -15,7 +15,7 @@ module StrokeDB
       last_part = lcs_sdiff.inject(nil) do |part, change|
         a = SDATPTAGS[change.action]
         if part && part[0] == a && a != PATCH_DIFF
-          if a == '+'
+          if a == PATCH_PLUS
             part[2] << change.new_element
           else
             part[2] += 1
@@ -24,12 +24,12 @@ module StrokeDB
         else
           patchset << part if part
           # emit
-          if a == '!' 
+          if a == PATCH_DIFF
             [a, change.old_position, change.new_position, 
                 change.old_element.stroke_diff(change.new_element)]
-          elsif a == '-'
+          elsif a == PATCH_MINUS
             [a, change.old_position, 1]
-          elsif a == '+'
+          elsif a == PATCH_PLUS
             [a, change.new_position, [change.new_element]]
           else 
             nil
