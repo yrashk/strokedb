@@ -81,7 +81,7 @@ if __FILE__ == $0
   
   require 'benchmark'
   include Benchmark
-  n = 200
+  n = 1000
   bm(32) do |x|
     x.report("#{n} times:" ) do
       n.times do
@@ -94,10 +94,10 @@ if __FILE__ == $0
         end
       end
     end
-    arr10 = arr*100
-    x.report("#{n} times (x100 larger data):" ) do
+    arrL = arr*28
+    x.report("#{n} times (x28 larger data):" ) do
       n.times do
-        arr10.trigger_partition do |partition, element|
+        arrL.trigger_partition do |partition, element|
           partition[0] > 0 && element > 0 || partition[0] < 0 && element < 0
         end.fill do |p, e|
           p << e
@@ -109,11 +109,27 @@ if __FILE__ == $0
     # 35% faster
     x.report("#{n} times (SignPartitions):" ) do
       (n/5).times do
-        SignPartitions.partition(arr10)
-        SignPartitions.partition(arr10)
-        SignPartitions.partition(arr10)
-        SignPartitions.partition(arr10)
-        SignPartitions.partition(arr10)
+        SignPartitions.partition(arrL)
+        SignPartitions.partition(arrL)
+        SignPartitions.partition(arrL)
+        SignPartitions.partition(arrL)
+        SignPartitions.partition(arrL)
+      end
+    end
+    # + 17% faster (relative to SignPartitions)
+    x.report("#{n} times (raw code):" ) do
+      n.times do
+        parts = []
+        p = arrL.inject(nil) do |partition, element|
+          if partition && (partition[0] > 0 && element > 0 || partition[0] < 0 && element < 0)
+            partition << element
+            partition
+          else
+            parts << partition if partition
+            [element]
+          end
+        end
+        parts << p if p
       end
     end
   end
