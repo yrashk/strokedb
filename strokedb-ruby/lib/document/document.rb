@@ -266,7 +266,10 @@ module StrokeDB
       if sym.ends_with?('=')
         send(:[]=,sym.chomp('='),*args)
       else
-        raise SlotNotFoundError.new(sym) unless slotnames.include?(sym)
+        unless slotnames.include?(sym) 
+          raise SlotNotFoundError.new(sym) if (callbacks[:when_slot_not_found]||[]).empty?
+          execute_callbacks(:when_slot_not_found,sym)
+        end
         send(:[],sym)
       end
     end
@@ -274,15 +277,19 @@ module StrokeDB
     protected
 
     def execute_callbacks(name,*args)
+      val = nil
       (callbacks[name.to_s]||[]).each do |callback|
-        callback.call(self,*args)
+        val = callback.call(self,*args)
       end
+      val
     end
     
     def execute_callbacks_for(origin,name,*args)
+      val = nil
       (callbacks[name.to_s]||[]).each do |callback|
-        callback.call(self,*args) if callback.origin == origin
+        val = callback.call(self,*args) if callback.origin == origin
       end
+      val
     end
     
     def do_initialize(store, slots={}, uuid=nil)

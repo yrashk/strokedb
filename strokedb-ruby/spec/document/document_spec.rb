@@ -1,5 +1,48 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
+describe "Document", :shared => true do
+
+  it "should create new slot" do
+    lambda do
+      @document[:new_slot] = "someval"
+      @document[:new_slot].should == "someval"
+    end.should change(@document,:slotnames)
+  end
+
+  it "should be able to remove slot" do
+    original_slotnames = @document.slotnames
+    lambda do
+      @document[:new_slot] = "someval"
+      @document[:new_slot].should == "someval"
+    end.should change(@document,:slotnames)
+    lambda do
+      @document.remove_slot!(:new_slot)
+    end.should change(@document,:slotnames)
+    @document.slotnames.should == original_slotnames
+  end
+
+  
+  it "should call when_slot_not_found callback on missing slot" do 
+    @document.callbacks[:when_slot_not_found] = [mock("callback")]
+    @document.should_receive(:execute_callbacks).with(:when_slot_not_found,'slot_that_surely_does_not_exist')
+    @document.slot_that_surely_does_not_exist
+  end
+
+  it "should raise an exception if slot not found when trying to read it" do
+    lambda { @document.slot_that_never_can_exist }.should raise_error(SlotNotFoundError)
+  end
+  
+  it "should allow to write slot by writer method" do
+    @document.slot1 = 2
+    @document[:slot1].should == 2
+  end
+  
+  it "should allow to read slot by reader method" do
+    @document[:slot1] = 1
+    @document.slot1.should == 1
+  end
+  
+end
 
 describe "New Document" do
 
@@ -32,48 +75,18 @@ describe "New Document" do
     @document.slotnames.should be_empty
   end
 
-  it "should create new slot" do
-    lambda do
-      @document[:new_slot] = "someval"
-      @document[:new_slot].should == "someval"
-    end.should change(@document,:slotnames)
-  end
-
-  it "should be able to remove slot" do
-    original_slotnames = @document.slotnames
-    lambda do
-      @document[:new_slot] = "someval"
-      @document[:new_slot].should == "someval"
-    end.should change(@document,:slotnames)
-    lambda do
-      @document.remove_slot!(:new_slot)
-    end.should change(@document,:slotnames)
-    @document.slotnames.should == original_slotnames
-  end
-
   it "should have no versions" do
     @document.__versions__.should be_empty
   end
 
-  it "should raise an exception if slot not found when trying to read it" do
-    lambda { @document.slot_that_never_can_exist }.should raise_error(SlotNotFoundError)
-  end
-  
-  it "should allow to write slot by writer method" do
-    @document.slot1 = 2
-    @document[:slot1].should == 2
-  end
-  
-  it "should allow to read slot by reader method" do
-    @document[:slot1] = 1
-    @document.slot1.should == 1
-  end
 
   it "should be reloadable to itself" do
     reloaded_doc = @document.reload
     reloaded_doc.object_id.should == @document.object_id
     reloaded_doc.should be_new
   end
+  
+  it_should_behave_like "Document"
 
 end
 
@@ -97,7 +110,8 @@ describe "New Document with slots supplied" do
     @document.save!
     @document.should_not be_new
   end
-
+  
+  it_should_behave_like "Document"
 
 end
 
@@ -127,6 +141,8 @@ describe "Saved Document" do
     reloaded_doc.should == @document
     reloaded_doc.object_id.should_not == @document.object_id
   end
+  
+  it_should_behave_like "Document"
   
 end
 
