@@ -81,7 +81,7 @@ if __FILE__ == $0
   
   require 'benchmark'
   include Benchmark
-  n = 2_000
+  n = 200
   bm(32) do |x|
     x.report("#{n} times:" ) do
       n.times do
@@ -94,8 +94,8 @@ if __FILE__ == $0
         end
       end
     end
-    arr10 = arr*10
-    x.report("#{n} times (x10 larger data):" ) do
+    arr10 = arr*100
+    x.report("#{n} times (x100 larger data):" ) do
       n.times do
         arr10.trigger_partition do |partition, element|
           partition[0] > 0 && element > 0 || partition[0] < 0 && element < 0
