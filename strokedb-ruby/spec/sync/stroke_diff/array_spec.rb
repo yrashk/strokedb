@@ -22,7 +22,7 @@ describe "Array diff" do
     {:arr => 1},
     @obj
   ].each do |obj|
-    it "should correctly patch array with a replacement diff" do
+    it "should correctly patch array with a replacement #{obj.inspect}" do
       @arr.stroke_patch(@arr.stroke_diff(obj)).should == obj
     end
   end

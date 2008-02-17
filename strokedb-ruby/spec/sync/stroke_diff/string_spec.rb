@@ -22,7 +22,9 @@ describe "String diff" do
     {:arr => 1},
     @obj
   ].each do |obj|
-    it { @str.stroke_patch(@str.stroke_diff(obj)).should == obj }
+    it "should correctly patch string with a replacement #{obj.inspect}" do
+      @arr.stroke_patch(@arr.stroke_diff(obj)).should == obj
+    end
   end
   
   def gen_str
