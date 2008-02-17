@@ -28,7 +28,7 @@ module StrokeDB
       # one of items is ref, another is not.
       return super(to) if _f == pfx || _t == pfx
             
-      lcs_diff = Diff::LCS.diff(self, to)
+      lcs_diff = ::Diff::LCS.diff(self, to)
       patchset = lcs_diff.map do |changes| 
         parts = []
         last_part = changes.inject(nil) do |part, change|
