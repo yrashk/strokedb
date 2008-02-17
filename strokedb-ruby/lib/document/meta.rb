@@ -1,5 +1,15 @@
 module StrokeDB
 
+  class Callback
+    attr_reader :origin
+    def initialize(origin,&block)
+      @origin, @block = origin, block
+    end
+    def call(*args)
+      @block.call(*args)
+    end
+  end
+  
   module Meta
 
     class << self
@@ -112,6 +122,7 @@ module StrokeDB
     def setup_callbacks(doc)
       CALLBACKS.each do |callback_name| 
         if callback = instance_variable_get("@#{callback_name}_block")
+          callback = Callback.new(self,&callback)
           doc.callbacks[callback_name] ||= []
           doc.callbacks[callback_name] << callback
         end

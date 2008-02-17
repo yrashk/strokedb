@@ -112,11 +112,24 @@ describe "Meta module with on_initialization callback" do
     end
   end
   
-  it "should call callback block on meta instantiation" do
+  it "should receive this callback on meta instantiation" do
     Kernel.should_receive(:on_initialization_called).with(true)
-    s = SomeName.new
+    doc = SomeName.new
   end
-
+  
+  it "should be a sole meta receiving this callback when adding metas dynamically" do
+    Object.send!(:remove_const,'SomeOtherName') if defined?(SomeOtherName)
+    SomeOtherName = Meta.new do
+      on_initialization do |obj|
+        Kernel.send!(:other_on_initialization_called,obj.new?)
+      end
+    end
+    Kernel.should_receive(:other_on_initialization_called).with(true).once
+    doc = SomeOtherName.new
+    Kernel.should_receive(:on_initialization_called).with(true).once
+    doc.metas << SomeName
+  end
+  
 end
 
 describe "Meta module with before_save callback" do
@@ -133,7 +146,7 @@ describe "Meta module with before_save callback" do
     end
   end
   
-  it "should call callback block on Document#save! (before actually saving it)" do
+  it "should receive callback on Document#save! (before actually saving it)" do
     Kernel.should_receive(:before_save_called).with(true)
     s = SomeName.new
     s.save!
@@ -155,7 +168,7 @@ describe "Meta module with after_save callback" do
     end
   end
   
-  it "should call callback block on Document#save! (after actually saving it)" do
+  it "should receive callback on Document#save! (after actually saving it)" do
     Kernel.should_receive(:after_save_called).with(false)
     s = SomeName.new
     s.save!

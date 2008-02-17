@@ -15,7 +15,7 @@ Completed items are removed.
 [ ] Improve PointQuery (I really don't like it)
 [ ] Refactor Meta#document, fix bugs
 [ ] Think about non-index named meta lookup
-[.] Refactor callback stuff in Document — call on_initialization only for specified meta (add param to execute_callbacks?)
+[.] Refactor callback stuff in Document
 [ ] "Valid Document's JSON with multiple meta names specified" spec should check callback through message sending, not instance vars
 [ ] Drop :marshal serialization method or figure out why it is not really working now (run test/playing2.rb with :marshal and see)
 [ ] Add #[index] API to Document::Versions, with negative indexes as well.

@@ -81,7 +81,7 @@ module StrokeDB
         if _module
           @document.extend(_module)
           _module.send!(:setup_callbacks,@document) rescue nil
-          @document.send!(:execute_callbacks, :on_initialization)
+          @document.send!(:execute_callbacks_for, _module, :on_initialization)
         end
         @document[:__meta__] = self
       end
@@ -278,7 +278,13 @@ module StrokeDB
         callback.call(self)
       end
     end
-
+    
+    def execute_callbacks_for(origin,name)
+      (callbacks[name.to_s]||[]).each do |callback|
+        callback.call(self) if callback.origin == origin
+      end
+    end
+    
     def do_initialize(store, slots={}, uuid=nil)
       @callbacks = {}
       @store = store
