@@ -41,14 +41,6 @@ describe "Empty skiplist chunk store" do
     @store.uuid.should match(/^#{UUID_RE}$/)
   end
   
-  it "should create corresponding StrokeStore document" do
-    # StrokeStore.create!(self,{:kind => 'skiplist'},uuid) if empty?
-    
-    doc = @store.find(@store.uuid)
-    doc.should be_a_kind_of(StrokeStore)
-    doc.kind.should == 'skiplist'
-  end
-  
   it "should have 0 lamport_timestamp" do
     @store.lamport_timestamp.should == LTS.zero(@store.uuid)
   end
