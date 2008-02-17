@@ -30,8 +30,8 @@ end
 
 def add_issue(prefix,description)
   todo_list = TodoList.find_or_create(:name => prefix)
-  todo_item = TodoItem.create!(:description => description, :done => false)
-  todo_list.items << todo_item
+  todo_item = TodoItem.find_or_create(:description => description, :done => false)
+  todo_list.items << todo_item unless todo_list.items.find {|d| d == todo_item}
   todo_list.save!
 end
 
