@@ -19,13 +19,16 @@ module StrokeDB
     def stroke_diff(to)
       return super(to) unless String === to
       return nil if self == to
-      #puts "Diffing strings: #{self.inspect} vs. #{to.inspect}"
-      # lcs_diff     -> [ [Change, Change, ...], ... ]
+      
+      _f = self[0,2]
+      _t = to[0,2]
+      pfx = "@#"
+      # both are refs
+      return super(to) if _f == _t && _t == pfx
+      # one of items is ref, another is not.
+      return super(to) if _f == pfx || _t == pfx
+            
       lcs_diff = Diff::LCS.diff(self, to)
-      # LCS.diff gives a huge list of of single-letter diffs.
-      # Here we union sequentional updates in a single updates.
-      # E.g. [['-', i, e], ... ['-', i + N, e]] => ['-', index, N]
-      #p :lcs_diff => lcs_diff.map{|a|a.map{|b|b.to_a}} 
       patchset = lcs_diff.map do |changes| 
         parts = []
         last_part = changes.inject(nil) do |part, change|
@@ -173,34 +176,17 @@ module StrokeDB
       res
     end
   end
-  
-  
-  class DeepDiff
-    def diff(from, to)
-      return yield_update(from, to) if from.class != to.class
-      case from
-      when String
-        _f = from[0,2]
-        _t = to[0,2]
-        pfx = "@#"
-        # both refs
-        if _f == _t && _t == pfx
-          yield_update(from, to)
-        else
-          # one of items is ref, another is not.
-          if _f == pfx || _t == pfx
-            yield_update(from, to)
-          else
-            diff_strings(from, to)
-          end
-        end
-      when Array
-        diff_arrays(from, to)
-      when Hash
-        diff_hashes(from, to)
-      else
-        yield_update(from, to)
-      end
+
+  class ::Hash
+    def stroke_diff(to)
+      return super(to) unless Array === to
+      return nil if self == to
+      
+      
+    end
+    
+    def stroke_patch(patch)
+      
     end
   end
 end
@@ -222,6 +208,7 @@ if __FILE__ == $0
   32.times {
     from = gen_str(letters).split(//u)
     to   = gen_str(letters).split(//u)
+    
    # p from
    # p to
    # p from.stroke_diff(to)
