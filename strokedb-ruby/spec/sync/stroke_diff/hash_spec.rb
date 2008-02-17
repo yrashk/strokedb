@@ -77,11 +77,16 @@ describe "Automerging hashes" do
     should_merge(@base, a, b, @base.merge(:a => 2, :b => 3, :x => 42))
   end
   
-  it "should merge mergable slots" do
+  it "should merge deep diffed slots" do
     base = {:s => { :a => 1 }}
     a    = {:s => { :a => 2 }}
     b    = {:s => { :a => 1, :b => 3 }}
     should_merge(base, a, b, {:s => { :a => 2, :b => 3 }})
+  end
+  
+  it "should merge same slot deletion" do
+    should_merge({:a => 1, :b => 2}, {:b => 2}, {:b => 3}, {:b => 3})
+    should_merge({:a => 1, :b => 2}, {:b => 2}, {:b => 2}, {:b => 2})
   end
   
   def should_merge(base, a, b, r)
@@ -115,6 +120,24 @@ describe "Merge conflicts in hashes" do
     b    = {:a => 222, :b => 2,   :c =>333}
     ra   = {           :b => 222, :c =>333}
     rb   = {:a => 222, :b => 222, :c =>333}
+    should_yield_conflict(base, a, b, ra, rb)
+  end
+  
+  it "should yield a insertion-insertion conflict with partial merge" do
+    base = {           :b => 2,   :c =>3}
+    a    = {:a => 111, :b => 222, :c =>3}
+    b    = {:a => 222, :b => 2,   :c =>333}
+    ra   = {:a => 111, :b => 222, :c =>333}
+    rb   = {:a => 222, :b => 222, :c =>333}
+    should_yield_conflict(base, a, b, ra, rb)
+  end
+  
+  it "should yield a deep diff-diff conflict with partial merge" do
+    base = {:s => { :a => 1, :b => 2,  :c => 3  }, :del => 1 }
+    a    = {:s => { :a => 2, :b => 22, :c => 3  }, :del => 1, :x => 1 }
+    b    = {:s => { :a => 3, :b => 2,  :c => 33 }}
+    ra   = {:s => { :a => 2, :b => 22, :c => 33 }, :x => 1}
+    rb   = {:s => { :a => 3, :b => 22, :c => 33 }, :x => 1}
     should_yield_conflict(base, a, b, ra, rb)
   end
   
