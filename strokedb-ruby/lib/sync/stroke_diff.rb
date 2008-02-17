@@ -135,6 +135,7 @@ module StrokeDB
     
     def stroke_patch(patch)
       return self unless patch
+      return patch[1] if patch[0] == PATCH_REPLACE
       #puts "#{self.inspect}.stroke_patch(#{patch.inspect}) "
       res = []
       ai = bj = 0
@@ -206,6 +207,8 @@ module StrokeDB
     end
     
     def stroke_patch(patch)
+      return self unless patch
+      return patch[1] if patch[0] == PATCH_REPLACE
       res = self.dup
       deleted_slots, inserted_slots, diffed_slots = patch
       deleted_slots.each {|k| res.delete(k) }
