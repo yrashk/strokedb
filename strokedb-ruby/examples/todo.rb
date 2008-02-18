@@ -4,18 +4,6 @@ require "strokedb"
 
 StrokeDB::Config.build :default => true, :base_path => '.todo.strokedb'
 
-TodoList = StrokeDB::Meta.new do
-  on_initialization do |list|
-    list.items = [] unless list[:items]
-  end
-  def to_s
-    s = "#{name}:\n"
-    items.each do |item|
-      s << "  #{item}\n"
-    end
-    s
-  end
-end
 
 TodoItem = StrokeDB::Meta.new do
   def done!
@@ -28,11 +16,20 @@ TodoItem = StrokeDB::Meta.new do
   end
 end
 
+TodoList = StrokeDB::Meta.new do
+  has_many :items, :list, :__meta__ => TodoItem.document
+  def to_s
+    s = "#{name}:\n"
+    items.each do |item|
+      s << "  #{item}\n"
+    end
+    s
+  end
+end
+
 def add_issue(prefix,description)
   todo_list = TodoList.find_or_create(:name => prefix)
-  todo_item = TodoItem.find_or_create(:description => description, :done => false)
-  todo_list.items << todo_item unless todo_list.items.find {|d| d == todo_item}
-  todo_list.save!
+  todo_item = TodoItem.find_or_create(:description => description, :done => false, :list => todo_list)
 end
 
 def complete_issue(prefix,description)
