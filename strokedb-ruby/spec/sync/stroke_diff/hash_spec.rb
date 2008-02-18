@@ -89,6 +89,17 @@ describe "Automerging hashes" do
     should_merge({:a => 1, :b => 2}, {:b => 2}, {:b => 2}, {:b => 2})
   end
   
+  it "should merge when one of the objects is the same" do
+    bases = [{:a => 1}, {:a => 1, :b => 2}, {:a => 1, :b => 2}]
+    bs    = [{:a => 3}, {:a => 1}, {:b => "22"}, nil, 123, Object.new, :symb, false, true]
+    
+    bases.each do |base|
+      bs.each do |b|
+        should_merge(base, base, b, b)
+      end
+    end
+  end
+  
   def should_merge(base, a, b, r)
     c, r1, r2 = base.stroke_merge(base.stroke_diff(a), base.stroke_diff(b))
     c.should be_false
