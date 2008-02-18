@@ -19,6 +19,7 @@ module StrokeDB
         args << {} unless args.last.is_a?(Hash)
         mod.module_eval do
           extend Meta
+          extend Associations
           @args = args
         end
         mod.module_eval(&block) if block_given?
