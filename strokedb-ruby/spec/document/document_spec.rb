@@ -42,6 +42,15 @@ describe "Document", :shared => true do
     @document.slot1.should == 1
   end
   
+  it "should allow to read slot by reader? method" do
+    @document[:slot1] = 1
+    @document[:slot2] = 0
+    @document[:slot3] = nil
+    @document.slot1?.should be_true
+    @document.slot2?.should be_true
+    @document.slot3?.should be_false
+  end
+  
 end
 
 describe "New Document" do
