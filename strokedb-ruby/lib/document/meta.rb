@@ -18,9 +18,9 @@ module StrokeDB
         args = args.unshift(nil) if args.empty? || args.first.is_a?(Hash) 
         args << {} unless args.last.is_a?(Hash)
         mod.module_eval do
+          @args = args
           extend Meta
           extend Associations
-          @args = args
         end
         mod.module_eval(&block) if block_given?
         if meta_name = extract_meta_name(*args)
@@ -77,7 +77,7 @@ module StrokeDB
     end
 
     def find(*args)
-      args = args.unshift(StrokeDB.default_store) if args.empty? || args.first.is_a?(Hash) 
+      args = args.unshift(StrokeDB.default_store) if args.empty? || args.first.is_a?(Hash)
       args << {} unless args.last.is_a?(Hash)
       store = args.first
       raise NoDefaultStoreError.new unless StrokeDB.default_store
