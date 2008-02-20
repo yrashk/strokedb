@@ -31,9 +31,9 @@ module StrokeDB
       end.compact.inject([]) do |patches, ps|
         ps.map do |p|
           patches << if p[0] == '+'
-            [PATCH_PLUS,  p[1], p[2]]
+            [PATCH_PLUS,  p[1], p[2]]      # [+  position_in_b  substr]
           else
-            [PATCH_MINUS, p[1], p[2].size]
+            [PATCH_MINUS, p[1], p[2].size] # [-  position_in_a  length]
           end
         end
         patches
@@ -41,11 +41,14 @@ module StrokeDB
       #p patchset
       patchset.empty? ? nil : patchset
     end
+    
     def stroke_patch(patch)
       return self unless patch
       return patch[1] if patch[0] == PATCH_REPLACE
       
-      #puts "#{self.inspect}.stroke_patch(#{patch.inspect}) "
+      # Patch is a list of insertions and deletions.
+      # Deletion is indexed relative to base.
+      # Insertion is indexed relative to new string.
       res = ""
       ai = bj = 0
       patch.each do |change|
@@ -73,6 +76,74 @@ module StrokeDB
       d = self.size - ai
       res << self[ai, d] if d > 0
       res
+    end
+    
+    def stroke_merge(patch1, patch2)
+      # One patch is missing (i.e. no changes)
+      unless patch1 && patch2
+        return _stroke_automerged(stroke_patch(patch1 || patch2))
+      end
+      
+      # Patch could be either PATCH_REPLACE or regular string diff.
+      # Thus, 4 cases:
+      #
+      # [replace, replace] -> possible conflict
+      # [replace, diff]    -> conflict
+      # [diff,    replace] -> conflict
+      # [diff,    diff]    -> possible conflict
+      
+      # Code is verbose to be fast and clear
+      if patch1[0] == PATCH_REPLACE
+        return if patch2[0] == PATCH_REPLACE # [replace, replace]
+          if patch1[1] != patch2[1]
+            _stroke_conflicted(stroke_patch(patch1), stroke_patch(patch2))
+          else
+            _stroke_automerged(stroke_patch(patch1))
+          end
+        else # [replace, diff]
+           _stroke_conflicted(stroke_patch(patch1), stroke_patch(patch2))
+        end
+      else
+        if patch1[0] == PATCH_REPLACE # [diff, replace]
+          return _stroke_conflicted(stroke_patch(patch1), stroke_patch(patch2))
+        else
+          # [diff, diff] - see below
+        end
+      end
+      
+      result = ""
+      patch1, patch2 = patch1.dup, patch2.dup # we gonna .shift from them
+      ai = bj = 0
+      while true
+        change1 = patch1.shift
+        change2 = patch2.shift
+        action, position, element = change1
+        action, position, element = change2
+        
+        case action
+        when PATCH_MINUS
+          d = position - ai
+          if d > 0
+            res << self[ai, d]
+            ai += d
+            bj += d
+          end
+          ai += element # element == length
+        when PATCH_PLUS
+          d = position - bj
+          if d > 0
+            res << self[ai, d]
+            ai += d
+            bj += d
+          end
+          bj += element.size
+          res << element
+        end
+      end
+      d = self.size - ai
+      res << self[ai, d] if d > 0
+      res
+      
     end
   end
 end

@@ -37,3 +37,25 @@ describe "String diff" do
     str
   end
 end
+
+describe "String automerge" do
+  
+  it "should do a trivial merge" do
+    should_merge("abc", "abcd", "axc", "axcd")
+  end
+  
+  
+  def should_merge(base, a, b, r)
+    c, r1, r2 = base.stroke_merge(base.stroke_diff(a), base.stroke_diff(b))
+    c.should be_false
+    r1.should == r1
+    r2.should == r
+    # another order
+    c, r1, r2 = base.stroke_merge(base.stroke_diff(b), base.stroke_diff(a))
+    c.should be_false
+    r1.should == r1
+    r2.should == r
+  end
+
+end
+
