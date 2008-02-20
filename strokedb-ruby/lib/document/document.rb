@@ -42,7 +42,7 @@ module StrokeDB
       
       def all_preceding
         if previous_version = document.__previous_version__
-          [previous_version, *versions[previous_version].all_preceding]
+          [previous_version, *self[previous_version].__versions__.all_preceding]
         else
           []
         end
