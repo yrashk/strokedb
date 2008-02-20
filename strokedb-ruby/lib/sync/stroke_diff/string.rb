@@ -83,7 +83,7 @@ module StrokeDB
       unless patch1 && patch2
         return _stroke_automerged(stroke_patch(patch1 || patch2))
       end
-      
+
       # Patch could be either PATCH_REPLACE or regular string diff.
       # Thus, 4 cases:
       #
@@ -91,59 +91,26 @@ module StrokeDB
       # [replace, diff]    -> conflict
       # [diff,    replace] -> conflict
       # [diff,    diff]    -> possible conflict
-      
+
       # Code is verbose to be fast and clear
       if patch1[0] == PATCH_REPLACE
-        return if patch2[0] == PATCH_REPLACE # [replace, replace]
+        if patch2[0] == PATCH_REPLACE # [replace, replace]
           if patch1[1] != patch2[1]
-            _stroke_conflicted(stroke_patch(patch1), stroke_patch(patch2))
+            return _stroke_conflicted(stroke_patch(patch1), stroke_patch(patch2))
           else
-            _stroke_automerged(stroke_patch(patch1))
+            return _stroke_automerged(stroke_patch(patch1))
           end
         else # [replace, diff]
-           _stroke_conflicted(stroke_patch(patch1), stroke_patch(patch2))
+           return _stroke_conflicted(stroke_patch(patch1), stroke_patch(patch2))
         end
       else
         if patch1[0] == PATCH_REPLACE # [diff, replace]
           return _stroke_conflicted(stroke_patch(patch1), stroke_patch(patch2))
         else
-          # [diff, diff] - see below
+          nil # [diff, diff] - see below
         end
       end
-      
-      result = ""
-      patch1, patch2 = patch1.dup, patch2.dup # we gonna .shift from them
-      ai = bj = 0
-      while true
-        change1 = patch1.shift
-        change2 = patch2.shift
-        action, position, element = change1
-        action, position, element = change2
-        
-        case action
-        when PATCH_MINUS
-          d = position - ai
-          if d > 0
-            res << self[ai, d]
-            ai += d
-            bj += d
-          end
-          ai += element # element == length
-        when PATCH_PLUS
-          d = position - bj
-          if d > 0
-            res << self[ai, d]
-            ai += d
-            bj += d
-          end
-          bj += element.size
-          res << element
-        end
-      end
-      d = self.size - ai
-      res << self[ai, d] if d > 0
-      res
-      
+	  # TODO: ...
     end
   end
 end
