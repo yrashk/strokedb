@@ -18,6 +18,7 @@ end
 
 TodoList = StrokeDB::Meta.new do
   has_many :items, :list, :__meta__ => TodoItem.document
+
   def to_s
     s = "#{name}:\n"
     items.each do |item|
@@ -26,6 +27,7 @@ TodoList = StrokeDB::Meta.new do
     s
   end
 end
+
 
 def add_issue(prefix,description)
   todo_list = TodoList.find_or_create(:name => prefix)
