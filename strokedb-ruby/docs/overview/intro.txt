@@ -1,9 +1,8 @@
 StrokeDB is a document-oriented database engine. 
 In this file we try to explain core concepts of the project.
 
-Database is a flat space of "documents", "versioned documents" 
-and numerous "indexes". Database maintains every single version of each
-document.
+Database is a flat space of "documents" and numerous "indexes". 
+Database maintains every single version of each document.
 ---
 
 DOCUMENT
@@ -23,7 +22,11 @@ Example documents:
 Some slots are special:
 
     __meta__ contains an array of metadocuments' references.
-    __lamport_timestamp__ is an unique timestamp of a current version.
+             Actually, it is not required to be an array, but some 
+             low level OO wrappers (class Document for instance)
+             expect it to be a reference or a list of references. 
+    __version__ is an unique timestamp of a current version.
+    __previous_version__ is an unique timestamp of a previous version.
 ---
 
 METADOCUMENT
