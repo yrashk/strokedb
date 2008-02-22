@@ -23,7 +23,7 @@ Example documents:
 Some slots are special:
 
     __meta__ contains an array of metadocuments' references.
-    __lamport_timestamp__ is an unique timestamp of a current version.
+    __lamport_timestamp__ is a unique timestamp of a current version.
 ---
 
 METADOCUMENT
