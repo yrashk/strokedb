@@ -1,0 +1,81 @@
+StrokeDB is a document-oriented database engine. 
+In this file we try to explain core concepts of the project.
+
+Database is a flat space of "documents", "versioned documents" 
+and numerous "indexes". Database maintains every single version of each
+document.
+---
+
+DOCUMENT
+
+Each document is a JSON hash object, where each key-value pair 
+is called "slot". Document may contain any slots. Slot content
+is interpreted by a particular database application. 
+
+Each document is identified by UUID (it is not contained in the slots).
+Particular document version is identified by both UUID and 
+timestamp (see VERSIONED DOCUMENT).
+
+Example documents:
+    { :__meta__ => ['@#34b030ab-03a5-4d...'], :color => "Green", :size => "XL" }
+    { :__meta__ => ['@#00000000-0000-00...'], :name  => "Apple" }
+
+Some slots are special:
+
+    __meta__ contains an array of metadocuments' references.
+    __lamport_timestamp__ is an unique timestamp of a current version.
+---
+
+METADOCUMENT
+
+Metadocument describes some aspect of a document. It is a regular
+document with meta == metameta.
+
+Metameta is a single document with UUID=00000000-0000-0000-000000000000.
+
+Several metas may describe different aspects of the document.
+
+Each meta may be connected with a Ruby module, containing methods for
+a document instance. There're important differences from ActiveRecord model:
+
+    * each document may have several metas, and thus several modules
+    * meta not only contains a code, but (more importantly) a serialized 
+      description of a document: metadata (surprise!), validation issues, 
+      and anything else.
+---
+
+VERSIONED DOCUMENT
+
+When document is saved, both "versioned document" and "HEAD document" are 
+stored in a database. HEAD is identified only by document UUID and represents
+latest document revision. 
+
+Versioned document is immutable and identified by UUID and a timestamp.
+Versions are stored for two reasons: first, they are neccessary for accurate 
+merge from foreign databases. Another reason is that it is really cool :-)
+---
+
+JSON
+
+JSON stands for "Javascript Object Notation". 
+We use the term for the two kinds of things:
+    * A serialization format.
+    * A set of primitive datatypes.
+
+JSON consists of the following datatypes:
+    1) Primitives:
+        * true, false
+        * nil (null in JavaScript)
+        * numerics (Fixnum, Float, Bignum in Ruby; Number in JavaScript)
+    2) Text strings
+    3) Arrays of JSON objects
+    4) Unordered hashes with string keys and JSON values
+---
+
+todo:
+
+STORES
+STORAGES
+INDEXES
+LAMPORT TIMESTAMP
+
