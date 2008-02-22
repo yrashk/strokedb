@@ -42,7 +42,7 @@ module StrokeDB
       
       def all_preceding
         if previous_version = document.__previous_version__
-          [previous_version, *versions[previous_version].all_preceding]
+          [previous_version, *self[previous_version].__versions__.all_preceding]
         else
           []
         end
@@ -267,8 +267,12 @@ module StrokeDB
         send(:[]=,sym.chomp('='),*args)
       else
         unless slotnames.include?(sym) 
-          raise SlotNotFoundError.new(sym) if (callbacks['when_slot_not_found']||[]).empty?
-          execute_callbacks(:when_slot_not_found,sym)
+          if sym.ends_with?('?')
+            !!send(sym.chomp('?'),*args,&block)
+          else
+            raise SlotNotFoundError.new(sym) if (callbacks['when_slot_not_found']||[]).empty?
+            execute_callbacks(:when_slot_not_found,sym)
+          end
         else
           send(:[],sym)
         end
