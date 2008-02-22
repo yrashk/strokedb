@@ -1,3 +1,8 @@
+StrokeDB is a distributed document-oriented database engine. 
+Main features are complete decentralization, JSON object format, 
+metadocuments (similar to traits in Smalltalk), integration with 
+runtime (it is just a ruby library). 
+
 See ./docs folder for further reading.
 
 SPECS
