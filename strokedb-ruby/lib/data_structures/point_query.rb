@@ -13,12 +13,11 @@ module StrokeDB
   #
   class PointQuery
     attr_reader :slots
-        
+
     def initialize(slots)
-      @slots = slots
-      @slots.each do |k, v|
-        @slots[k] = v.__reference__ if v.is_a? Document
-        @slots[k] = v.map {|e| e.is_a?(Document) ? v.__reference__  : e} if v.is_a?(Enumerable)
+      @slots = {}
+      slots.each do |k, v|
+        @slots[k.to_optimized_raw] = v.to_optimized_raw
       end
     end
   end

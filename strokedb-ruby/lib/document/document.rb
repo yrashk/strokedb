@@ -175,6 +175,10 @@ module StrokeDB
       end
       raw_slots
     end
+    
+    def to_optimized_raw
+      __reference__
+    end
 
     def self.from_raw(store, uuid, raw_slots,opts = {})
       doc = new(store, raw_slots, uuid)
