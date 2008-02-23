@@ -136,11 +136,15 @@ module StrokeDB
       from_raw(store,uuid,json_decoded)
     end
 
-    def inspect
+    def pretty_print
       slots = to_raw.except('__meta__')
       s = "#<"
       Util.catch_circular_reference(self) do
-        s << (self[:__meta__] ? "#{meta} " : "Doc ")
+        if self[:__meta__] && meta[:name] 
+          s << "#{meta.name} "
+        else
+          s << "Doc "
+        end
         slots.each_pair do |k,v|
           if %w(__version__ __previous_version__).member?(k)
             s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
@@ -158,7 +162,8 @@ module StrokeDB
       "#(#{(self[:__meta__] ? "#{meta}" : "Doc")} #{('@#'+uuid)[0,5]}...)"
     end
 
-    alias :to_s :inspect
+    alias :to_s :pretty_print
+    alias :inspect :pretty_print
 
 
     # Primary serialization

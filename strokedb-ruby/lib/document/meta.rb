@@ -89,7 +89,11 @@ module StrokeDB
     end
 
     def inspect
-      "{#{name}#{is_a?(Module) ? ' meta module' : ''}}"
+      if is_a?(Module)
+        name
+      else
+        pretty_print
+      end
     end
     alias :to_s :inspect
 
