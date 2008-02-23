@@ -11,6 +11,21 @@ module StrokeDB
       end
       alias :collect_with_index :map_with_index
     end
+    
+    class ::Object
+      def to_optimized_raw
+        case self
+        when Array
+          map{|v| v.to_optimized_raw }
+        when Hash
+          new_hash = {}
+          each_pair{|k,v| new_hash[k.to_optimized_raw] = v.to_optimized_raw}
+          new_hash
+        else
+          self
+        end
+      end
+    end
 
     class HashWithSortedKeys < Hash
       def keys_with_sort

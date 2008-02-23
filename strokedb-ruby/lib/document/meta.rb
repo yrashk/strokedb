@@ -93,7 +93,7 @@ module StrokeDB
       if is_a?(Module)
         name
       else
-        "{#{name}}"
+        pretty_print
       end
     end
     alias :to_s :inspect

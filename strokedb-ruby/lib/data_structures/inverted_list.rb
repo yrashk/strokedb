@@ -141,6 +141,14 @@ module StrokeDB
   		[@head.to_s, map{|node| node.level.to_s }, @tail.to_s].flatten.join(', ') +
   		">"
   	end
+  	
+  	def debug_dump
+  	  s = ""
+  	  each do |n|
+  	    s << "#{n.key.inspect}: #{n.values.inspect}\n"
+      end
+      s
+	  end
 
  	  def each
   	  n = @head.forward[0]
