@@ -13,7 +13,7 @@ is interpreted by a particular database application.
 
 Each document is identified by UUID (it is not contained in the slots).
 Particular document version is identified by both UUID and 
-timestamp (see VERSIONED DOCUMENT).
+its version (see VERSIONED DOCUMENT).
 
 Example documents:
     { :__meta__ => ['@#34b030ab-03a5-4d...'], :color => "Green", :size => "XL" }
