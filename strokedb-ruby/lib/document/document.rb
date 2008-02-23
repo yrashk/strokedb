@@ -146,7 +146,7 @@ module StrokeDB
           s << "Doc "
         end
         slots.each_pair do |k,v|
-          if %w(__version__ __previous_version__).member?(k)
+          if %w(__version__ __previous_version__).member?(k) && v
             s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
           else
             s << "#{k}: #{self[k].inspect}, "
