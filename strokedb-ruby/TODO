@@ -5,6 +5,8 @@ Legend:
 Completed items are removed.
 ============================
 
+[ ] Fix has_many meta serialization
+[?] Add something like has_many :through
 [ ] Spec Chunk#find_next_node and then consider some refactoring (node => uuid, etc)
 [ ] Spec SkiplistStore is saving store_uuid to master chunk and loading it from there on initialization
 [ ] Create Store's self-descripting document
