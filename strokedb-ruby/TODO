@@ -5,6 +5,8 @@ Legend:
 Completed items are removed.
 ============================
 
+To be done before 0.1 ("Praha"):
+
 [ ] Fix has_many meta serialization
 [ ] add sub-finders to associations (like User.messages.find :title => '...')
 [ ] Add sorting primitives for search functionality
@@ -12,22 +14,27 @@ Completed items are removed.
 [ ] Add on_new_document callback
 [ ] Spec Chunk#find_next_node and then consider some refactoring (node => uuid, etc)
 [ ] Spec SkiplistStore is saving store_uuid to master chunk and loading it from there on initialization
-[ ] Create Store's self-descripting document
-[ ] Read/Write benchmarks showing dependency of data size
-[ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
-[ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
-[ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
 [ ] Improve PointQuery (I really don't like it)
 [ ] Refactor Meta#document, fix bugs
-[ ] Think about non-index named meta lookup
 [.] Refactor callback stuff in Document
 [ ] "Valid Document's JSON with multiple meta names specified" spec should check callback through message sending, not instance vars
-[ ] Drop :marshal serialization method or figure out why it is not really working now (run test/playing2.rb with :marshal and see)
-[ ] Add #[index] API to Document::Versions, with negative indexes as well.
-[ ] Add Document::Versions#first, #last (?)
+[?] Add #[index] API to Document::Versions, with negative indexes as well.
+[ ] Add Document::Versions#first, #head
+
+To be done later:
+
+[ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
+[ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
 [ ] Replace 0000000000000000 with (0){16} in regexps (when http://jira.codehaus.org/browse/JRUBY-2113 will be released)
 [?] Pool new UUIDs
+[ ] Drop :marshal serialization method or figure out why it is not really working now (run test/playing2.rb with :marshal and see)
+[ ] Think about non-index named meta lookup
+[ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
+[ ] Read/Write benchmarks showing dependency of data size
 
+
+UNSORTED
+========
 InvertedList index:
 
 [ ] Optimize prefixes
