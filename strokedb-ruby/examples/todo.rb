@@ -32,6 +32,7 @@ end
 def add_issue(prefix,description)
   todo_list = TodoList.find_or_create(:name => prefix)
   todo_item = TodoItem.find_or_create(:description => description, :done => false, :list => todo_list)
+  list_issues
 end
 
 def complete_issue(prefix,description)
@@ -39,6 +40,7 @@ def complete_issue(prefix,description)
   return unless todo_list
   if item = todo_list.items.find {|item| item.description == description }
     item.done!
+    list_issues
   else 
     puts "No such item found"
   end
