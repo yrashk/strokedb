@@ -17,11 +17,11 @@ TodoItem = StrokeDB::Meta.new do
 end
 
 TodoList = StrokeDB::Meta.new do
-  has_many :items, :list, :__meta__ => TodoItem.document
+  has_many :todo_items
 
   def to_s
     s = "#{name}:\n"
-    items.each do |item|
+    todo_items.each do |item|
       s << "  #{item}\n"
     end
     s
@@ -31,13 +31,13 @@ end
 
 def add_issue(prefix,description)
   todo_list = TodoList.find_or_create(:name => prefix)
-  todo_item = TodoItem.find_or_create(:description => description, :done => false, :list => todo_list)
+  todo_item = TodoItem.find_or_create(:description => description, :done => false, :todo_list => todo_list)
 end
 
 def complete_issue(prefix,description)
   todo_list = TodoList.find_or_create(:name => prefix)
   return unless todo_list
-  if item = todo_list.items.find {|item| item.description == description }
+  if item = todo_list.todo_items.find {|item| item.description == description }
     item.done!
   else 
     puts "No such item found"
