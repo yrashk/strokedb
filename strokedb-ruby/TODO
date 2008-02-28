@@ -7,11 +7,9 @@ Completed items are removed.
 
 [ ] Fix has_many meta serialization
 [ ] add sub-finders to associations (like User.messages.find :title => '...')
-[ ] Consider allowing to refer __meta__ as symbols in index queries (or at least in associations). That will allow to cross-reference
-	metas with associations.
 [ ] Add sorting primitives for search functionality
 [?] Add something like has_many :through
-[ ] Improve has_many syntax (it is not really obvious now)
+[ ] Add on_new_document callback
 [ ] Spec Chunk#find_next_node and then consider some refactoring (node => uuid, etc)
 [ ] Spec SkiplistStore is saving store_uuid to master chunk and loading it from there on initialization
 [ ] Create Store's self-descripting document
