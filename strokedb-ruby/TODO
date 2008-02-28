@@ -9,6 +9,7 @@ To be done before 0.1 ("Praha"):
 
 [ ] Make has_many callback single per doc (or per meta?)
 	this could be done by introducing named callbacks (and names should be unique)
+[ ] Spec has_many!
 [ ] Fix has_many meta serialization
 [ ] add sub-finders to associations (like User.messages.find :title => '...')
 [ ] Add sorting primitives for search functionality
