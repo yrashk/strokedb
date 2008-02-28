@@ -26,8 +26,8 @@ module StrokeDB
     def sync_chained_storages!
       @chained_storages.each_pair do |storage, savings|
         savings.each {|saving| storage.save!(saving, self)}
+        @chained_storages[storage] = [] # TODO: spec it
       end
-      @chained_storages = {}
     end
     
     def sync_chained_storage!(storage)
