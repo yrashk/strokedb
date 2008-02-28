@@ -7,10 +7,11 @@ Completed items are removed.
 
 To be done before 0.1 ("Praha"):
 
+[ ] Make has_many callback single per doc (or per meta?)
+	this could be done by introducing named callbacks (and names should be unique)
 [ ] Fix has_many meta serialization
 [ ] add sub-finders to associations (like User.messages.find :title => '...')
 [ ] Add sorting primitives for search functionality
-[?] Add something like has_many :through
 [ ] Add on_new_document callback
 [ ] Spec Chunk#find_next_node and then consider some refactoring (node => uuid, etc)
 [ ] Spec SkiplistStore is saving store_uuid to master chunk and loading it from there on initialization
