@@ -42,6 +42,13 @@ def h(*args)
   }
 end
 
+def reload!
+  silence_warnings do
+    load "strokedb.rb"
+  end
+  "Classes reloaded."
+end
+
 build_config
 
 puts "StrokeDB #{StrokeDB::VERSION} Console"
