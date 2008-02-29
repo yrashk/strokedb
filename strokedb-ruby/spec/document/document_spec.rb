@@ -142,7 +142,26 @@ describe "New Document with slots supplied" do
 
 end
 
-
+describe "Forked documents" do
+  before(:each) do
+    setup_default_store
+  end
+  it "should have the same __previous_version__ " do
+    @doc1 = Document.create!(:a => 11)
+    @doc1.save!
+    @first_version = @doc1.__version__.dup
+    @doc1.a = 12
+    @doc1.save!
+    
+    # clone
+    @doc2 = @doc1.__versions__[@first_version]
+    @doc2.a = 21
+    @doc2.save!
+    
+    @doc1.__previous_version__.should == @first_version     
+    @doc2.__previous_version__.should == @first_version 
+  end
+end
 
 describe "Saved Document" do
 
