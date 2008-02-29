@@ -1,3 +1,4 @@
+require 'pp'
 require "strokedb"
 include StrokeDB
 
