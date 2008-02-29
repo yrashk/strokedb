@@ -208,8 +208,8 @@ module StrokeDB
     end
 
     def save!
-      self[:__previous_version__] = store.last_version(uuid) unless new?
       execute_callbacks :before_save
+      self[:__previous_version__] = self[:__version__] unless new? 
       store.save!(self)
       execute_callbacks :after_save
       self

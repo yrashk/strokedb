@@ -92,7 +92,9 @@ module StrokeDB
     def document(store=nil)
       store ||= StrokeDB.default_store
       raise NoDefaultStoreError.new unless store
-      args = @args.clone
+      # TODO: Silly, buggy deep clone implementation!
+      # Refactor this!
+      args = @args.clone.map{|a| Hash === a ? a.clone : a }
       args[0] = store
       args.last[:__meta__] = Meta.document(store)
       args.last[:name] ||= name
