@@ -94,19 +94,6 @@ describe "Chunks" do
     end
   end
 
-  it "should find next chunk node to given node" do
-    pending
-    @head_chunk.find_next_node(@head_chunk.find_node("K100")).key.should == "K101"
-  end
-
-  it "should find next chunk node to given node if that node is just before tail node" do
-    pending
-    node = @head_chunk.find_node("K100")
-    node = node.next until node.next.is_a?(Skiplist::TailNode)
-    node.next.should be_a_kind_of(Skiplist::TailNode)
-    @head_chunk.find_next_node(node).key.should == "K#{node.key[1,3].to_i+1}"
-  end
-
   it "should be serialized well" do
     @all_chunks.each do |k,v|
       rawv = v.to_raw
