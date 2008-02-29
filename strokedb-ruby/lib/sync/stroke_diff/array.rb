@@ -11,32 +11,18 @@ module StrokeDB
       
       # sdiff:  +   -   !   = 
       lcs_sdiff = ::Diff::LCS.sdiff(self, to)
-      patchset = []
-      last_part = lcs_sdiff.inject(nil) do |part, change|
+      patchset = lcs_sdiff.inject([]) do |patchset, change|
         a = SDATPTAGS[change.action]
-        if part && part[0] == a && a != PATCH_DIFF
-          if a == PATCH_PLUS
-            part[2] << change.new_element
-          else
-            part[2] += 1
-          end
-          part
-        else
-          patchset << part if part
-          # emit
-          if a == PATCH_DIFF
-            [a, change.old_position, change.new_position, 
-                change.old_element.stroke_diff(change.new_element)]
-          elsif a == PATCH_MINUS
-            [a, change.old_position, 1]
-          elsif a == PATCH_PLUS
-            [a, change.new_position, [change.new_element]]
-          else 
-            nil
-          end
+        if a == PATCH_DIFF
+          patchset << [a, change.old_position, change.new_position, 
+                          change.old_element.stroke_diff(change.new_element)]
+        elsif a == PATCH_MINUS
+          patchset << [a, change.old_position]
+        elsif a == PATCH_PLUS
+          patchset << [a, change.new_position, change.new_element]
         end
+        patchset
       end
-      patchset << last_part if last_part
       patchset.empty? ? nil : patchset
     end
     
@@ -47,25 +33,26 @@ module StrokeDB
       res = []
       ai = bj = 0
       patch.each do |change|
-        action, position, element = change
-        case action
+        case change[0]
         when PATCH_MINUS
+          action, position = change
           d = position - ai
           if d > 0
             res += self[ai, d]
             ai += d
             bj += d
           end
-          ai += element # element == length
+          ai += 1
         when PATCH_PLUS
+          action, position, element = change
           d = position - bj
           if d > 0
             res += self[ai, d]
             ai += d
             bj += d
           end
-          bj += element.size
-          res += element
+          bj += 1
+          res << element
         when PATCH_DIFF
           action, pa, pb, diff = change
           da = pa - ai
@@ -85,5 +72,13 @@ module StrokeDB
       res += self[ai, d] if d > 0
       res
     end
+    
+    
+    def stroke_merge(patch1, patch2)
+      
+      
+      
+    end
+    
   end
 end
