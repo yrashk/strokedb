@@ -3,7 +3,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe "Database sync" do
   
   before(:all) do
-    @path = File.dirname(__FILE__) + '/../test/storages/regression/database-sync'
+    @path = File.dirname(__FILE__) + '/../../test/storages/regression/database-sync'
     build_config!
     FileUtils.rm_rf @path
   end
