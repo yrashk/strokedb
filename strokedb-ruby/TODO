@@ -10,15 +10,13 @@ To be done before 0.1 ("Praha"):
 [ ] Spec Symbol conversion to String
 [ ] Spec has_many!
 [ ] add sub-finders to associations (like User.messages.find :title => '...')
-[ ] Add sorting primitives for search functionality
+[?] Add sorting primitives for search functionality
 [ ] Add on_new_document callback
 [ ] Spec Chunk#find_next_node and then consider some refactoring (node => uuid, etc)
-[ ] Spec SkiplistStore is saving store_uuid to master chunk and loading it from there on initialization
 [ ] Improve PointQuery (I really don't like it)
 [ ] Refactor Meta#document, fix bugs
 [.] Refactor callback stuff in Document
 [ ] "Valid Document's JSON with multiple meta names specified" spec should check callback through message sending, not instance vars
-[?] Add #[index] API to Document::Versions, with negative indexes as well.
 [ ] Add Document::Versions#first, #head
 
 To be done later:
