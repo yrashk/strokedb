@@ -1,15 +1,5 @@
 module StrokeDB
 
-  class Callback
-    attr_reader :origin
-    def initialize(origin,&block)
-      @origin, @block = origin, block
-    end
-    def call(*args)
-      @block.call(*args)
-    end
-  end
-
   module Meta
 
     class << self
@@ -125,19 +115,15 @@ module StrokeDB
     private
 
     def add_callback(name,&block)
-      @callbacks ||= {}
-      @callbacks[name] ||= []
-      @callbacks[name] << block
+      @callbacks ||= []
+      @callbacks << Callback.new(self,name,&block)
     end
     
     def setup_callbacks(doc)
       return unless @callbacks
-      @callbacks.each_pair do |callback_name, blocks|
-        blocks.each do |block|
-          callback = Callback.new(self,&block)
-          doc.callbacks[callback_name] ||= []
-          doc.callbacks[callback_name] << callback
-        end
+      @callbacks.each do |callback|
+          doc.callbacks[callback.name] ||= []
+          doc.callbacks[callback.name] << callback
       end
     end
     

@@ -287,6 +287,11 @@ module StrokeDB
         end
       end
     end
+    
+    def add_callback(callback)
+      self.callbacks[callback.name] ||= []
+      self.callbacks[callback.name] << callback
+    end
 
     protected
 

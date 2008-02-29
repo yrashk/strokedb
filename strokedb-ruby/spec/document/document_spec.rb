@@ -51,6 +51,15 @@ describe "Document", :shared => true do
     @document.slot3?.should be_false
   end
   
+  it "should add callbacks" do
+    cb1 = Callback.new(nil,:callback_name) {}
+    cb2 = Callback.new(nil,:another_callback_name) {}
+    @document.add_callback(cb1)
+    @document.add_callback(cb2)
+    @document.callbacks[:callback_name].should include(cb1)
+    @document.callbacks[:another_callback_name].should include(cb2)
+  end
+  
 end
 
 describe "New Document" do
