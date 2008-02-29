@@ -103,7 +103,7 @@ module StrokeDB
         meta_doc.save!
       else
         args.last[:__version__] = meta_doc.__version__
-        unless (new_doc = Document.new(*args)).to_raw == meta_doc.to_raw
+        unless (new_doc = Document.new(*args + [meta_doc.uuid])).to_raw == meta_doc.to_raw
           meta_doc.slotnames.each {|slotname| meta_doc.remove_slot!(slotname) }
           new_doc.slotnames.each {|slotname| meta_doc[slotname] = new_doc[slotname]}
           meta_doc.save!

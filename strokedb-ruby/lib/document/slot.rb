@@ -49,7 +49,7 @@ module StrokeDB
     end
 
     def value=(v)
-      @value = v
+      @value = decode_value(encode_value(v,true))
       if v.is_a?(Document) 
         @cached_value = v
       end
@@ -85,24 +85,26 @@ module StrokeDB
 
     private
 
-    def encode_value(v)
+    def encode_value(v,skip_documents=false)
       case v
       when VersionedDocument
-        DocumentReferenceValue.new(v.__reference__,doc)
+        skip_documents ? v : DocumentReferenceValue.new(v.__reference__,doc) 
       when Document
-        v.new? ? DocumentReferenceValue.new("@##{v.uuid}.0000000000000000#{v.store.uuid}",doc) : DocumentReferenceValue.new("@##{v.uuid}.#{v.__version__}",doc)
+        skip_documents ? v : (v.new? ? DocumentReferenceValue.new("@##{v.uuid}.0000000000000000#{v.store.uuid}",doc) : DocumentReferenceValue.new("@##{v.uuid}.#{v.__version__}",doc))
       when Array
         LazyMappingArray.new(v).map_with do |element| 
-          encode_value(element)
+          encode_value(element,skip_documents)
         end.unmap_with do |element|
           decode_value(element)
         end
       when Hash
         LazyMappingHash.new(v).map_with do |element| 
-          encode_value(element)
+          encode_value(element,skip_documents)
         end.unmap_with do |element|
           decode_value(element)
         end
+      when Symbol
+        v.to_s
       else
         v
       end
@@ -126,6 +128,8 @@ module StrokeDB
         end.unmap_with do |element|
           encode_value(element)
         end
+      when Symbol
+        v.to_s
       else
         v
       end
