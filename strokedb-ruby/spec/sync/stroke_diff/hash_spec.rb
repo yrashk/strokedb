@@ -99,19 +99,6 @@ describe "Automerging hashes" do
       end
     end
   end
-  
-  def should_merge(base, a, b, r)
-    c, r1, r2 = base.stroke_merge(base.stroke_diff(a), base.stroke_diff(b))
-    c.should be_false
-    r1.should == r1
-    r2.should == r
-    # another order
-    c, r1, r2 = base.stroke_merge(base.stroke_diff(b), base.stroke_diff(a))
-    c.should be_false
-    r1.should == r1
-    r2.should == r
-  end
-  
 end
 
 describe "Merge conflicts in hashes" do
@@ -150,18 +137,6 @@ describe "Merge conflicts in hashes" do
     ra   = {:s => { :a => 2, :b => 22, :c => 33 }, :x => 1}
     rb   = {:s => { :a => 3, :b => 22, :c => 33 }, :x => 1}
     should_yield_conflict(base, a, b, ra, rb)
-  end
-  
-  def should_yield_conflict(base, a, b, ra, rb)
-    c, r1, r2 = base.stroke_merge(base.stroke_diff(a), base.stroke_diff(b))
-    c.should be_true
-    r1.should == ra
-    r2.should == rb
-    # another order
-    c, r1, r2 = base.stroke_merge(base.stroke_diff(b), base.stroke_diff(a))
-    c.should be_true
-    r1.should == rb
-    r2.should == ra
   end
 end
 

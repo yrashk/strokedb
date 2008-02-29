@@ -18,3 +18,6 @@ describe "Scalar diff" do
     end
   end
 end
+
+
+# TODO: spec merging
