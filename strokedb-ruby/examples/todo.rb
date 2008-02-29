@@ -17,11 +17,11 @@ TodoItem = StrokeDB::Meta.new do
 end
 
 TodoList = StrokeDB::Meta.new do
-  has_many :todo_items
+  has_many :items, :through => :todo_items
 
   def to_s
     s = "#{name}:\n"
-    todo_items.each do |item|
+    items.each do |item|
       s << "  #{item}\n"
     end
     s
@@ -38,7 +38,7 @@ end
 def complete_issue(prefix,description)
   todo_list = TodoList.find_or_create(:name => prefix)
   return unless todo_list
-  if item = todo_list.todo_items.find {|item| item.description == description }
+  if item = todo_list.items.find {|item| item.description == description }
     item.done!
     list_issues
   else 
