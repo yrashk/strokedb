@@ -129,3 +129,33 @@ describe "Chunks" do
   
 end
 
+
+describe "Chunk#find_next_node" do
+  before(:each) do
+    # Chunks layout: [K1, K2], [K3]
+    @head_chunk = Chunk.new(3)
+    @chunk1, _nil = @head_chunk.insert("K1", "V1", 2)
+    @chunk1.should == @head_chunk
+    _nil.should be_nil
+    @chunk1, _nil = @head_chunk.insert("K2", "V2", 2)
+    @chunk1.should == @head_chunk
+    _nil.should be_nil
+    @chunk1, @chunk2 = @chunk1.insert("K3", "V3", 4)
+    @chunk1.should == @head_chunk
+    @chunk2.should_not be_nil
+  end
+  
+  it "should find next node in a single chunk" do
+    n1 = @chunk1.find_node("K1")
+    n2 = @chunk1.find_node("K2")
+    n3 = @chunk2.find_node("K3")
+    n1.key.should == "K1"
+    n2.key.should == "K2"
+    n3.key.should == "K3"
+    @chunk1.find_next_node(n1).should == n2
+    @chunk1.find_next_node(n2).should == n3
+    @chunk2.find_next_node(n3).should == nil
+  end
+end
+
+

@@ -37,18 +37,19 @@ module StrokeDB
       skiplist.find_nearest(uuid, default)
     end
     
-    def find_next_node(chunk_node)
+    # Finds next node across separate chunks
+    def find_next_node(node)
       chunk = self
-      chunk_node = chunk_node.next
-      if chunk_node.is_a?(Skiplist::TailNode)
-        chunk = chunk.next_chunk 
+      node2 = node.next
+      if node2.is_a?(Skiplist::TailNode)
+        chunk = chunk.next_chunk
         unless chunk.nil?
-          chunk_node = chunk.first_node
+          node2 = chunk.first_node
         else
-          chunk_node = nil
+          node2 = nil
         end
       end
-      chunk_node
+      node2
     end
     
     
