@@ -25,6 +25,8 @@ module StrokeDB
           doc.store.index_store.find(effective_query).select do |d| 
             d[effective_reference_slotname] && d.send(effective_reference_slotname) == doc 
           end.map {|d| through.each {|t| d = d.send(t)  } ; d}
+        else
+          SlotNotFoundError.new(missed_slotname)
         end
       end
     end 
