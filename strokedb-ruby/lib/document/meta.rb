@@ -47,8 +47,8 @@ module StrokeDB
     CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found)
     CALLBACKS.each do |callback_name|
       module_eval %{
-        def #{callback_name}(&block)
-          add_callback('#{callback_name}',&block)
+        def #{callback_name}(uid=nil,&block)
+          add_callback('#{callback_name}',uid,&block)
         end
       }
     end
@@ -114,9 +114,9 @@ module StrokeDB
 
     private
 
-    def add_callback(name,&block)
+    def add_callback(name,uid=nil,&block)
       @callbacks ||= []
-      @callbacks << Callback.new(self,name,&block)
+      @callbacks << Callback.new(self,name,uid,&block)
     end
     
     def setup_callbacks(doc)
