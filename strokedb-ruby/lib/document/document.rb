@@ -290,6 +290,9 @@ module StrokeDB
     
     def add_callback(callback)
       self.callbacks[callback.name] ||= []
+      if callback.uid && old_cb = self.callbacks[callback.name].find{|cb| cb.uid == callback.uid}
+        self.callbacks[callback.name].delete old_cb
+      end
       self.callbacks[callback.name] << callback
     end
 

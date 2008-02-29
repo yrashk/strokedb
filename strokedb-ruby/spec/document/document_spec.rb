@@ -59,6 +59,15 @@ describe "Document", :shared => true do
     @document.callbacks[:callback_name].should include(cb1)
     @document.callbacks[:another_callback_name].should include(cb2)
   end
+
+  it "should replace uniquely identified callbacks" do
+    cb1 = Callback.new(nil,:callback_name, :special) {}
+    cb2 = Callback.new(nil,:callback_name, :special) {}
+    @document.add_callback(cb1)
+    @document.add_callback(cb2)
+    @document.callbacks[:callback_name].should have(1).item
+    @document.callbacks[:callback_name].should include(cb2)
+  end
   
 end
 
