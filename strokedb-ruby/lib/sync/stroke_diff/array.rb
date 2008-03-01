@@ -53,8 +53,8 @@ module StrokeDB
       result2 = nil
       
       while c1 && c2
-        while c1 && (p1 = c1[1]) && (p2 = c2[1]) && p1 < p2
-          offset2 += _stroke_elementary_patch(result, p1 + offset1, c1)
+        while c1 && (p1 = c1[1] + offset1) && (p2 = c2[1] + offset2) && p1 < p2
+          offset2 += _stroke_elementary_patch(result, p1, c1)
           c1 = patch1.shift
         end
         
@@ -64,8 +64,8 @@ module StrokeDB
           c1 = patch1.shift
         end
         
-        while c1 && c2 && (p1 = c1[1]) && (p2 = c2[1]) && p2 < p1
-          offset1 += _stroke_elementary_patch(result, p2 + offset2, c2)
+        while c1 && c2 && (p1 = c1[1] + offset1) && (p2 = c2[1] + offset2) && p2 < p1
+          offset1 += _stroke_elementary_patch(result, p2, c2)
           c2 = patch2.shift
         end
       end
