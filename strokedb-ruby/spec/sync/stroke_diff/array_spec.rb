@@ -44,3 +44,71 @@ describe "Array diff" do
     str
   end
 end
+
+describe "Automerging arrays" do
+  
+  before(:each) do
+    @base = [1, 2, 3]
+  end
+  
+  it "should do a trivial one-side merge" do
+    a = [1, 2, 3]
+    b = [1, 2, 4, 3]
+    should_merge(@base, a, b, [1, 2, 4, 3])
+  end
+
+  it "should do a trivial two-side merge" do
+    a = [   1, 2, 3, 4]
+    b = [0, 1, 2, 3   ]
+    should_merge(@base, a, b, [0, 1, 2, 3, 4])
+  end
+  
+  # it "should do a trivial merge with missing slots" do
+  #   b1 = @base.dup; b1.delete(:a)
+  #   b2 = @base.dup; b2.delete(:b)
+  #   a = b1.merge :x => 2
+  #   b = b2.merge :y => 3
+  #   should_merge(@base, a, b, {:c => @base[:c], :x => 2, :y => 3})
+  # end
+  # 
+  # it "should merge intersecting, but identical old slots" do
+  #   a = @base.merge :a => 2, :c => 42
+  #   b = @base.merge :b => 3, :c => 42
+  #   should_merge(@base, a, b, @base.merge(:a => 2, :b => 3, :c => 42))
+  # end
+  # 
+  # it "should merge intersecting, but identical new slots" do
+  #   a = @base.merge :a => 2, :x => 42
+  #   b = @base.merge :b => 3, :x => 42
+  #   should_merge(@base, a, b, @base.merge(:a => 2, :b => 3, :x => 42))
+  # end
+  # 
+  # it "should merge deep diffed slots" do
+  #   base = {:s => { :a => 1 }}
+  #   a    = {:s => { :a => 2 }}
+  #   b    = {:s => { :a => 1, :b => 3 }}
+  #   should_merge(base, a, b, {:s => { :a => 2, :b => 3 }})
+  # end
+  # 
+  # it "should merge same slot deletion" do
+  #   should_merge({:a => 1, :b => 2}, {:b => 2}, {:b => 3}, {:b => 3})
+  #   should_merge({:a => 1, :b => 2}, {:b => 2}, {:b => 2}, {:b => 2})
+  # end
+  # 
+  # it "should merge when one of the objects is the same" do
+  #   bases = [{:a => 1}, {:a => 1, :b => 2}, {:a => 1, :b => 2}]
+  #   bs    = [{:a => 3}, {:a => 1}, {:b => "22"}, nil, 123, Object.new, :symb, false, true]
+  #   
+  #   bases.each do |base|
+  #     bs.each do |b|
+  #       should_merge(base, base, b, b)
+  #     end
+  #   end
+  # end
+  
+  
+end
+
+
+
+

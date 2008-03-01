@@ -14,8 +14,6 @@ module StrokeDB
       patchset = lcs_sdiff.inject([]) do |patchset, change|
         a = SDATPTAGS[change.action]
         if a == PATCH_DIFF
-          # patchset << [a, change.old_position, change.new_position, 
-          #                 change.old_element.stroke_diff(change.new_element)]
           patchset << [a, change.new_position, change.old_element.stroke_diff(change.new_element)]
         elsif a == PATCH_MINUS
           patchset << [a, change.new_position]
@@ -30,30 +28,75 @@ module StrokeDB
     def stroke_patch(patch)
       return self unless patch
       return patch[1] if patch[0] == PATCH_REPLACE
-      # Version 2
       res = self.dup
       patch.each do |change|
-        case change[0]
-        when PATCH_MINUS
-          action, position = change
-          res.delete_at(position)
-        when PATCH_PLUS
-          action, position, element = change
-          res[position, 0] = [element]
-        when PATCH_DIFF
-          action, position, diff = change
-          res[position] = res[position].stroke_patch(diff)
-        end
+        _stroke_elementary_patch(res, change[1], change)
       end
       res
     end
     
-    
     def stroke_merge(patch1, patch2)
+      unless patch1 && patch2
+        return _stroke_automerged(stroke_patch(patch1 || patch2))
+      end
       
+      patch1 = patch1.dup
+      patch2 = patch2.dup
       
+      c1 = patch1.shift
+      c2 = patch2.shift
       
+      offset1 = 0
+      offset2 = 0
+      result = self.dup
+      result1 = nil
+      result2 = nil
+      
+      while c1 && c2
+        while c1 && (p1 = c1[1]) && (p2 = c2[1]) && p1 < p2
+          offset2 += _stroke_elementary_patch(result, p1 + offset1, c1)
+          c1 = patch1.shift
+        end
+        
+        if p1 == p2
+          raise "TODO conflict resolution!"
+          
+          c1 = patch1.shift
+        end
+        
+        while c1 && c2 && (p1 = c1[1]) && (p2 = c2[1]) && p2 < p1
+          offset1 += _stroke_elementary_patch(result, p2 + offset2, c2)
+          c2 = patch2.shift
+        end
+      end
+      
+      # Tail (one of two) 
+      while c1
+        offset2 += _stroke_elementary_patch(result, p1 + offset1, c1)
+        c1 = patch1.shift
+      end
+      while c2
+        offset1 += _stroke_elementary_patch(result, p2 + offset2, c2)
+        c2 = patch1.shift
+      end
+      
+      result ? _stroke_automerged(result) : _stroke_conflicted(result1, result2)
     end
-    
+  
+    def _stroke_elementary_patch(result, pos, change)
+      a = change[0]
+      case a
+      when PATCH_MINUS
+        result.delete_at(pos)
+        -1
+      when PATCH_PLUS
+        result[pos, 0] = [change[2]]
+        +1
+      when PATCH_DIFF
+        result[pos] = result[pos].stroke_patch(change[2])
+        0
+      end
+    end
+      
   end
 end
