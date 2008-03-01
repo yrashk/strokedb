@@ -61,6 +61,10 @@ describe "Automerging arrays" do
     a = [   1, 2, 3, 4]
     b = [0, 1, 2, 3   ]
     should_merge(@base, a, b, [0, 1, 2, 3, 4])
+    
+    a = [       1, 2, 3, 4, 5]
+    b = [-1, 0, 1, 2, 3   ]
+    should_merge(@base, a, b, [-1, 0, 1, 2, 3, 4, 5])
   end
   
   # it "should do a trivial merge with missing slots" do

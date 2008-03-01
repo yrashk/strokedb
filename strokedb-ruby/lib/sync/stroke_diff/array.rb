@@ -69,20 +69,20 @@ module StrokeDB
           c2 = patch2.shift
         end
       end
-      
+
       # Tail (one of two) 
       while c1
-        offset2 += _stroke_elementary_patch(result, p1 + offset1, c1)
+        offset2 += _stroke_elementary_patch(result, c1[1] + offset1, c1)
         c1 = patch1.shift
       end
       while c2
-        offset1 += _stroke_elementary_patch(result, p2 + offset2, c2)
-        c2 = patch1.shift
+        offset1 += _stroke_elementary_patch(result, c2[1] + offset2, c2)
+        c2 = patch2.shift
       end
-      
       result ? _stroke_automerged(result) : _stroke_conflicted(result1, result2)
     end
-  
+    
+  private
     def _stroke_elementary_patch(result, pos, change)
       a = change[0]
       case a
