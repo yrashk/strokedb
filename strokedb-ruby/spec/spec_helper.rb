@@ -32,12 +32,12 @@ end
 def should_merge(base, a, b, r)
   c, r1, r2 = base.stroke_merge(base.stroke_diff(a), base.stroke_diff(b))
   c.should be_false
-  r1.should == r1
+  r1.should == r
   r2.should == r
   # another order
   c, r1, r2 = base.stroke_merge(base.stroke_diff(b), base.stroke_diff(a))
   c.should be_false
-  r1.should == r1
+  r1.should == r
   r2.should == r
 end
 

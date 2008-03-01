@@ -44,3 +44,54 @@ describe "Array diff" do
     str
   end
 end
+
+describe "Automerging arrays" do
+  
+  before(:each) do
+    @base = [1, 2, 3]
+  end
+  
+  it "should do a trivial one-side merge" do
+    a = [1, 2, 3]
+    b = [1, 2, 4, 3]
+    should_merge(@base, a, b, [1, 2, 4, 3])
+  end
+
+  it "should do a trivial two-side merge" do
+    a = [   1, 2, 3, 4]
+    b = [0, 1, 2, 3   ]
+    should_merge(@base, a, b, [0, 1, 2, 3, 4])
+    
+    a = [       1, 2, 3, 4, 5]
+    b = [-1, 0, 1, 2, 3   ]
+    should_merge(@base, a, b, [-1, 0, 1, 2, 3, 4, 5])
+  end
+  
+  it "should do a trivial merge with missing elements" do
+    a = [   1, 2, 4]
+    b = [0, 1, 2, 3]
+    should_merge(@base, a, b, [0, 1, 2, 4])
+  end
+  
+  # it "should merge same slot deletion" do
+  #   should_merge({:a => 1, :b => 2}, {:b => 2}, {:b => 3}, {:b => 3})
+  #   should_merge({:a => 1, :b => 2}, {:b => 2}, {:b => 2}, {:b => 2})
+  # end
+  # 
+  # it "should merge when one of the objects is the same" do
+  #   bases = [{:a => 1}, {:a => 1, :b => 2}, {:a => 1, :b => 2}]
+  #   bs    = [{:a => 3}, {:a => 1}, {:b => "22"}, nil, 123, Object.new, :symb, false, true]
+  #   
+  #   bases.each do |base|
+  #     bs.each do |b|
+  #       should_merge(base, base, b, b)
+  #     end
+  #   end
+  # end
+  
+  
+end
+
+
+
+
