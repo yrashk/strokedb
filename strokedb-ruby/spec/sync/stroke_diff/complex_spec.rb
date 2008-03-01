@@ -8,6 +8,13 @@ describe "Complex diff" do
     1000.times do 
       a = gen_complex_object
       b = gen_complex_object
+      unless a.stroke_patch(a.stroke_diff(b)) == b
+        puts ""
+        puts "a = #{a.inspect}"
+        puts "b = #{b.inspect}"
+        puts "a.stroke_diff(b)"
+        puts "a.stroke_patch(a.stroke_diff(b))"
+      end
       a.stroke_patch(a.stroke_diff(b)).should == b
     end
   end
