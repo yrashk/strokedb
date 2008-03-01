@@ -67,33 +67,12 @@ describe "Automerging arrays" do
     should_merge(@base, a, b, [-1, 0, 1, 2, 3, 4, 5])
   end
   
-  # it "should do a trivial merge with missing slots" do
-  #   b1 = @base.dup; b1.delete(:a)
-  #   b2 = @base.dup; b2.delete(:b)
-  #   a = b1.merge :x => 2
-  #   b = b2.merge :y => 3
-  #   should_merge(@base, a, b, {:c => @base[:c], :x => 2, :y => 3})
-  # end
-  # 
-  # it "should merge intersecting, but identical old slots" do
-  #   a = @base.merge :a => 2, :c => 42
-  #   b = @base.merge :b => 3, :c => 42
-  #   should_merge(@base, a, b, @base.merge(:a => 2, :b => 3, :c => 42))
-  # end
-  # 
-  # it "should merge intersecting, but identical new slots" do
-  #   a = @base.merge :a => 2, :x => 42
-  #   b = @base.merge :b => 3, :x => 42
-  #   should_merge(@base, a, b, @base.merge(:a => 2, :b => 3, :x => 42))
-  # end
-  # 
-  # it "should merge deep diffed slots" do
-  #   base = {:s => { :a => 1 }}
-  #   a    = {:s => { :a => 2 }}
-  #   b    = {:s => { :a => 1, :b => 3 }}
-  #   should_merge(base, a, b, {:s => { :a => 2, :b => 3 }})
-  # end
-  # 
+  it "should do a trivial merge with missing elements" do
+    a = [   1, 2, 4]
+    b = [0, 1, 2, 3]
+    should_merge(@base, a, b, [0, 1, 2, 4])
+  end
+  
   # it "should merge same slot deletion" do
   #   should_merge({:a => 1, :b => 2}, {:b => 2}, {:b => 3}, {:b => 3})
   #   should_merge({:a => 1, :b => 2}, {:b => 2}, {:b => 2}, {:b => 2})
