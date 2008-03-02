@@ -9,6 +9,7 @@ module StrokeDB
         args << {} unless args.last.is_a?(Hash)
         mod.module_eval do
           @args = args
+          @meta_initialization_procs = []
           extend Meta
           extend Associations
         end
@@ -94,6 +95,8 @@ module StrokeDB
       raise NoDefaultStoreError.new unless store
       # TODO: Silly, buggy deep clone implementation!
       # Refactor this!
+      
+      @meta_initialization_procs.each {|proc| proc.call(self) }
       args = @args.clone.map{|a| Hash === a ? a.clone : a }
       args[0] = store
       args.last[:__meta__] = Meta.document(store)
