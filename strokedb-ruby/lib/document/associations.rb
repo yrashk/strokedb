@@ -11,12 +11,10 @@ module StrokeDB
       query = opts['conditions'] || {}
 
       @meta_initialization_procs << Proc.new do |meta_module| 
-        @has_many ||= {}
-        @has_many[slotname.to_s] = { :reference_slotname => reference_slotname || meta_module.name.tableize.singularize, :through => through, :meta => meta, :query => query }
-        @args.last.reverse_merge!(:has_many => @has_many)
+        @args.last.reverse_merge!("has_many_#{slotname}" => { :reference_slotname => reference_slotname || meta_module.name.tableize.singularize, :through => through, :meta => meta, :query => query })
         
         when_slot_not_found(:has_many) do |doc, missed_slotname|
-          if doc.meta[:has_many] && doc.meta.has_many.is_a?(Hash) && slot_has_many = doc.meta.has_many[missed_slotname.to_s]
+          if slot_has_many = doc.meta["has_many_#{missed_slotname}"]
             reference_slotname = slot_has_many[:reference_slotname]
             through = slot_has_many[:through]
             meta = slot_has_many[:meta]
