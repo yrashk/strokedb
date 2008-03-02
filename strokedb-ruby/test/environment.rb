@@ -15,6 +15,7 @@ Doc = Document
 def save!
   StrokeDB.default_store.chunk_storage.sync_chained_storages!
   true
+  "Database has been saved."
 end
 
 def build_config
@@ -25,6 +26,7 @@ end
 def clear!
   FileUtils.rm_rf File.dirname(__FILE__) + '/../test/storages/console'
   build_config
+  "Database has been wiped out."
 end
 
 def find(*args)
