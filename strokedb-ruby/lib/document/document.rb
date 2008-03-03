@@ -114,9 +114,10 @@ module StrokeDB
       slot.value = value
     end
     
-    # TODO: spec it
     def has_slot?(slotname)
-      !!send(slotname)
+      v = send(slotname)
+      return true if v.nil? && slotnames.include?(slotname.to_s)
+      !!v
     rescue SlotNotFoundError
       false
     end

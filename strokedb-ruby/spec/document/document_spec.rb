@@ -73,6 +73,15 @@ describe "Document", :shared => true do
     @document[:existing_slot] = 1
     @document.should have_slot(:existing_slot)
   end
+
+  it "should report existing slot with nil value as existing" do
+    @document[:existing_slot] = nil
+    @document.should have_slot(:existing_slot)
+  end
+  
+  it "should report non-existing slot as non-existing" do
+    @document.should_not have_slot(:existing_slot)
+  end
   
   it "should report existing 'virtual' slot as existing" do
     @document.should_receive(:method_missing).with(:existing_slot).and_return 1
