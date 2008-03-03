@@ -525,18 +525,18 @@ describe "Valid Document's JSON with multiple meta names specified" do
     Object.send!(:remove_const,'SomeDocument0') if defined?(SomeDocument0)
     SomeDocument0 = Meta.new do
         on_initialization do |doc|
-          doc.instance_variable_set(:@callback_0_called,true)
+          Kernel.send(:callback_0_called)
         end
     end
     Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
     SomeDocument2 = Meta.new do
       on_initialization do |doc|
-        doc.instance_variable_set(:@callback_2_called,true)
+        Kernel.send(:callback_2_called)
       end
     end
+    Kernel.should_receive(:callback_0_called)
+    Kernel.should_receive(:callback_2_called)
     doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
-    doc.instance_variable_get(:@callback_0_called).should be_true
-    doc.instance_variable_get(:@callback_2_called).should be_true
   end
 end
 

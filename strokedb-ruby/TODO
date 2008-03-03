@@ -15,7 +15,6 @@ To be done before 0.1 ("Praha"):
 [ ] Refactor Meta#document, fix bugs
 [.] Refactor callback stuff in Document
 [ ] Refactor associations
-[ ] "Valid Document's JSON with multiple meta names specified" spec should check callback through message sending, not instance vars
 [ ] Add Document::Versions#first, #head
 [?] add sub-finders to associations (like User.messages.find :title => '...')
 [?] Add sorting primitives for search functionality
