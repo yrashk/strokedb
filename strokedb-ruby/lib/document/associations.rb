@@ -1,6 +1,11 @@
 module StrokeDB
 
   module Associations
+    
+    module HasManyAssociation
+      attr_reader :association_owner
+    end
+    
     def has_many(slotname,opts={},&block)
       opts = opts.stringify_keys
 
@@ -48,6 +53,8 @@ module StrokeDB
             if extend_with = slot_has_many[:extend_with] 
               result.extend(extend_with.to_s.constantize) 
             end
+            result.extend(HasManyAssociation)
+            result.instance_variable_set(:@association_owner,doc)
             
             result
           else

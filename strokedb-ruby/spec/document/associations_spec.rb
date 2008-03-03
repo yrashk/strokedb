@@ -25,6 +25,11 @@ describe "Playlist.has_many :songs association" do
     playlist.songs.should be_empty
   end
   
+  it "should have association owner defined" do
+    playlist = Playlist.create!
+    song = Song.create!
+    playlist.songs.association_owner.should == playlist
+  end
   
   it "should work well with multiple metas" do
     Object.send!(:remove_const,'RockPlaylist') if defined?(RockPlaylist)
