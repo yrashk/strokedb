@@ -28,17 +28,15 @@ module StrokeDB
                                                                meta_module.name.tableize.singularize, 
                                                                :through => through, :meta => meta, :query => query,
                                                                :extend_with => extend_with })
-        
+
         when_slot_not_found(:has_many) do |doc, missed_slotname|
           if slot_has_many = doc.meta["has_many_#{missed_slotname}"]
             reference_slotname = slot_has_many[:reference_slotname]
             through = slot_has_many[:through]
             meta = slot_has_many[:meta]
             query = slot_has_many[:query]
-            effective_query = query.merge(:__meta__ => meta.constantize.document)
-            result = doc.store.index_store.find(effective_query).select do |d| 
-              d.has_slot?(reference_slotname) && d.send(reference_slotname) == doc 
-            end.map do |d| 
+            effective_query = query.merge(:__meta__ => meta.constantize.document, reference_slotname => doc)
+            result = doc.store.index_store.find(effective_query).map do |d| 
               skip = false
               through.each do |t| 
                 unless d.has_slot?(t)
