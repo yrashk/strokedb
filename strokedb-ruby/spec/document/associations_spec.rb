@@ -19,6 +19,19 @@ describe "Playlist.has_many :songs association" do
     playlist.songs.should == [song]
   end
   
+  it "should work well with multiple metas" do
+    Object.send!(:remove_const,'RockPlaylist') if defined?(RockPlaylist)
+    RockPlaylist = Meta.new do
+      has_many :rock_songs, :through => :songs, :conditions => { :genre => 'Rock' }, :foreign_reference => :playlist
+    end
+    playlist = Playlist.new
+    playlist.metas << RockPlaylist
+    playlist.save!
+    rock_song = Song.create!(:playlist => playlist, :genre => 'Rock')
+    playlist.songs.should == [rock_song]
+    playlist.rock_songs.should == [rock_song]
+  end
+  
 end
 
 describe "Playlist.has_many :rock_songs, :through => :songs, :conditions => { :genre => 'Rock' } association" do
