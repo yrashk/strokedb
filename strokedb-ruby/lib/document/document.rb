@@ -117,6 +117,8 @@ module StrokeDB
     # TODO: spec it
     def has_slot?(slotname)
       !!send(slotname)
+    rescue SlotNotFoundError
+      false
     end
 
     def remove_slot!(slotname)

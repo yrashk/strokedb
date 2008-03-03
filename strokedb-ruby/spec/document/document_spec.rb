@@ -69,6 +69,21 @@ describe "Document", :shared => true do
     @document.callbacks[:callback_name].should include(cb2)
   end
   
+  it "should report existing slot as existing" do
+    @document[:existing_slot] = 1
+    @document.should have_slot(:existing_slot)
+  end
+  
+  it "should report existing 'virtual' slot as existing" do
+    @document.should_receive(:method_missing).with(:existing_slot).and_return 1
+    @document.should have_slot(:existing_slot)
+  end
+
+  it "should report non-existing 'virtual' slot as non-existing" do
+    @document.should_receive(:method_missing).with(:existing_slot).and_return { raise SlotNotFoundError.new(:existing_slot)}
+    @document.should_not have_slot(:existing_slot)
+  end
+  
 end
 
 describe "New Document" do

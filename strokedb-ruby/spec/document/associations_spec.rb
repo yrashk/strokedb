@@ -120,7 +120,6 @@ describe "Playlist.has_many :authors, :through => [:songs,:authors] association"
   end
 
   it "should not fail if Song document has no :author slot" do
-    pending
     playlist = Playlist.create!
     song = Song.create!(:playlist => playlist)
     playlist.authors.should be_empty

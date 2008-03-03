@@ -22,7 +22,17 @@ module StrokeDB
             effective_query = query.merge(:__meta__ => meta.constantize.document)
             doc.store.index_store.find(effective_query).select do |d| 
               d[reference_slotname] && d.send(reference_slotname) == doc 
-            end.map {|d| through.each {|t| d = d.send(t)  } ; d}
+            end.map do |d| 
+              skip = false
+              through.each do |t| 
+                unless d.has_slot?(t)
+                  skip = true
+                  break 
+                end
+                d = d.send(t)  
+              end
+              skip ? nil : d
+            end.compact
           else
             SlotNotFoundError.new(missed_slotname)
           end
