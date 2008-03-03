@@ -61,8 +61,8 @@ root directory containing files A and B. Initially, there are four documents:
 2) First version of a Blob document containing B (say, B.1).
 3) First version of a Tree document with references @#A.1 and @#B.1.
    Let's call Tree reference name @#T.1
-4) First version of a Repository document with a name of creator,
-   and a reference to first root Tree document.
+4) First version of a Repository document contains a name of creator,
+   and a reference to the first root Tree document version.
    Reference to a Repository document version would look like @#R.1
    
 If you modify an A document, version A.2 is created. To keep repository in
