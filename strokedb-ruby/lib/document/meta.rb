@@ -45,7 +45,7 @@ module StrokeDB
 
     end
 
-    CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found)
+    CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found on_new_document)
     CALLBACKS.each do |callback_name|
       module_eval %{
         def #{callback_name}(uid=nil,&block)
@@ -59,6 +59,7 @@ module StrokeDB
       doc.extend(self)
       doc[:__meta__] = document(doc.store)
       setup_callbacks(doc)
+      doc.send(:execute_callbacks,:on_new_document)
       doc.send(:execute_callbacks,:on_initialization)
       doc
     end

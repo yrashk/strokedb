@@ -146,9 +146,9 @@ describe "Meta module with before_save callback" do
     end
   end
   
-  it "should receive callback on Document#save! (before actually saving it)" do
-    Kernel.should_receive(:before_save_called).with(true)
+  it "should initiate callback on Document#save! (before actually saving it)" do
     s = SomeName.new
+    Kernel.should_receive(:before_save_called).with(true)
     s.save!
   end
 
@@ -168,10 +168,39 @@ describe "Meta module with after_save callback" do
     end
   end
   
-  it "should receive callback on Document#save! (after actually saving it)" do
+  it "should initiate callback on Document#save! (after actually saving it)" do
+    s = SomeName.new
     Kernel.should_receive(:after_save_called).with(false)
+    s.save!
+  end
+
+end
+
+
+describe "Meta module with on_new_document callback" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new do
+      on_new_document do |obj|
+        Kernel.send!(:on_new_document,obj.new?)
+      end
+    end
+  end
+  
+  it "should initiate callback on Document#new" do
+    Kernel.should_receive(:on_new_document).with(true)
+    s = SomeName.new
+  end
+
+  it "should not initiate callback on loaded Document" do
+    Kernel.should_receive(:on_new_document).with(true).once
     s = SomeName.new
     s.save!
+    s.reload
   end
 
 end
