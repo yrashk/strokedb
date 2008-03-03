@@ -132,6 +132,49 @@ describe "Playlist.has_many :authors, :through => [:songs,:authors] association"
     playlist.authors.should be_empty
   end
   
+end
+
+describe "Playlist.has_many :songs, :extend => MyExt association" do
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const,'Playlist') if defined?(Playlist)
+    Object.send!(:remove_const,'Song') if defined?(Song)
+    Object.send!(:remove_const,'MyExt') if defined?(MyExt)
+    MyExt = Module.new do
+    end
+    Playlist = Meta.new do
+      has_many :songs, :extend => MyExt
+    end
+    Song = Meta.new
+  end
   
+  it "should extend result with MyExt" do
+    playlist = Playlist.create!
+    playlist.songs.should be_a_kind_of(MyExt)
+  end
+  
+end
+
+describe "Playlist.has_many :songs do .. end association" do
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const,'Playlist') if defined?(Playlist)
+    Object.send!(:remove_const,'Song') if defined?(Song)
+    Playlist = Meta.new do
+      has_many :songs do
+        def some_method
+        end
+      end
+    end
+    Song = Meta.new
+  end
+  
+  it "should extend result with given block" do
+    pending("seems to be impossible or quite complex to implement as for now")
+    playlist = Playlist.create!
+    playlist.songs.should respond_to(:some_method)
+  end
   
 end

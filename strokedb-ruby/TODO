@@ -10,7 +10,7 @@ To be done before 0.1 ("Praha"):
 [ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
 [ ] Spec Symbol conversion to String
 [.] Spec has_many!
-[ ] Add :extend or block to has_many 
+[.] Add :extend or block to has_many 
 [ ] add sub-finders to associations (like User.messages.find :title => '...')
 [?] Add sorting primitives for search functionality
 [ ] Add on_new_document callback
