@@ -19,6 +19,13 @@ describe "Playlist.has_many :songs association" do
     playlist.songs.should == [song]
   end
   
+  it "should not fail if Song document has no :playlist slot" do
+    playlist = Playlist.create!
+    song = Song.create!
+    playlist.songs.should be_empty
+  end
+  
+  
   it "should work well with multiple metas" do
     Object.send!(:remove_const,'RockPlaylist') if defined?(RockPlaylist)
     RockPlaylist = Meta.new do
