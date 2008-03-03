@@ -21,7 +21,7 @@ module StrokeDB
             query = slot_has_many[:query]
             effective_query = query.merge(:__meta__ => meta.constantize.document)
             doc.store.index_store.find(effective_query).select do |d| 
-              d[reference_slotname] && d.send(reference_slotname) == doc 
+              d.has_slot?(reference_slotname) && d.send(reference_slotname) == doc 
             end.map do |d| 
               skip = false
               through.each do |t| 
