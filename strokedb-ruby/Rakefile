@@ -1,6 +1,8 @@
 require 'rake'
 require 'spec/rake/spectask'
 
+require 'rake/rdoctask'
+
 task :default => [:ci, :jci, :bench]
 
 task :bench => [:benchmarks]
@@ -46,4 +48,10 @@ task :stats do
   require 'code_statistics'
   CodeStatistics.const_set(:TEST_TYPES,%w(Specs))
   CodeStatistics.new(*STATS_DIRECTORIES).to_s
+end
+
+Rake::RDocTask.new do |rd|
+   rd.main = "lib/README.rdoc"
+   rd.rdoc_dir = "docs/html"
+   rd.rdoc_files.include("lib/README.rdoc", "lib/**/*.rb")
 end

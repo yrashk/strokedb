@@ -1,13 +1,15 @@
 module StrokeDB
-  class UnversionedDocumentError < Exception ; end
-  class VersionMismatchError < Exception ; end
-  class InvalidMetaDocumentError < Exception 
+  class UnversionedDocumentError < Exception  #:nodoc:
+  end
+  class VersionMismatchError < Exception  #:nodoc:
+  end
+  class InvalidMetaDocumentError < Exception  #:nodoc:
     attr_reader :meta_name
     def initialize(meta_name)
       @meta_name = meta_name
     end
   end
-  class SlotNotFoundError < Exception 
+  class SlotNotFoundError < Exception  #:nodoc:
     attr_reader :slotname
     def initialize(slotname)
       @slotname = slotname
@@ -17,29 +19,52 @@ module StrokeDB
     end
   end
 
+  # Document is one of the core classes. It is being used to represent database document.
+  # 
+  # Database document is an entity that:
+  # 
+  # * is uniquely identified with UUID
+  # * has a number of slots, where each slot is a key-value pair (whereas pair could be a JSON object)
+  #
+  # Here is a simplistic example of document:
+  #
+  # <tt>1e3d02cc-0769-4bd8-9113-e033b246b013:</tt>
+  #    name: "My Document"
+  #    language: "English"
+  #    authors: ["Yurii Rashkovskii","Oleg Andreev"]
+  #   
   class Document
-    attr_reader :uuid, :store, :callbacks
+    attr_reader :uuid, :store, :callbacks  #:nodoc:
 
     #
-    # doc.versions #=> #<Versions>
-    # doc.__versions__[version_number] #=> #<Document>
-    #
+    # Versions is a helper class that is used to navigate through versions. You should not
+    # instantiate it directly, but using Document#__versions__ method
+    # 
     class Versions
       attr_reader :document
-      def initialize(document)
+      def initialize(document)  #:nodoc:
         @document = document
         @cache = {}
       end
 
+      #
+      # Find document by version
+      #
       def [](version)
         @cache[version] ||= @document.store.find(document.uuid,version)
       end
-      
+
+      #
+      # Find all document versions, treating current one as a head
+      #
       def all
         [document.__version__,*all_preceding]
       end
       
       
+      #
+      # Find all _previous_ document versions, treating current one as a head
+      #
       def all_preceding
         if previous_version = document.__previous_version__
           [previous_version, *self[previous_version].__versions__.all_preceding]
@@ -48,18 +73,15 @@ module StrokeDB
         end
       end
 
+      #
+      # Returns <tt>true</tt> if document has no previous versions
+      #
       def empty?
         document.__previous_version__.nil?
       end
     end
 
-    #
-    # doc.metas #=> #<Metas>
-    # doc.metas is an Array
-    # doc.metas << Meta module
-    # doc.metas << Meta document
-    #
-    class Metas < Array
+    class Metas < Array  #:nodoc:
       def initialize(document)
         @document = document
         _meta = document[:__meta__]
@@ -88,10 +110,34 @@ module StrokeDB
 
     end
 
-    def self.create!(*args)
-      new(*args).save!
+    #
+    # Instantiates new document with given arguments (which are the same as in Document#new),
+    # and saves it right away
+    #
+    def self.create!(*args,&block)
+      new(*args,&block).save!
     end
 
+    #
+    # Instantiates new document
+    # 
+    # Here are few ways to call it:
+    #
+    #    Document.new(:slot_1 => slot_1_value, :slot_2 => slot_2_value)
+    #
+    # This way new document with slots <tt>slot_1</tt> and <tt>slot_2</tt> will be initialized in the
+    # default store.
+    #
+    #    Document.new(store,:slot_1 => slot_1_value, :slot_2 => slot_2_value)
+    #
+    # This way new document with slots <tt>slot_1</tt> and <tt>slot_2</tt> will be initialized in the
+    # given <tt>store</tt>.
+    #
+    #    Document.new({:slot_1 => slot_1_value, :slot_2 => slot_2_value},uuid)
+    #
+    # where <tt>uuid</tt> is a string with UUID. *WARNING*: this way of initializing Document should not
+    # be used unless you know what are you doing!
+    #
     def initialize(*args,&block)
       @initialization_block = block
       if args.first.is_a?(Hash) || args.empty?
@@ -103,17 +149,35 @@ module StrokeDB
     end
 
 
+    # 
+    # Get slot value by its name:
+    #   
+    #   document[:slot_1]
+    #
+    # If slot was not found, it will return <tt>nil</tt>
+    #
     def [](slotname)
       if slot = @slots[slotname.to_s]
         slot.value
       end
     end
 
+    # 
+    # Set slot value by its name:
+    #
+    #   document[:slot_1] = "some value"
+    #
     def []=(slotname,value)
       slot = @slots[slotname.to_s] || @slots[slotname.to_s] = Slot.new(self)
       slot.value = value
     end
-    
+
+    #
+    # Checks slot presence. Unlike Document#slotnames it allows you to find even 'virtual slots' that could be 
+    # computed runtime by associations or <tt>when_slot_found</tt> callbacks
+    #
+    #   document.has_slot?(:slotname)
+    #
     def has_slot?(slotname)
       v = send(slotname)
       return true if v.nil? && slotnames.include?(slotname.to_s)
@@ -122,29 +186,49 @@ module StrokeDB
       false
     end
 
+    #
+    # Removes slot
+    #
+    #    document.remove_slot!(:slotname)
+    #
     def remove_slot!(slotname)
       @slots.delete slotname.to_s
     end
 
+    # 
+    # Returns an <tt>Array</tt> of explicitely defined slots
+    #
+    #    document.slotnames #=> ["__version__","name","language","authors"]
+    #
     def slotnames
       @slots.keys
     end
 
+    #
+    # Creates Diff document from <tt>from</tt> document to this document
+    #
+    #    document.diff(original_document) #=> #<StrokeDB::Diff added_slots: {"b"=>2}, from: #<Doc a: 1>, removed_slots: {"a"=>1}, to: #<Doc b: 2>, updated_slots: {}>
+    #
     def diff(from)
       Diff.new(store,:from => from, :to => self)
     end
 
+    #
+    # Converts document content to JSON.
+    #
+    # Shouldn't be really used outside of StrokeDB itself, though sometimes it could be helpful
+    #
     def to_json(opts={})
       return "\"@##{uuid}.#{version}\"" if opts[:slot_serialization]
       to_raw.to_json(opts)
     end
 
-    def self.from_json(store,uuid,json)
+    def self.from_json(store,uuid,json) #:nodoc:
       json_decoded = ActiveSupport::JSON.decode(json)
       from_raw(store,uuid,json_decoded)
     end
 
-    def pretty_print
+    def pretty_print #:nodoc:
       slots = to_raw.except('__meta__')
       s = "#<"
       Util.catch_circular_reference(self) do
@@ -176,7 +260,7 @@ module StrokeDB
 
     # Primary serialization
 
-    def to_raw
+    def to_raw #:nodoc:
       raw_slots = {}
       @slots.each_pair do |k,v|
         raw_slots[k.to_s] = v.raw_value
@@ -184,11 +268,11 @@ module StrokeDB
       raw_slots
     end
     
-    def to_optimized_raw
+    def to_optimized_raw #:nodoc:
       __reference__
     end
 
-    def self.from_raw(store, uuid, raw_slots,opts = {})
+    def self.from_raw(store, uuid, raw_slots,opts = {}) #:nodoc:
       doc = new(store, raw_slots, uuid)
       # doc.instance_variable_set(:@uuid, uuid)
       meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
@@ -202,19 +286,32 @@ module StrokeDB
       doc
     end
 
+    #
+    # Reloads head of the same document from store. All unsaved changes will be lost!
+    #
     def reload
       new? ? self : store.find(uuid)
     end
 
+    # 
+    # Returns <tt>true</tt> if this is a document that has never been saved. 
+    # 
     def new?
       __version__.nil?
     end
 
+    #
+    # Returns <tt>true</tt> if this document is a latest version of document being saved to a respective
+    # store
+    #
     def head?
       return false if new? || is_a?(VersionedDocument)
       store.last_version(uuid) == __version__
     end
 
+    #
+    # Saves document
+    #
     def save!
       execute_callbacks :before_save
       self[:__previous_version__] = self[:__version__] unless new? 
@@ -223,6 +320,10 @@ module StrokeDB
       self
     end
 
+    #
+    # Returns document's metadocument (if any). In case if document has more than one metadocument,
+    # it will combine all metadocuments into one 'virtual' metadocument
+    #
     def meta
       _meta = self[:__meta__]
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
@@ -242,32 +343,49 @@ module StrokeDB
       collected_meta
     end
 
+    #
+    # Should be used to add metadocuments on the fly:
+    # 
+    #   document.metas << Buyer
+    #   document.metas << Buyer.document
+    #
+    # Please not that it accept both meta modules and their documents, there is no difference
+    #
     def metas
       Metas.new(self)
     end
 
 
+    #
+    # Returns current document's version (which is stored in <tt>__version__</tt> slot)
+    #
     def __version__
       self[:__version__]
     end
-    
+
+    #
+    # Returns current document's previous version (which is stored in <tt>__previous_version__</tt> slot)
+    #
     def __previous_version__
       self[:__previous_version__]
     end
 
-    def __version__=(v)
+    def __version__=(v) #:nodoc:
       self[:__version__] = v
     end
 
+    #
+    # Returns an instance of Document::Versions
+    #
     def __versions__
       @versions ||= Versions.new(self)
     end
 
-    def __reference__
+    def __reference__ #:nodoc:
       "@#" + uuid + (__version__ ? ".#{__version__}" : "")
     end
 
-    def ==(doc)
+    def ==(doc) #:nodoc:
       case doc
       when Document
         doc.uuid == uuid && doc.to_raw == to_raw
@@ -278,7 +396,7 @@ module StrokeDB
       end
     end
 
-    def method_missing(sym,*args,&block)
+    def method_missing(sym,*args,&block) #:nodoc:
       sym = sym.to_s
       if sym.ends_with?('=')
         send(:[]=,sym.chomp('='),*args)
@@ -298,7 +416,7 @@ module StrokeDB
       end
     end
     
-    def add_callback(callback)
+    def add_callback(callback) #:nodoc:
       self.callbacks[callback.name] ||= []
       if callback.uid && old_cb = self.callbacks[callback.name].find{|cb| cb.uid == callback.uid}
         self.callbacks[callback.name].delete old_cb
@@ -308,7 +426,7 @@ module StrokeDB
 
     protected
 
-    def execute_callbacks(name,*args)
+    def execute_callbacks(name,*args) #:nodoc:
       val = nil
       (callbacks[name.to_s]||[]).each do |callback|
         val = callback.call(self,*args)
@@ -316,7 +434,7 @@ module StrokeDB
       val
     end
     
-    def execute_callbacks_for(origin,name,*args)
+    def execute_callbacks_for(origin,name,*args) #:nodoc:
       val = nil
       (callbacks[name.to_s]||[]).each do |callback|
         val = callback.call(self,*args) if callback.origin == origin
@@ -324,7 +442,7 @@ module StrokeDB
       val
     end
     
-    def do_initialize(store, slots={}, uuid=nil)
+    def do_initialize(store, slots={}, uuid=nil) #:nodoc:
       @callbacks = {}
       @store = store
       if uuid && uuid.match(/#{UUID_RE}/)
@@ -336,12 +454,12 @@ module StrokeDB
       end
     end
 
-    def initialize_slots(slots)
+    def initialize_slots(slots) #:nodoc:
       @slots = Util::HashWithSortedKeys.new
       slots.each {|name,value| self[name] = value }
     end
 
-    def initialize_raw_slots(slots)
+    def initialize_raw_slots(slots) #:nodoc:
       @slots = Util::HashWithSortedKeys.new
       slots.each do |name,value| 
         s = Slot.new(self)
@@ -350,7 +468,7 @@ module StrokeDB
       end
     end
 
-    def self.collect_meta_modules(store,meta)
+    def self.collect_meta_modules(store,meta) #:nodoc:
       meta_names = []
       case meta
       when /@##{UUID_RE}.#{VERSION_RE}/
@@ -367,11 +485,19 @@ module StrokeDB
 
   end
 
+  #
+  # VersionedDocument is a module that is being added to all document's of specific version.
+  # It should not be accessed directly
+  #
   module VersionedDocument
-    def to_json(opts={})
+    def to_json(opts={}) #:nodoc:
       return "\"#{__reference__}\"" if opts[:slot_serialization]
       to_raw.to_json(opts)
     end
+
+    #
+    # Reloads the same version of the same document from store. All unsaved changes will be lost!
+    #
     def reload
       store.find(uuid,__version__)
     end

@@ -1,3 +1,4 @@
 .DS_Store
 strokedb-ruby/test/storages/*
 strokedb-ruby/coverage
+strokedb-ruby/docs/html
