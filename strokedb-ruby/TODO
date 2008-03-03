@@ -9,7 +9,6 @@ To be done before 0.1 ("Praha"):
 
 [ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
 [ ] Spec Symbol conversion to String
-[ ] Add on_new_document callback
 [ ] Spec Chunk#find_next_node and then consider some refactoring (node => uuid, etc)
 [ ] Improve PointQuery (I really don't like it)
 [ ] Refactor Meta#document, fix bugs
