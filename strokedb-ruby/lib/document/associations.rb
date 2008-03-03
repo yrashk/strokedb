@@ -10,9 +10,15 @@ module StrokeDB
       meta = (through.shift || slotname).to_s.singularize.camelize
       query = opts['conditions'] || {}
       
-      extend_with = opts['extend']
+      extend_with = opts['extend'] || block
       
       @meta_initialization_procs << Proc.new do |meta_module| 
+        if extend_with.is_a?(Proc)
+           extend_with_proc = extend_with
+           extend_with = "HasMany#{slotname.to_s.camelize}"
+           meta_module.const_set(extend_with,Module.new(&extend_with_proc))
+           extend_with = "#{meta_module.name}::HasMany#{slotname.to_s.camelize}"
+        end
         @args.last.reverse_merge!("has_many_#{slotname}" => { :reference_slotname => reference_slotname || 
                                                                meta_module.name.tableize.singularize, 
                                                                :through => through, :meta => meta, :query => query,

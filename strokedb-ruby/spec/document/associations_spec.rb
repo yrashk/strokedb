@@ -172,8 +172,8 @@ describe "Playlist.has_many :songs do .. end association" do
   end
   
   it "should extend result with given block" do
-    pending("seems to be impossible or quite complex to implement as for now")
     playlist = Playlist.create!
+    playlist.songs.should be_a_kind_of(Playlist::HasManySongs)
     playlist.songs.should respond_to(:some_method)
   end
   
