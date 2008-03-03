@@ -1,0 +1,136 @@
+
+DATA REPLICATION & SYNCHRONIZATION MODEL
+
+The first thing you should carefully understand is that StrokeDB does not
+have master-slave replication when one storage is just a copy of another.
+
+Every document may exist in a rather weird tree of revisions, spread across
+any number of computers.
+
+Replication model has many common with the Git version control model.
+If you are familiar with basics of Git (or Mercurial), it would be easier
+to get the idea of StrokeDB replication. Anyway, here some important 
+properties of Git:
+   
+1. Every piece of data is versioned.
+2. Document references are versioned.
+3. There's no "true central" storage. Synchronization is done by pulling
+   changes from one storage to another and 3-way-merging modified documents.
+
+For those, who have read some Git docs, but not getting idea very well,
+please read this Linus Torvalds' explanation carefully: 
+http://lwn.net/Articles/246381/
+    
+But there is crucial difference between Git and StrokeDB:
+there isn't "all or nothing" approach. Every document is tracked 
+individually on a low level. You may pull updates of a single document
+without any knowledge of other data. However, in practice you may construct
+any version control protocol on top of it (or pick a predefined one) for some
+subset of your documents.
+
+Remember: documents may be replicated inside a single storage as well as
+across all the computers on the Earth. It is up to application to maintain 
+consistency of the data.
+
+
+GIT MODEL
+
+In instance, you may implement a Git version control model right in the terms 
+of StrokeDB. All you have to do is to define 4 kinds of documents (metas):
+
+ * "Blob" is used to store a file data. 
+ * "Tree" is document that ties one or more Blobs into a directory structure. 
+   In addition, a tree object can refer to other tree objects, thus creating 
+   a directory hierarchy. 
+ * "Commit" ("Repository") document. For entire repository there is a single Commit
+   document with a multiple versions (representing actual commits). 
+   Commit ties such directory hierarchies together into a directed acyclic 
+   graph of revisions — each commit contains the object name of exactly 
+   one Tree designating the directory hierarchy at the time of the commit. 
+   In addition, a commit refers to "parent" commit objects that describe the 
+   history of how we arrived at that directory hierarchy.
+ * "Tag" symbolically identifies and can be used to sign other documents.
+   It contains the object name and type of another object, 
+   a symbolic name (of course!) and, optionally, a signature.
+   
+   http://www.kernel.org/pub/software/scm/git/docs/user-manual.html#the-object-database
+   
+How's this done in StrokeDB? Exactly the way, Git does. Imagine, you have a 
+root directory containing files A and B. Initially, there are four documents:
+1) First version of a Blob document containing A (say, A.1).
+2) First version of a Blob document containing B (say, B.1).
+3) First version of a Tree document with references @#A.1 and @#B.1.
+   Let's call Tree reference name @#T.1
+4) First version of a Repository document with a name of creator,
+   and a reference to first root Tree document.
+   Reference to a Repository document version would look like @#R.1
+   
+If you modify an A document, version A.2 is created. To keep repository in
+a consistent state, you change reference to A in the upper level Tree object,
+thus changing T.1 to T.2. If this is a root tree, you go to a corresponding 
+Repository document, update reference to T, thus creating a new version R.2.
+
+Now you have two consistent repository revisions referenced by the versions 
+of the Repository document (where commit metadata is stored).
+
+Since, Git model is very useful for various kinds of applications, 
+it ships with StrokeDB as a configurable plugin.
+
+Remember, that you may have any number of such repositories in a database
+and even overlap them!
+
+
+SYNCHRONIZATION BASICS
+
+Syncronization starts from the point where you have different document versions
+and you wish to "sync" them.
+
+The first important thing is that sync is implemented as a "pull" operation.
+You always locate an interesting document and say: i'd like to pull updates 
+from the common merge version up to the specified version.
+"Remote" document stays untouched. If you wish to implement double-sided sync
+you have to pull from A to B and then from B to A.
+
+Kinds of syncs:
+
+  1) Continuous updates:
+  
+  ---A---B---C---...
+      \       \       
+       D---E---F---... (F is a merge of E and C)
+
+  2) Fork & merge
+  
+  ---A---B---C---F---...
+      \         /     
+       D-------E---... (F is a merge of C and E)
+
+Let's examine pull algorithm with example #1.
+Sync start with storages S1 and S2, where versions C and E
+are located. You want to pull all updates up to C to S2 storage.
+
+Pull is done in the following steps:
+
+  1) Determine a common version (a "base"). In out case, it is "A".
+  2) If S1 and S2 are different and there aren't some intermediate revisions,
+     fetch them from S1 to S2 ("B" and "C" namely). 
+  3) Do a three-way merge of "E" and "C" with a base "A".
+     Conflicts resolution and specific documents merge may be done
+     by application (described in metas).
+  4) Create a new document version(s) for a merged result.
+
+There is a stroke_diff library in the core of StrokeDB providing 
+low-level routines for diffing/patching/merging json data (think of it as a 
+true XML diff/merge tool).
+It is fully customizable to let you describe specific merge strategies
+for you documents. 
+
+
+EXAMPLES
+
+It is interesting how Git model 
+
+
+
+
+

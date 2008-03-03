@@ -1,0 +1,141 @@
+
+SCALABILITY
+
+How do I configure StrokeDB for a typical web-app?
+Let's investigate different possible confogurations step-by-step 
+from simple to advanced ones.
+
+
+OVERVIEW
+
+1) Consider a single-webserver configuration.
+   Your configuration will look like:
+    
+     app <-> mem_store <-> file_store
+   
+   In general, each store does not allow concurrent access (except special 
+   configuration cases). Thus, you may treat a whole database as a simple 
+   single-threaded shared resource with a giant mutex on it.
+   It is easy to maintain, error-prone and is reasonably fast
+   for relatively small applications.
+
+2) When you go bigger and have multithreaded environment to handle
+   multiple simultaneous requests, you have to think about scaling.
+   In a regular RDBMS the first thing you do is master-slave replication.
+   It is an easiest thing you can do with your database to get better 
+   performance (at least, for read-only access). 
+   
+   In StrokeDB it is amazingly easy to spread your dataset among any number
+   of storages, processes and even machines. Scaling that way you don't 
+   have to worry about data synchronization latency or collisions.
+   Different processes/threads can work with different documents concurrently.
+   In case of complex transactions, you may set a distributed lock on some 
+   documents. 
+   
+   If you are building some kind of web-2.0-ish application (store lots of
+   user-generated data; serving it for many concurrent clients), automated 
+   split-and-distribute is a very good way of scaling, until you meet some
+   logical and networking issues.
+   
+3) Limits of data splitting
+
+   First issue is a algorithmical problem. StrokeDB core operations 
+   work with simple data structures, which are easy to split and distribute 
+   (skiplists, for example). But when it comes to implement some complex 
+   data structure, you have to keep in mind ability to split it. Anyway, you
+   may leave it being monolitic, but this won't help you scale well.
+   
+   Second issue is a problem with networking. When data is distributed on 
+   a relatively big cluster it's getting harder to maintain good performance.
+   Imagine, you have two datacenters in a different places in the world and
+   wish to balance load between them. Half of the users would be served by
+   the first cluster, another half — by another cluster. 
+   Here replication comes onto the scene.
+   
+4) Data replication
+
+   (Please read docs/overview/replication.txt before proceeding.)
+   
+   There're three common use cases:
+   1. Backup. You may pull incremental updates from the database 
+      to your local machine or a hard drive array. 
+      Also, it is possible to do an incremental distributed backup on 
+      a production system to achive high availability (automatically 
+      switching to secondary copies in case of data loss).
+   2. Offline work. StrokeDB provides great facility to enroll
+      collaborative tools with asynchronous data access and offline work.
+   3. Geographical spread. You may want to store the same data in the two
+      distinct datacenters and sync them with a reasonable latency.
+      With StrokeDB you may configure a streamed pull with an established
+      TCP connection. 
+      You should note though, this would be an asynchronous merge, 
+      so you have to use an automatic conflict resolution protocol 
+      and design your application in such a way to have as little 
+      conflicts as possible (and none of them can be fatal).
+
+
+STORAGES 
+
+We haven't said enough about the actual data representation.
+Data serialization is handled by so-called _storages_.
+
+The basic thing storage does is a read/write access to any document
+by given UUID and version.
+
+StrokeDB core provides you with some default storages:
+
+  1) MemoryStorage keeps all data in a memory of a working process. 
+     It is extremely fast since it does need any encoding/decoding
+     operations, but you can't keep many documents in it simultaneously.
+     
+  2) MemcachedStorage works like memory store, but uses encode/decode
+     routines and is able to utilize a shared memory of a whole cluster.
+     It has a downside, though. Every document may disappear from the LRU
+     buffer (Least Recently Used) at any time, thus it can be used as a 
+     read-only storage.
+
+  3) FileStorage keeps data in encoded format on a local hard drive in 
+     a particular folder. Looks very much like sqlite, no magic here.
+
+  4) NetworkStorage is not a storage, actually, but an interface for
+     a variety of data access protocols and physical storages.
+     From a client point of view, NetworkStorage is a consistent storage,
+     just like FileStorage is. But inside it very interesting things can 
+     be implemented. For example, automatic sharding, asynchronous pulls,
+     custom merge strategies etc.
+
+
+CHAINS OF STORAGES
+
+There's a notion of "chains of storages". It is an extremely easy way
+to configure storages for the best performance and availability.
+
+A trivial example.
+
+You have some web-app sitting on a single server. Very simple configuration
+is to use a FileStorage, so that every read() and write() 
+happens on a hard drive.
+
+Eventually, you may find that it is not very fast solution to access HDD every
+time you want to read the same data. Also, there is a performance loss
+on repeatedly encode/decode calls.
+
+In a RDBMS world you may use caching (either in the DB engine, or in your app),
+StrokeDB suggests a better solution: 
+You put MemoryStorage and FileStorage in a _chain_, so that 
+FileStorage pulls updates from MemoryStorage when needed (you may do it 
+asynchronuously, or on each save).
+
+You may use MemoryStorage instances as a sandboxes for transactions:
+when a complex transaction is evaluated in a isolated storage, it can be
+merged to another storage atomically.
+
+For large-scale databases there can be a big chain of MemcachedStorages and 
+FileStorages coupled with some networking interfaces.
+
+You may easily build a storage chain of Memcached, local hard drives, Amazon S3
+just like ThruDB suggests. 
+
+ 
+
+
