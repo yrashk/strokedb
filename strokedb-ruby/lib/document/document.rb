@@ -113,6 +113,11 @@ module StrokeDB
       slot = @slots[slotname.to_s] || @slots[slotname.to_s] = Slot.new(self)
       slot.value = value
     end
+    
+    # TODO: spec it
+    def has_slot?(slotname)
+      !!send(slotname)
+    end
 
     def remove_slot!(slotname)
       @slots.delete slotname.to_s
