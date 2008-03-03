@@ -24,4 +24,5 @@ Note: There is no need in uuidtools for JRuby version
 =AUTHORS
 
 Yurii Rashkovskii <yrashk@issuesdone.com>
+
 Oleg Andreev <oleganza@gmail.com>
