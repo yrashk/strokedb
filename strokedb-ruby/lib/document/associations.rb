@@ -43,15 +43,14 @@ module StrokeDB
             query = slot_has_many[:query]
             effective_query = query.merge(:__meta__ => meta.constantize.document, reference_slotname => doc)
             result = doc.store.index_store.find(effective_query).map do |d| 
-              skip = false
               through.each do |t| 
                 unless d.has_slot?(t)
-                  skip = true
+                  d = nil
                   break 
                 end
                 d = d.send(t)  
               end
-              skip ? nil : d
+              d
             end.compact
             
             if extend_with = slot_has_many[:extend_with] 
