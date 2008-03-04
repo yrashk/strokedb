@@ -105,7 +105,7 @@ describe "Document", :shared => true do
     @document.symbol_slot.should == [{"a" => "b"}]
   end
 
-  it "should convert Symbol values to String instantly (including Symbol usage in structures)" do
+  it "should convert Symbol values to String (including Symbol usage in structures)" do
     @document.symbol_slot = :a
     @document = @document.save!.reload
     @document.symbol_slot.should == "a"
