@@ -12,7 +12,7 @@ To be done before 0.1 ("Praha"):
 [ ] Improve PointQuery (I really don't like it)
 [ ] Refactor Meta#document, fix bugs
 [.] Refactor callback stuff in Document
-[ ] Refactor associations
+[.] Refactor associations
 [ ] Add Document::Versions#first, #head
 [ ] Memory-based storage with permanent log?
 [?] add sub-finders to associations (like User.messages.find :title => '...')
