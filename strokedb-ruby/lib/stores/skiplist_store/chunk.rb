@@ -7,10 +7,10 @@ module StrokeDB
       @skiplist, @cut_level = Skiplist.new({}, nil, cut_level), cut_level
     end
     
-    def insert(uuid, raw_doc, __cheaters_level = nil, __lamport_timestamp = nil)
+    def insert(uuid, raw_doc, __cheaters_level = nil, __timestamp = nil)
       @uuid ||= uuid
       __cheaters_level ||= $DEBUG_CHEATERS_LEVEL
-      a, new_list = skiplist.insert(uuid, raw_doc, __cheaters_level, __lamport_timestamp)
+      a, new_list = skiplist.insert(uuid, raw_doc, __cheaters_level, __timestamp)
       if new_list
         tmp = Chunk.new(@cut_level)
         tmp.skiplist = new_list
