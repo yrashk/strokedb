@@ -222,21 +222,6 @@ module StrokeDB
       Diff.new(store,:from => from, :to => self)
     end
 
-    #
-    # Converts document content to JSON.
-    #
-    # Shouldn't be really used outside of StrokeDB itself, though sometimes it could be helpful
-    #
-    def to_json(opts={})
-      return "\"@##{uuid}.#{version}\"" if opts[:slot_serialization]
-      to_raw.to_json(opts)
-    end
-
-    def self.from_json(store,uuid,json) #:nodoc:
-      json_decoded = ActiveSupport::JSON.decode(json)
-      from_raw(store,uuid,json_decoded)
-    end
-
     def pretty_print #:nodoc:
       slots = to_raw.except('__meta__')
       s = "#<"
@@ -272,7 +257,7 @@ module StrokeDB
     def to_raw #:nodoc:
       raw_slots = {}
       @slots.each_pair do |k,v|
-        raw_slots[k.to_s] = v.raw_value
+        raw_slots[k.to_s] = v.to_raw
       end
       raw_slots
     end
@@ -499,10 +484,6 @@ module StrokeDB
   # It should not be accessed directly
   #
   module VersionedDocument
-    def to_json(opts={}) #:nodoc:
-      return "\"#{__reference__}\"" if opts[:slot_serialization]
-      to_raw.to_json(opts)
-    end
 
     #
     # Reloads the same version of the same document from store. All unsaved changes will be lost!

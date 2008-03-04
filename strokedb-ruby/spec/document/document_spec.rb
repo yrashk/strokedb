@@ -443,29 +443,30 @@ describe "Valid Document's JSON" do
   before(:each) do
     @store = mock("Store")
     @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2")
-    @json = @document.to_json
+    @json = @document.to_raw.to_json
+    @decoded_json = ActiveSupport::JSON.decode(@json)
   end
 
   it "should be loadable into Document" do
-    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
     doc.uuid.should == '7bb032d4-0a3c-43fa-b1c1-eea6a980452d'
     doc.slotnames.to_set.should == ['slot1','slot2'].to_set
   end
 
   it "should cache its version as previous version" do
-    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
     doc.instance_variable_get(:@__previous_version__).should == @document.__version__
   end
 
   it "should reuse cached previous version at first modification" do
-    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
     doc[:hello] = 'world'
     doc[:hello] = 'world!'
     doc[:__previous_version__].should == @document.__version__
   end
 
   it "should reuse cached previous version at save without any modification" do
-    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
     @store.should_receive(:save!).with(doc)
     doc.save!
     doc[:__previous_version__].should == @document.__version__
@@ -480,14 +481,15 @@ describe "Valid Document's JSON with meta name specified" do
     @store = setup_default_store
     @meta = Document.create!(:name => 'SomeDocument')
     @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :__meta__ => @meta)
-    @json = @document.to_json
+    @json = @document.to_raw.to_json
+    @decoded_json = ActiveSupport::JSON.decode(@json)
   end
 
   it "should load meta's module if it is available" do
     Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
     SomeDocument = Module.new
 
-    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
     doc.should be_a_kind_of(SomeDocument)
   end
 
@@ -495,7 +497,7 @@ describe "Valid Document's JSON with meta name specified" do
     Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
     
     lambda do
-      doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+      doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
     end.should_not raise_error
   end
 
@@ -511,7 +513,8 @@ describe "Valid Document's JSON with multiple meta names specified" do
       @metas << Document.create!(@store, :name => "SomeDocument#{i}")
     end
     @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :__meta__ => @metas)
-    @json = @document.to_json
+    @json = @document.to_raw.to_json
+    @decoded_json = ActiveSupport::JSON.decode(@json)
   end
 
   it "should load all available meta modules" do
@@ -519,7 +522,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     SomeDocument0 = Meta.new
     Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
     SomeDocument2 = Meta.new
-    doc = Document.from_json(@store,@document.uuid,@json)
+    doc = Document.from_raw(@store,@document.uuid,@decoded_json)
     doc.should be_a_kind_of(SomeDocument0)
     doc.should be_a_kind_of(SomeDocument2)
   end
@@ -539,7 +542,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     end
     Kernel.should_receive(:callback_0_called)
     Kernel.should_receive(:callback_2_called)
-    doc = Document.from_json(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@json)
+    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
   end
 end
 

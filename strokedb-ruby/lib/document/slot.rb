@@ -59,9 +59,17 @@ module StrokeDB
       @value.is_a?(DocumentReferenceValue) ? @value.load : @value
     end
 
-    def to_json(opts={})
-      @value.to_json(opts.merge(:slot_serialization => true))
+    def to_raw
+      raw_value.to_optimized_raw
     end
+
+
+
+    def raw_value=(v)
+      self.value = decode_value(v)
+    end
+
+    private
 
     def raw_value
       result = encode_value(@value)
@@ -78,13 +86,6 @@ module StrokeDB
         result
       end
     end
-
-    def raw_value=(v)
-      self.value = decode_value(v)
-    end
-
-    private
-
     def encode_value(v,skip_documents=false)
       case v
       when VersionedDocument

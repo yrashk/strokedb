@@ -27,7 +27,7 @@ describe "Slot" do
     some_doc = Document.new
     @slot.value = some_doc
     @slot.value.should == some_doc
-    @slot.raw_value.should match(/@##{UUID_RE}.0000000000000000#{@store.uuid}/)
+    @slot.to_raw.should match(/@##{UUID_RE}.0000000000000000#{@store.uuid}/)
   end
 
   it "should store VersionedDocument reference if value is a saved Document" do
@@ -35,7 +35,7 @@ describe "Slot" do
     some_doc.save!
     @slot.value = some_doc
     @slot.value.should == some_doc
-    @slot.raw_value.should match(/@##{UUID_RE}.#{VERSION_RE}/)
+    @slot.to_raw.should match(/@##{UUID_RE}.#{VERSION_RE}/)
   end
 
   it "should store VersionedDocument reference if value is a VersionedDocument" do
@@ -44,14 +44,14 @@ describe "Slot" do
     some_doc.save!
     @slot.value = some_doc
     @slot.value.should == some_doc
-    @slot.raw_value.should match(/@##{UUID_RE}.#{VERSION_RE}/)
+    @slot.to_raw.should match(/@##{UUID_RE}.#{VERSION_RE}/)
   end
 
   it "should store Document reference if value is a saved Document" do
     some_doc = Document.new
     @slot.value = some_doc
     @slot.value.should == some_doc
-    @slot.raw_value.should match(/@##{UUID_RE}/)
+    @slot.to_raw.should match(/@##{UUID_RE}/)
   end
   
 end
