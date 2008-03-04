@@ -51,7 +51,7 @@ task :stats do
 end
 
 Rake::RDocTask.new do |rd|
-   rd.main = "lib/README.rdoc"
+   rd.main = "README"
    rd.rdoc_dir = "docs/html"
-   rd.rdoc_files.include("lib/README.rdoc", "lib/**/*.rb")
+   rd.rdoc_files.include("README", "lib/**/*.rb")
 end

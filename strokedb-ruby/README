@@ -2,24 +2,27 @@ StrokeDB is a distributed document-oriented database engine.
 Main features are complete decentralization, JSON object format, 
 metadocuments, integration with runtime (it is just a ruby library). 
 
-See ./docs folder for further reading.
+= Starting points
 
-SPECS
+One of the most important concepts of StrokeDB is a StrokeDB::Document.
 
-$ rake ci
-$ rake jci (for jruby, jruby should be in PATH)
+= SPECS
 
-BENCHMARKS
+	$ rake ci
+	$ rake jci (for jruby, jruby should be in PATH)
 
-$ rake bench
+= BENCHMARKS
 
-REQUIREMENTS
+	$ rake bench
 
-$ sudo gem install diff-lcs activesupport uuidtools
+= REQUIREMENTS
+
+	$ sudo gem install diff-lcs activesupport uuidtools
 
 Note: There is no need in uuidtools for JRuby version
 
-AUTHORS
+=AUTHORS
 
 Yurii Rashkovskii <yrashk@issuesdone.com>
+
 Oleg Andreev <oleganza@gmail.com>
