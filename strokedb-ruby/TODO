@@ -8,7 +8,7 @@ Completed items are removed.
 To be done before 0.1 ("Praha"):
 
 [ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
-[ ] Spec Symbol conversion to String
+[.] Spec Symbol conversion to String
 [ ] Improve PointQuery (I really don't like it)
 [ ] Refactor Meta#document, fix bugs
 [.] Refactor callback stuff in Document

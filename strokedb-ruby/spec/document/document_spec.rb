@@ -93,6 +93,33 @@ describe "Document", :shared => true do
     @document.should_not have_slot(:existing_slot)
   end
   
+  it "should convert Symbol values to String instantly (including Symbol usage in structures)" do
+    pending
+    @document.symbol_slot = :a
+    @document.symbol_slot.should == "a"
+    @document.symbol_slot = [[:a]]
+    @document.symbol_slot.should == [["a"]]
+    @document.symbol_slot = {:a => :b}
+    @document.symbol_slot.should == {"a" => "b"}
+    @document.symbol_slot = [{:a => :b}]
+    @document.symbol_slot.should == [{"a" => "b"}]
+  end
+
+  it "should convert Symbol values to String instantly (including Symbol usage in structures)" do
+    @document.symbol_slot = :a
+    @document = @document.save!.reload
+    @document.symbol_slot.should == "a"
+    @document.symbol_slot = [[:a]]
+    @document = @document.save!.reload
+    @document.symbol_slot.should == [["a"]]
+    @document.symbol_slot = {:a => :b}
+    @document = @document.save!.reload
+    @document.symbol_slot.should == {"a" => "b"}
+    @document.symbol_slot = [{:a => :b}]
+    @document = @document.save!.reload
+    @document.symbol_slot.should == [{"a" => "b"}]
+  end
+  
 end
 
 describe "New Document" do
