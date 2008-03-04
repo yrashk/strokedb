@@ -78,7 +78,6 @@ describe "Playlist.has_many :songs association" do
   end
 
   it "should fetch head versions of associated documents if association owner wasn't saved when associated doc were created and now it is a head" do
-    pending
     playlist = Playlist.new
     song = Song.create!(:playlist => playlist)
     song.name = "My song"
