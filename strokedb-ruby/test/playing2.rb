@@ -17,7 +17,7 @@ puts u
 
 view = StrokeDB::View.find_or_create(:name => "all users").reduce_with{|doc| doc.is_a?(User) }
 puts view.uuid
-puts view.emit.to_json
+puts view.emit.to_raw.to_json
 
 config[:memory_chunk].sync_chained_storages!
 
