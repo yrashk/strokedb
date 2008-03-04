@@ -23,13 +23,6 @@ describe "Slot" do
     @slot.value.object_id.should == @slot.value.object_id
   end
   
-  it "should store Document 'first-version' reference if value is a new Document" do
-    some_doc = Document.new
-    @slot.value = some_doc
-    @slot.value.should == some_doc
-    @slot.to_raw.should match(/@##{UUID_RE}.0000000000000000#{@store.uuid}/)
-  end
-
   it "should store VersionedDocument reference if value is a saved Document" do
     some_doc = Document.create!(:something => 1)
     some_doc.save!

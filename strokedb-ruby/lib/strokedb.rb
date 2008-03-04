@@ -1,7 +1,7 @@
 module StrokeDB
   VERSION = '0.0.1' + (RUBY_PLATFORM =~ /java/ ? '-java' : '')
   UUID_RE = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
-  VERSION_RE = /([a-f0-9]{16}#{UUID_RE})/ 
+  VERSION_RE = UUID_RE
   NIL_UUID = "00000000-0000-0000-0000-000000000000" # so called Nil UUID, should be used as special UUID for Meta meta
   
   class <<self

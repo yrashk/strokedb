@@ -13,7 +13,7 @@ module StrokeDB
   		data.each{|k, v| insert(k, v) }
   	end
 
-  	def insert(key, value, __cheaters_level = nil)
+  	def insert(key, value, __cheaters_level = nil, __timestamp = nil)
   	  @size_cache = nil
   	  update = Array.new(@head.level)
   	  x = @head
@@ -33,6 +33,7 @@ module StrokeDB
   	  x = x.forward[0]
   	  if x.key == key && @unique_keys
   	    x.value = value
+  	    x.timestamp = __timestamp
   	    value.skiplist_node_container = x if value.respond_to? :skiplist_node_container=
   	  else
   	    newlevel = __cheaters_level || random_level
@@ -43,7 +44,7 @@ module StrokeDB
           end
         end
         
-        x = Node.new(newlevel, key, value)
+        x = Node.new(newlevel, key, value, __timestamp)
         value.skiplist_node_container = x if value.respond_to? :skiplist_node_container=
         
         if cut?(newlevel, update[0])
@@ -171,8 +172,8 @@ module StrokeDB
       sn = nil
       update = []
       data.each do |item|
-        key, value, level = yield(item)
-        sn = Node.new(level, key, value)
+        key, value, level, timestamp = yield(item)
+        sn = Node.new(level, key, value, timestamp)
         level.times do |i| 
           update[i] ||= @head
           update[i].forward[i] = sn
@@ -238,10 +239,10 @@ module StrokeDB
   	end
 
   	class Node
-  		attr_accessor :key, :value, :forward
+  		attr_accessor :key, :value, :forward, :timestamp
   		attr_accessor :_serialized_index
-  		def initialize(level, key, value)
-  			@key, @value = key, value
+  		def initialize(level, key, value,timestamp=nil)
+  			@key, @value, @timestamp = key, value, timestamp
   			@forward = Array.new(level)
   		end
   		# this is called when node is thrown out of the list

@@ -7,10 +7,10 @@ module StrokeDB
       @skiplist, @cut_level = Skiplist.new({}, nil, cut_level), cut_level
     end
     
-    def insert(uuid, raw_doc, __cheaters_level = nil)
+    def insert(uuid, raw_doc, __cheaters_level = nil, __lamport_timestamp = nil)
       @uuid ||= uuid
       __cheaters_level ||= $DEBUG_CHEATERS_LEVEL
-      a, new_list = skiplist.insert(uuid, raw_doc, __cheaters_level)
+      a, new_list = skiplist.insert(uuid, raw_doc, __cheaters_level, __lamport_timestamp)
       if new_list
         tmp = Chunk.new(@cut_level)
         tmp.skiplist = new_list
@@ -79,7 +79,7 @@ module StrokeDB
       chunk.lamport_timestamp = raw['lamport_timestamp']
       chunk.store_uuid = raw['store_uuid']
       chunk.skiplist.raw_insert(raw['nodes']) do |rn|
-  	    [rn['key'], rn['value'], rn['forward'].size]
+  	    [rn['key'], rn['value'], rn['forward'].size, rn['timestamp']]
   	  end
   	  yield(chunk) if block_given?
   	  chunk
@@ -96,7 +96,8 @@ module StrokeDB
         {
           'key'     => node.key,
           'forward' => node.forward.map{|n| n._serialized_index || 0 },
-          'value'   => node.value
+          'value'   => node.value,
+          'timestamp' => node.timestamp
         }
       end
       {

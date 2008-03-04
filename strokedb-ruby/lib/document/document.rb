@@ -177,8 +177,14 @@ module StrokeDB
     #   document[:slot_1] = "some value"
     #
     def []=(slotname,value)
-      slot = @slots[slotname.to_s] || @slots[slotname.to_s] = Slot.new(self)
+      slotname = slotname.to_s
+      slot = @slots[slotname] || @slots[slotname] = Slot.new(self)
       slot.value = value
+      if @saved && slotname != '__version__' && slotname != '__previous_version__'
+        self[:__previous_version__] = __version__
+        generate_new_version!
+        @saved = nil
+      end
     end
 
     #
@@ -305,7 +311,7 @@ module StrokeDB
     # Returns <tt>true</tt> if this is a document that has never been saved. 
     # 
     def new?
-      __version__.nil?
+      !!@new
     end
 
     #
@@ -322,8 +328,10 @@ module StrokeDB
     #
     def save!
       execute_callbacks :before_save
-      self[:__previous_version__] = self[:__version__] unless new? 
+      self[:__previous_version__] = __version__ if !new? && @saved
       store.save!(self)
+      @new = false
+      @saved = true
       execute_callbacks :after_save
       self
     end
@@ -390,11 +398,7 @@ module StrokeDB
     end
 
     def __reference__ #:nodoc:
-      if version = __version__
-        "@##{uuid}.#{version}"
-      else
-        "@##{uuid}.0000000000000000#{store.uuid}"
-      end
+      "@##{uuid}.#{__version__}"
     end
 
     def ==(doc) #:nodoc:
@@ -460,9 +464,12 @@ module StrokeDB
       if uuid && uuid.match(/#{UUID_RE}/)
         @uuid = uuid
         initialize_raw_slots(slots)
+        @saved = true
       else
+        @new = true
         @uuid = Util.random_uuid
         initialize_slots(slots)
+        generate_new_version!
       end
     end
 
@@ -493,6 +500,10 @@ module StrokeDB
         meta_names << meta[:name]
       end
       meta_names.collect {|m| m.is_a?(String) ? (m.constantize rescue nil) : m }.compact
+    end
+    
+    def generate_new_version!
+      self.__version__ = Util.random_uuid
     end
 
   end

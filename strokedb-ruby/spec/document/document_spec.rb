@@ -18,7 +18,7 @@ describe "Document", :shared => true do
     lambda do
       @document.remove_slot!(:new_slot)
     end.should change(@document,:slotnames)
-    @document.slotnames.should == original_slotnames
+    (@document.slotnames - ['__previous_version__']).should == original_slotnames # TODO: check this exclusion
   end
 
   
@@ -141,8 +141,8 @@ describe "New Document" do
     @document.should_not be_head
   end
   
-  it "should have no version" do
-    @document.__version__.should be_nil
+  it "should have version" do
+    @document.__version__.should_not be_nil
   end
 
   it "should have no previous version" do
@@ -150,8 +150,8 @@ describe "New Document" do
     @document.__versions__.previous.should be_nil
   end
 
-  it "should have no slotnames" do
-    @document.slotnames.should be_empty
+  it "should have only __version__ slotname" do
+    @document.slotnames.should == ['__version__']
   end
 
   it "should have no versions" do
@@ -177,7 +177,7 @@ describe "New Document with slots supplied" do
   end
 
   it "should have corresponding slotnames" do
-    @document.slotnames.to_set.should == ['slot1','slot2'].to_set
+    @document.slotnames.to_set.should == ['slot1','slot2','__version__'].to_set
   end
 
   it "should update slot value" do
@@ -454,12 +454,14 @@ describe "Document with version" do
   
   it "should be equal to another document with the same version and uuid" do
     @another_document = Document.new(:some_data => 1)
+    @another_document.__version__ = @document.__version__
     @another_document.stub!(:uuid).and_return(@document.uuid)
     @document.should == @another_document
   end
 
   it "should not be equal to another document with the same version but another uuid" do
     @another_document = Document.new(:some_data => 1)
+    @another_document.__version__ = @document.__version__
     @document.should_not == @another_document
   end
   
@@ -477,25 +479,13 @@ describe "Valid Document's JSON" do
   it "should be loadable into Document" do
     doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
     doc.uuid.should == '7bb032d4-0a3c-43fa-b1c1-eea6a980452d'
-    doc.slotnames.to_set.should == ['slot1','slot2'].to_set
-  end
-
-  it "should cache its version as previous version" do
-    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
-    doc.instance_variable_get(:@__previous_version__).should == @document.__version__
+    doc.slotnames.to_set.should == ['slot1','slot2','__version__'].to_set
   end
 
   it "should reuse cached previous version at first modification" do
     doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
     doc[:hello] = 'world'
     doc[:hello] = 'world!'
-    doc[:__previous_version__].should == @document.__version__
-  end
-
-  it "should reuse cached previous version at save without any modification" do
-    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
-    @store.should_receive(:save!).with(doc)
-    doc.save!
     doc[:__previous_version__].should == @document.__version__
   end
 

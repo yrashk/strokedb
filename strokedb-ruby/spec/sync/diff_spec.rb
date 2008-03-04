@@ -10,8 +10,8 @@ describe "Diffing documents", :shared => true do
   it "should be appliable as patch" do
     from = @from.dup
     @diff.patch!(from)
-    from.slotnames.should == @to.slotnames
-    (from.slotnames - ['__version__']).each do |slotname|
+    (from.slotnames - ['__version__','__previous_version__']).should == (@to.slotnames-['__version__','__previous_version__'])
+    (from.slotnames - ['__version__','__previous_version__']).each do |slotname|
       from[slotname].should == @to[slotname]
     end
   end

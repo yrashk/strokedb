@@ -20,18 +20,8 @@ module StrokeDB
       chunk = @chunk_storage.find(chunk_uuid)
       return nil unless chunk
 
-      raw_doc = nil
+      raw_doc = chunk.find(uuid_version)
 
-      case version
-      when /^0000000000000000#{UUID_RE}/ # first version
-        return nil unless chunk_node = chunk.find_node(uuid)
-        chunk_node = chunk.find_next_node(chunk_node)
-        return nil if chunk_node.key[0,uuid.length] != uuid
-        raw_doc = chunk_node.value
-      when /^#{VERSION_RE}/, nil # any other or no version
-        raw_doc = chunk.find(uuid_version)
-      end
-      
       if raw_doc
         return raw_doc if opts[:no_instantiation]
         doc = Document.from_raw(self,uuid,raw_doc.freeze)
@@ -54,8 +44,9 @@ module StrokeDB
 
     def save!(doc)
       master_chunk = find_or_create_master_chunk
+      # TODO: remove it
       next_lamport_timestamp
-      doc.__version__ = lamport_timestamp.to_s
+      # doc.__version__ = lamport_timestamp.to_s
 
       insert_with_cut(doc.uuid, doc, master_chunk)
       insert_with_cut("#{doc.uuid}.#{doc.__version__}", doc, master_chunk)
@@ -102,7 +93,7 @@ module StrokeDB
         next if after && chunk.lamport_timestamp <= after
 
         chunk.each do |node| 
-          next if after && (node.value['__version__'] <= after)
+          next if after && (node.timestamp <= after)
           if uuid_match = node.key.match(/^#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}./) )
             yield Document.from_raw(self, uuid_match[1], node.value) 
           end
@@ -147,7 +138,7 @@ module StrokeDB
       unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
         chunk = Chunk.new(@cut_level)
       end
-      a, b = chunk.insert(uuid, doc.to_raw)
+      a, b = chunk.insert(uuid, doc.to_raw,nil,lamport_timestamp.to_s)
       [a,b].compact.each do |chunk|
         chunk.store_uuid = self.uuid
         chunk.lamport_timestamp = lamport_timestamp.to_s
