@@ -17,6 +17,7 @@ To be done before 0.1 ("Praha"):
 [ ] Memory-based storage with permanent log?
 [?] add sub-finders to associations (like User.messages.find :title => '...')
 [?] Add sorting primitives for search functionality
+[ ] Document#to_xml can't work with arrays for some reason
 
 To be done later:
 
