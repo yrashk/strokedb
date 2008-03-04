@@ -237,8 +237,8 @@ module StrokeDB
         else
           s << "Doc "
         end
-        slots.each_pair do |k,v|
-          if %w(__version__ __previous_version__).member?(k) && v
+        slots.keys.sort.each do |k|
+          if %w(__version__ __previous_version__).member?(k) && v=self[k]
             s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
           else
             s << "#{k}: #{self[k].inspect}, "
