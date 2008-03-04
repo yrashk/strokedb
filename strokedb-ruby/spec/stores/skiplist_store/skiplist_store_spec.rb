@@ -55,8 +55,8 @@ describe "New skiplist chunk store" do
     @store.should be_empty
   end
 
-  it "should return nil as last_version for unexistent document (well there is no documents at all)" do
-    @store.last_version(Util.random_uuid).should be_nil
+  it "should return nil as head_version for unexistent document (well there is no documents at all)" do
+    @store.head_version(Util.random_uuid).should be_nil
   end
 
   it_should_behave_like "Skiplist store"

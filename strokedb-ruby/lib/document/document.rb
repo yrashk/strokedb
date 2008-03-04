@@ -319,7 +319,7 @@ module StrokeDB
     #
     def head?
       return false if new? || is_a?(VersionedDocument)
-      store.last_version(uuid) == __version__
+      store.head_version(uuid) == __version__
     end
 
     #

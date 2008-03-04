@@ -36,7 +36,7 @@ module StrokeDB
       !!find(uuid,nil,:no_instantiation => true)
     end
 
-    def last_version(uuid)
+    def head_version(uuid)
       raw_doc = find(uuid,nil,:no_instantiation => true)
       return raw_doc['__version__'] if raw_doc
       nil
