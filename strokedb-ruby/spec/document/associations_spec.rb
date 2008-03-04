@@ -44,6 +44,39 @@ describe "Playlist.has_many :songs association" do
     playlist.rock_songs.should == [rock_song]
   end
   
+  it "should fetch head versions of associated documents if association owner is a head" do
+    playlist = Playlist.create!
+    playlist.should be_head
+    song = Song.create!(:playlist => playlist)
+    song.name = "My song"
+    song.save!
+    playlist.songs.should == [song]
+    playlist.songs.each do |s| 
+      s.should be_head 
+      s.should_not be_a_kind_of(VersionedDocument) 
+      s.should have_slot(:name) 
+    end
+  end
+
+  it "should fetch specific versions of associated documents if association owner is a not a head" do
+    pending
+    playlist = Playlist.create!
+    song = Song.create!(:playlist => playlist)
+    playlist.name = "My playlist"
+    playlist.save!
+    playlist = playlist.__versions__[playlist.__previous_version__]
+    playlist.should_not be_head
+    song.name = "My song"
+    song.save!
+    song = song.__versions__[song.__previous_version__]
+    playlist.songs.should == [song]
+    playlist.songs.each do |s| 
+      s.should_not be_head
+      s.should be_a_kind_of(VersionedDocument) 
+      s.should_not have_slot(:name) 
+    end
+  end
+  
 end
 
 describe "Playlist.has_many :rock_songs, :through => :songs, :conditions => { :genre => 'Rock' } association" do
