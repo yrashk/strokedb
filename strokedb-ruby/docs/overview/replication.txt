@@ -128,7 +128,57 @@ for you documents.
 
 EXAMPLES
 
-It is interesting how Git model 
+It is interesting how Git model can be applied to the end-user applications.
+For text documents it can be a powerful wiki with an offline work, safe
+branches and forks (letting you merge modifications back at any time) of 
+the data. As Git removes policy issues, StrokeDB lets you copy the
+data, modify it and give the initial author to pull your updates. With no
+"commit access" sharing troubles!
+
+You may also track changes of any structured data (hey, we support 
+a customizable JSON merge!). Consider a web 2.0 music storage system, 
+containing playlists, albums, tracks, mixes, lyrics, tags and descriptions.
+With StrokeDB you don't have to invent access rights to let people organize
+stuff efficiently and safely. Instead, you may implement UI for cloning 
+every piece of data. 
+
+
+Example 1. Bob collects Myléne Farmer music and has a rather good, but not full 
+collection. Alice finds his collection and wishes to sort
+some album items in a correct order. At the same time, Jack wishes to
+add lyrics to every track on the very same playlist. 
+
+  Bob's initial playlist: [ b1, c1, a1, x1 ]
+
+Alice doesn't have to ask Bob to give her access to his collection. 
+She just clones his playlists and modify them on her own.
+At the very same time Jack clones Bob's playlist and modifies it's tracks.
+
+Few hours later Alice writes to Bob: "could you please apply my modifications?"
+Bob goes to Alice's playlist, checks it out and if it likes it, he just 
+clicks "merge this to my playlist" button. There're no conflicts,
+so the playlist is successfully merged. 
+
+  Alice's playlist:   [ a1, b1, c1 ] # x1 is removed as irrelevant
+  Bob's new playlist: [ a1, b1, c1 ]
+
+Now Jack asks Bob to merge his tracks with lyrics. Bob clicks the 
+very same button, but gets a conflict in a merge: occasionally,
+Jack has updated a track, which was removed by Alice. 
+
+  Jack's playist: [ b2, c2, a2, x2 ]
+  Conflicting versions of the Bob's playlist:
+                  [ a2, b2, c2, x2 ]  # x1 is changed to x2
+                  [ a2, b2, c2 ]      # x1 removed by Alice
+
+Bob may decide what to do now: add updated track, or throw it away, 
+as Alice did. Bob is unsure what to do, so he asks Jack to pull
+Bob's update, resolve all the conflicts and then ask him to pull it back.
+
+Jack pulls Bob's updates (made by Alice), removes x1(x2) and asks Bob
+to pull again. This time merge is made automatically and everyone's happy.
+
+
 
 
 
