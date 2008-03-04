@@ -76,6 +76,42 @@ describe "Playlist.has_many :songs association" do
       s.should_not have_slot(:name) 
     end
   end
+
+  it "should fetch head versions of associated documents if association owner wasn't saved when associated doc were created and now it is a head" do
+    pending
+    playlist = Playlist.new
+    song = Song.create!(:playlist => playlist)
+    song.name = "My song"
+    song.save!
+    playlist.save!
+    playlist.should be_head
+    playlist.songs.should == [song]
+    playlist.songs.each do |s| 
+      s.should be_head 
+      s.should_not be_a_kind_of(VersionedDocument) 
+      s.should have_slot(:name) 
+    end
+  end
+
+  it "should fetch head versions of associated documents if association owner wasn't saved when associated doc were created and now it is not a head" do
+    pending
+    playlist = Playlist.new
+    song = Song.create!(:playlist => playlist)
+    song.name = "My song"
+    song.save!
+    playlist.save!
+    playlist.name = "My playlist"
+    playlist.save!
+    playlist = playlist.__versions__[playlist.__previous_version__]
+    playlist.songs.should == [song]
+    playlist.songs.each do |s| 
+      s.should be_head 
+      s.should_not be_a_kind_of(VersionedDocument) 
+      s.should have_slot(:name) 
+    end
+  end
+
+  
   
 end
 
