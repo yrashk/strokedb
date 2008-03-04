@@ -94,11 +94,27 @@ module StrokeDB
   end
   
   class <<self
-    def default_config
-      Thread.current['StrokeDB.default_config']
+    def use_perthread_default_config!
+      class << self
+        def default_config
+          Thread.current['StrokeDB.default_config']
+        end
+        def default_config=(config)
+          Thread.current['StrokeDB.default_config'] = config
+        end
+      end
     end
-    def default_config=(config)
-      Thread.current['StrokeDB.default_config'] = config
+    def use_threadwide_default_config!
+      class << self
+        def default_config
+          $strokedb_default_config
+        end
+        def default_config=(config)
+          $strokedb_default_config = config
+        end
+      end
     end
   end
 end
+
+StrokeDB.use_perthread_default_config!
