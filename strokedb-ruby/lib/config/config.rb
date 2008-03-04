@@ -104,7 +104,7 @@ module StrokeDB
         end
       end
     end
-    def use_threadwide_default_config!
+    def use_global_default_config!
       class << self
         def default_config
           $strokedb_default_config
