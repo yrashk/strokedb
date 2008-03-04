@@ -252,6 +252,20 @@ module StrokeDB
     alias :inspect :pretty_print
 
 
+    #
+    # Returns string with Document's JSON representation
+    #
+    def to_json
+      to_raw.to_json
+    end
+    
+    #
+    # Returns string with Document's XML representation
+    #
+    def to_xml(opts={})
+      to_raw.to_xml({ :root => 'document', :dasherize => false}.merge(opts))
+    end
+    
     # Primary serialization
 
     def to_raw #:nodoc:
