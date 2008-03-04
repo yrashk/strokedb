@@ -4,7 +4,7 @@ metadocuments, integration with runtime (it is just a ruby library).
 
 = Installing StrokeDB
 
-== Requirements
+=== Requirements
 
 You need to install few gems in order to run StrokeDB:
 
@@ -12,21 +12,21 @@ You need to install few gems in order to run StrokeDB:
 
 *Note*: There is no need in <tt>uuidtools</tt> if you use JRuby
 
-== Getting source code
+=== Getting source code
 
 	$ git clone git://gitorious.org/strokedb/mainline.git strokedb
 or
 	$ git clone http://git.gitorious.org/strokedb/mainline.git strokedb
 
-== Installing rubygem
+=== Installing rubygem
 
 There is no gem for StrokeDB (yet). As soon as we'll release 0.1, it will become available this way, too.
 	
-== (__Optional__) Running test suite
+=== <i>(Optional) Running test suite</i>
 
-		$ cd strokedb/strokedb-ruby
-		$ rake ci
-		$ rake jci # for jruby, jruby should be in PATH
+	$ cd strokedb/strokedb-ruby
+	$ rake ci
+	$ rake jci # for jruby, jruby should be in PATH
 	
 
 = Starting points
@@ -34,7 +34,7 @@ There is no gem for StrokeDB (yet). As soon as we'll release 0.1, it will become
 One of the most important concepts of StrokeDB is a StrokeDB::Document.
 
 
-= Running benchmarks
+= Some benchmarks
 
 	$ rake bench
 
