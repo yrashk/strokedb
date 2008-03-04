@@ -229,7 +229,7 @@ describe "Saved Document" do
   it "should not be new" do
     @document.should_not be_new
   end
-
+  
   it "should be head" do
     @document.should be_head
   end
@@ -238,6 +238,13 @@ describe "Saved Document" do
     reloaded_doc = @document.reload
     reloaded_doc.should == @document
     reloaded_doc.object_id.should_not == @document.object_id
+  end
+
+  it "should change version once modified; previous version should be set to original version" do
+    old_version = @document.__version__
+    @document[:a] = 1
+    @document.__version__.should_not == old_version
+    @document.__previous_version__.should == old_version
   end
   
   it_should_behave_like "Document"
