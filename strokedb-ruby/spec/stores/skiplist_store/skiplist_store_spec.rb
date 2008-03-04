@@ -112,7 +112,7 @@ describe "Non-empty chunk store" do
   end
 
   it "should iterate over all newly stored documents if told so" do
-    timestamp = @store.lamport_timestamp.to_s
+    timestamp = @store.lamport_timestamp.counter
     @new_documents = []
     10.times do |i|
       @new_documents << Document.create!(:stuff => i)
@@ -126,7 +126,7 @@ describe "Non-empty chunk store" do
   end
 
   it "should iterate over all newly stored versions if told so" do
-    timestamp = @store.lamport_timestamp.to_s
+    timestamp = @store.lamport_timestamp.counter
     @new_documents = []
     @documents.each_with_index do |document,i|
       document.stuff = i+100

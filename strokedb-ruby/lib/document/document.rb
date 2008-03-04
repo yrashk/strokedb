@@ -288,7 +288,6 @@ module StrokeDB
 
     def self.from_raw(store, uuid, raw_slots,opts = {}) #:nodoc:
       doc = new(store, raw_slots, uuid)
-      # doc.instance_variable_set(:@uuid, uuid)
       meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
       meta_modules.each do |meta_module|
         unless doc.is_a?(meta_module)
@@ -328,7 +327,7 @@ module StrokeDB
     #
     def save!
       execute_callbacks :before_save
-      self[:__previous_version__] = __version__ if !new? && @saved
+      self[:__previous_version__] = __version__ if @saved
       store.save!(self)
       @new = false
       @saved = true

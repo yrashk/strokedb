@@ -44,9 +44,7 @@ module StrokeDB
 
     def save!(doc)
       master_chunk = find_or_create_master_chunk
-      # TODO: remove it
       next_lamport_timestamp
-      # doc.__version__ = lamport_timestamp.to_s
 
       insert_with_cut(doc.uuid, doc, master_chunk)
       insert_with_cut("#{doc.uuid}.#{doc.__version__}", doc, master_chunk)
@@ -90,7 +88,7 @@ module StrokeDB
       m.each do |node|
         chunk = @chunk_storage.find(node.value)
         next unless chunk
-        next if after && chunk.lamport_timestamp <= after
+        next if after && chunk.timestamp <= after
 
         chunk.each do |node| 
           next if after && (node.timestamp <= after)
@@ -102,7 +100,7 @@ module StrokeDB
     end
 
     def lamport_timestamp
-      @lamport_timestamp ||= (lts = find_or_create_master_chunk.lamport_timestamp) ? LTS.from_raw(lts) : LTS.zero(uuid)
+      @lamport_timestamp ||= (lts = find_or_create_master_chunk.timestamp) ? LTS.from_raw(lts) : LTS.zero(uuid)
     end
     def next_lamport_timestamp
       @lamport_timestamp = lamport_timestamp.next
@@ -138,10 +136,10 @@ module StrokeDB
       unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
         chunk = Chunk.new(@cut_level)
       end
-      a, b = chunk.insert(uuid, doc.to_raw,nil,lamport_timestamp.to_s)
+      a, b = chunk.insert(uuid, doc.to_raw,nil,lamport_timestamp.counter)
       [a,b].compact.each do |chunk|
         chunk.store_uuid = self.uuid
-        chunk.lamport_timestamp = lamport_timestamp.to_s
+        chunk.timestamp = lamport_timestamp.counter
       end
       # if split
       if b

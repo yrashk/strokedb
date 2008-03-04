@@ -11,7 +11,7 @@ describe "Empty Chunk" do
   it { @it.next_chunk.should == nil }
   
   it "should be serialized" do
-    @it.to_raw.should == {"cut_level"=>3, "uuid"=>nil, "next_uuid"=>nil, "nodes"=>[], "lamport_timestamp" => nil, "store_uuid" => nil}
+    @it.to_raw.should == {"cut_level"=>3, "uuid"=>nil, "next_uuid"=>nil, "nodes"=>[], "timestamp" => nil, "store_uuid" => nil}
   end
 end
 
@@ -22,7 +22,7 @@ describe "Chunk (timestamps, uuid)" do
     @chunk = Chunk.new(4)
     @chunk.insert('500', 'V', 2)
     @chunk.store_uuid = "uuid1"
-    @chunk.lamport_timestamp = 0
+    @chunk.timestamp = 0
   end
 
   it "should have store_uuid" do
@@ -30,7 +30,7 @@ describe "Chunk (timestamps, uuid)" do
   end 
 
   it "should have lamport timestamp" do
-    @chunk.lamport_timestamp.should == 0
+    @chunk.timestamp.should == 0
   end 
   
 end
