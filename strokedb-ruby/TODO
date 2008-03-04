@@ -15,6 +15,7 @@ To be done before 0.1 ("Praha"):
 [.] Refactor associations
 [ ] Add Document::Versions#first, #head
 [ ] Memory-based storage with permanent log?
+[?] Add Document#to_json which will act as #to_raw.to_json
 [?] add sub-finders to associations (like User.messages.find :title => '...')
 [?] Add sorting primitives for search functionality
 
