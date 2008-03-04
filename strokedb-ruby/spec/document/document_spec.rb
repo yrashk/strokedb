@@ -120,6 +120,7 @@ describe "New Document" do
 
   it "should have no previous version" do
     @document.__previous_version__.should be_nil
+    @document.__versions__.previous.should be_nil
   end
 
   it "should have no slotnames" do
@@ -305,7 +306,9 @@ describe "Document with previous version" do
 
 
   it "should be able to access previous version" do
-    @document.__versions__[@document.__previous_version__].should == @store.find(@document.uuid,@document.__previous_version__)
+    prev_version = @store.find(@document.uuid,@document.__previous_version__)
+    @document.__versions__[@document.__previous_version__].should == prev_version
+    @document.__versions__.previous.should == prev_version
   end
 
 end
