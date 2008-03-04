@@ -390,7 +390,11 @@ module StrokeDB
     end
 
     def __reference__ #:nodoc:
-      "@#" + uuid + (__version__ ? ".#{__version__}" : "")
+      if version = __version__
+        "@##{uuid}.#{version}"
+      else
+        "@##{uuid}.0000000000000000#{store.uuid}"
+      end
     end
 
     def ==(doc) #:nodoc:

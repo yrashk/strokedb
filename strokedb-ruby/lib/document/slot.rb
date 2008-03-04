@@ -86,12 +86,11 @@ module StrokeDB
         result
       end
     end
+    
     def encode_value(v,skip_documents=false)
       case v
-      when VersionedDocument
-        skip_documents ? v : DocumentReferenceValue.new(v.__reference__,doc) 
       when Document
-        skip_documents ? v : (v.new? ? DocumentReferenceValue.new("@##{v.uuid}.0000000000000000#{v.store.uuid}",doc) : DocumentReferenceValue.new("@##{v.uuid}.#{v.__version__}",doc))
+        skip_documents ? v : DocumentReferenceValue.new(v.__reference__,doc) 
       when Array
         LazyMappingArray.new(v).map_with do |element| 
           encode_value(element,skip_documents)
