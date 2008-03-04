@@ -2,11 +2,8 @@ module StrokeDB
   class InvertedList
   	include Enumerable
   	
-  	# These are not in UTF-8, so we can use 'em
-  	# Any kinds of BOM are not supported as well as all encodings except UTF-8 
-  	
-  	SEPARATOR  = "\xfe" 
-  	TERMINATOR = "\xff"
+  	SEPARATOR  = "\x01" 
+  	TERMINATOR = "\x02"
   	
   	attr_accessor :default, :head, :tail, :cut_level
 
