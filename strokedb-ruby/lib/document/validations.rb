@@ -2,7 +2,7 @@ module StrokeDB
 
   module Validations
 
-    class ValidationError < Exception
+    class ValidationError < StandardError
       attr_reader :document, :meta, :slotname, :on
       def initialize(doc,meta,slotname,on,msg)
         @document, @meta, @slotname, @on, @msg = doc,meta,slotname,on,msg
