@@ -5,7 +5,7 @@ module StrokeDB
     class ValidationError < Exception
       attr_reader :document, :meta, :slotname
       def initialize(doc,meta,slotname,msg)
-        @document, @meta, @slotname, @msg = document,meta,slotname,msg
+        @document, @meta, @slotname, @msg = doc,meta,slotname,msg
       end
       def message
         eval("\"#{@msg}\"")
@@ -31,10 +31,13 @@ module StrokeDB
         presence_validations = doc.meta.slotnames.grep(/^validates_presence_of_/).map{|v| v.gsub(/^validates_presence_of_(.+)/,'\\1')}
         presence_validations.each do |slotname_to_validate|
           if validation=doc.meta["validates_presence_of_#{slotname_to_validate}"] 
-            if validation['on'] == 'save' && !doc.has_slot?(slotname_to_validate)
+            if validation['on'] == 'create' && doc.new? && !doc.has_slot?(slotname_to_validate)
               raise ValidationError.new(doc,validation['meta'],slotname_to_validate,validation['message'])
             end
-            if validation['on'] == 'create' && doc.new? && !doc.has_slot?(slotname_to_validate)
+            if validation['on'] == 'update' && !doc.new? && !doc.has_slot?(slotname_to_validate)
+              raise ValidationError.new(doc,validation['meta'],slotname_to_validate,validation['message'])
+            end
+            if validation['on'] == 'save' && !doc.has_slot?(slotname_to_validate)
               raise ValidationError.new(doc,validation['meta'],slotname_to_validate,validation['message'])
             end
           end
