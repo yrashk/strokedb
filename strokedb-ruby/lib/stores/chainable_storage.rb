@@ -23,10 +23,12 @@ module StrokeDB
       @chained_storages.nil? ? false : !!@chained_storages[storage]
     end
 
-    def sync_chained_storages!
+    def sync_chained_storages!(origin=nil)
       @chained_storages.each_pair do |storage, savings|
+        next if storage == origin
         savings.each {|saving| storage.save!(saving, self)}
-        @chained_storages[storage] = [] # TODO: spec it
+        storage.sync_chained_storages!(self)
+        @chained_storages[storage] = [] 
       end
     end
     

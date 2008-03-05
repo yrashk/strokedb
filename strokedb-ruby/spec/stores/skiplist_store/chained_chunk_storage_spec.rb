@@ -104,6 +104,13 @@ ChunkStorage.subclasses.map{|e| e.constantize}.each do |storage|
       @storage.should_not_receive(:save!).with(@chunk)
       @target_storage.sync_chained_storage!(@storage)
     end
+    
+    it "should let next storage to sync on sync_chained_storages! as well" do
+      @storage.add_chained_storage!(@target_storage)
+      @storage.save! @chunk
+      @target_storage.should_receive(:sync_chained_storages!).once
+      @storage.sync_chained_storages!
+    end
 
   end
 end
