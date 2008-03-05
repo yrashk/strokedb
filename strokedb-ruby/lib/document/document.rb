@@ -34,8 +34,20 @@ module StrokeDB
   #    authors: ["Yurii Rashkovskii","Oleg Andreev"]
   #   
   class Document
+    
     attr_reader :uuid, :store, :callbacks  #:nodoc:
 
+    def marshal_dump
+      Marshal.dump([uuid,@saved,@new,to_raw.to_json])
+    end
+    def marshal_load(content)
+      _uuid, _saved, _new, _raw = Marshal.load(content)
+      @uuid = _uuid
+      @callbacks = {}
+      initialize_raw_slots(ActiveSupport::JSON.decode(_raw))
+      @saved = _saved
+      @new = _new
+    end
     #
     # Versions is a helper class that is used to navigate through versions. You should not
     # instantiate it directly, but using Document#__versions__ method

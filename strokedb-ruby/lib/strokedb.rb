@@ -8,6 +8,11 @@ module StrokeDB
     def default_store
       StrokeDB.default_config.stores[:default] rescue nil
     end
+    def default_store=(store)
+      cfg = Config.new
+      cfg.stores[:default] = store
+      StrokeDB.default_config = cfg
+    end
   end
 
   
