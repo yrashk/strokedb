@@ -18,7 +18,7 @@ module StrokeDB
       message = opts['message'] || '#{meta}\'s #{slotname} should be present'
       on = (opts['on'] || 'save').to_s.downcase
 
-      @meta_initialization_procs << Proc.new do |meta_module| 
+      @meta_initialization_procs << Proc.new do
         @args.last.reverse_merge!("validates_presence_of_#{slotname}" => { :meta => name, :slotname => slotname, :message => message, :on => on })
 
         before_save(:validates_presence_of) do |doc|

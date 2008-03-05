@@ -98,7 +98,7 @@ module StrokeDB
       # TODO: Silly, buggy deep clone implementation!
       # Refactor this!
       
-      @meta_initialization_procs.each {|proc| proc.call(self) }
+      @meta_initialization_procs.each {|proc| proc.call }
       args = @args.clone.map{|a| Hash === a ? a.clone : a }
       args[0] = store
       args.last[:__meta__] = Meta.document(store)

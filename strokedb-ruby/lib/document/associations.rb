@@ -17,13 +17,13 @@ module StrokeDB
 
       extend_with = opts['extend'] || block
 
-      @meta_initialization_procs << Proc.new do |meta_module| 
+      @meta_initialization_procs << Proc.new do
         case extend_with
         when Proc
           extend_with_proc = extend_with
           extend_with = "HasMany#{slotname.to_s.camelize}"
-          meta_module.const_set(extend_with,Module.new(&extend_with_proc))
-          extend_with = "#{meta_module.name}::HasMany#{slotname.to_s.camelize}"
+          const_set(extend_with,Module.new(&extend_with_proc))
+          extend_with = "#{self.name}::HasMany#{slotname.to_s.camelize}"
         when Module
           extend_with = extend_with.name
         when NilClass
@@ -31,7 +31,7 @@ module StrokeDB
           raise "has_many extension should be either Module or Proc"
         end
         @args.last.reverse_merge!("has_many_#{slotname}" => { :reference_slotname => reference_slotname || 
-          meta_module.name.tableize.singularize, 
+          name.tableize.singularize, 
           :through => through, :meta => meta, :query => query,
           :extend_with => extend_with })
 
