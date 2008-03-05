@@ -11,6 +11,7 @@ module StrokeDB
         eval("\"#{@msg}\"")
       end
     end
+    
 
     def validates_presence_of(slotname,opts={},&block)
       opts = opts.stringify_keys
@@ -20,23 +21,27 @@ module StrokeDB
 
       @meta_initialization_procs << Proc.new do
         @args.last.reverse_merge!("validates_presence_of_#{slotname}" => { :meta => name, :slotname => slotname, :message => message, :on => on })
-
-        before_save(:validates_presence_of) do |doc|
-          presence_validations = doc.meta.slotnames.grep(/^validates_presence_of_/).map{|v| v.gsub(/^validates_presence_of_(.+)/,'\\1')}
-          presence_validations.each do |slotname_to_validate|
-            if validation=doc.meta["validates_presence_of_#{slotname_to_validate}"] 
-              if validation['on'] == 'save' && !doc.has_slot?(slotname_to_validate)
-                raise ValidationError.new(doc,validation['meta'],slotname_to_validate,validation['message'])
-              end
-              if validation['on'] == 'create' && doc.new? && !doc.has_slot?(slotname_to_validate)
-                raise ValidationError.new(doc,validation['meta'],slotname_to_validate,validation['message'])
-              end
+      end
+    end 
+    
+    private 
+    
+    def initialize_validations
+      before_save(:validates_presence_of) do |doc|
+        presence_validations = doc.meta.slotnames.grep(/^validates_presence_of_/).map{|v| v.gsub(/^validates_presence_of_(.+)/,'\\1')}
+        presence_validations.each do |slotname_to_validate|
+          if validation=doc.meta["validates_presence_of_#{slotname_to_validate}"] 
+            if validation['on'] == 'save' && !doc.has_slot?(slotname_to_validate)
+              raise ValidationError.new(doc,validation['meta'],slotname_to_validate,validation['message'])
+            end
+            if validation['on'] == 'create' && doc.new? && !doc.has_slot?(slotname_to_validate)
+              raise ValidationError.new(doc,validation['meta'],slotname_to_validate,validation['message'])
             end
           end
         end
-
       end
-    end 
+    end
+    
   end  
 
 

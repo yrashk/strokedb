@@ -35,35 +35,41 @@ module StrokeDB
           :through => through, :meta => meta, :query => query,
           :extend_with => extend_with })
 
-          when_slot_not_found(:has_many) do |doc, missed_slotname|
-            if slot_has_many = doc.meta["has_many_#{missed_slotname}"]
-              reference_slotname = slot_has_many[:reference_slotname]
-              through = slot_has_many[:through]
-              meta = slot_has_many[:meta]
-              query = slot_has_many[:query]
-              effective_query = query.merge(:__meta__ => meta.constantize.document, reference_slotname => doc)
-              result = doc.store.index_store.find(effective_query).map do |d| 
-                begin
-                  through.each { |t| d = d.send(t) }
-                rescue SlotNotFoundError
-                  d = nil
-                end
-                d
-              end.compact
 
-              if extend_with = slot_has_many[:extend_with] 
-                result.extend(extend_with.constantize) 
-              end
-              result.extend(HasManyAssociation)
-              result.instance_variable_set(:@association_owner,doc)
-
-              result
-            else
-              SlotNotFoundError.new(missed_slotname)
-            end
-          end
         end
 
       end 
+      
+      private 
+      
+      def initialize_associations
+        when_slot_not_found(:has_many) do |doc, missed_slotname|
+          if slot_has_many = doc.meta["has_many_#{missed_slotname}"]
+            reference_slotname = slot_has_many[:reference_slotname]
+            through = slot_has_many[:through]
+            meta = slot_has_many[:meta]
+            query = slot_has_many[:query]
+            effective_query = query.merge(:__meta__ => meta.constantize.document, reference_slotname => doc)
+            result = doc.store.index_store.find(effective_query).map do |d| 
+              begin
+                through.each { |t| d = d.send(t) }
+              rescue SlotNotFoundError
+                d = nil
+              end
+              d
+            end.compact
+
+            if extend_with = slot_has_many[:extend_with] 
+              result.extend(extend_with.constantize) 
+            end
+            result.extend(HasManyAssociation)
+            result.instance_variable_set(:@association_owner,doc)
+
+            result
+          else
+            SlotNotFoundError.new(missed_slotname)
+          end
+        end
+      end
     end  
   end

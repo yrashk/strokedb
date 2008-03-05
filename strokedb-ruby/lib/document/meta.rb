@@ -15,6 +15,10 @@ module StrokeDB
           extend Validations
         end
         mod.module_eval(&block) if block_given?
+        mod.module_eval do
+          initialize_associations
+          initialize_validations
+        end
         if meta_name = extract_meta_name(*args)
           Object.const_set(meta_name,mod)
         end
@@ -97,8 +101,8 @@ module StrokeDB
       raise NoDefaultStoreError.new unless store
       # TODO: Silly, buggy deep clone implementation!
       # Refactor this!
-      
       @meta_initialization_procs.each {|proc| proc.call }
+      @meta_initialization_procs.clear
       args = @args.clone.map{|a| Hash === a ? a.clone : a }
       args[0] = store
       args.last[:__meta__] = Meta.document(store)
