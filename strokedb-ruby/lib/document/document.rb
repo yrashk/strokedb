@@ -48,15 +48,19 @@ module StrokeDB
       end
 
       #
-      # Find document by version
+      # Get document by version.
+      #
+      # Returns Document instance
+      # Returns <tt>nil</tt> if there is no document with given version
       #
       def [](version)
         @cache[version] ||= @document.store.find(document.uuid,version)
       end
       
       #
-      # Get document's previous version
+      # Get document with previous version
       #
+      # Returns Document instance
       # Returns <tt>nil</tt> if there is no previous version
       #
       def previous
@@ -66,20 +70,42 @@ module StrokeDB
       #
       # Find all document versions, treating current one as a head
       #
-      def all
+      # Returns an Array of version numbers
+      #
+      def all_versions
         [document.__version__,*all_preceding]
+      end
+      
+      #
+      # Get all versions of document including currrent one
+      #
+      # Returns an Array of Documents
+      #
+      def all
+        all_versions.map{|v| self[v]}
       end
       
       
       #
       # Find all _previous_ document versions, treating current one as a head
       #
-      def all_preceding
+      # Returns an Array of version numbers
+      #
+      def all_preceding_versions
         if previous_version = document.__previous_version__
           [previous_version, *self[previous_version].__versions__.all_preceding]
         else
           []
         end
+      end
+      
+      #
+      # Find all previous versions of document
+      #
+      # Returns an Array of Documents
+      #
+      def all_preceding
+        all_preceding_versions.map{|v| self[v]}
       end
 
       #

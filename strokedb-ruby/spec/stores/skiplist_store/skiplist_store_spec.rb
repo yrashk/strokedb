@@ -104,8 +104,8 @@ describe "Non-empty chunk store" do
     end
     documents_with_versions = @documents.clone
     @documents.each do |doc|
-      doc.__versions__.all.each do |v|
-        documents_with_versions << doc.__versions__[v]
+      doc.__versions__.all.each do |vd|
+        documents_with_versions << vd
       end
     end
     iterated_documents.sort_by {|doc| doc.__version__}.should == documents_with_versions.sort_by {|doc| doc.__version__}
