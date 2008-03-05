@@ -206,11 +206,8 @@ module StrokeDB
       slotname = slotname.to_s
       slot = @slots[slotname] || @slots[slotname] = Slot.new(self)
       slot.value = value
-      if @saved && slotname != '__version__' && slotname != '__previous_version__'
-        self[:__previous_version__] = __version__
-        generate_new_version!
-        @saved = nil
-      end
+      update_version!(slotname)
+      slot.value
     end
 
     #
@@ -234,6 +231,8 @@ module StrokeDB
     #
     def remove_slot!(slotname)
       @slots.delete slotname.to_s
+      update_version!(slotname)
+      nil
     end
 
     # 
@@ -531,6 +530,13 @@ module StrokeDB
       self.__version__ = Util.random_uuid
     end
 
+    def update_version!(slotname)
+      if @saved && slotname != '__version__' && slotname != '__previous_version__'
+        self[:__previous_version__] = __version__
+        generate_new_version!
+        @saved = nil
+      end
+    end
   end
 
   #

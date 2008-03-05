@@ -246,6 +246,13 @@ describe "Saved Document" do
     @document.__version__.should_not == old_version
     @document.__previous_version__.should == old_version
   end
+
+  it "should change version once some slot is removed; previous version should be set to original version" do
+    old_version = @document.__version__
+    @document.remove_slot!(:some_data)
+    @document.__version__.should_not == old_version
+    @document.__previous_version__.should == old_version
+  end
   
   it_should_behave_like "Document"
   
