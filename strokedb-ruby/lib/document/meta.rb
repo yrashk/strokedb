@@ -12,6 +12,7 @@ module StrokeDB
           @meta_initialization_procs = []
           extend Meta
           extend Associations
+          extend Validations
         end
         mod.module_eval(&block) if block_given?
         if meta_name = extract_meta_name(*args)
