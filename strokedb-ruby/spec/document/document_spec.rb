@@ -151,7 +151,7 @@ describe "New Document" do
   end
 
   it "should have only __version__ slotname" do
-    @document.slotnames.should == ['__version__']
+    @document.slotnames.should == ['__version__','uuid']
   end
 
   it "should have no versions" do
@@ -177,7 +177,7 @@ describe "New Document with slots supplied" do
   end
 
   it "should have corresponding slotnames" do
-    @document.slotnames.to_set.should == ['slot1','slot2','__version__'].to_set
+    @document.slotnames.to_set.should == ['slot1','slot2','__version__','uuid'].to_set
   end
 
   it "should update slot value" do
@@ -467,9 +467,8 @@ describe "Document with version" do
   end
   
   it "should be equal to another document with the same version and uuid" do
-    @another_document = Document.new(:some_data => 1)
+    @another_document = Document.new(:some_data => 1, :uuid => @document.uuid)
     @another_document.__version__ = @document.__version__
-    @another_document.stub!(:uuid).and_return(@document.uuid)
     @document.should == @another_document
   end
 
@@ -491,13 +490,13 @@ describe "Valid Document's JSON" do
   end
 
   it "should be loadable into Document" do
-    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
-    doc.uuid.should == '7bb032d4-0a3c-43fa-b1c1-eea6a980452d'
-    doc.slotnames.to_set.should == ['slot1','slot2','__version__'].to_set
+    doc = Document.from_raw(@store,@decoded_json)
+    doc.uuid.should == @document.uuid
+    doc.slotnames.to_set.should == ['slot1','slot2','__version__','uuid'].to_set
   end
 
   it "should reuse cached previous version at first modification" do
-    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
+    doc = Document.from_raw(@store,@decoded_json)
     doc[:hello] = 'world'
     doc[:hello] = 'world!'
     doc[:__previous_version__].should == @document.__version__
@@ -520,7 +519,7 @@ describe "Valid Document's JSON with meta name specified" do
     Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
     SomeDocument = Module.new
 
-    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
+    doc = Document.from_raw(@store,@decoded_json)
     doc.should be_a_kind_of(SomeDocument)
   end
 
@@ -528,7 +527,7 @@ describe "Valid Document's JSON with meta name specified" do
     Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
     
     lambda do
-      doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
+      doc = Document.from_raw(@store,@decoded_json)
     end.should_not raise_error
   end
 
@@ -553,7 +552,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     SomeDocument0 = Meta.new
     Object.send!(:remove_const,'SomeDocument2') if defined?(SomeDocument2)
     SomeDocument2 = Meta.new
-    doc = Document.from_raw(@store,@document.uuid,@decoded_json)
+    doc = Document.from_raw(@store,@decoded_json)
     doc.should be_a_kind_of(SomeDocument0)
     doc.should be_a_kind_of(SomeDocument2)
   end
@@ -573,7 +572,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     end
     Kernel.should_receive(:callback_0_called)
     Kernel.should_receive(:callback_2_called)
-    doc = Document.from_raw(@store,'7bb032d4-0a3c-43fa-b1c1-eea6a980452d',@decoded_json)
+    doc = Document.from_raw(@store,@decoded_json)
   end
 end
 

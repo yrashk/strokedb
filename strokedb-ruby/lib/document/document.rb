@@ -35,14 +35,13 @@ module StrokeDB
   #   
   class Document
     
-    attr_reader :uuid, :store, :callbacks  #:nodoc:
+    attr_reader :store, :callbacks  #:nodoc:
 
     def marshal_dump
-      Marshal.dump([uuid,@saved,@new,to_raw.to_json])
+      Marshal.dump([@saved,@new,to_raw.to_json])
     end
     def marshal_load(content)
-      _uuid, _saved, _new, _raw = Marshal.load(content)
-      @uuid = _uuid
+      _saved, _new, _raw = Marshal.load(content)
       @callbacks = {}
       initialize_raw_slots(ActiveSupport::JSON.decode(_raw))
       @saved = _saved
@@ -323,8 +322,8 @@ module StrokeDB
       __reference__
     end
 
-    def self.from_raw(store, uuid, raw_slots,opts = {}) #:nodoc:
-      doc = new(store, raw_slots, uuid)
+    def self.from_raw(store,raw_slots,opts = {}) #:nodoc:
+      doc = new(store, raw_slots, true)
       meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
       meta_modules.each do |meta_module|
         unless doc.is_a?(meta_module)
@@ -494,18 +493,17 @@ module StrokeDB
       val
     end
     
-    def do_initialize(store, slots={}, uuid=nil) #:nodoc:
+    def do_initialize(store, slots={}, initialize_raw = false) #:nodoc:
       @callbacks = {}
       @store = store
-      if uuid && uuid.match(/#{UUID_RE}/)
-        @uuid = uuid
+      if initialize_raw
         initialize_raw_slots(slots)
         @saved = true
       else
         @new = true
-        @uuid = Util.random_uuid
         initialize_slots(slots)
-        generate_new_version!
+        self.uuid = Util.random_uuid unless has_slot?(:uuid)
+        generate_new_version! unless has_slot?(:__version__)
       end
     end
 

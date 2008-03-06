@@ -24,7 +24,7 @@ module StrokeDB
 
       if raw_doc
         return raw_doc if opts[:no_instantiation]
-        doc = Document.from_raw(self,uuid,raw_doc.freeze)
+        doc = Document.from_raw(self,raw_doc.freeze)
         doc.extend(VersionedDocument) if version
         return doc
       end
@@ -58,7 +58,7 @@ module StrokeDB
       if @index_store
         if doc.__previous_version__
           raw_pdoc = find(doc.uuid,doc.__previous_version__,:no_instantiation => true)
-          pdoc = Document.from_raw(self,doc.uuid,raw_pdoc.freeze,:skip_callbacks => true)
+          pdoc = Document.from_raw(self,raw_pdoc.freeze,:skip_callbacks => true)
           pdoc.extend(VersionedDocument)
           @index_store.delete(pdoc)
         end
@@ -96,7 +96,7 @@ module StrokeDB
         chunk.each do |node| 
           next if after && (node.timestamp <= after)
           if uuid_match = node.key.match(/^#{UUID_RE}$/) || (include_versions && uuid_match = node.key.match(/#{UUID_RE}./) )
-            yield Document.from_raw(self, uuid_match[1], node.value) 
+            yield Document.from_raw(self, node.value) 
           end
         end
       end
@@ -121,7 +121,7 @@ module StrokeDB
     end
     
     def document
-      find(uuid) || StoreInfo.create!(self,{:kind => 'skiplist'},uuid)
+      find(uuid) || StoreInfo.create!(self,:kind => 'skiplist', :uuid => uuid)
     end
     
     def empty?

@@ -71,7 +71,7 @@ describe "Diffing documents with slot changed" do
   end
 
   it "should list updated slot" do
-    @diff.updated_slots.keys.to_set.should == ['slot1'].to_set
+    @diff.updated_slots.keys.to_set.should == ['slot1','uuid'].to_set
     @diff.updated_slots['slot1'].should == 2
   end
   
