@@ -37,16 +37,16 @@ module StrokeDB
     
     attr_reader :store, :callbacks  #:nodoc:
 
-    def marshal_dump
-      Marshal.dump([@saved,@new,to_raw.to_json])
+    def marshal_dump #:nodoc:
+      (@new ? '1' : '0') + (@saved ? '1' : '0') + to_raw.to_json
     end
-    def marshal_load(content)
-      _saved, _new, _raw = Marshal.load(content)
+    def marshal_load(content) #:nodoc:
       @callbacks = {}
-      initialize_raw_slots(ActiveSupport::JSON.decode(_raw))
-      @saved = _saved
-      @new = _new
+      initialize_raw_slots(ActiveSupport::JSON.decode(content[2,content.length]))
+      @saved = content[1,1] == '1'
+      @new = content[0,1] == '1'
     end
+    # include DRbUndumped
     #
     # Versions is a helper class that is used to navigate through versions. You should not
     # instantiate it directly, but using Document#__versions__ method
