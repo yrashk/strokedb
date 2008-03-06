@@ -78,7 +78,7 @@ module StrokeDB
       args << {} unless args.last.is_a?(Hash)
       store = args.first
       raise NoDefaultStoreError.new unless StrokeDB.default_store
-      store.index_store.find(args.last.merge(:__meta__ => document(store)))
+      store.search(args.last.merge(:__meta__ => document(store)))
     end
 
     def find_or_create(*args)
@@ -107,7 +107,7 @@ module StrokeDB
       args[0] = store
       args.last[:__meta__] = Meta.document(store)
       args.last[:name] ||= name
-      unless meta_doc = (store.respond_to?(:index_store) && store.index_store) ? store.index_store.find(:name => args.last[:name], 
+      unless meta_doc = (store.respond_to?(:index_store) && store.index_store) ? store.search(:name => args.last[:name], 
         :__meta__ => Meta.document(store)).first : nil
         meta_doc = Document.new(*args)
         meta_doc.extend(Meta)

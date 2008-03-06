@@ -31,6 +31,9 @@ module StrokeDB
       nil
     end
 
+    def search(*args)
+      @index_store.find(*args)
+    end
 
     def exists?(uuid)
       !!find(uuid,nil,:no_instantiation => true)

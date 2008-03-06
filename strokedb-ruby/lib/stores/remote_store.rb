@@ -19,6 +19,10 @@ module StrokeDB
         safe_document_from_undumped(@server.find(*args))
       end
       
+      def search(*args)
+        @server.search(*args).map{|e| safe_document_from_undumped(e) }
+      end
+      
       def exists?(uuid)
         !!find(uuid,nil,:no_instantiation => true)
       end
@@ -94,6 +98,10 @@ module StrokeDB
 
       def find(*args)
         @store.find(*args)
+      end
+
+      def search(*args)
+        @store.search(*args)
       end
       
       def exists?(uuid)
