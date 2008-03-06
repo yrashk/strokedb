@@ -1,11 +1,9 @@
 module StrokeDB
   class Store
-    def remote_server(host,port,protocol=:emjson)
+    def remote_server(host,port,protocol=:drb)
       case protocol
       when :drb
         RemoteStore::DRb::Server.new(self,host,port)
-      when :emjson
-        RemoteStore::EMJSON::Server.new(self,host,port)
       else
         raise "No #{protocol} protocol"
       end
