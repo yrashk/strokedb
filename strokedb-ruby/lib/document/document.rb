@@ -509,8 +509,8 @@ module StrokeDB
       else
         @new = true
         initialize_slots(slots)
-        self.uuid = Util.random_uuid unless has_slot?(:uuid)
-        generate_new_version! unless has_slot?(:__version__)
+        self.uuid = Util.random_uuid unless self[:uuid]
+        generate_new_version! unless self[:__version__]
       end
     end
 
