@@ -408,14 +408,21 @@ module StrokeDB
 
 
     #
-    # Returns current document's version (which is stored in <tt>__version__</tt> slot)
+    # Returns document's version (which is stored in <tt>__version__</tt> slot)
     #
     def __version__
       self[:__version__]
     end
 
     #
-    # Returns current document's previous version (which is stored in <tt>__previous_version__</tt> slot)
+    # Return document's uuid
+    #
+    def uuid
+      self[:uuid]
+    end
+    
+    #
+    # Returns document's previous version (which is stored in <tt>__previous_version__</tt> slot)
     #
     def __previous_version__
       self[:__previous_version__]
