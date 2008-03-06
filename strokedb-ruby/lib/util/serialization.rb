@@ -23,7 +23,7 @@ module StrokeDB
     StrokeDB.extend("::StrokeDB::#{method_name.to_s.camelize}SerializationMethod".constantize)
   end
   
-  self.serialization_method = :json
+  self.serialization_method = :marshal
   
   
 end
