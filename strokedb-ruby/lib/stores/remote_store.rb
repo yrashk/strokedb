@@ -140,11 +140,11 @@ module StrokeDB
       end
       
       def empty?
-        @server.empty?
+        @store.empty?
       end
 
       def inspect
-        @server.inspect
+        @store.inspect
       end
 
       def index_store
