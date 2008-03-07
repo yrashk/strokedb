@@ -95,6 +95,7 @@ module StrokeDB
         attr_reader :store, :addr, :thread
         def initialize(store,addr)
           @store, @addr = store,addr
+          @mutex = Mutex.new
         end
 
         def start
@@ -103,38 +104,38 @@ module StrokeDB
         end
 
         def find(*args)
-          @store.find(*args)
+          @mutex.synchronize { @store.find(*args) }
         end
 
         def search(*args)
-          @store.search(*args)
+          @mutex.synchronize { @store.search(*args) }
         end
 
         def exists?(uuid)
-          !!find(uuid,nil,:no_instantiation => true)
+          !!@mutex.synchronize { find(uuid,nil,:no_instantiation => true) }
         end
 
         def head_version(uuid)
-          raw_doc = find(uuid,nil,:no_instantiation => true)
+          raw_doc = @mutex.synchronize { find(uuid,nil,:no_instantiation => true) }
           return raw_doc['__version__'] if raw_doc
           nil
         end
 
         def save!(document)
-          document.instance_variable_set(:@store,self)
-          @store.save!(document)
+          document.instance_variable_set(:@store,@store)
+          @mutex.synchronize { @store.save!(document) }
         end
 
         def each(options = {}, &block)
-          @store.each(options, &block)
+          @mutex.synchronize { @store.each(options, &block) }
         end
 
         def lamport_timestamp
-          @store.lamport_timestamp
+          @mutex.synchronize { @store.lamport_timestamp }
         end
 
         def next_lamport_timestamp
-          @store.next_lamport_timestamp
+          @mutex.synchronize { @store.next_lamport_timestamp }
         end
 
         def uuid
@@ -142,11 +143,11 @@ module StrokeDB
         end
 
         def document
-          @store.document
+          @mutex.synchronize { @store.document }
         end
 
         def empty?
-          @store.empty?
+          @mutex.synchronize { @store.empty? }
         end
 
         def inspect
