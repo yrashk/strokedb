@@ -17,8 +17,8 @@ module StrokeDB
 
         def initialize(host,port)
           @host, @port = host, port
-          DRb.start_service
-          @server = DRbObject.new(nil, "druby://#{host}:#{port}")
+          ::DRb.start_service
+          @server = ::DRbObject.new(nil, "druby://#{host}:#{port}")
         end
 
         def find(*args)
