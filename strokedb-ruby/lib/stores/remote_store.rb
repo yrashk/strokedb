@@ -98,8 +98,8 @@ module StrokeDB
         end
 
         def start
-          DRb.start_service("druby://#{host}:#{port}", self)
-          @thread = DRb.thread
+          ::DRb.start_service("druby://#{host}:#{port}", self)
+          @thread = ::DRb.thread
         end
 
         def find(*args)
