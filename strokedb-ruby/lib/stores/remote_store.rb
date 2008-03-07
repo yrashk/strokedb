@@ -1,9 +1,9 @@
 module StrokeDB
   class Store
-    def remote_server(host,port,protocol=:drb)
+    def remote_server(addr,protocol=:drb)
       case protocol
       when :drb
-        RemoteStore::DRb::Server.new(self,host,port)
+        RemoteStore::DRb::Server.new(self,"#{addr}")
       else
         raise "No #{protocol} protocol"
       end
@@ -13,12 +13,12 @@ module StrokeDB
     module DRb
       class Client
 
-        attr_reader :host, :port
+        attr_reader :addr
 
-        def initialize(host,port)
-          @host, @port = host, port
+        def initialize(addr)
+          @addr = addr
           ::DRb.start_service
-          @server = ::DRbObject.new(nil, "druby://#{host}:#{port}")
+          @server = ::DRbObject.new(nil, addr)
         end
 
         def find(*args)
@@ -92,13 +92,13 @@ module StrokeDB
       end    
 
       class Server
-        attr_reader :store, :host, :port, :thread
-        def initialize(store,host,port)
-          @store, @host, @port = store,host,port
+        attr_reader :store, :addr, :thread
+        def initialize(store,addr)
+          @store, @addr = store,addr
         end
 
         def start
-          ::DRb.start_service("druby://#{host}:#{port}", self)
+          ::DRb.start_service(addr, self)
           @thread = ::DRb.thread
         end
 
