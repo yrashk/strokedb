@@ -149,6 +149,14 @@ module StrokeDB
         def empty?
           @mutex.synchronize { @store.empty? }
         end
+        
+        def autosync!
+          @mutex.synchronize { @store.autosync! }
+        end
+        
+        def stop_autosync!
+          @mutex.synchronize { @store.stop_autosync! }
+        end
 
         def inspect
           @store.inspect

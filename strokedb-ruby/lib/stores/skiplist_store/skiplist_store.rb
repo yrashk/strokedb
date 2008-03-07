@@ -108,7 +108,7 @@ module StrokeDB
     def next_lamport_timestamp
       @lamport_timestamp = lamport_timestamp.next
     end
-    
+
     def uuid
       return @uuid if @uuid
       master_chunk = @chunk_storage.find('MASTER')
@@ -119,18 +119,36 @@ module StrokeDB
       end
       @uuid
     end
-    
+
     def document
       find(uuid) || StoreInfo.create!(self,:kind => 'skiplist', :uuid => uuid)
     end
-    
+
     def empty?
       !@chunk_storage.find('MASTER')
     end
-    
+
     def inspect
       "#<Skiplist store #{uuid}#{empty? ? " (empty)" : ""}>"
     end
+
+    def autosync!
+      @autosync_mutex ||= Mutex.new
+      @autosync = nil if @autosync && !@autosync.status
+      @autosync ||= Thread.new do 
+        until @stop_autosync
+          @autosync_mutex.synchronize { chunk_storage.sync_chained_storages! }
+          sleep(1)
+        end
+      end
+    end
+    
+    def stop_autosync!
+      if @autosync_mutex
+        @autosync_mutex.synchronize { @stop_autosync = true }
+      end
+    end
+    
 
     private
 
@@ -177,7 +195,7 @@ module StrokeDB
       @chunk_storage.save!(master_chunk)
       master_chunk
     end
-    
+
 
 
   end

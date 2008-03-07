@@ -12,11 +12,12 @@ def test_cut_level(bm, n, cutlevel, &block)
   $m_storage.clear!
   $storage.clear!
   $store = SkiplistStore.new(:storage => $m_storage, :cut_level => cutlevel)
+  $store.autosync!
   GC.start
   bm.report("Cut level = #{cutlevel}") do
     n.times &block
-    $m_storage.sync_chained_storages!
   end
+  $store.stop_autosync!
 end
 
 N = 2_000
