@@ -146,7 +146,7 @@ module StrokeDB
     
     def stop_autosync!
       if @autosync_mutex
-        @autosync_mutex.synchronize { @stop_autosync = true }
+        @autosync_mutex.synchronize { @stop_autosync = true; chunk_storage.sync_chained_storages! }
       end
     end
     
