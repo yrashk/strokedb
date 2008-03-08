@@ -11,7 +11,9 @@ To be done before 0.1 ("Praha"):
 [ ] Improve PointQuery (I really don't like it)
 [ ] Spec SS#autosync
 [ ] Spec RemoteStore::DRb
-[ ] Refactor Document#meta, it is a total crap now (consider implementing Meta#+)
+[ ] Refactor Document#meta, it is a total crap now
+[ ] Fix bugs with Meta#+
+[ ] Summarized meta #document should probably merge docs
 [ ] Refactor Meta#document, fix bugs
 [.] Refactor callback stuff in Document
 [.] Refactor associations
