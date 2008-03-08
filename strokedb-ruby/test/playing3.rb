@@ -52,6 +52,7 @@ puts "Creating user..."
 u = User.new(:name => "Yurii")
 u.metas << Buyer
 u.save!
+
 apple = Product.create!(:name => "green apple", :price => 2,:quantity => 100)
 pizza = Product.create!(:name => "big pizza", :price => 15,:quantity => 5)
 u.buy!(apple)

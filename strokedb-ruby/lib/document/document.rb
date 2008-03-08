@@ -379,8 +379,14 @@ module StrokeDB
       _meta = self[:__meta__]
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
       _metas = _meta.to_a
-      collected_meta = _metas.shift
-      collected_meta = store.find(collected_meta[2,collected_meta.length]) if collected_meta.is_a?(String)
+      popped = _metas.shift
+      collected_meta = nil
+      case popped
+      when Document
+        collected_meta = Document.new(@store,popped.to_raw.except('uuid','__version__'))
+      when String
+        collected_meta = store.find(popped[2,popped.length])
+      end
       names = []
       names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
       _metas.each do |next_meta|
