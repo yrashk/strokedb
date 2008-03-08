@@ -135,6 +135,7 @@ module StrokeDB
     def autosync!
       @autosync_mutex ||= Mutex.new
       @autosync = nil if @autosync && !@autosync.status
+      at_exit { stop_autosync! }
       @autosync ||= Thread.new do 
         until @stop_autosync
           @autosync_mutex.synchronize { chunk_storage.sync_chained_storages! }

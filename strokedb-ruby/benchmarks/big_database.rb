@@ -17,7 +17,6 @@ def test_cut_level(bm, n, cutlevel, &block)
   bm.report("Cut level = #{cutlevel}") do
     n.times &block
   end
-  $store.stop_autosync!
 end
 
 N = 2_000
