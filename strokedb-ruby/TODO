@@ -27,7 +27,6 @@ To be done later:
 
 [ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
 [ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
-[ ] Replace 0000000000000000 with (0){16} in regexps (when http://jira.codehaus.org/browse/JRUBY-2113 will be released)
 [?] Pool new UUIDs
 [ ] Think about non-index named meta lookup
 [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
