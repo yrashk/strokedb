@@ -380,13 +380,8 @@ module StrokeDB
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
       _metas = _meta.to_a
       popped = _metas.shift
-      collected_meta = nil
-      case popped
-      when Document
-        collected_meta = Document.new(@store,popped.to_raw.except('uuid','__version__'))
-      when String
-        collected_meta = Document.new(@store,store.find(popped[2,popped.length]).to_raw.except('uuid','__version__')) # we're dealing with __reference__
-      end
+      popped = popped.load if popped.is_a?(DocumentReferenceValue)
+      collected_meta = Document.new(@store,popped.to_raw.except('uuid','__version__','__previous_version__'))
       names = []
       names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
       _metas.each do |next_meta|
