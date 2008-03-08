@@ -34,7 +34,7 @@ module StrokeDB
   #    authors: ["Yurii Rashkovskii","Oleg Andreev"]
   #   
   class Document
-    
+
     attr_reader :store, :callbacks  #:nodoc:
 
     def marshal_dump #:nodoc:
@@ -67,7 +67,7 @@ module StrokeDB
       def [](version)
         @cache[version] ||= @document.store.find(document.uuid,version)
       end
-      
+
       #
       # Get document with previous version
       #
@@ -86,7 +86,7 @@ module StrokeDB
       def all_versions
         [document.__version__,*all_preceding]
       end
-      
+
       #
       # Get all versions of document including currrent one
       #
@@ -95,8 +95,8 @@ module StrokeDB
       def all
         all_versions.map{|v| self[v]}
       end
-      
-      
+
+
       #
       # Find all _previous_ document versions, treating current one as a head
       #
@@ -109,7 +109,7 @@ module StrokeDB
           []
         end
       end
-      
+
       #
       # Find all previous versions of document
       #
@@ -301,14 +301,14 @@ module StrokeDB
     def to_json
       to_raw.to_json
     end
-    
+
     #
     # Returns string with Document's XML representation
     #
     def to_xml(opts={})
       to_raw.to_xml({ :root => 'document', :dasherize => false}.merge(opts))
     end
-    
+
     # Primary serialization
 
     def to_raw #:nodoc:
@@ -318,7 +318,7 @@ module StrokeDB
       end
       raw_slots
     end
-    
+
     def to_optimized_raw #:nodoc:
       __reference__
     end
@@ -381,12 +381,18 @@ module StrokeDB
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
       _metas = _meta.to_a
       popped = _metas.shift
-      popped = popped.load if popped.is_a?(DocumentReferenceValue)
+      if popped.is_a?(DocumentReferenceValue) || popped.is_a?(String)
+        popped.doc = self
+        popped = popped.load 
+      end
       collected_meta = Document.new(@store,popped.to_raw.except('uuid','__version__','__previous_version__'))
       names = []
       names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
       _metas.each do |next_meta|
-        next_meta = next_meta.load if next_meta.is_a?(DocumentReferenceValue)
+        if next_meta.is_a?(DocumentReferenceValue) || next_meta.is_a?(String)
+          next_meta.doc = self
+          next_meta = next_meta.load 
+        end
         diff = next_meta.diff(collected_meta)
         diff.removed_slots = {}
         diff.patch!(collected_meta)
@@ -422,7 +428,7 @@ module StrokeDB
     def uuid
       self[:uuid]
     end
-    
+
     #
     # Returns document's previous version (which is stored in <tt>__previous_version__</tt> slot)
     #
@@ -475,7 +481,7 @@ module StrokeDB
         end
       end
     end
-    
+
     def add_callback(callback) #:nodoc:
       self.callbacks[callback.name] ||= []
       if callback.uid && old_cb = self.callbacks[callback.name].find{|cb| cb.uid == callback.uid}
@@ -493,7 +499,7 @@ module StrokeDB
       end
       val
     end
-    
+
     def execute_callbacks_for(origin,name,*args) #:nodoc:
       val = nil
       (callbacks[name.to_s]||[]).each do |callback|
@@ -501,7 +507,7 @@ module StrokeDB
       end
       val
     end
-    
+
     def do_initialize(store, slots={}, initialize_raw = false) #:nodoc:
       @callbacks = {}
       @store = store
@@ -544,7 +550,7 @@ module StrokeDB
       end
       meta_names.collect {|m| m.is_a?(String) ? (m.constantize rescue nil) : m }.compact
     end
-    
+
     def generate_new_version!
       self.__version__ = Util.random_uuid
     end

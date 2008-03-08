@@ -6,7 +6,8 @@ module StrokeDB
   end
 
   class DocumentReferenceValue < String
-    attr_reader :doc, :str
+    attr_reader :str
+    attr_accessor :doc
     def initialize(str,doc)
       @str, @doc = str, doc
       super(str)
@@ -25,7 +26,7 @@ module StrokeDB
       "#<DocRef #{self[0,5]}..>"
     end
     alias :to_raw :str
-
+    
     def ==(v)
       case v
       when DocumentReferenceValue
@@ -56,7 +57,12 @@ module StrokeDB
     end
 
     def value
-      @value.is_a?(DocumentReferenceValue) ? @value.load : @value
+      if @value.is_a?(DocumentReferenceValue) 
+        @value.doc = doc
+        @value.load 
+      else
+        @value
+      end
     end
 
     def to_raw
