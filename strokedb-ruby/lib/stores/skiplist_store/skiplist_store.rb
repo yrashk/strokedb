@@ -8,6 +8,7 @@ module StrokeDB
       @chunk_storage = opts['storage']
       @cut_level = opts['cut_level'] || 8
       @index_store = opts['index']
+      autosync! unless opts['noautosync']
       raise "Missing chunk storage" unless @chunk_storage
     end
 

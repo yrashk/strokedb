@@ -24,6 +24,7 @@ module StrokeDB
     end
 
     def sync_chained_storages!(origin=nil)
+      return unless @chained_storages.is_a?(Hash)
       @chained_storages.each_pair do |storage, savings|
         next if storage == origin
         savings.each {|saving| storage.save!(saving, self)}
@@ -33,6 +34,7 @@ module StrokeDB
     end
     
     def sync_chained_storage!(storage)
+      return unless @chained_storages.is_a?(Hash)
       (@chained_storages[storage]||[]).each do |saving|
         storage.save!(saving,self)
       end

@@ -26,9 +26,9 @@ module StrokeDB
         index = opts['index'] || :inverted_list
         config.add_index(:default,index,index_storages.first)
         unless store = opts['store'] 
-          config.add_store(:default,:skiplist,:storage => storages.first)
+          config.add_store(:default,:skiplist, {:storage => storages.first}.merge(opts['store_options']||{}))
         else 
-          config.add_store(:default,store,:storage => storages.first)
+          config.add_store(:default,store,{:storage => storages.first}.merge(opts['store_options']||{}))
         end
         config
       end
