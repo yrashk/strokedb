@@ -385,7 +385,7 @@ module StrokeDB
       when Document
         collected_meta = Document.new(@store,popped.to_raw.except('uuid','__version__'))
       when String
-        collected_meta = store.find(popped[2,popped.length])
+        collected_meta = Document.new(@store,store.find(popped[2,popped.length]).to_raw.except('uuid','__version__')) # we're dealing with __reference__
       end
       names = []
       names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
