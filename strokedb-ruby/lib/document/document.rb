@@ -385,7 +385,7 @@ module StrokeDB
       names = []
       names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
       _metas.each do |next_meta|
-        next_meta = store.find(next_meta[2,next_meta.length]) if next_meta.is_a?(String)
+        next_meta = next_meta.load if next_meta.is_a?(DocumentReferenceValue)
         diff = next_meta.diff(collected_meta)
         diff.removed_slots = {}
         diff.patch!(collected_meta)
