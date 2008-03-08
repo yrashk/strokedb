@@ -204,3 +204,35 @@ describe "Meta module with on_new_document callback" do
   end
 
 end
+
+describe "Combined meta module" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    
+    Object.send!(:remove_const,'User') if defined?(User)
+    Object.send!(:remove_const,'Buyer') if defined?(Buyer)
+    Object.send!(:remove_const,'Seller') if defined?(Seller)
+    
+    User = Meta.new
+    Buyer = Meta.new
+    Seller = Meta.new
+  end
+
+  it "should initialize Document with all metas" do
+    d = (User+Buyer+Seller).new
+    d[:__meta__].should == [User.document,Buyer.document,Seller.document]
+  end
+
+  it "should be able to find respective documents" do
+    d0 = User.create!
+    User.find.should == [d0]
+    d1 = (User+Buyer).create!
+    (User+Buyer).find.should == [d1]
+    d2 = (User+Buyer+Seller).create!
+    (User+Buyer+Seller).find.should == [d2]
+  end
+  
+  it "should merge #document"
+end

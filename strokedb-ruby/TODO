@@ -12,7 +12,6 @@ To be done before 0.1 ("Praha"):
 [ ] Spec SS#autosync
 [ ] Spec RemoteStore::DRb
 [ ] Refactor Document#meta, it is a total crap now
-[ ] Fix bugs with Meta#+
 [ ] Summarized meta #document should probably merge docs
 [ ] Refactor Meta#document, fix bugs
 [.] Refactor callback stuff in Document
