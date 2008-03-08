@@ -3,6 +3,7 @@ require 'activesupport'
 require 'fileutils'
 require 'drb'
 require 'drb/acl'
+require 'drb/unix'
 
 if ENV["DEBUGGER"]
   require 'ruby-debug'

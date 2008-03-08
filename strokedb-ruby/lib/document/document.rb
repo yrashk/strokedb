@@ -37,16 +37,16 @@ module StrokeDB
     
     attr_reader :store, :callbacks  #:nodoc:
 
-    def marshal_dump
-      Marshal.dump([@saved,@new,to_raw.to_json])
+    def marshal_dump #:nodoc:
+      (@new ? '1' : '0') + (@saved ? '1' : '0') + to_raw.to_json
     end
-    def marshal_load(content)
-      _saved, _new, _raw = Marshal.load(content)
+    def marshal_load(content) #:nodoc:
       @callbacks = {}
-      initialize_raw_slots(ActiveSupport::JSON.decode(_raw))
-      @saved = _saved
-      @new = _new
+      initialize_raw_slots(ActiveSupport::JSON.decode(content[2,content.length]))
+      @saved = content[1,1] == '1'
+      @new = content[0,1] == '1'
     end
+    # include DRbUndumped
     #
     # Versions is a helper class that is used to navigate through versions. You should not
     # instantiate it directly, but using Document#__versions__ method
@@ -379,8 +379,9 @@ module StrokeDB
       _meta = self[:__meta__]
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
       _metas = _meta.to_a
-      collected_meta = _metas.shift
-      collected_meta = store.find(collected_meta[2,collected_meta.length]) if collected_meta.is_a?(String)
+      popped = _metas.shift
+      popped = popped.load if popped.is_a?(DocumentReferenceValue)
+      collected_meta = Document.new(@store,popped.to_raw.except('uuid','__version__','__previous_version__'))
       names = []
       names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
       _metas.each do |next_meta|

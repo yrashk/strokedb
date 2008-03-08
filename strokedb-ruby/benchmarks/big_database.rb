@@ -15,7 +15,6 @@ def test_cut_level(bm, n, cutlevel, &block)
   GC.start
   bm.report("Cut level = #{cutlevel}") do
     n.times &block
-    $m_storage.sync_chained_storages!
   end
 end
 

@@ -89,5 +89,4 @@ else
   complete_issue(prefix,item)
 end
 
-StrokeDB.default_store.chunk_storage.sync_chained_storages!
 

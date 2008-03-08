@@ -1,156 +1,172 @@
 module StrokeDB
   class Store
-    def remote_server(host,port)
-      RemoteStore::Server.new(self,host,port)
+    def remote_server(addr,protocol=:drb)
+      case protocol
+      when :drb
+        RemoteStore::DRb::Server.new(self,"#{addr}")
+      else
+        raise "No #{protocol} protocol"
+      end
     end
   end
   module RemoteStore
-    class Client
+    module DRb
+      class Client
 
-      attr_reader :host, :port
+        attr_reader :addr
 
-      def initialize(host,port)
-        @host, @port = host, port
-        DRb.start_service
-        @server = DRbObject.new(nil, "druby://#{host}:#{port}")
-      end
+        def initialize(addr)
+          @addr = addr
+          ::DRb.start_service
+          @server = ::DRbObject.new(nil, addr)
+        end
 
-      def find(*args)
-        safe_document_from_undumped(@server.find(*args))
-      end
-      
-      def search(*args)
-        @server.search(*args).map{|e| safe_document_from_undumped(e) }
-      end
-      
-      def exists?(uuid)
-        !!find(uuid,nil,:no_instantiation => true)
-      end
+        def find(*args)
+          safe_document_from_undumped(@server.find(*args))
+        end
 
-      def head_version(uuid)
-        raw_doc = find(uuid,nil,:no_instantiation => true)
-        return raw_doc['__version__'] if raw_doc
-        nil
-      end
-            
-      def save!(*args)
-        result = @server.save!(*args)
-        if result.is_a?(Document)
+        def search(*args)
+          @server.search(*args).map{|e| safe_document_from_undumped(e) }
+        end
+
+        def exists?(uuid)
+          !!find(uuid,nil,:no_instantiation => true)
+        end
+
+        def head_version(uuid)
+          raw_doc = find(uuid,nil,:no_instantiation => true)
+          return raw_doc['__version__'] if raw_doc
+          nil
+        end
+
+        def save!(*args)
+          result = @server.save!(*args)
+          if result.is_a?(Document)
+            safe_document_from_undumped(result)
+          end
+          result
+        end
+
+        def each(options = {})
+          @server.each(options) do |doc_without_store|
+            safe_document_from_undumped(doc_without_store)
+          end
+        end
+
+        def lamport_timestamp
+          @server.lamport_timestamp
+        end
+
+        def next_lamport_timestamp
+          @server.next_lamport_timestamp
+        end
+
+        def uuid
+          @server.uuid
+        end
+
+        def document
+          result = @server.document
           safe_document_from_undumped(result)
         end
-        result
-      end
-      
-      def each(options = {})
-        @server.each(options) do |doc_without_store|
-          safe_document_from_undumped(doc_without_store)
+
+        def empty?
+          @server.empty?
         end
-      end
-      
-      def lamport_timestamp
-        @server.lamport_timestamp
-      end
-      
-      def next_lamport_timestamp
-        @server.next_lamport_timestamp
-      end
-      
-      def uuid
-        @server.uuid
-      end
-      
-      def document
-        result = @server.document
-        safe_document_from_undumped(result)
-      end
-      
-      def empty?
-        @server.empty?
-      end
 
-      def inspect
-        @server.inspect
-      end
-      
-      def index_store
-        @server.index_store
-      end
-      
-    private 
-    
-      def safe_document_from_undumped(doc_without_store)
-        doc_without_store.instance_variable_set(:@store,self) if doc_without_store
-        doc_without_store
-      end
-      
-    end    
+        def inspect
+          @server.inspect
+        end
 
-    class Server
-      attr_reader :store, :host, :port, :thread
-      def initialize(store,host,port)
-        @store, @host, @port = store,host,port
-      end
-      
-      def start
-        DRb.start_service("druby://#{host}:#{port}", self)
-        @thread = DRb.thread
-      end
+        def index_store
+          @server.index_store
+        end
 
-      def find(*args)
-        @store.find(*args)
-      end
+        private 
 
-      def search(*args)
-        @store.search(*args)
-      end
-      
-      def exists?(uuid)
-        !!find(uuid,nil,:no_instantiation => true)
-      end
+        def safe_document_from_undumped(doc_without_store)
+          doc_without_store.instance_variable_set(:@store,self) if doc_without_store
+          doc_without_store
+        end
 
-      def head_version(uuid)
-        raw_doc = find(uuid,nil,:no_instantiation => true)
-        return raw_doc['__version__'] if raw_doc
-        nil
-      end
-            
-      def save!(document)
-        document.instance_variable_set(:@store,self)
-        @store.save!(document)
-      end
-      
-      def each(options = {}, &block)
-        @store.each(options, &block)
-      end
-      
-      def lamport_timestamp
-        @store.lamport_timestamp
-      end
-      
-      def next_lamport_timestamp
-        @store.next_lamport_timestamp
-      end
-      
-      def uuid
-        @store.uuid
-      end
-      
-      def document
-        @store.document
-      end
-      
-      def empty?
-        @server.empty?
-      end
+      end    
 
-      def inspect
-        @server.inspect
-      end
+      class Server
+        attr_reader :store, :addr, :thread
+        def initialize(store,addr)
+          @store, @addr = store,addr
+          @mutex = Mutex.new
+        end
 
-      def index_store
-        @store.index_store
-      end
+        def start
+          ::DRb.start_service(addr, self)
+          @thread = ::DRb.thread
+        end
 
+        def find(*args)
+          @mutex.synchronize { @store.find(*args) }
+        end
+
+        def search(*args)
+          @mutex.synchronize { @store.search(*args) }
+        end
+
+        def exists?(uuid)
+          !!@mutex.synchronize { find(uuid,nil,:no_instantiation => true) }
+        end
+
+        def head_version(uuid)
+          raw_doc = @mutex.synchronize { find(uuid,nil,:no_instantiation => true) }
+          return raw_doc['__version__'] if raw_doc
+          nil
+        end
+
+        def save!(document)
+          document.instance_variable_set(:@store,@store)
+          @mutex.synchronize { @store.save!(document) }
+        end
+
+        def each(options = {}, &block)
+          @mutex.synchronize { @store.each(options, &block) }
+        end
+
+        def lamport_timestamp
+          @mutex.synchronize { @store.lamport_timestamp }
+        end
+
+        def next_lamport_timestamp
+          @mutex.synchronize { @store.next_lamport_timestamp }
+        end
+
+        def uuid
+          @store.uuid
+        end
+
+        def document
+          @mutex.synchronize { @store.document }
+        end
+
+        def empty?
+          @mutex.synchronize { @store.empty? }
+        end
+        
+        def autosync!
+          @mutex.synchronize { @store.autosync! }
+        end
+        
+        def stop_autosync!
+          @mutex.synchronize { @store.stop_autosync! }
+        end
+
+        def inspect
+          @store.inspect
+        end
+
+        def index_store
+          @store.index_store
+        end
+
+      end
     end
   end
 end
