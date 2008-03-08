@@ -9,6 +9,8 @@ To be done before 0.1 ("Praha"):
 
 [.] Spec Symbol conversion to String
 [ ] Improve PointQuery (I really don't like it)
+[ ] Spec SS#autosync
+[ ] Spec RemoteStore::DRb
 [ ] Refactor Meta#document, fix bugs
 [.] Refactor callback stuff in Document
 [.] Refactor associations
