@@ -10,6 +10,7 @@ module StrokeDB
         mod.module_eval do
           @args = args
           @meta_initialization_procs = []
+          @metas = [self]
           extend Meta
           extend Associations
           extend Validations
@@ -48,6 +49,22 @@ module StrokeDB
 
     end
 
+    def +(meta)
+      new_meta = Module.new
+      instance_variables.each do |iv|
+        new_meta.instance_variable_set(iv,instance_variable_get(iv).clone)
+      end
+      new_meta.instance_variable_set(:@metas,@metas.clone)
+      new_meta.instance_variable_get(:@metas) << meta
+      new_meta.module_eval do
+        extend Meta
+      end
+      new_meta_name = new_meta.instance_variable_get(:@metas).map{|m| m.name}.join('__')
+      Object.send(:remove_const,new_meta_name) rescue nil
+      Object.const_set(new_meta_name, new_meta)
+      new_meta
+    end
+
     CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found on_new_document)
     CALLBACKS.each do |callback_name|
       module_eval %{
@@ -60,7 +77,8 @@ module StrokeDB
     def new(*args,&block)
       doc = Document.new(*args,&block)
       doc.extend(self)
-      doc[:__meta__] = document(doc.store)
+      doc[:__meta__] = []
+      @metas.each {|additional_meta| doc.metas << additional_meta }
       setup_callbacks(doc)
       doc.send(:execute_callbacks,:on_new_document)
       doc.send(:execute_callbacks,:on_initialization)
@@ -76,7 +94,7 @@ module StrokeDB
       args << {} unless args.last.is_a?(Hash)
       store = args.first
       raise NoDefaultStoreError.new unless StrokeDB.default_store
-      store.search(args.last.merge(:__meta__ => document(store)))
+      store.search(args.last.merge(:__meta__ => @metas.map {|m| m.document(store)}))
     end
 
     def find_or_create(*args)
@@ -128,15 +146,15 @@ module StrokeDB
       @callbacks ||= []
       @callbacks << Callback.new(self,name,uid,&block)
     end
-    
+
     def setup_callbacks(doc)
       return unless @callbacks
       @callbacks.each do |callback|
-          doc.callbacks[callback.name] ||= []
-          doc.callbacks[callback.name] << callback
+        doc.callbacks[callback.name] ||= []
+        doc.callbacks[callback.name] << callback
       end
     end
-    
+
   end
 
 end

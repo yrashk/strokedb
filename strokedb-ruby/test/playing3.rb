@@ -49,9 +49,7 @@ Product = StrokeDB::Meta.new do
 end
 
 puts "Creating user..."
-u = User.new(:name => "Yurii")
-u.metas << Buyer
-u.save!
+u = (User+Buyer).create!(:name => "Yurii")
 
 apple = Product.create!(:name => "green apple", :price => 2,:quantity => 100)
 pizza = Product.create!(:name => "big pizza", :price => 15,:quantity => 5)
