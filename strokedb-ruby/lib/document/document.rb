@@ -393,6 +393,7 @@ module StrokeDB
           next_meta.doc = self
           next_meta = next_meta.load 
         end
+        next_meta = Document.new(@store,next_meta.to_raw.except('uuid','__version__','__previous_version__'))
         diff = next_meta.diff(collected_meta)
         diff.removed_slots = {}
         diff.patch!(collected_meta)
