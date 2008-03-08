@@ -78,10 +78,7 @@ module StrokeDB
       doc = Document.new(*args,&block)
       doc.extend(self)
       doc[:__meta__] = []
-      @metas.each {|additional_meta| doc.metas << additional_meta }
-      setup_callbacks(doc)
-      doc.send(:execute_callbacks,:on_new_document)
-      doc.send(:execute_callbacks,:on_initialization)
+      @metas.each {|m| doc.metas << m }
       doc
     end
 

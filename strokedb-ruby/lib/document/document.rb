@@ -150,6 +150,7 @@ module StrokeDB
           @document.extend(_module)
           _module.send!(:setup_callbacks,@document) rescue nil
           @document.send!(:execute_callbacks_for, _module, :on_initialization)
+          @document.send!(:execute_callbacks_for, _module, :on_new_document) if @document.new?
         end
         @document[:__meta__] = self
       end
