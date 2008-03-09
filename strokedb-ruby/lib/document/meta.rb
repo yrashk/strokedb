@@ -50,19 +50,26 @@ module StrokeDB
     end
 
     def +(meta)
-      new_meta = Module.new
-      instance_variables.each do |iv|
-        new_meta.instance_variable_set(iv,instance_variable_get(iv).clone)
+      if self.is_a?(Module) && meta.is_a?(Module)
+        new_meta = Module.new
+        instance_variables.each do |iv|
+          new_meta.instance_variable_set(iv,instance_variable_get(iv).clone)
+        end
+        new_meta.instance_variable_set(:@metas,@metas.clone)
+        new_meta.instance_variable_get(:@metas) << meta
+        new_meta.module_eval do
+          extend Meta
+        end
+        new_meta_name = new_meta.instance_variable_get(:@metas).map{|m| m.name}.join('__')
+        Object.send(:remove_const,new_meta_name) rescue nil
+        Object.const_set(new_meta_name, new_meta)
+        new_meta
+      elsif self.is_a?(Document) && meta.is_a?(Document)
+        Document.new(store,self.to_raw.except('uuid','__version__','__previous_version__'),true) + 
+        Document.new(store,meta.to_raw.except('uuid','__version__','__previous_version__'),true) 
+      else
+        raise "Can't + #{self.class} and #{meta.class}"
       end
-      new_meta.instance_variable_set(:@metas,@metas.clone)
-      new_meta.instance_variable_get(:@metas) << meta
-      new_meta.module_eval do
-        extend Meta
-      end
-      new_meta_name = new_meta.instance_variable_get(:@metas).map{|m| m.name}.join('__')
-      Object.send(:remove_const,new_meta_name) rescue nil
-      Object.const_set(new_meta_name, new_meta)
-      new_meta
     end
 
     CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found on_new_document)
@@ -114,10 +121,7 @@ module StrokeDB
         @args = m.instance_variable_get(:@args)
         make_document(store)
       end
-      metadocs.size > 1 ? metadocs.inject do |a,b| 
-            Document.new(store,a.to_raw.except('uuid','__version__','__previous_version__'),true) + 
-            Document.new(store,b.to_raw.except('uuid','__version__','__previous_version__'),true) 
-      end : metadocs.first
+      metadocs.size > 1 ? metadocs.inject { |a,b| a + b} : metadocs.first
     end
 
     private
@@ -149,7 +153,7 @@ module StrokeDB
       end
       meta_doc
     end
-    
+
     def add_callback(name,uid=nil,&block)
       @callbacks ||= []
       @callbacks << Callback.new(self,name,uid,&block)
