@@ -84,7 +84,7 @@ module StrokeDB
       # Returns an Array of version numbers
       #
       def all_versions
-        [document.__version__,*all_preceding]
+        [document.__version__,*all_preceding_versions]
       end
 
       #
@@ -104,7 +104,7 @@ module StrokeDB
       #
       def all_preceding_versions
         if previous_version = document.__previous_version__
-          [previous_version, *self[previous_version].__versions__.all_preceding]
+          [previous_version, *self[previous_version].__versions__.all_preceding_versions]
         else
           []
         end
