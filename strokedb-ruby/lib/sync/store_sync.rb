@@ -13,7 +13,7 @@ module StrokeDB
   end
   
   class Store
-    def sync(docs,timestamp=nil)
+    def sync!(docs,timestamp=nil)
       existing_chain = {}
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         doc = find(uuid)
