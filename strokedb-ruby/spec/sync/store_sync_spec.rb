@@ -74,6 +74,10 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
       original_timestamp = @store.lamport_timestamp
       @store.sync!([],100)
       @store.lamport_timestamp.counter.should == 100
+      @store.lamport_timestamp.should_not == original_timestamp
+      @store.sync!([],LTS.new(100))
+      @store.lamport_timestamp.counter.should == 100
+      @store.lamport_timestamp.should_not == original_timestamp
     end
     
     it "should not update timestamp prior to.sync! if it is not specified" do

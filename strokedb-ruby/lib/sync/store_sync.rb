@@ -19,7 +19,13 @@ module StrokeDB
         doc = find(uuid)
         existing_chain[uuid] = doc.__versions__.all_versions if doc 
       end
-      @lamport_timestamp = LTS.new(timestamp,@lamport_timestamp.uuid) if timestamp
+      case timestamp
+      when Numeric
+        @lamport_timestamp = LTS.new(timestamp,@lamport_timestamp.uuid) 
+      when LamportTimestamp
+        @lamport_timestamp = LTS.new(timestamp.counter,@lamport_timestamp.uuid)
+      else
+      end
       docs.each {|doc| save!(doc) unless exists?(doc.uuid,doc.__version__)}
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         incoming_chain = find(uuid,versions.last.__version__).__versions__.all_versions
