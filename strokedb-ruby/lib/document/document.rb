@@ -380,15 +380,15 @@ module StrokeDB
       _meta = self[:__meta__]
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
       _metas = _meta.to_a
-      popped = _metas.shift
-      if popped.is_a?(String)
-        unless popped.is_a?(DocumentReferenceValue)
-          popped = DocumentReferenceValue.new(popped,self)
+      shifted = _metas.shift
+      if shifted.is_a?(String)
+        unless shifted.is_a?(DocumentReferenceValue)
+          shifted = DocumentReferenceValue.new(shifted,self)
         end
-        popped.doc = self
-        popped = popped.load 
+        shifted.doc = self
+        shifted = shifted.load 
       end
-      collected_meta = Document.new(@store,popped.to_raw.except('uuid','__version__','__previous_version__'))
+      collected_meta = Document.new(@store,shifted.to_raw.except('uuid','__version__','__previous_version__'))
       names = []
       names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
       _metas.each do |next_meta|
