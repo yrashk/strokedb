@@ -40,7 +40,7 @@ module StrokeDB
           when :fast_forward
             save_as_head!(find(uuid,sync[1].last))
           else
-            raise "Invalid sync resolution #{sync.first}"
+            raise "Invalid sync resolution #{resolution}"
           end
         end
       end
