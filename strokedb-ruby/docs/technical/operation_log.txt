@@ -8,11 +8,11 @@ We have 4 major mutation types:
 
 Example:
 
-[ lamport_timestamp, "create", uuid, raw_doc ]  # [10, "create", "12345678...", {'__meta__'=> ...}]
-[ lamport_timestamp, "delete", uuid ]
-[ lamport_timestamp, "update", uuid, raw_doc ]
-(or [ lamport_timestamp, "update", uuid, version_from, raw_diff ]) # TODO: find out what's easier
-[ lamport_timestamp, "custom", raw_mutation_doc]
+[ timestamp, "create", uuid, raw_doc ]  # [10, "create", "12345678...", {'__meta__'=> ...}]
+[ timestamp, "delete", uuid ]
+[ timestamp, "update", uuid, raw_doc ]
+(or [ timestamp, "update", uuid, version_from, raw_diff ]) # TODO: find out what's easier
+[ timestamp, "custom", raw_mutation_doc]
 
 Mutation doc is a doc specifing a transactional mutation. 
 E.g. "debit 1% to an account". Operation +1% could be implemented as 

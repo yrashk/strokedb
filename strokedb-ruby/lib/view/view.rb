@@ -18,7 +18,7 @@ module StrokeDB
     end
 
     def emit(*args) 
-      ViewCut.new(store, :view => self, :args => args, :lamport_timestamp_state => LTS.zero.counter).emit
+      ViewCut.new(store, :view => self, :args => args, :timestamp_state => LTS.zero.counter).emit
     end
 
   end
@@ -44,9 +44,9 @@ module StrokeDB
     
     def emit
       mapped = []
-      store.each(:after_lamport_timestamp => lamport_timestamp_state) {|doc| mapped << @map_with_proc.call(doc,*args) }
+      store.each(:after_timestamp => timestamp_state) {|doc| mapped << @map_with_proc.call(doc,*args) }
       documents = (@reduce_with_proc ? mapped.select {|doc| @reduce_with_proc.call(doc,*args) } : mapped).map{|d| d.is_a?(Document) ? d.extend(VersionedDocument) : d}
-      ViewCut.new(store, :documents => documents, :view => view, :args => args, :lamport_timestamp_state => store.lamport_timestamp.counter, :previous => lamport_timestamp_state == 0 ? nil : self)
+      ViewCut.new(store, :documents => documents, :view => view, :args => args, :timestamp_state => store.timestamp.counter, :previous => timestamp_state == 0 ? nil : self)
     end
     def to_a
       documents

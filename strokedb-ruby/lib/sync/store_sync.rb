@@ -21,9 +21,9 @@ module StrokeDB
       end
       case timestamp
       when Numeric
-        @lamport_timestamp = LTS.new(timestamp,@lamport_timestamp.uuid) 
+        @timestamp = LTS.new(timestamp,@timestamp.uuid) 
       when LamportTimestamp
-        @lamport_timestamp = LTS.new(timestamp.counter,@lamport_timestamp.uuid)
+        @timestamp = LTS.new(timestamp.counter,@timestamp.uuid)
       else
       end
       docs.each {|doc| save!(doc) unless exists?(doc.uuid,doc.__version__)}

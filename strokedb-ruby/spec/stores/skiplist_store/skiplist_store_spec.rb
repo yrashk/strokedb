@@ -2,11 +2,11 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 describe "Skiplist store", :shared => true  do
 
-  it "should increment lamport_timestamp when storing a document" do
+  it "should increment timestamp when storing a document" do
     @document = Document.new :stuff => '...'
     lambda do 
       @store.save!(@document)
-    end.should change(@store,:lamport_timestamp)
+    end.should change(@store,:timestamp)
   end
 
   it "should store a document" do
@@ -30,12 +30,12 @@ describe "Skiplist store", :shared => true  do
     @store.should be_a_kind_of(Enumerable)
   end
 
-  it "should put store_uuid and lamport_timestamp into each chunk it saves" do
+  it "should put store_uuid and timestamp into each chunk it saves" do
     @document = Document.new :stuff => '...'
     @store.save!(@document)
     [@uuid].map{|uuid| @store.chunk_storage.find(uuid)}.compact.each do |chunk|
       chunk.store_uuid.should == @store.uuid
-      chunk.lamport_timestamp.should_not be_nil
+      chunk.timestamp.should_not be_nil
     end
   end
 
@@ -51,8 +51,8 @@ describe "New skiplist chunk store" do
     @store.uuid.should match(/^#{UUID_RE}$/)
   end
 
-  it "should have 0 lamport_timestamp" do
-    @store.lamport_timestamp.should == LTS.zero(@store.uuid)
+  it "should have 0 timestamp" do
+    @store.timestamp.should == LTS.zero(@store.uuid)
   end
 
   it "should create corresponding StoreInfo document" do
@@ -122,21 +122,21 @@ describe "Non-empty chunk store" do
   end
 
   it "should iterate over all newly stored documents if told so" do
-    timestamp = @store.lamport_timestamp.counter
+    timestamp = @store.timestamp.counter
     @new_documents = []
     10.times do |i|
       @new_documents << Document.create!(:stuff => i)
     end
 
     iterated_documents = []
-    @store.each(:after_lamport_timestamp => timestamp) do |doc|
+    @store.each(:after_timestamp => timestamp) do |doc|
       iterated_documents << doc
     end
     iterated_documents.sort_by {|doc| doc.__version__}.should == @new_documents.sort_by {|doc| doc.__version__}
   end
 
   it "should iterate over all newly stored versions if told so" do
-    timestamp = @store.lamport_timestamp.counter
+    timestamp = @store.timestamp.counter
     @new_documents = []
     @documents.each_with_index do |document,i|
       document.stuff = i+100
@@ -144,7 +144,7 @@ describe "Non-empty chunk store" do
     end
 
     iterated_documents = []
-    @store.each(:after_lamport_timestamp => timestamp, :include_versions => true) do |doc|
+    @store.each(:after_timestamp => timestamp, :include_versions => true) do |doc|
       iterated_documents << doc
     end
     iterated_documents.sort_by {|doc| doc.__version__}.should == (@documents + @new_documents).sort_by {|doc| doc.__version__}

@@ -53,12 +53,12 @@ module StrokeDB
           end
         end
 
-        def lamport_timestamp
-          @server.lamport_timestamp
+        def timestamp
+          @server.timestamp
         end
 
-        def next_lamport_timestamp
-          @server.next_lamport_timestamp
+        def next_timestamp
+          @server.next_timestamp
         end
 
         def uuid
@@ -130,12 +130,12 @@ module StrokeDB
           @mutex.synchronize { @store.each(options, &block) }
         end
 
-        def lamport_timestamp
-          @mutex.synchronize { @store.lamport_timestamp }
+        def timestamp
+          @mutex.synchronize { @store.timestamp }
         end
 
-        def next_lamport_timestamp
-          @mutex.synchronize { @store.next_lamport_timestamp }
+        def next_timestamp
+          @mutex.synchronize { @store.next_timestamp }
         end
 
         def uuid

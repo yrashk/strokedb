@@ -48,7 +48,7 @@ module StrokeDB
 
     def save!(doc)
       master_chunk = find_or_create_master_chunk
-      next_lamport_timestamp
+      next_timestamp
 
       insert_with_cut(doc.uuid, doc, master_chunk) unless doc.is_a?(VersionedDocument)
       insert_with_cut("#{doc.uuid}.#{doc.__version__}", doc, master_chunk)
@@ -75,7 +75,7 @@ module StrokeDB
 
     def each(options = {})
       return nil unless m = @chunk_storage.find('MASTER')  # no master chunk yet
-      after = options[:after_lamport_timestamp]
+      after = options[:after_timestamp]
       include_versions = options[:include_versions]
       m.each do |node|
         chunk = @chunk_storage.find(node.value)
@@ -91,11 +91,11 @@ module StrokeDB
       end
     end
 
-    def lamport_timestamp
-      @lamport_timestamp ||= (lts = find_or_create_master_chunk.timestamp) ? LTS.from_raw(lts) : LTS.zero(uuid)
+    def timestamp
+      @timestamp ||= (lts = find_or_create_master_chunk.timestamp) ? LTS.from_raw(lts) : LTS.zero(uuid)
     end
-    def next_lamport_timestamp
-      @lamport_timestamp = lamport_timestamp.next
+    def next_timestamp
+      @timestamp = timestamp.next
     end
 
     def uuid
@@ -147,10 +147,10 @@ module StrokeDB
       unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
         chunk = Chunk.new(@cut_level)
       end
-      a, b = chunk.insert(uuid, doc.to_raw,nil,lamport_timestamp.counter)
+      a, b = chunk.insert(uuid, doc.to_raw,nil,timestamp.counter)
       [a,b].compact.each do |chunk|
         chunk.store_uuid = self.uuid
-        chunk.timestamp = lamport_timestamp.counter
+        chunk.timestamp = timestamp.counter
       end
       # if split
       if b

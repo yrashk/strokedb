@@ -106,7 +106,7 @@ module StrokeDB
         'uuid'      => @uuid,
         # TODO: may not be needed
         'next_uuid' => next_chunk ? next_chunk.uuid : nil,
-        'timestamp' => @lamport_timestamp,
+        'timestamp' => @timestamp,
         'store_uuid'        => @store_uuid
       }
   	end
