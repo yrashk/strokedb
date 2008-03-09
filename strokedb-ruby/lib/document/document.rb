@@ -381,7 +381,7 @@ module StrokeDB
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
       _metas = _meta.to_a
       popped = _metas.shift
-      if popped.is_a?(DocumentReferenceValue) || popped.is_a?(String)
+      if popped.is_a?(String)
         unless popped.is_a?(DocumentReferenceValue)
           popped = DocumentReferenceValue.new(popped,self)
         end
@@ -392,7 +392,7 @@ module StrokeDB
       names = []
       names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
       _metas.each do |next_meta|
-        if next_meta.is_a?(DocumentReferenceValue) || next_meta.is_a?(String)
+        if next_meta.is_a?(String)
           unless next_meta.is_a?(DocumentReferenceValue)
             next_meta = DocumentReferenceValue.new(next_meta,self)
           end
