@@ -50,7 +50,7 @@ module StrokeDB
       master_chunk = find_or_create_master_chunk
       next_lamport_timestamp
 
-      insert_with_cut(doc.uuid, doc, master_chunk)
+      insert_with_cut(doc.uuid, doc, master_chunk) unless doc.is_a?(VersionedDocument)
       insert_with_cut("#{doc.uuid}.#{doc.__version__}", doc, master_chunk)
 
       @chunk_storage.save!(master_chunk)

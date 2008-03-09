@@ -15,6 +15,16 @@ describe "Skiplist store", :shared => true  do
     (doc = @store.find(@document.uuid)).should == @document
     doc.should_not be_a_kind_of(VersionedDocument)
   end
+  
+  it "should store VersionedDocument" do
+    @document = Document.create! :stuff => '...'
+    vd = @document.__versions__.all.first
+    another_cfg = StrokeDB::Config.build
+    another_store = another_cfg.stores[:default]
+    another_store.save!(vd)
+    another_store.find(vd.uuid,vd.__version__).should == vd
+    another_store.find(vd.uuid).should be_nil
+  end
 
   it "should be Enumerable" do
     @store.should be_a_kind_of(Enumerable)
