@@ -36,8 +36,8 @@ module StrokeDB
       @index_store.find(*args)
     end
 
-    def exists?(uuid)
-      !!find(uuid,nil,:no_instantiation => true)
+    def exists?(uuid,version)
+      !!find(uuid,version,:no_instantiation => true)
     end
 
     def head_version(uuid)

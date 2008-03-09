@@ -9,6 +9,7 @@ To be done before 0.1 ("Praha"):
 
 [ ] Implement Document#non_saveable! or something like this
 [.] Spec Symbol conversion to String
+[ ] Spec Store#exists?
 [ ] Improve PointQuery (I really don't like it)
 [ ] Spec SS#autosync
 [ ] Spec RemoteStore::DRb
