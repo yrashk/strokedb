@@ -590,6 +590,7 @@ describe "Composite document ( result of Document#+(document) )" do
   end
   
   it "should have new UUID" do
+    @composite.uuid.should match(UUID_RE)
     @composite.uuid.should_not == @document1.uuid
     @composite.uuid.should_not == @document2.uuid
   end

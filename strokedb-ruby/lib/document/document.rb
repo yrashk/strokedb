@@ -408,7 +408,7 @@ module StrokeDB
     #
     def +(document)
       original, target = [to_raw,document.to_raw].map{|raw| raw.except('uuid','__version__','__previous_version__')}
-      Document.new(@store,original.merge(target))
+      Document.new(@store,original.merge(target).merge(:uuid => Util.random_uuid),true)
     end
 
     #
