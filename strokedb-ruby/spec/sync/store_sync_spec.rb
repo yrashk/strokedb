@@ -75,8 +75,9 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
       @store.sync!([],100)
       @store.lamport_timestamp.counter.should == 100
       @store.lamport_timestamp.should_not == original_timestamp
-      @store.sync!([],LTS.new(100))
-      @store.lamport_timestamp.counter.should == 100
+      original_timestamp = @store.lamport_timestamp
+      @store.sync!([],LTS.new(200))
+      @store.lamport_timestamp.counter.should == 200
       @store.lamport_timestamp.should_not == original_timestamp
     end
     
