@@ -13,17 +13,17 @@ module StrokeDB
   end
   
   class Store
-    def sync!(docs,timestamp=nil)
+    def sync!(docs,_timestamp=nil)
       existing_chain = {}
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         doc = find(uuid)
         existing_chain[uuid] = doc.__versions__.all_versions if doc 
       end
-      case timestamp
+      case _timestamp
       when Numeric
-        @timestamp = LTS.new(timestamp,@timestamp.uuid) 
+        @timestamp = LTS.new(_timestamp,timestamp.uuid) 
       when LamportTimestamp
-        @timestamp = LTS.new(timestamp.counter,@timestamp.uuid)
+        @timestamp = LTS.new(_timestamp.counter,timestamp.uuid)
       else
       end
       docs.each {|doc| save!(doc) unless exists?(doc.uuid,doc.__version__)}
