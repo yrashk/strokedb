@@ -110,6 +110,19 @@ module StrokeDB
 
 
     def document(store=nil)
+      metadocs = @metas.map do |m| 
+        @args = m.instance_variable_get(:@args)
+        make_document(store)
+      end
+      metadocs.size > 1 ? metadocs.inject do |a,b| 
+            Document.new(store,a.to_raw.except('uuid','__version__','__previous_version__'),true) + 
+            Document.new(store,b.to_raw.except('uuid','__version__','__previous_version__'),true) 
+      end : metadocs.first
+    end
+
+    private
+
+    def make_document(store=nil)
       store ||= StrokeDB.default_store
       raise NoDefaultStoreError.new unless store
       @meta_initialization_procs.each {|proc| proc.call }
@@ -136,9 +149,7 @@ module StrokeDB
       end
       meta_doc
     end
-
-    private
-
+    
     def add_callback(name,uid=nil,&block)
       @callbacks ||= []
       @callbacks << Callback.new(self,name,uid,&block)
@@ -155,4 +166,3 @@ module StrokeDB
   end
 
 end
-

@@ -215,9 +215,9 @@ describe "Combined meta module" do
     Object.send!(:remove_const,'Buyer') if defined?(Buyer)
     Object.send!(:remove_const,'Seller') if defined?(Seller)
     
-    User = Meta.new
-    Buyer = Meta.new
-    Seller = Meta.new
+    User = Meta.new(:x => 1)
+    Buyer = Meta.new(:x => 2)
+    Seller = Meta.new(:y => 3)
   end
 
   it "should initialize Document with all metas" do
@@ -234,5 +234,8 @@ describe "Combined meta module" do
     (User+Buyer+Seller).find.should == [d2]
   end
   
-  it "should merge #document"
+  it "should merge #document" do
+    (User+Buyer+Seller).document.x.should == 2
+    (User+Buyer+Seller).document.y.should == 3
+  end
 end
