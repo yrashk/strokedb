@@ -29,8 +29,8 @@ module StrokeDB
           @server.search(*args).map{|e| safe_document_from_undumped(e) }
         end
 
-        def exists?(uuid)
-          !!find(uuid,nil,:no_instantiation => true)
+        def exists?(uuid,version=nil)
+          @server.exists?(uuid,version)
         end
 
         def head_version(uuid)
@@ -111,8 +111,8 @@ module StrokeDB
           @mutex.synchronize { @store.search(*args) }
         end
 
-        def exists?(uuid)
-          !!@mutex.synchronize { find(uuid,nil,:no_instantiation => true) }
+        def exists?(*args)
+          !!@mutex.synchronize { @store.exists?(*args) }
         end
 
         def head_version(uuid)
