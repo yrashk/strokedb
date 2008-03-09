@@ -576,4 +576,39 @@ describe "Valid Document's JSON with multiple meta names specified" do
   end
 end
 
+describe "Composite document ( result of Document#+(document) )" do
 
+  before(:each) do
+    setup_default_store
+    @document1 = Document.new :slot1 => 1, :x => 1
+    @document2 = Document.new :slot1 => 2, :slot2 => 2
+    @composite = @document1+@document2
+  end
+  
+  it "should be a Document" do
+    @composite.should be_a_kind_of(Document)
+  end
+  
+  it "should have new UUID" do
+    @composite.uuid.should_not == @document1.uuid
+    @composite.uuid.should_not == @document2.uuid
+  end
+
+  it "should have new version" do
+    @composite.__version__.should_not == @document1.__version__
+    @composite.__version__.should_not == @document2.__version__
+  end
+  
+  it "should update identical slots" do
+    @composite.slot1.should == 2
+  end
+
+  it "should add different slots" do
+    @composite.slot2.should == 2
+  end
+
+  it "should not remove missing slots" do
+    @composite.x.should == 1
+  end
+  
+end

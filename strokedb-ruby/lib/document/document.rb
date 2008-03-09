@@ -402,6 +402,14 @@ module StrokeDB
       collected_meta.name = names.uniq.join(',')
       collected_meta
     end
+    
+    #
+    # Instantiate a composite document
+    #
+    def +(document)
+      original, target = [to_raw,document.to_raw].map{|raw| raw.except('uuid','__version__','__previous_version__')}
+      Document.new(@store,original.merge(target))
+    end
 
     #
     # Should be used to add metadocuments on the fly:
