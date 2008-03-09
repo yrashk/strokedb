@@ -7,8 +7,7 @@ Completed items are removed.
 
 To be done before 0.1 ("Praha"):
 
-[ ] Composite meta document output fails:
-    undefined method `head_version' for nil:NilClass
+[ ] Implement Document#non_saveable! or something like this
 [.] Spec Symbol conversion to String
 [ ] Improve PointQuery (I really don't like it)
 [ ] Spec SS#autosync
