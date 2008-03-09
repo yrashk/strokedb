@@ -24,7 +24,7 @@ module StrokeDB
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         incoming_chain = find(uuid,versions.last.__version__).__versions__.all_versions
         if existing_chain[uuid].nil? or existing_chain[uuid].empty? # It is a new document
-          Document.create!(self, find(uuid,versions.last.__version__).to_raw)
+          save_as_head!(find(uuid,versions.last.__version__))
         else
           begin
             sync = sync_chains(incoming_chain.reverse,existing_chain[uuid].reverse)
@@ -38,7 +38,7 @@ module StrokeDB
           when :merge
             raise ConflictCondition.new(uuid, sync[1], sync[2])
           when :fast_forward
-            Document.create!(self, find(uuid,sync[1].last).to_raw)
+            save_as_head!(find(uuid,sync[1].last))
           else
             raise "Invalid sync resolution #{sync.first}"
           end

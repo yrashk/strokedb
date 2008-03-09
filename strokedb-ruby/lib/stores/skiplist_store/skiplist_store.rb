@@ -53,19 +53,7 @@ module StrokeDB
       insert_with_cut(doc.uuid, doc, master_chunk) unless doc.is_a?(VersionedDocument)
       insert_with_cut("#{doc.uuid}.#{doc.__version__}", doc, master_chunk)
 
-      @chunk_storage.save!(master_chunk)
-
-      # Update index
-      if @index_store
-        if doc.__previous_version__
-          raw_pdoc = find(doc.uuid,doc.__previous_version__,:no_instantiation => true)
-          pdoc = Document.from_raw(self,raw_pdoc.freeze,:skip_callbacks => true)
-          pdoc.extend(VersionedDocument)
-          @index_store.delete(pdoc)
-        end
-        @index_store.insert(doc)
-        @index_store.save!
-      end
+      update_master_chunk!(doc,master_chunk)
     end  
 
     def full_dump
@@ -196,6 +184,28 @@ module StrokeDB
       master_chunk.store_uuid = uuid
       @chunk_storage.save!(master_chunk)
       master_chunk
+    end
+    
+    def save_as_head!(doc)
+      master_chunk = find_or_create_master_chunk
+      insert_with_cut(doc.uuid, doc, master_chunk)
+      update_master_chunk!(doc,master_chunk)
+    end
+    
+    def update_master_chunk!(doc,master_chunk)
+      @chunk_storage.save!(master_chunk)
+
+      # Update index
+      if @index_store
+        if doc.__previous_version__
+          raw_pdoc = find(doc.uuid,doc.__previous_version__,:no_instantiation => true)
+          pdoc = Document.from_raw(self,raw_pdoc.freeze,:skip_callbacks => true)
+          pdoc.extend(VersionedDocument)
+          @index_store.delete(pdoc)
+        end
+        @index_store.insert(doc)
+        @index_store.save!
+      end
     end
 
 
