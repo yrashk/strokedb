@@ -145,6 +145,31 @@ describe "View" do
     a.sort_by {|doc| doc.uuid }.should == @documents.sort_by {|doc| doc.uuid }
     a.each {|d| d.should be_a_kind_of(VersionedDocument)} # make sure next emit produces VersionedDocuments as well
   end
+  
+  it "should be able to return new document heads incrementally" do
+    @documents = []
+    10.times do |i|
+      @documents << Document.create!(:i => i)
+    end
+    cut = @view.emit
+    new_docs = @documents.map {|doc| doc.new_slot = "new"; doc.save!}
+    a = cut.emit.to_a
+    a.sort_by {|doc| doc.uuid }.should == new_docs.sort_by {|doc| doc.uuid }
+  end
+
+  it "should be able to return new document versions incrementally if told so" do
+    @documents = []
+    10.times do |i|
+      @documents << Document.create!(:i => i)
+    end
+    cut = @view.emit
+    @view.include_versions = true
+    @view.save!
+    new_docs = @documents.map {|doc| doc.new_slot = "new"; doc.save!}
+    docs = @documents.map {|doc| doc.reload }
+    a = cut.emit.to_a
+    a.sort_by {|doc| doc.uuid }.should == (new_docs+docs).sort_by {|doc| doc.uuid }
+  end
 
 end
 
