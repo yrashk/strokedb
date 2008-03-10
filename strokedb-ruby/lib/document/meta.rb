@@ -50,7 +50,7 @@ module StrokeDB
     end
 
     def +(meta)
-      if self.is_a?(Module) && meta.is_a?(Module)
+      if is_a?(Module) && meta.is_a?(Module)
         new_meta = Module.new
         instance_variables.each do |iv|
           new_meta.instance_variable_set(iv,instance_variable_get(iv).clone)
@@ -64,9 +64,9 @@ module StrokeDB
         Object.send(:remove_const,new_meta_name) rescue nil
         Object.const_set(new_meta_name, new_meta)
         new_meta
-      elsif self.is_a?(Document) && meta.is_a?(Document)
-        Document.new(store,self.to_raw.except('uuid','__version__','__previous_version__'),true) + 
-        Document.new(store,meta.to_raw.except('uuid','__version__','__previous_version__'),true) 
+      elsif is_a?(Document) && meta.is_a?(Document)
+        (Document.new(store,self.to_raw.except('uuid','__version__','__previous_version__'),true) + 
+        Document.new(store,meta.to_raw.except('uuid','__version__','__previous_version__'),true)).extend(Meta).make_immutable!
       else
         raise "Can't + #{self.class} and #{meta.class}"
       end

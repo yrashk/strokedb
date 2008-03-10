@@ -238,4 +238,9 @@ describe "Combined meta module" do
     (User+Buyer+Seller).document.x.should == 2
     (User+Buyer+Seller).document.y.should == 3
   end
+  
+  it "should make merged #document immutable" do
+    (User+Buyer+Seller).document.should be_a_kind_of(ImmutableDocument)
+  end
+  
 end

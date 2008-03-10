@@ -120,6 +120,12 @@ describe "Document", :shared => true do
     @document.symbol_slot.should == [{"a" => "b"}]
   end
   
+  it "should not save itself once declared immutable" do
+    @document.make_immutable!
+    @document.store.should_not_receive(:save!)
+    @document.save!
+  end
+  
 end
 
 describe "New Document" do
@@ -403,6 +409,11 @@ describe "Document with multiple metas" do
     meta[2].should == 2
     meta.name.should == "0,1,2"
     @document[:__meta__].should be_a_kind_of(Array)
+  end
+  
+  it "should make single merged meta immutable" do
+    meta = @document.meta
+    meta.should be_a_kind_of(ImmutableDocument)
   end
   
   it "should be able to return metas collection" do
