@@ -30,7 +30,14 @@ module StrokeDB
         else
           raise "has_many extension should be either Module or Proc"
         end
-        @args.last.reverse_merge!({"has_many_#{slotname}" => { :reference_slotname => reference_slotname || name.tableize.singularize, :through => through, :meta => meta, :query => query, :extend_with => extend_with } })
+        reference_slotname = reference_slotname || name.demodulize.tableize.singularize
+        if name.index('::') # we're in namespaced meta
+          _t = name.split('::')
+          _t.pop
+          _t << meta
+          meta = _t.join('::') 
+        end
+        @args.last.reverse_merge!({"has_many_#{slotname}" => { :reference_slotname => reference_slotname, :through => through, :meta => meta, :query => query, :extend_with => extend_with } })
         define_method(slotname) do 
           _has_many_association(slotname)
         end

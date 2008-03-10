@@ -114,6 +114,30 @@ describe "Playlist.has_many :songs association" do
   
 end
 
+describe "Namespace::Playlist.has_many :songs association" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const,'Namespace') if defined?(Namespace)
+    Namespace = Module.new
+    Namespace.send!(:remove_const,'Playlist') if defined?(Namespace::Playlist)
+    Namespace.send!(:remove_const,'Song') if defined?(Namespace::Song)
+    Namespace::Playlist = Meta.new do
+      has_many :songs
+    end
+    Namespace::Song = Meta.new
+  end
+  
+  it "should convert :songs to Song and Playlist to playlist to compute foreign reference slot name" do
+    playlist = Namespace::Playlist.create!
+    song = Namespace::Song.create!(:playlist => playlist)
+    playlist.songs.should == [song]
+  end
+  
+   
+end
+
 describe "Playlist.has_many :rock_songs, :through => :songs, :conditions => { :genre => 'Rock' } association" do
   
   before(:each) do
