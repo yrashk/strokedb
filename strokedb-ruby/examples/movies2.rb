@@ -70,8 +70,7 @@ desenchantee.update_slots!(common.merge("Год" => 1991))
 sanscontrefacon.update_slots!(common.merge("Год" => 1987))
 
 # Oleg adds a comment to "Sans Contrefaçon"
-
-Comment.create!(:text => "Обалдеть!!!111", :owner => oleg, :movie => sanscontrefacon)
+sanscontrefacon.comments << Comment.new(:text => "Обалдеть!!!111", :owner => oleg)
 
 p sanscontrefacon.comments.map{|c|c.text} 
 # => ["Обалдеть!!!111"]
