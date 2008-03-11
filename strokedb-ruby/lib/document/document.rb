@@ -388,7 +388,7 @@ module StrokeDB
     #
     def save!
       execute_callbacks :before_save
-      self[:__previous_version__] = __version__ if @saved
+      # self[:__previous_version__] = __version__ if @saved
       store.save!(self)
       @new = false
       @saved = true
