@@ -94,7 +94,8 @@ module StrokeDB
     end
 
     def find(*args)
-      args = args.unshift(StrokeDB.default_store) if args.empty? || args.first.is_a?(Hash)
+      args = args.unshift(StrokeDB.default_store) if args.empty? || args.first.is_a?(Hash) || args.first.is_a?(String)
+      return find(args.first,{:uuid => args[1]}).first if args[1].is_a?(String) && args[1].match(/#{UUID_RE}/)
       args << {} unless args.last.is_a?(Hash)
       store = args.first
       raise NoDefaultStoreError.new unless StrokeDB.default_store

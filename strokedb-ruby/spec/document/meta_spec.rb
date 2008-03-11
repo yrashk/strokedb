@@ -36,6 +36,11 @@ describe "Meta module", :shared => true do
     new_doc.__previous_version__.should == doc.__version__
     new_doc.description.should == "Something"
   end
+
+  it "should search for specified UUID with __meta__ reference merged in" do
+    a = SomeName.create!
+    SomeName.find(a.uuid).should == a
+  end
   
   it "should search for specified slots with __meta__ reference merged in" do
     a = SomeName.create!(:slot1 => 1, :slot2 => 2)

@@ -1,5 +1,27 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
+describe "Document class" do
+  
+  before(:each) do
+    @store = setup_default_store
+    setup_index
+  end
+  
+  it "should be able to find document by UUID" do
+    @document = Document.create!
+    Document.find(@document.uuid).should == @document
+    Document.find(@store,@document.uuid).should == @document
+  end
+
+  it "should be able to find document by query" do
+    @document = Document.create!
+    Document.find(:uuid => @document.uuid).should == [@document]
+    Document.find(@store, :uuid => @document.uuid).should == [@document]
+  end
+  
+end
+
+
 describe "Document", :shared => true do
 
   it "should create new slot" do

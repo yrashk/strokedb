@@ -340,6 +340,26 @@ module StrokeDB
       doc
     end
 
+
+    def self.find(*args)
+      store = nil
+      if args.empty? || args.first.is_a?(String) || args.first.is_a?(Hash)
+        store = StrokeDB.default_store
+      else
+        store = args.shift
+      end
+      raise NoDefaultStoreError.new unless store
+      query = args.first
+      case query
+      when /#{UUID_RE}/
+        store.find(query)
+      when Hash
+        store.search(query)
+      else
+        raise TypeError
+      end
+    end
+    
     #
     # Reloads head of the same document from store. All unsaved changes will be lost!
     #
