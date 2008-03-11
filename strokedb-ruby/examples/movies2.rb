@@ -62,19 +62,12 @@ my_favorites.items += [ melancholie, desenchantee ]
 my_favorites.save!
 
 # Yurii adds credits to movies
-melancholie.edited_by = yrashk
-desenchantee.edited_by = yrashk
-sanscontrefacon.edited_by = yrashk
 
-melancholie["Исполнитель"]     = "Mylène Farmer"
-desenchantee["Исполнитель"]    = "Mylène Farmer"
-sanscontrefacon["Исполнитель"] = "Mylène Farmer"
-melancholie["Год"]     = 1991
-desenchantee["Год"]    = 1991
-sanscontrefacon["Год"] = 1987
-melancholie.save!
-desenchantee.save!
-sanscontrefacon.save!
+common = { :edited_by    => yrashk, "Исполнитель" => "Mylène Farmer" }
+
+melancholie.update_slots!(common.merge("Год" => 1991))
+desenchantee.update_slots!(common.merge("Год" => 1991))
+sanscontrefacon.update_slots!(common.merge("Год" => 1987))
 
 # Oleg adds a comment to "Sans Contrefaçon"
 

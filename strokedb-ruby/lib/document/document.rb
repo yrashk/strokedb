@@ -393,7 +393,7 @@ module StrokeDB
     end
 
     #
-    # Saves document
+    # Saves the document
     #
     def save!
       execute_callbacks :before_save
@@ -403,7 +403,24 @@ module StrokeDB
       execute_callbacks :after_save
       self
     end
-
+    
+    #
+    # Updates slots with specified <tt>hash</tt> and returns itself.
+    #
+    def update_slots(hash)
+      hash.each do |k, v|
+        self[k] = v
+      end
+      self
+    end
+        
+    #
+    # Same as update_slots, but also saves the document.
+    #
+    def update_slots!(hash)
+      update_slots(hash).save!
+    end
+    
     #
     # Returns document's metadocument (if any). In case if document has more than one metadocument,
     # it will combine all metadocuments into one 'virtual' metadocument
