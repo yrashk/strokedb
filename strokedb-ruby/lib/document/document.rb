@@ -73,7 +73,7 @@ module StrokeDB
       # Get current version of document
       #
       def current
-        self[document.__version__]
+        document.new? ? document.clone.extend(VersionedDocument) : self[document.__version__]
       end
 
 

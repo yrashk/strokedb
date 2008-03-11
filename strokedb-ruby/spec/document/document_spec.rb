@@ -148,6 +148,13 @@ describe "Document", :shared => true do
     @document.save!
   end
   
+  it "should be able to return current version" do
+    @document.should_not be_a_kind_of(VersionedDocument)
+    @document.__versions__.current.should == @document
+    @document.__versions__.current.should be_a_kind_of(VersionedDocument)
+  end
+  
+  
 end
 
 describe "New Document" do
@@ -306,12 +313,6 @@ describe "Saved Document" do
     @document.remove_slot!(:some_data)
     @document.__version__.should_not == old_version
     @document.__previous_version__.should == old_version
-  end
-  
-  it "should be able to return current version" do
-    @document.should_not be_a_kind_of(VersionedDocument)
-    @document.__versions__.current.should == @document
-    @document.__versions__.current.should be_a_kind_of(VersionedDocument)
   end
   
   it_should_behave_like "Document"
