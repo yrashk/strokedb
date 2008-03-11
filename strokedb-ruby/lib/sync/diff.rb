@@ -62,7 +62,7 @@ module StrokeDB
     end
   end
 
-  Diff = Meta.new do
+  Diff = Meta.new(:uuid => "5704bd39-4a01-405e-bc72-3650ddd89ca4") do
 
     on_initialization do |diff|
       diff.added_slots = {} unless diff[:added_slots]

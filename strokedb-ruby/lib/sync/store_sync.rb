@@ -1,19 +1,24 @@
 module StrokeDB
-  class NonMatchingDocumentCondition < Exception
-    attr_reader :uuid
-    def initialize(uuid)
-      @uuid = uuid
+
+  SynchronizationReport = Meta.new(:uuid => "8dbaf160-addd-401a-9c29-06b03f70df93") do
+    on_new_document do |report|
+      report.conflicts = []
+      report.added_documents = []
+      report.fast_forwarded_documents = []
+      report.non_matching_documents = []
     end
   end
-  class ConflictCondition < Exception
-    attr_reader :uuid, :rev1, :rev2
-    def initialize(uuid, rev1, rev2)
-      @uuid, @rev1, @rev2 = uuid, rev1, rev2
+  
+  SynchronizationConflict = Meta.new(:uuid => "36fce59c-ee3d-4566-969b-7b152814a314") do
+    def resolve!
+      # by default, do nothing
     end
   end
   
   class Store
     def sync!(docs,_timestamp=nil)
+      _timestamp_counter = timestamp.counter
+      report = SynchronizationReport.new(self,:store_document => document, :timestamp => _timestamp_counter)
       existing_chain = {}
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         doc = find(uuid)
@@ -30,26 +35,41 @@ module StrokeDB
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         incoming_chain = find(uuid,versions.last.__version__).__versions__.all_versions
         if existing_chain[uuid].nil? or existing_chain[uuid].empty? # It is a new document
-          save_as_head!(find(uuid,versions.last.__version__))
+          added_doc = find(uuid,versions.last.__version__)
+          save_as_head!(added_doc)
+          report.added_documents << added_doc
         else
           begin
             sync = sync_chains(incoming_chain.reverse,existing_chain[uuid].reverse)
           rescue NonMatchingChains
-            raise NonMatchingDocumentCondition.new(uuid) # that will definitely leave garbage in the store (FIXME?)
+            # raise NonMatchingDocumentCondition.new(uuid) # that will definitely leave garbage in the store (FIXME?)
+            non_matching_doc = find(uuid)
+            report.non_matching_documents << non_matching_doc
+            next
           end
           resolution = sync.is_a?(Array) ? sync.first : sync
           case resolution
           when :up_to_date
             # nothing to do
           when :merge
-            raise ConflictCondition.new(uuid, sync[1], sync[2])
+            report.conflicts << SynchronizationConflict.create!(self,:document => find(uuid), :rev1 => sync[1], :rev2 => sync[2])
           when :fast_forward
-            save_as_head!(find(uuid,sync[1].last))
+            fast_forwarded_doc = find(uuid,sync[1].last)
+            save_as_head!(fast_forwarded_doc)
+            report.fast_forwarded_documents << fast_forwarded_doc
           else
             raise "Invalid sync resolution #{resolution}"
           end
         end
       end
+      report.conflicts.each do |conflict|
+        if resolution_strategy = conflict.document.meta[:resolution_strategy]
+          conflict.metas << resolution_strategy
+          conflict.save!
+        end
+        conflict.resolve!
+      end
+      report.save!
     end
     private
     

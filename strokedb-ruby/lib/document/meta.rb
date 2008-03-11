@@ -83,7 +83,6 @@ module StrokeDB
 
     def new(*args,&block)
       doc = Document.new(*args,&block)
-      doc.extend(self)
       doc[:__meta__] = []
       @metas.each {|m| doc.metas << m }
       doc
@@ -138,8 +137,7 @@ module StrokeDB
       args[0] = store
       args.last[:__meta__] = Meta.document(store)
       args.last[:name] ||= name
-      unless meta_doc = (store.respond_to?(:index_store) && store.index_store) ? store.search(:name => args.last[:name], 
-        :__meta__ => Meta.document(store)).first : nil
+      unless meta_doc = (store.respond_to?(:index_store) && store.index_store) ? store.search(:name => args.last[:name], :__meta__ => Meta.document(store)).first : nil
         meta_doc = Document.new(*args)
         meta_doc.extend(Meta)
         meta_doc.save!
