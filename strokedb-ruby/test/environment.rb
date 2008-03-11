@@ -1,10 +1,11 @@
-IRB.conf[:PROMPT][:CXMP] = { # name of prompt mode
-  :PROMPT_C=>nil,
-  :PROMPT_I=>nil, :PROMPT_N=>nil, :PROMPT_S=>nil,
-  :RETURN => "    # ==> %s\n"        # format to return value
-}
-IRB.conf[:PROMPT_MODE] = :CXMP
-
+if defined? IRB
+  IRB.conf[:PROMPT][:CXMP] = { # name of prompt mode
+    :PROMPT_C=>nil,
+    :PROMPT_I=>nil, :PROMPT_N=>nil, :PROMPT_S=>nil,
+    :RETURN => "    # ==> %s\n"        # format to return value
+  }
+  IRB.conf[:PROMPT_MODE] = :CXMP
+end
 
 require 'pp'
 require "strokedb"
