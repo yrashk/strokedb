@@ -267,7 +267,11 @@ module StrokeDB
 
     def pretty_print #:nodoc:
       slots = to_raw.except('__meta__')
-      s = "#<"
+      if is_a?(ImmutableDocument)
+        s = "#<(imm)"
+      else
+        s = "#<"
+      end
       Util.catch_circular_reference(self) do
         if self[:__meta__] && meta[:name] 
           s << "#{meta.name} "
@@ -336,6 +340,26 @@ module StrokeDB
       doc
     end
 
+
+    def self.find(*args)
+      store = nil
+      if args.empty? || args.first.is_a?(String) || args.first.is_a?(Hash)
+        store = StrokeDB.default_store
+      else
+        store = args.shift
+      end
+      raise NoDefaultStoreError.new unless store
+      query = args.first
+      case query
+      when /#{UUID_RE}/
+        store.find(query)
+      when Hash
+        store.search(query)
+      else
+        raise TypeError
+      end
+    end
+    
     #
     # Reloads head of the same document from store. All unsaved changes will be lost!
     #
@@ -404,9 +428,9 @@ module StrokeDB
         names << next_meta.name if next_meta[:name] 
       end
       collected_meta.name = names.uniq.join(',')
-      collected_meta
+      collected_meta.make_immutable!
     end
-    
+
     #
     # Instantiate a composite document
     #
@@ -473,6 +497,11 @@ module StrokeDB
       else
         false
       end
+    end
+
+    def make_immutable!
+      extend(ImmutableDocument)
+      self
     end
 
     def method_missing(sym,*args,&block) #:nodoc:
@@ -588,6 +617,18 @@ module StrokeDB
     #
     def reload
       store.find(uuid,__version__)
+    end
+
+  end
+
+
+  #
+  # ImmutableDocument can't be saved
+  # It should not be used directly
+  #
+  module ImmutableDocument
+
+    def save!
     end
 
   end

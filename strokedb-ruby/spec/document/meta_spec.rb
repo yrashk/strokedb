@@ -36,6 +36,11 @@ describe "Meta module", :shared => true do
     new_doc.__previous_version__.should == doc.__version__
     new_doc.description.should == "Something"
   end
+
+  it "should search for specified UUID with __meta__ reference merged in" do
+    a = SomeName.create!
+    SomeName.find(a.uuid).should == a
+  end
   
   it "should search for specified slots with __meta__ reference merged in" do
     a = SomeName.create!(:slot1 => 1, :slot2 => 2)
@@ -238,4 +243,9 @@ describe "Combined meta module" do
     (User+Buyer+Seller).document.x.should == 2
     (User+Buyer+Seller).document.y.should == 3
   end
+  
+  it "should make merged #document immutable" do
+    (User+Buyer+Seller).document.should be_a_kind_of(ImmutableDocument)
+  end
+  
 end

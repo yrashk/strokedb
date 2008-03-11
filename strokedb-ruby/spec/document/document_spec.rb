@@ -1,5 +1,27 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
+describe "Document class" do
+  
+  before(:each) do
+    @store = setup_default_store
+    setup_index
+  end
+  
+  it "should be able to find document by UUID" do
+    @document = Document.create!
+    Document.find(@document.uuid).should == @document
+    Document.find(@store,@document.uuid).should == @document
+  end
+
+  it "should be able to find document by query" do
+    @document = Document.create!
+    Document.find(:uuid => @document.uuid).should == [@document]
+    Document.find(@store, :uuid => @document.uuid).should == [@document]
+  end
+  
+end
+
+
 describe "Document", :shared => true do
 
   it "should create new slot" do
@@ -118,6 +140,12 @@ describe "Document", :shared => true do
     @document.symbol_slot = [{:a => :b}]
     @document = @document.save!.reload
     @document.symbol_slot.should == [{"a" => "b"}]
+  end
+  
+  it "should not save itself once declared immutable" do
+    @document.make_immutable!
+    @document.store.should_not_receive(:save!)
+    @document.save!
   end
   
 end
@@ -403,6 +431,11 @@ describe "Document with multiple metas" do
     meta[2].should == 2
     meta.name.should == "0,1,2"
     @document[:__meta__].should be_a_kind_of(Array)
+  end
+  
+  it "should make single merged meta immutable" do
+    meta = @document.meta
+    meta.should be_a_kind_of(ImmutableDocument)
   end
   
   it "should be able to return metas collection" do
