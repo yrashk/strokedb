@@ -1,11 +1,11 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 [SkiplistStore].each do |store|
-  describe "#{store} that.syncs documents in" do
+  describe "#{store} that syncs documents in" do
     
     before(:each) do
       FileUtils.rm_rf File.dirname(__FILE__) + '/../../test/storages/store_sync'
-      FileUtils.rm_rf File.dirname(__FILE__) + '/../../test/storages/store_another'
+      FileUtils.rm_rf File.dirname(__FILE__) + '/../../test/storages/store_sync_another'
       StrokeDB::Config.build :default => true, :store => :skiplist, :base_path => File.dirname(__FILE__) + '/../../test/storages/store_sync'
       @store = StrokeDB.default_store
       another_cfg = StrokeDB::Config.build :base_path => File.dirname(__FILE__) + '/../../test/storages/store_sync_another'
@@ -14,7 +14,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
     
     after(:each) do
       FileUtils.rm_rf File.dirname(__FILE__) + '/../../test/storages/store_sync'
-      FileUtils.rm_rf File.dirname(__FILE__) + '/../../test/storages/store_another'
+      FileUtils.rm_rf File.dirname(__FILE__) + '/../../test/storages/store_sync_another'
     end
     
     it "should add document that does not yet exist" do
@@ -98,6 +98,52 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
       conflict = another_sync_rep.conflicts.first
       conflict.rev1[1].should == doc_at_store.__version__
       conflict.rev2[1].should == doc.__version__
+    end
+
+    it "should try to resolve SynchronizationConflict if it was created" do
+      doc = Document.create!(@another_store, :hello => 'world')
+      doc.test = 'passed'
+      doc.save!
+      @store.sync!(doc.__versions__.all.reverse)
+      doc_at_store = @store.find(doc.uuid)
+      doc_at_store.ok = true
+      doc_at_store.save!
+      doc.ok = false
+      doc.save!
+      resolve_called = 0
+      SynchronizationConflict.module_eval do
+        define_method('resolve!') do
+          resolve_called += 1
+        end
+      end
+      another_sync_rep = @another_store.sync!(doc_at_store.__versions__.all.reverse)
+      resolve_called.should == 1
+    end
+
+    it "should add resolution meta to SynchronizationConflict document if it is specified in synchronized document" do
+      Object.send!(:remove_const,'SomeStrategy') if defined?(SomeStrategy)
+      SomeStrategy = Meta.new
+      
+      Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+      SomeMeta = Meta.new(:resolution_strategy => SomeStrategy.document)
+
+      # ensure that all metas exist in both stores
+      SomeStrategy.document
+      SomeMeta.document
+      @another_store.sync!(SomeStrategy.document.__versions__.all.reverse+SomeMeta.document.__versions__.all.reverse,@store.timestamp)
+
+      doc = SomeMeta.create!(@another_store, :hello => 'world')
+      doc.test = 'passed'
+      doc.save!
+      @store.sync!(doc.__versions__.all.reverse)
+      doc_at_store = @store.find(doc.uuid)
+      doc_at_store.ok = true
+      doc_at_store.save!
+      doc.ok = false
+      doc.save!
+      another_sync_rep = @another_store.sync!(doc_at_store.__versions__.all.reverse)
+      conflict = another_sync_rep.conflicts.first
+      conflict.should be_a_kind_of(SomeStrategy)
     end
     
     it "should store original timestamp in synchronization report" do
