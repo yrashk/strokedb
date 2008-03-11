@@ -53,7 +53,7 @@ end
 
 if ARGV.last.is_a?(String) && File.exists?(ARGV.last+'/config')
   StrokeDB::Config.load(ARGV.last+'/config',true)
-  puts "Store #{ARGV.last} has been loaded."
+  puts "# loading #{ARGV.last}"
   ARGV.pop
 else
   build_config
