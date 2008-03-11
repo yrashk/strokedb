@@ -1,16 +1,4 @@
 module StrokeDB
-  class NonMatchingDocumentCondition < Exception
-    attr_reader :uuid
-    def initialize(uuid)
-      @uuid = uuid
-    end
-  end
-  class ConflictCondition < Exception
-    attr_reader :uuid, :rev1, :rev2
-    def initialize(uuid, rev1, rev2)
-      @uuid, @rev1, @rev2 = uuid, rev1, rev2
-    end
-  end
 
   SynchronizationReport = Meta.new do
     has_many :conflicts, :through => :synchronization_conflicts
