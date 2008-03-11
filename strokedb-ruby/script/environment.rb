@@ -60,7 +60,13 @@ def reload!
   "Classes reloaded."
 end
 
-build_config
+if ARGV.last.is_a?(String) && File.exists?(ARGV.last+'/config')
+  StrokeDB::Config.load(ARGV.last+'/config',true)
+  puts "# loading #{ARGV.last}"
+  ARGV.pop
+else
+  build_config
+end
 
 puts "StrokeDB #{StrokeDB::VERSION} Console"
 puts "Type 'h' for help"

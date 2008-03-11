@@ -268,6 +268,14 @@ describe "Saved Document" do
     reloaded_doc.object_id.should_not == @document.object_id
   end
 
+  it "should not change version and previous_version once not modified and saved" do
+    old_version = @document.__version__
+    old_previos_version = @document.__previous_version__
+    @document.save!
+    @document.__version__.should == old_version
+    @document.__previous_version__.should == old_previos_version
+  end
+  
   it "should change version once modified; previous version should be set to original version" do
     old_version = @document.__version__
     @document[:a] = 1
