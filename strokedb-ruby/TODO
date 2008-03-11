@@ -19,15 +19,15 @@ To be done before 0.1 ("Praha"):
 [.] Refactor associations
 [ ] Add Document::Versions#first, #head
 [.] Add few validations
-[ ] Memory-based storage with permanent log?
 [?] add sub-finders to associations (like User.messages.find :title => '...')
 [?] Add sorting primitives for search functionality
 [ ] Document#to_xml can't work with arrays for some reason
-[ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
-[ ] New uuid-based versions caused some slow down, too
 
 To be done later:
 
+[ ] Memory-based storage with permanent log?
+[ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
+[ ] New uuid-based versions caused some slow down, too
 [ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
 [ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
 [?] Pool new UUIDs
