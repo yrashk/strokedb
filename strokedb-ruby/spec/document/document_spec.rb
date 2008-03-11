@@ -283,6 +283,24 @@ describe "Saved Document" do
     @document.__previous_version__.should == old_version
   end
 
+  it "should change version once Array slot is modified; previous version should be set to original version" do
+    @document[:a] = []
+    @document.save!
+    old_version = @document.__version__
+    @document[:a] << 1
+    @document.__version__.should_not == old_version
+    @document.__previous_version__.should == old_version
+  end
+
+  it "should change version once Hash slot is modified; previous version should be set to original version" do
+    @document[:a] = {}
+    @document.save!
+    old_version = @document.__version__
+    @document[:a][:b] = 1
+    @document.__version__.should_not == old_version
+    @document.__previous_version__.should == old_version
+  end
+
   it "should change version once some slot is removed; previous version should be set to original version" do
     old_version = @document.__version__
     @document.remove_slot!(:some_data)

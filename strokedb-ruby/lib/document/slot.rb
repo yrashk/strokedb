@@ -51,9 +51,6 @@ module StrokeDB
 
     def value=(v)
       @value = decode_value(encode_value(v,true))
-      if v.is_a?(Document) 
-        @cached_value = v
-      end
     end
 
     def value
@@ -125,6 +122,7 @@ module StrokeDB
           decoded = decode_value(element)
           @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
         end.unmap_with do |element|
+          doc.send!(:update_version!,nil)
           encode_value(element)
         end
       when Hash
@@ -132,6 +130,7 @@ module StrokeDB
           decoded = decode_value(element)
           @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
         end.unmap_with do |element|
+          doc.send!(:update_version!,nil)
           encode_value(element)
         end
       when Symbol

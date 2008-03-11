@@ -64,6 +64,29 @@ module StrokeDB
       map{|v|v}.zip(*args)
     end
     
+    alias :_push :push
+    def push(value)
+      _push(@unmap_proc.call(value))
+    end
+    alias :<< :push
+
+    alias :_unshift :unshift
+    def unshift(value)
+      _unshift(@unmap_proc.call(value))
+    end
+
+    alias :_pop :pop
+    def pop
+      @map_proc.call(_pop)
+    end
+
+    alias :_shift :shift
+    def shift
+      @map_proc.call(_shift)
+    end
+    
+    
+    
     def class
       Array
     end

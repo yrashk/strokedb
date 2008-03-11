@@ -114,5 +114,31 @@ describe "LazyMappingArray instance with block specified" do
   it "should call mapping proc on #zip" do
     @array.zip(@original){|a, o| a.should == @mapper.call(o)  }
   end  
+  
+  it "should call unmapping proc on #push" do
+    @array.push "10"
+    Array.new(@array).last.should == 10
+  end
+
+  it "should call unmapping proc on #<<" do
+    @array << "10"
+    Array.new(@array).last.should == 10
+  end
+
+  it "should call unmapping proc on #unshift" do
+    @array.unshift "10"
+    Array.new(@array).first.should == 10
+  end
+
+  it "should call mapping proc on #pop" do
+    @array << "10"
+    @array.pop.should == "10"
+  end
+
+  it "should call mapping proc on #shift" do
+    @array[0] = "10"
+    @array.shift.should == "10"
+  end
+  
 end
 
