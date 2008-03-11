@@ -1,11 +1,3 @@
-IRB.conf[:PROMPT][:CXMP] = { # name of prompt mode
-  :PROMPT_C=>nil,
-  :PROMPT_I=>nil, :PROMPT_N=>nil, :PROMPT_S=>nil,
-  :RETURN => "    # ==> %s\n"        # format to return value
-}
-IRB.conf[:PROMPT_MODE] = :CXMP
-
-
 require 'pp'
 require "strokedb"
 include StrokeDB
@@ -59,7 +51,13 @@ def reload!
   "Classes reloaded."
 end
 
-build_config
+if ARGV.last.is_a?(String) && File.exists?(ARGV.last+'/config')
+  StrokeDB::Config.load(ARGV.last+'/config',true)
+  puts "Store #{ARGV.last} has been loaded."
+  ARGV.pop
+else
+  build_config
+end
 
 puts "StrokeDB #{StrokeDB::VERSION} Console"
 puts "Type 'h' for help"

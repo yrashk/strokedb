@@ -6,6 +6,10 @@ module StrokeDB
     
     
     class << self
+    
+      def load(filename,default = false)
+        build(ActiveSupport::JSON.decode(IO.read(filename)).merge(:default => default))
+      end
       
       def build(opts={})
         opts = opts.stringify_keys
@@ -30,10 +34,17 @@ module StrokeDB
         else 
           config.add_store(:default,store,{:storage => storages.first}.merge(opts['store_options']||{}))
         end
+        config.build_config = opts.except('default')
+        FileUtils.mkdir_p opts['base_path']||'./'
+        File.open(File.join(opts['base_path']||'./','config'),"w+") do |f|
+          f.write config.build_config.to_json
+        end
         config
       end
       
     end
+    
+    attr_accessor :build_config
     
     attr_reader :storages, :indexes, :stores
     def initialize(default = false)

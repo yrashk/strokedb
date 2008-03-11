@@ -110,7 +110,7 @@ describe "Config builder" do
   before(:each) do
     @base_path = File.dirname(__FILE__) + '/../../test/storages/cfg_builder'
   end
-
+  
   it "should make config default if told so" do
     config = StrokeDB::Config.build :default => true
     StrokeDB.default_config.should == config
@@ -217,6 +217,31 @@ describe "Config builder" do
     SomeFunnyIndexStorage.should_receive(:new).with(:path => @base_path + '/some_funny_index').and_return(index_storage)
     config = StrokeDB::Config.build :index_storages => [:some_funny_index], :base_path => @base_path
   end
+
+  it "should dump config in base_path (except 'default' key)" do
+    cfg = StrokeDB::Config.build :default => true, :base_path => @base_path
+    config = ActiveSupport::JSON.decode(IO.read(@base_path + '/config'))
+    config.should == cfg.build_config
+  end
+
+  it "should load dumped config" do
+    StrokeDB::Config.build :default => true, :base_path => @base_path
+    config = ActiveSupport::JSON.decode(IO.read(@base_path + '/config'))
+    cfg = StrokeDB::Config.load(@base_path + '/config')
+    cfg.build_config.should == config
+    cfg.should_not == StrokeDB.default_config
+  end
+
+  it "should load dumped config and make it default if told so" do
+    StrokeDB::Config.build :default => true, :base_path => @base_path
+    config = ActiveSupport::JSON.decode(IO.read(@base_path + '/config'))
+    cfg = StrokeDB::Config.load(@base_path + '/config',true)
+    cfg.build_config.should == config
+    cfg.should == StrokeDB.default_config
+  end
+  
+  
+
   
   after(:each) do
     FileUtils.rm_rf @base_path
