@@ -58,6 +58,7 @@ module StrokeDB
         @cache = {}
       end
 
+      
       #
       # Get document by version.
       #
@@ -67,6 +68,14 @@ module StrokeDB
       def [](version)
         @cache[version] ||= @document.store.find(document.uuid,version)
       end
+
+      #
+      # Get current version of document
+      #
+      def current
+        self[document.__version__]
+      end
+
 
       #
       # Get document with previous version

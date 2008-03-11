@@ -308,6 +308,12 @@ describe "Saved Document" do
     @document.__previous_version__.should == old_version
   end
   
+  it "should be able to return current version" do
+    @document.should_not be_a_kind_of(VersionedDocument)
+    @document.__versions__.current.should == @document
+    @document.__versions__.current.should be_a_kind_of(VersionedDocument)
+  end
+  
   it_should_behave_like "Document"
   
 end
