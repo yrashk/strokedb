@@ -146,8 +146,9 @@ module StrokeDB
       else
         args.last[:__version__] = meta_doc.__version__
         args.last[:uuid] = meta_doc.uuid
-        unless (new_doc = Document.new(*args)).to_raw == meta_doc.to_raw
-          new_doc[:__previous_version__] = meta_doc.__version__
+        unless (new_doc = Document.new(*args)).to_raw.except('__previous_version__') == meta_doc.to_raw.except('__previous_version__')
+          new_doc.instance_variable_set(:@saved,true)
+          new_doc.send!(:update_version!,nil)
           new_doc.save!
           meta_doc = new_doc
         end

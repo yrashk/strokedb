@@ -27,13 +27,18 @@ describe "Meta module", :shared => true do
   end
 
   it "should save new document version if it was updated" do
-    doc = SomeName.document
-    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    @meta = Meta.new(:name => "SomeName", :description => "Something")  
-    new_doc = SomeName.document
+    doc = SomeName.document    
+    version = doc.__version__.clone
+    new_doc = nil
+    2.times do |i|
+      Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+      @meta = Meta.new(:name => "SomeName", :description => "Something")  
+      new_doc = SomeName.document
+    end
     new_doc.uuid.should == doc.uuid
     new_doc.__previous_version__.should_not be_nil
-    new_doc.__previous_version__.should == doc.__version__
+    new_doc.__previous_version__.should == version
+    new_doc.__version__.should_not == new_doc.__previous_version__
     new_doc.description.should == "Something"
   end
 
