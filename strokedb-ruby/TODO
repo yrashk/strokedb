@@ -8,6 +8,7 @@ Completed items are removed.
 To be done before 0.1 ("Praha"):
 
 [ ] It should be possible to set slot value as Meta (should get #document)
+[ ] Meta#document should search for meta document by UUID if it is specified explicitely
 [ ] Document with single meta should return mutable meta on #meta 
 [.] Spec Symbol conversion to String
 [ ] Spec Store#exists?
