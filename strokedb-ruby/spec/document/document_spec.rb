@@ -167,6 +167,22 @@ describe "Document", :shared => true do
     @document.symbol_slot.should == [{"a" => "b"}]
   end
   
+  it "should convert Meta values to Documents instantly" do
+    @document.meta_slot = Meta
+    @document.meta_slot.should == Meta.document(@document.store)
+    pending
+    @document.metas_slot = [Meta]
+    @document.metas_slot.should == [Meta.document(@document.store)]
+  end
+
+  it "should convert Meta values to Documents" do
+    @document.meta_slot = Meta
+    @document.metas_slot = [Meta]
+    @document = @document.save!.reload
+    @document.meta_slot.should == Meta.document(@document.store)
+    @document.metas_slot.should == [Meta.document(@document.store)]
+  end
+  
   it "should not save itself once declared immutable" do
     @document.make_immutable!
     @document.store.should_not_receive(:save!)

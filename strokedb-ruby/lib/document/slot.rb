@@ -94,6 +94,8 @@ module StrokeDB
       case v
       when Document
         skip_documents ? v : DocumentReferenceValue.new(v.__reference__,doc) 
+      when Module
+        v.document(doc.store)
       when Array
         LazyMappingArray.new(v).map_with do |element| 
           encode_value(element,skip_documents)

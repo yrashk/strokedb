@@ -125,7 +125,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
       SomeStrategy = Meta.new
       
       Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
-      SomeMeta = Meta.new(:resolution_strategy => SomeStrategy.document)
+      SomeMeta = Meta.new(:resolution_strategy => SomeStrategy)
 
       # ensure that all metas exist in both stores
       SomeStrategy.document
