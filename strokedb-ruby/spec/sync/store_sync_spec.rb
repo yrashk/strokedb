@@ -141,9 +141,18 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
       doc_at_store.save!
       doc.ok = false
       doc.save!
+
+      some_strategy_resolve = 0
+      SomeStrategy.module_eval do
+        define_method("resolve!") do
+          some_strategy_resolve += 1
+        end
+      end
+
       another_sync_rep = @another_store.sync!(doc_at_store.__versions__.all.reverse)
       conflict = another_sync_rep.conflicts.first
       conflict.should be_a_kind_of(SomeStrategy)
+      some_strategy_resolve.should == 1
     end
     
     it "should store original timestamp in synchronization report" do
