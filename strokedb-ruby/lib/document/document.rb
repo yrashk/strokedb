@@ -150,7 +150,7 @@ module StrokeDB
           push meta
           _module = StrokeDB::Document.collect_meta_modules(@document.store,meta).first
         when Meta
-          push meta.document
+          push meta.document(@document.store)
           _module = meta
         else
           raise InvalidMetaDocumentError.new # FIXME: may be we should use another Error?
