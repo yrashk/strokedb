@@ -3,7 +3,14 @@ module StrokeDB
   module Associations
 
     module HasManyAssociation
-      attr_reader :association_owner
+      attr_reader :association_owner, :association_slotname
+      def <<(doc)
+        # first, we have to find the correct meta
+        meta = @association_owner.metas.find{|m| m["has_many_#{@association_slotname}"] }
+        doc[meta.name.downcase] = @association_owner
+        doc.save!
+        self
+      end
     end
 
     def has_many(slotname,opts={},&block)
@@ -69,8 +76,8 @@ module StrokeDB
           result.extend(extend_with.constantize) 
         end
         result.extend(HasManyAssociation)
-        result.instance_variable_set(:@association_owner,self)
-
+        result.instance_variable_set(:@association_owner, self)
+        result.instance_variable_set(:@association_slotname, slotname)
         result
       end
     end

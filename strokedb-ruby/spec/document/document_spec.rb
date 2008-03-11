@@ -68,11 +68,36 @@ describe "Document", :shared => true do
     @document[:slot1] = 1
     @document[:slot2] = 0
     @document[:slot3] = nil
+    @document[:slot4] = false
     @document.slot1?.should be_true
     @document.slot2?.should be_true
     @document.slot3?.should be_false
+    @document.slot4?.should be_false
   end
   
+  it "should batch update slots" do
+    @document.update_slots(:aaa => "aaa", :bbb => true)
+    @document.aaa.should == "aaa"
+    @document.bbb.should == true
+  end
+  
+  it "should not save batch update slots" do
+    @document.save! # ensure it is not new
+    @document.update_slots(:aaa1 => "aaa", :bbb1 => true)
+    doc = @document.reload
+    doc[:aaa1].should be_nil
+    doc[:bbb1].should be_nil
+  end
+  
+  it "should support batch update slots with saving" do
+    doc = @document.update_slots!(:aaa => "aaa", :bbb => true)
+    doc.aaa.should == "aaa"
+    doc.bbb.should == true
+    doc = doc.reload
+    doc.aaa.should == "aaa"
+    doc.bbb.should == true
+  end
+    
   it "should add callbacks" do
     cb1 = Callback.new(nil,:callback_name) {}
     cb2 = Callback.new(nil,:another_callback_name) {}

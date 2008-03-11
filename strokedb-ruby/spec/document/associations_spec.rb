@@ -39,7 +39,8 @@ describe "Playlist.has_many :songs association" do
     playlist = Playlist.new
     playlist.metas << RockPlaylist
     playlist.save!
-    rock_song = Song.create!(:playlist => playlist, :genre => 'Rock')
+    rock_song = Song.new(:genre => 'Rock')
+    playlist.songs << rock_song
     playlist.songs.should == [rock_song]
     playlist.rock_songs.should == [rock_song]
   end
