@@ -137,7 +137,7 @@ module StrokeDB
       args[0] = store
       args.last[:__meta__] = Meta.document(store)
       args.last[:name] ||= name
-      unless meta_doc = (store.respond_to?(:index_store) && store.index_store) ? store.search(:name => args.last[:name], :__meta__ => Meta.document(store)).first : nil
+      unless meta_doc = store.search(:name => args.last[:name], :__meta__ => Meta.document(store)).first
         meta_doc = Document.new(*args)
         meta_doc.extend(Meta)
         meta_doc.save!

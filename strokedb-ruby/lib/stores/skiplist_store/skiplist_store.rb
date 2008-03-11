@@ -33,6 +33,7 @@ module StrokeDB
     end
 
     def search(*args)
+      return [] unless @index_store
       @index_store.find(*args)
     end
 
