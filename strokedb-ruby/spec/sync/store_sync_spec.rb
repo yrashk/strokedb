@@ -1,9 +1,11 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 [SkiplistStore].each do |store|
-  describe "#{store} that.sync!s documents in" do
+  describe "#{store} that.syncs documents in" do
     
     before(:each) do
+      FileUtils.rm_rf File.dirname(__FILE__) + '/../../test/storages/store_sync'
+      FileUtils.rm_rf File.dirname(__FILE__) + '/../../test/storages/store_another'
       StrokeDB::Config.build :default => true, :store => :skiplist, :base_path => File.dirname(__FILE__) + '/../../test/storages/store_sync'
       @store = StrokeDB.default_store
       another_cfg = StrokeDB::Config.build :base_path => File.dirname(__FILE__) + '/../../test/storages/store_sync_another'
@@ -98,6 +100,17 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
       conflict.rev2[1].should == doc.__version__
     end
     
+    it "should store original timestamp in synchronization report" do
+      original_timestamp = @store.timestamp.counter
+      sync_rep = @store.sync!([])
+      sync_rep.timestamp.should == original_timestamp
+    end
+
+    it "should store store's document in synchronization report" do
+      sync_rep = @store.sync!([])
+      sync_rep.store_document.should == @store.document
+    end
+    
     it "should update timestamp prior to.sync! if it is specified" do
       original_timestamp = @store.timestamp
       @store.sync!([],100)
@@ -108,6 +121,6 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
       @store.timestamp.counter.should >= 200
       @store.timestamp.should_not == original_timestamp
     end
-        
+      
   end
 end

@@ -25,7 +25,8 @@ module StrokeDB
   
   class Store
     def sync!(docs,_timestamp=nil)
-      report = SynchronizationReport.new(:timestamp => timestamp.counter)
+      _timestamp_counter = timestamp.counter
+      report = SynchronizationReport.new(:store_document => document, :timestamp => _timestamp_counter)
       existing_chain = {}
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         doc = find(uuid)
