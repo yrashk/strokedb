@@ -13,34 +13,38 @@ module StrokeDB
     alias :_square_brackets :[]
     def [](*args)
       load!
-      _square_brackets(*args)
+      self[*args]
     end
     alias :slice :[]
 
     alias :_square_brackets_set :[]=
     def []=(index,value)
       load!
-      _square_brackets_set(index,value)
+      self[index] = value
     end
 
     alias :_at :at
     def at(index)
       load!
-      _at(index)
+      at(index)
     end
 
+    alias :_first :first
     def first
-      at(0)
+      load!
+      first
     end
 
+    alias :_last :last
     def last
-      at(size-1)
+      load!
+      last
     end
 
     alias :_each :each
     def each
       load!
-      _each do |val| 
+      each do |val| 
         yield val
       end
     end
@@ -48,7 +52,7 @@ module StrokeDB
     alias :_map :map
     def map
       load!
-      _map do |val|
+      map do |val|
         yield val
       end
     end
@@ -61,38 +65,38 @@ module StrokeDB
     alias :_push :push
     def push(value)
       load!
-      _push(value)
+      push(value)
     end
     alias :<< :push
 
     alias :_unshift :unshift
     def unshift(value)
       load!
-      _unshift(value)
+      unshift(value)
     end
 
     alias :_pop :pop
     def pop
       load!
-      _pop
+      pop
     end
 
     alias :_shift :shift
     def shift
       load!
-      _shift
+      shift
     end
 
     alias :_find :find
     def find
       load!
-      _find {|value| yield(value)}
+      find {|value| yield(value)}
     end
     
     alias :_inspect :inspect
     def inspect
       load!
-      _inspect
+      inspect
     end
     
     alias :_equal :==
@@ -104,9 +108,14 @@ module StrokeDB
     alias :_index :index
     def index(v)
       load!
-      _index(v)
+      index(v)
     end
     
+    alias :_to_a :to_a
+    def to_a
+      load!
+      to_a
+    end
 
     def class
       Array
@@ -121,6 +130,8 @@ module StrokeDB
           alias :[] :_square_brackets
           alias :[]= :_square_brackets_set
           alias :at :_at
+          alias :first :_first
+          alias :last :_last
           alias :each :_each
           alias :map :_map
           alias :zip :_zip
@@ -132,6 +143,7 @@ module StrokeDB
           alias :inspect :_inspect
           alias :== :_equal
           alias :index :_index
+          alias :to_a :_to_a
         end
         concat @load_with_proc.call(self)
         @load_with_proc = nil

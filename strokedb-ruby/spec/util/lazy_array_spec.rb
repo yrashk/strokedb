@@ -144,5 +144,13 @@ describe "LazyArray instance with block specified" do
     @array.index(2).should == 1
   end
   
+  it "should call loading proc on #to_a" do
+    @array.to_a.should == [1,2,3]
+  end
+
+  it "should call loading proc on #==" do
+    @array.should == [1,2,3]
+  end
+  
 end
   
