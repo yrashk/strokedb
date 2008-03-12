@@ -38,7 +38,7 @@ end
 def complete_issue(prefix,description)
   todo_list = TodoList.find_or_create(:name => prefix)
   return unless todo_list
-  if item = todo_list.items.find {|item| item.description == description }
+  if item = todo_list.items.find(:description => description).first
     item.done!
     list_issues
   else 
