@@ -7,6 +7,7 @@ module StrokeDB
       def new(slots={})
         association_meta.constantize.new(association_owner.store,slots.merge({association_reference_slotname => association_owner}))
       end
+      alias :build :new
 
       def create!(slots={})
         new(slots).save!

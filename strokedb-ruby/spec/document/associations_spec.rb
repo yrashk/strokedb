@@ -119,9 +119,21 @@ describe "Playlist.has_many :songs association" do
     playlist.songs.find(:genre => 'Pop').should == [pop_song]
   end
   
-  it "should be able to instantiate new document" do
+  it "should be able to instantiate new document with #new" do
     playlist = Playlist.create!
     song = playlist.songs.new(:name => 'My song')
+    song.name.should == 'My song'
+    song.playlist.should == playlist
+    song.should be_a_kind_of(Document)
+    song.should be_new
+    song.save!
+    playlist.songs.should == [song]
+  end
+
+  it "should be able to instantiate new document with #build" do
+    # should be the same at the above
+    playlist = Playlist.create!
+    song = playlist.songs.build(:name => 'My song')
     song.name.should == 'My song'
     song.playlist.should == playlist
     song.should be_a_kind_of(Document)
