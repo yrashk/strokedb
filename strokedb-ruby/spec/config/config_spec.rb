@@ -109,27 +109,32 @@ describe "Config builder" do
   
   before(:each) do
     @base_path = File.dirname(__FILE__) + '/../../test/storages/cfg_builder'
+    FileUtils.rm_rf @base_path
+  end
+
+  after(:each) do
+    FileUtils.rm_rf @base_path
   end
   
   it "should make config default if told so" do
-    config = StrokeDB::Config.build :default => true
+    config = StrokeDB::Config.build :default => true, :base_path => @base_path
     StrokeDB.default_config.should == config
   end
 
   it "should not make config default if told so" do
-    config = StrokeDB::Config.build 
+    config = StrokeDB::Config.build :base_path => @base_path
     StrokeDB.default_config.should_not == config
   end
   
   it "should use skiplist store by default" do
-    config = StrokeDB::Config.build 
+    config = StrokeDB::Config.build :base_path => @base_path
     config.stores[:default].should be_a_kind_of(SkiplistStore)
   end
 
   it "should use specified store if told so" do
     StrokeDB.send!(:remove_const,'SomeFunnyStore') if defined?(SomeFunnyStore)
     StrokeDB::SomeFunnyStore = Class.new(SkiplistStore)
-    config = StrokeDB::Config.build :store => :some_funny
+    config = StrokeDB::Config.build :store => :some_funny, :base_path => @base_path
     config.stores[:default].should be_a_kind_of(SomeFunnyStore)
   end
 
@@ -138,7 +143,7 @@ describe "Config builder" do
     StrokeDB.send!(:remove_const,'Chunk2Storage') if defined?(Chunk2Storage)
     StrokeDB::Chunk1Storage = Class.new(MemoryChunkStorage)
     StrokeDB::Chunk2Storage = Class.new(MemoryChunkStorage)
-    config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2]
+    config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2], :base_path => @base_path
     config.storages[:chunk_1].should be_a_kind_of(Chunk1Storage)
     config.storages[:chunk_2].should be_a_kind_of(Chunk2Storage)
   end
@@ -187,26 +192,26 @@ describe "Config builder" do
   end
   
   it "should use InvertedListIndex by default" do
-    config = StrokeDB::Config.build 
+    config = StrokeDB::Config.build :base_path => @base_path
     config.indexes[:default].should be_a_kind_of(InvertedListIndex)
   end
 
   it "should use specific index if told so by default" do
     StrokeDB.send!(:remove_const,'SomeFunnyIndex') if defined?(SomeFunnyIndex)
     StrokeDB::SomeFunnyIndex = Class.new(InvertedListIndex)
-    config = StrokeDB::Config.build :index => :some_funny
+    config = StrokeDB::Config.build :index => :some_funny, :base_path => @base_path
     config.indexes[:default].should be_a_kind_of(SomeFunnyIndex)
   end
 
   it "should use InvertedListFileStorage index storage by default" do
-    config = StrokeDB::Config.build
+    config = StrokeDB::Config.build :base_path => @base_path
     config.storages[:inverted_list_file].should be_a_kind_of(InvertedListFileStorage)
   end
 
   it "should use specific index storage if told so" do
     StrokeDB.send!(:remove_const,'SomeFunnyIndexStorage') if defined?(SomeFunnyIndexStorage)
     StrokeDB::SomeFunnyIndexStorage = Class.new(InvertedListFileStorage)
-    config = StrokeDB::Config.build :index_storages => [:some_funny_index]
+    config = StrokeDB::Config.build :index_storages => [:some_funny_index], :base_path => @base_path
     config.storages[:some_funny_index].should be_a_kind_of(SomeFunnyIndexStorage)
   end
 
@@ -231,7 +236,7 @@ describe "Config builder" do
     cfg.build_config.should == config
     cfg.should_not == StrokeDB.default_config
   end
-
+  
   it "should load dumped config and make it default if told so" do
     StrokeDB::Config.build :default => true, :base_path => @base_path
     config = ActiveSupport::JSON.decode(IO.read(@base_path + '/config'))

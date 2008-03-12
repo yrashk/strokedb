@@ -19,7 +19,7 @@ describe "Skiplist store", :shared => true  do
   it "should store VersionedDocument" do
     @document = Document.create! :stuff => '...'
     vd = @document.__versions__.all.first
-    another_cfg = StrokeDB::Config.build
+    another_cfg = StrokeDB::Config.build :base_path => File.dirname(__FILE__) + '/../../../test/storages/skiplist_store'
     another_store = another_cfg.stores[:default]
     another_store.save!(vd)
     another_store.find(vd.uuid,vd.__version__).should == vd
