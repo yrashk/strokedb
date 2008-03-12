@@ -19,7 +19,6 @@ To be done before 0.1 ("Praha"):
 [.] Refactor associations
 [ ] Add Document::Versions#first, #head
 [.] Add few validations
-[?] add sub-finders to associations (like User.messages.find :title => '...')
 [?] Add sorting primitives for search functionality
 [ ] Document#to_xml can't work with arrays for some reason
 
