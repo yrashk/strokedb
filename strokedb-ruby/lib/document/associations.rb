@@ -4,10 +4,13 @@ module StrokeDB
 
     module HasManyAssociation
       attr_reader :association_owner, :association_slotname
+      def find(query={})
+        association_owner._has_many_association(association_slotname,query)
+      end
       def <<(doc)
         # first, we have to find the correct meta
-        meta = @association_owner[:__meta__].find{|m| m["has_many_#{@association_slotname}"] }
-        doc[meta.name.downcase] = @association_owner
+        meta = association_owner[:__meta__].find{|m| m["has_many_#{association_slotname}"] }
+        doc[meta.name.downcase] = association_owner
         doc.save!
         self
       end
@@ -45,9 +48,8 @@ module StrokeDB
           meta = _t.join('::') 
         end
         @args.last.reverse_merge!({"has_many_#{slotname}" => { :reference_slotname => reference_slotname, :through => through, :meta => meta, :query => query, :extend_with => extend_with } })
-        define_method(slotname) do |*args|
-          arg = args.empty? ? {} : args.first
-          _has_many_association(slotname,arg)
+        define_method(slotname) do 
+          _has_many_association(slotname,{})
         end
 
       end
@@ -64,21 +66,23 @@ module StrokeDB
         meta = slot_has_many[:meta]
         query = slot_has_many[:query]
         effective_query = query.merge(:__meta__ => meta.constantize.document, reference_slotname => self).merge(additional_query)
-        result = store.search(effective_query).map do |d| 
-          begin
-            through.each { |t| d = d.send(t) }
-          rescue SlotNotFoundError
-            d = nil
-          end
-          d
-        end.compact
 
+        result = LazyArray.new.load_with do |lazy_array|
+          store.search(effective_query).map do |d| 
+            begin
+              through.each { |t| d = d.send(t) }
+            rescue SlotNotFoundError
+              d = nil
+            end
+            d
+          end.compact
+        end
         if extend_with = slot_has_many[:extend_with] 
           result.extend(extend_with.constantize) 
         end
-        result.extend(HasManyAssociation)
         result.instance_variable_set(:@association_owner, self)
         result.instance_variable_set(:@association_slotname, slotname)
+        result.extend(HasManyAssociation)
         result
       end
     end

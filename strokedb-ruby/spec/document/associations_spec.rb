@@ -115,8 +115,8 @@ describe "Playlist.has_many :songs association" do
     playlist = Playlist.create!
     rock_song = Song.create!(:playlist => playlist, :genre => 'Rock')
     pop_song = Song.create!(:playlist => playlist, :genre => 'Pop')
-    playlist.songs(:genre => 'Rock').should == [rock_song]
-    playlist.songs(:genre => 'Pop').should == [pop_song]
+    playlist.songs.find(:genre => 'Rock').should == [rock_song]
+    playlist.songs.find(:genre => 'Pop').should == [pop_song]
   end
   
 end
