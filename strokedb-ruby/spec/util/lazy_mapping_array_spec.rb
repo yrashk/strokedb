@@ -139,6 +139,10 @@ describe "LazyMappingArray instance with block specified" do
     @array[0] = "10"
     @array.shift.should == "10"
   end
+
+  it "should call mapping proc on #index" do
+    @array.index(1).should == 0
+  end
   
 end
 

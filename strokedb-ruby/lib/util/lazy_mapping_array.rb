@@ -85,10 +85,14 @@ module StrokeDB
       @map_proc.call(_shift)
     end
 
-    # TODO: spec
     alias :_find :find
     def find
       _find {|value| yield(@map_proc.call(value))}
+    end
+    
+    alias :_index :index
+    def index(v)
+      _index(@unmap_proc.call(v))
     end
     
     def class
