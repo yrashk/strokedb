@@ -7,8 +7,8 @@ Completed items are removed.
 
 To be done before 0.1 ("Praha"):
 
+[ ] Make Document#metas behave like [:__meta__] in terms of loading DocRefVals
 [ ] Document with single meta should return mutable meta on #meta 
-[.] Spec Symbol conversion to String
 [ ] Spec Store#exists?
 [ ] Improve PointQuery (I really don't like it)
 [ ] Spec SS#autosync
@@ -22,7 +22,6 @@ To be done before 0.1 ("Praha"):
 [?] add sub-finders to associations (like User.messages.find :title => '...')
 [?] Add sorting primitives for search functionality
 [ ] Document#to_xml can't work with arrays for some reason
-[.] It should be possible to set slot value as Meta (should get #document)
 
 To be done later:
 

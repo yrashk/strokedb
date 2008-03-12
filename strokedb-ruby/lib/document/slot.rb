@@ -50,7 +50,7 @@ module StrokeDB
     end
 
     def value=(v)
-      @value = decode_value(encode_value(v,true))
+      @value = decode_value(enforce_collections(encode_value(v,true)))
     end
 
     def value
@@ -76,18 +76,7 @@ module StrokeDB
 
     def raw_value
       result = encode_value(@value)
-      case result
-      when Array
-        result.map{|v| encode_value(v)}
-      when Hash
-        h = {}
-        result.each_pair do |k,v|
-          h[encode_value(k)] = encode_value(v)
-        end
-        h
-      else
-        result
-      end
+      enforce_collections(result)
     end
     
     def encode_value(v,skip_documents=false)
@@ -139,6 +128,20 @@ module StrokeDB
         v.to_s
       else
         v
+      end
+    end
+    
+    def enforce_collections(v)
+      return v unless v.is_a?(Array) || v.is_a?(Hash)
+      case v
+      when Array
+        v.map{|v| enforce_collections(encode_value(v))}
+      when Hash
+        h = {}
+        v.each_pair do |k,v|
+          h[enforce_collections(encode_value(k))] = enforce_collections(encode_value(v))
+        end
+        h
       end
     end
 

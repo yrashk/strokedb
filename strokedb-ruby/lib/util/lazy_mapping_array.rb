@@ -84,8 +84,12 @@ module StrokeDB
     def shift
       @map_proc.call(_shift)
     end
-    
-    
+
+    # TODO: spec
+    alias :_find :find
+    def find
+      _find {|value| yield(@map_proc.call(value))}
+    end
     
     def class
       Array

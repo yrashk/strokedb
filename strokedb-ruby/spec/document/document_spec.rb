@@ -141,7 +141,6 @@ describe "Document", :shared => true do
   end
   
   it "should convert Symbol values to String instantly (including Symbol usage in structures)" do
-    pending
     @document.symbol_slot = :a
     @document.symbol_slot.should == "a"
     @document.symbol_slot = [[:a]]
@@ -170,7 +169,6 @@ describe "Document", :shared => true do
   it "should convert Meta values to Documents instantly" do
     @document.meta_slot = Meta
     @document.meta_slot.should == Meta.document(@document.store)
-    pending
     @document.metas_slot = [Meta]
     @document.metas_slot.should == [Meta.document(@document.store)]
   end

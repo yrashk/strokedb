@@ -6,7 +6,7 @@ module StrokeDB
       attr_reader :association_owner, :association_slotname
       def <<(doc)
         # first, we have to find the correct meta
-        meta = @association_owner.metas.find{|m| m["has_many_#{@association_slotname}"] }
+        meta = @association_owner[:__meta__].find{|m| m["has_many_#{@association_slotname}"] }
         doc[meta.name.downcase] = @association_owner
         doc.save!
         self
