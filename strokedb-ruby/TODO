@@ -19,11 +19,11 @@ To be done before 0.1 ("Praha"):
 [.] Refactor associations
 [ ] Add Document::Versions#first, #head
 [.] Add few validations
-[?] Add sorting primitives for search functionality
 [ ] Document#to_xml can't work with arrays for some reason
 
 To be done later:
 
+[?] Add sorting primitives for search functionality
 [ ] Memory-based storage with permanent log?
 [ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
 [ ] New uuid-based versions caused some slow down, too
