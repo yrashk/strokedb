@@ -485,15 +485,21 @@ describe "Document with single meta" do
 
   before(:each) do
     @store = setup_default_store
-    @meta = Document.new(@store)
-    @store.should_receive(:find).with(@meta.uuid).any_number_of_times.and_return(@meta)
-    
-    @document = Document.new(@store, :__meta__ => @meta)
-    @store.should_receive(:exists?).with(@document.uuid).any_number_of_times.and_return(false)
+    setup_default_store
+    setup_index
+    @meta = Document.create!(@store)
+    @document = Document.create!(@store, :__meta__ => @meta)
+  end
+  
+  it "but specified within array should return single meta which should be mutable" do
+    @document = Document.create!(@store, :__meta__ => [@meta])
+    @document.meta.should == @meta
+    @document.meta.should be_mutable
   end
 
-  it "should return single meta" do
+  it "should return single meta which should be mutable" do
     @document.meta.should == @meta
+    @document.meta.should be_mutable
   end
 
 end 
@@ -532,7 +538,7 @@ describe "Document with multiple metas" do
   
   it "should make single merged meta immutable" do
     meta = @document.meta
-    meta.should be_a_kind_of(ImmutableDocument)
+    meta.should_not be_mutable
   end
   
   it "should be able to return metas collection" do

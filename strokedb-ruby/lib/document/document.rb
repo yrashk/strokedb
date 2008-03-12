@@ -443,6 +443,7 @@ module StrokeDB
     def meta
       _meta = self[:__meta__]
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
+      return _meta.first if _meta.size == 1
       _metas = _meta.to_a
       shifted = _metas.shift
       if shifted.is_a?(String)
@@ -542,6 +543,10 @@ module StrokeDB
     def make_immutable!
       extend(ImmutableDocument)
       self
+    end
+    
+    def mutable?
+      true
     end
 
     def method_missing(sym,*args,&block) #:nodoc:
@@ -668,6 +673,10 @@ module StrokeDB
   #
   module ImmutableDocument
 
+    def mutable?
+      false
+    end
+    
     def save!
     end
 
