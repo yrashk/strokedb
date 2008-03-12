@@ -45,8 +45,9 @@ module StrokeDB
           meta = _t.join('::') 
         end
         @args.last.reverse_merge!({"has_many_#{slotname}" => { :reference_slotname => reference_slotname, :through => through, :meta => meta, :query => query, :extend_with => extend_with } })
-        define_method(slotname) do 
-          _has_many_association(slotname)
+        define_method(slotname) do |*args|
+          arg = args.empty? ? {} : args.first
+          _has_many_association(slotname,arg)
         end
 
       end
@@ -56,13 +57,13 @@ module StrokeDB
     private 
 
     def initialize_associations
-      define_method(:_has_many_association) do |slotname|
+      define_method(:_has_many_association) do |slotname,additional_query|
         slot_has_many = meta["has_many_#{slotname}"]
         reference_slotname = slot_has_many[:reference_slotname]
         through = slot_has_many[:through]
         meta = slot_has_many[:meta]
         query = slot_has_many[:query]
-        effective_query = query.merge(:__meta__ => meta.constantize.document, reference_slotname => self)
+        effective_query = query.merge(:__meta__ => meta.constantize.document, reference_slotname => self).merge(additional_query)
         result = store.search(effective_query).map do |d| 
           begin
             through.each { |t| d = d.send(t) }

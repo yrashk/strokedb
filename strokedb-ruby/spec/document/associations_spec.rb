@@ -18,7 +18,7 @@ describe "Playlist.has_many :songs association" do
     song = Song.create!(:playlist => playlist)
     playlist.songs.should == [song]
   end
-  
+
   it "should not fail if Song document has no :playlist slot" do
     playlist = Playlist.create!
     song = Song.create!
@@ -110,8 +110,14 @@ describe "Playlist.has_many :songs association" do
       s.should have_slot(:name) 
     end
   end
-
   
+  it "should be able to filter associated documents" do
+    playlist = Playlist.create!
+    rock_song = Song.create!(:playlist => playlist, :genre => 'Rock')
+    pop_song = Song.create!(:playlist => playlist, :genre => 'Pop')
+    playlist.songs(:genre => 'Rock').should == [rock_song]
+    playlist.songs(:genre => 'Pop').should == [pop_song]
+  end
   
 end
 
