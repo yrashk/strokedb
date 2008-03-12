@@ -9,7 +9,7 @@ module StrokeDB
       @meta_name = meta_name
     end
   end
-  class SlotNotFoundError < Exception  #:nodoc:
+  class SlotNotFoundError < StandardError  #:nodoc:
     attr_reader :slotname
     def initialize(slotname)
       @slotname = slotname
