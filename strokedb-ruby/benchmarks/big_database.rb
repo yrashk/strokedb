@@ -18,7 +18,7 @@ def test_cut_level(bm, n, cutlevel, &block)
   end
 end
 
-N = 10_000
+N = 2_000
 
 puts "Creating #{N} documents..."
 
