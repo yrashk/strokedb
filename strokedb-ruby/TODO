@@ -7,7 +7,6 @@ Completed items are removed.
 
 To be done before 0.1 ("Praha"):
 
-[ ] Make Document#metas behave like [:__meta__] in terms of loading DocRefVals
 [ ] Spec Store#exists?
 [ ] Improve PointQuery (I really don't like it)
 [ ] Spec SS#autosync
