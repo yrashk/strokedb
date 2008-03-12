@@ -119,6 +119,27 @@ describe "Playlist.has_many :songs association" do
     playlist.songs.find(:genre => 'Pop').should == [pop_song]
   end
   
+  it "should be able to instantiate new document" do
+    playlist = Playlist.create!
+    song = playlist.songs.new(:name => 'My song')
+    song.name.should == 'My song'
+    song.playlist.should == playlist
+    song.should be_a_kind_of(Document)
+    song.should be_new
+    song.save!
+    playlist.songs.should == [song]
+  end
+
+  it "should be able to create new document" do
+    playlist = Playlist.create!
+    song = playlist.songs.create!(:name => 'My song')
+    song.name.should == 'My song'
+    song.playlist.should == playlist
+    song.should be_a_kind_of(Document)
+    song.should_not be_new
+    playlist.songs.should == [song]
+  end
+  
 end
 
 describe "Namespace::Playlist.has_many :songs association" do

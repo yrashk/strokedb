@@ -4,16 +4,32 @@ module StrokeDB
 
     module HasManyAssociation
       attr_reader :association_owner, :association_slotname
+      def new(slots={})
+        association_meta.constantize.new(association_owner.store,slots.merge({association_reference_slotname => association_owner}))
+      end
+
+      def create!(slots={})
+        new(slots).save!
+      end
+      
       def find(query={})
         association_owner._has_many_association(association_slotname,query)
       end
       def <<(doc)
-        # first, we have to find the correct meta
-        meta = association_owner.metas.find{|m| m["has_many_#{association_slotname}"] }
-        doc[meta.name.downcase] = association_owner
-        doc.save!
+        doc.update_slots! association_reference_slotname => association_owner
         self
       end
+      
+      private 
+
+      def association_reference_slotname
+        association_owner.meta["has_many_#{association_slotname}"][:reference_slotname]
+      end
+
+      def association_meta
+        association_owner.meta["has_many_#{association_slotname}"][:meta]
+      end
+
     end
 
     def has_many(slotname,opts={},&block)
