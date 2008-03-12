@@ -6,7 +6,7 @@ module StrokeDB
     def initialize(opts={})
       opts = opts.stringify_keys
       @chunk_storage = opts['storage']
-      @cut_level = opts['cut_level'] || 8
+      @cut_level = opts['cut_level'] || 4
       @index_store = opts['index']
       autosync! unless opts['noautosync']
       raise "Missing chunk storage" unless @chunk_storage
