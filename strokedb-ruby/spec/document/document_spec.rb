@@ -239,6 +239,11 @@ describe "New Document" do
     reloaded_doc.should be_new
   end
   
+  it "should be both first and head version" do
+    @document.__versions__.first.should == @document
+    @document.__versions__.head.should == @document
+  end
+  
   it_should_behave_like "Document"
 
 end
@@ -451,8 +456,28 @@ describe "Document with previous version" do
     @document.__versions__[@document.__previous_version__].should == prev_version
     @document.__versions__.previous.should == prev_version
   end
+  
+  it "should be able to access first version" do
+    @document.__versions__.first.should == @document.__versions__.previous
+  end
 
 end
+
+describe "Non-head version of document" do
+  before(:each) do
+    @store = setup_default_store
+    @document = Document.create!
+    @document.new_slot = 1
+    @document.save!
+    @non_head_document = @document.__versions__.previous
+  end
+  
+  it "should be able to access head version" do
+    @non_head_document.__versions__.head.should == @document
+  end
+  
+end
+
 
 
 

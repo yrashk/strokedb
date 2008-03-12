@@ -75,6 +75,21 @@ module StrokeDB
       def current
         document.new? ? document.clone.extend(VersionedDocument) : self[document.__version__]
       end
+      
+      #
+      # Get head version of document
+      #
+      def head
+        document.new? ? document.clone.extend(VersionedDocument) : document.store.find(document.uuid)
+      end
+      
+      #
+      # Get first version of document
+      #
+      def first
+        document.new? ? document.clone.extend(VersionedDocument) : self[all_preceding_versions.last]
+      end
+      
 
 
       #
