@@ -16,7 +16,6 @@ To be done before 0.1 ("Praha"):
 [.] Refactor callback stuff in Document
 [.] Refactor associations
 [.] Add few validations
-[ ] Document#to_xml can't work with arrays for some reason
 
 To be done later:
 
