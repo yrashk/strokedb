@@ -50,8 +50,7 @@ module StrokeDB
     end
     
     def empty?
-      @file.seek(HEADER_SIZE)
-      @file.read(map_size).unpack("C").uniq == [0]
+      available_capacity == capacity
     end
 
     def record_size
