@@ -8,17 +8,18 @@ module StrokeDB
   class DocumentReferenceValue < String
     attr_reader :str
     attr_accessor :doc
-    def initialize(str,doc)
+    def initialize(str,doc,__cached_value = nil)
       @str, @doc = str, doc
+      @cached_value = __cached_value
       super(str)
     end
     def load
       case self
       when /@##{UUID_RE}.#{VERSION_RE}/
         if doc.head?
-          @cached_value || @cached_value = doc.store.find($1) || "@##{$1}.#{$2}"
+          @cached_value || @cached_value = doc.store.find($1) || self
         else
-          @cached_value || @cached_value = doc.store.find($1,$2) || "@##{$1}.#{$2}"
+          @cached_value || @cached_value = doc.store.find($1,$2) || self
         end
       end
     end
@@ -50,7 +51,7 @@ module StrokeDB
     end
 
     def value=(v)
-      @value = decode_value(enforce_collections(encode_value(v,true)))
+      @value = decode_value(enforce_collections(encode_value(v,true),true))
     end
 
     def value
@@ -82,7 +83,7 @@ module StrokeDB
     def encode_value(v,skip_documents=false)
       case v
       when Document
-        skip_documents ? v : DocumentReferenceValue.new(v.__reference__,doc) 
+        skip_documents ? v : DocumentReferenceValue.new(v.__reference__,doc,v) 
       when Module
         v.document(doc.store)
       when Array
@@ -131,15 +132,15 @@ module StrokeDB
       end
     end
     
-    def enforce_collections(v)
+    def enforce_collections(v,skip_documents = false)
       return v unless v.is_a?(Array) || v.is_a?(Hash)
       case v
       when Array
-        v.map{|v| enforce_collections(encode_value(v))}
+        v.map{|v| enforce_collections(encode_value(v,skip_documents))}
       when Hash
         h = {}
         v.each_pair do |k,v|
-          h[enforce_collections(encode_value(k))] = enforce_collections(encode_value(v))
+          h[enforce_collections(encode_value(k,skip_documents))] = enforce_collections(encode_value(v,skip_documents))
         end
         h
       end
