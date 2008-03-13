@@ -7,7 +7,6 @@ Completed items are removed.
 
 To be done before 0.1 ("Praha"):
 
-[ ] Spec Store#exists?
 [ ] Spec SS#autosync
 [.] Spec RemoteStore::DRb
 [ ] Refactor Document#meta, it is a total crap now

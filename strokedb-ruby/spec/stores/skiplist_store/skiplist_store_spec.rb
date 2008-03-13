@@ -89,6 +89,27 @@ describe "Non-empty chunk store" do
     @store.should_not be_empty
   end
 
+  it "should report existing document as such" do
+    @store.exists?(@documents.first.uuid).should == true
+  end
+
+  it "should report existing versioned document as such" do
+    @store.exists?(@documents.first.uuid,@documents.first.__version__).should == true
+  end
+
+  it "should report versioned document that does not exist as such" do
+    @store.exists?(@documents.first.uuid,'ouch, there is no way such version could be generated').should == false
+  end
+
+  it "should report document that does not exist as such" do
+    @store.exists?('ouch, there is no way such UUID could be generated').should == false
+  end
+
+  it "should find a document" do
+    (doc = @store.find(@documents.first.uuid)).should == @documents.first
+    doc.should_not be_a_kind_of(VersionedDocument)
+  end
+
   it "should find a versioned document" do
     (doc = @store.find(@documents.first.uuid,@documents.first.__version__)).should == @documents.first
     doc.should be_a_kind_of(VersionedDocument)
