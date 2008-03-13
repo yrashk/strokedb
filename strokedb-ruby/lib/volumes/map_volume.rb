@@ -49,6 +49,10 @@ module StrokeDB
       byte & (1 << (position % 8)) == 0
     end
     
+    def empty?
+      @file.seek(HEADER_SIZE)
+      @file.read(map_size).unpack("C").uniq == [0]
+    end
 
     def record_size
       @options['record_size']
@@ -125,6 +129,7 @@ module StrokeDB
         byte_offset = byte.to_s(2).ljust(8,'0').index('0')
         return byte_num*8 + byte_offset
       end
+      nil
     end
         
     def decrement_available_capacity!(position)

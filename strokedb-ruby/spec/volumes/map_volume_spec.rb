@@ -90,6 +90,10 @@ describe "New MapVolume" do
     @map_volume.available_capacity.should == 1000
   end
   
+  it "should be empty" do
+    @map_volume.should be_empty
+  end
+  
   it_should_behave_like "MapVolume"
   
 end
@@ -112,6 +116,10 @@ describe "Existing MapVolume" do
 
   it "should not have all capacity available" do
     @map_volume.available_capacity.should < 1000
+  end
+
+  it "should not be empty" do
+    @map_volume.should_not be_empty
   end
 
   it_should_behave_like "MapVolume"
