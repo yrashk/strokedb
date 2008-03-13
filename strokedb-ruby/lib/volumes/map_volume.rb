@@ -44,9 +44,7 @@ module StrokeDB
     end
     
     def available?(position)
-      @file.seek(HEADER_SIZE + position/8)
-      byte = read_byte
-      byte & (1 << (position % 8)) == 0
+      read_map_byte(position) & (1 << (position % 8)) == 0
     end
     
     def empty?
@@ -133,30 +131,25 @@ module StrokeDB
         
     def decrement_available_capacity!(position)
       @available_capacity -= 1
-      # update map
-      @file.seek(HEADER_SIZE + position/8)
-      byte = read_byte
-      byte = byte | 1 << (position % 8)
-      @file.seek(HEADER_SIZE + position/8)
-      @file.write([byte].pack('C'))
-      #
+      update_map_byte(position) {|byte| byte | 1 << (position % 8) }
       write_file_header!
     end
 
     def increment_available_capacity!(position)
       @available_capacity += 1
-      # update map
-      @file.seek(HEADER_SIZE + position/8)
-      byte = read_byte
-      byte = byte & (255 ^ (1 << (position % 8)))
-      @file.seek(HEADER_SIZE + position/8)
-      @file.write([byte].pack('C'))
-      #
+      update_map_byte(position) {|byte| byte & (255 ^ (1 << (position % 8))) }
       write_file_header!
     end
-    
-    def read_byte
-       @file.readbytes(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
+
+    def update_map_byte(position)
+      byte = yield(read_map_byte(position))
+      @file.seek(HEADER_SIZE + position/8)
+      @file.write([byte].pack('C'))
+    end
+   
+    def read_map_byte(position)
+      @file.seek(HEADER_SIZE + position/8)
+      @file.readbytes(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
     end
 
   end
