@@ -63,7 +63,13 @@ describe "MapVolume", :shared => true do
     position = @map_volume.insert!("A"*256)
     @map_volume.write!(position,"B"*256).should == position
     @map_volume.read(position).should == "B"*256
-  end
+  end  
+
+  it "should be able to write record at specified position if there is no record yet" do
+    @map_volume.write!(0,"O"*256).should == 0
+    @map_volume.available?(0).should == false
+  end  
+  
 
 end
 

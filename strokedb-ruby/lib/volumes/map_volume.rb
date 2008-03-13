@@ -22,12 +22,12 @@ module StrokeDB
 
     def insert!(record)
       position = find_first_available_position
-      decrement_available_capacity!(position)
       write!(position,record)
     end
     
     def write!(position,record)
       raise InvalidRecordSizeError if record.size != record_size
+      decrement_available_capacity!(position) if available?(position)
       @file.seek(HEADER_SIZE + map_size + position*record_size)
       @file.write(record)
       position
@@ -42,6 +42,13 @@ module StrokeDB
     def delete!(position)
       increment_available_capacity!(position)
     end
+    
+    def available?(position)
+      @file.seek(HEADER_SIZE + position/8)
+      byte = read_byte
+      byte & (1 << (position % 8)) == 0
+    end
+    
 
     def record_size
       @options['record_size']
@@ -119,13 +126,7 @@ module StrokeDB
         return byte_num*8 + byte_offset
       end
     end
-    
-    def available?(position)
-      @file.seek(HEADER_SIZE + position/8)
-      byte = read_byte
-      byte & (1 << (position % 8)) == 0
-    end
-    
+        
     def decrement_available_capacity!(position)
       @available_capacity -= 1
       # update map
