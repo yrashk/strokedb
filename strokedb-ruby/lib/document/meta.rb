@@ -121,7 +121,7 @@ module StrokeDB
         @args = m.instance_variable_get(:@args)
         make_document(store)
       end
-      metadocs.size > 1 ? metadocs.inject { |a,b| a + b} : metadocs.first
+      metadocs.size > 1 ? metadocs.inject { |a,b| a + b}.make_immutable! : metadocs.first
     end
 
     private

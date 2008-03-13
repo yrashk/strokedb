@@ -193,8 +193,8 @@ module StrokeDB
         s = "#<"
       end
       Util.catch_circular_reference(self) do
-        if self[:__meta__] && meta[:name] 
-          s << "#{meta.name} "
+        if self[:__meta__] && name = meta[:name]
+          s << "#{name} "
         else
           s << "Doc "
         end
@@ -340,30 +340,17 @@ module StrokeDB
       _meta = self[:__meta__]
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
       return _meta.first if _meta.size == 1
-      _metas = _meta.to_a
-      shifted = _metas.shift
-      if shifted.is_a?(String)
-        unless shifted.is_a?(DocumentReferenceValue)
-          shifted = DocumentReferenceValue.new(shifted,self)
-        end
-        shifted.doc = self
-        shifted = shifted.load 
-      end
-      collected_meta = Document.new(@store,shifted.to_raw.except('uuid','__version__','__previous_version__'))
+      _metas = _meta.clone
+      collected_meta = _metas.shift.clone
       names = []
       names = collected_meta.name.split(',') if collected_meta && collected_meta[:name]
       _metas.each do |next_meta|
-        if next_meta.is_a?(String)
-          unless next_meta.is_a?(DocumentReferenceValue)
-            next_meta = DocumentReferenceValue.new(next_meta,self)
-          end
-          next_meta.doc = self
-          next_meta = next_meta.load 
-        end
+        next_meta = next_meta.clone
         collected_meta += next_meta
         names << next_meta.name if next_meta[:name] 
       end
       collected_meta.name = names.uniq.join(',')
+      collected_meta.update_slots(:uuid => Util.random_uuid)
       collected_meta.make_immutable!
     end
 
@@ -539,7 +526,7 @@ module StrokeDB
 
     def update_version!(slotname)
       if @saved && slotname != '__version__' && slotname != '__previous_version__'
-        self[:__previous_version__] = __version__
+        self[:__previous_version__] = __version__ unless __version__.nil?
         generate_new_version!
         @saved = nil
       end
