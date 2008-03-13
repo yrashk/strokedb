@@ -24,14 +24,13 @@ module StrokeDB
       position = find_first_available_position
       decrement_available_capacity!(position)
       write!(position,record)
-      position
     end
     
     def write!(position,record)
       raise InvalidRecordSizeError if record.size != record_size
       @file.seek(HEADER_SIZE + map_size + position*record_size)
       @file.write(record)
-      record
+      position
     end
     
     def read(position)
