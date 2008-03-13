@@ -8,9 +8,8 @@ Completed items are removed.
 To be done before 0.1 ("Praha"):
 
 [ ] Spec Store#exists?
-[ ] Improve PointQuery (I really don't like it)
 [ ] Spec SS#autosync
-[ ] Spec RemoteStore::DRb
+[.] Spec RemoteStore::DRb
 [ ] Refactor Document#meta, it is a total crap now
 [ ] Refactor Meta#document, fix bugs
 [.] Refactor callback stuff in Document
@@ -19,6 +18,7 @@ To be done before 0.1 ("Praha"):
 
 To be done later:
 
+[ ] Improve PointQuery (I really don't like it)
 [?] Add sorting primitives for search functionality
 [ ] Memory-based storage with permanent log?
 [ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
