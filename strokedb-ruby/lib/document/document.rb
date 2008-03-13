@@ -360,7 +360,6 @@ module StrokeDB
           next_meta.doc = self
           next_meta = next_meta.load 
         end
-        next_meta = Document.new(@store,next_meta.to_raw.except('uuid','__version__','__previous_version__'))
         collected_meta += next_meta
         names << next_meta.name if next_meta[:name] 
       end
