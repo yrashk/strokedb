@@ -6,6 +6,9 @@ module StrokeDB
   
   class InvalidRecordPositionError < Exception
   end
+  
+  class MapVolumeCapacityExceeded < Exception
+  end
 
   class MapVolume
 
@@ -21,6 +24,7 @@ module StrokeDB
     end
 
     def insert!(record)
+      raise MapVolumeCapacityExceeded if available_capacity == 0
       position = find_first_available_position
       write!(position,record)
     end

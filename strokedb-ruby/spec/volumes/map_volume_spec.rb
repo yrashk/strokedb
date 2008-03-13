@@ -7,7 +7,7 @@ describe "MapVolume", :shared => true do
   end
   
   it "should have capacity" do
-    @map_volume.capacity.should == 1000
+    @map_volume.capacity.should == 100
   end
   
   it "should insert record of proper size" do
@@ -23,7 +23,7 @@ describe "MapVolume", :shared => true do
   end
 
   it "should return different positions for each insertion" do
-    positions = (1..100).map { @map_volume.insert!("A"*256) }
+    positions = (1..50).map { @map_volume.insert!("A"*256) }
     positions.uniq.should == positions
   end
   
@@ -70,6 +70,11 @@ describe "MapVolume", :shared => true do
     @map_volume.available?(0).should == false
   end  
   
+  it "should raise an exception when capacity is exceeded" do
+    @map_volume.available_capacity.times { @map_volume.insert!("C"*256) }
+    lambda { @map_volume.insert!("E"*256) }.should raise_error(MapVolumeCapacityExceeded)
+  end
+  
 
 end
 
@@ -78,7 +83,7 @@ describe "New MapVolume" do
   before(:each) do
     @path = File.dirname(__FILE__) + '/../../test/storages/map.volume'
     File.unlink(@path) if File.exists?(@path)
-    @map_volume = MapVolume.new(:path => @path, :record_size => 256, :capacity => 1000)
+    @map_volume = MapVolume.new(:path => @path, :record_size => 256, :capacity => 100)
   end
   
   after(:each) do
@@ -87,7 +92,7 @@ describe "New MapVolume" do
   end
   
   it "should have all capacity available" do
-    @map_volume.available_capacity.should == 1000
+    @map_volume.available_capacity.should == 100
   end
   
   it "should be empty" do
@@ -103,7 +108,7 @@ describe "Existing MapVolume" do
   before(:each) do
     @path = File.dirname(__FILE__) + '/../../test/storages/map.volume'
     File.unlink(@path) if File.exists?(@path)
-    @map_volume = MapVolume.new(:path => @path, :record_size => 256, :capacity => 1000)
+    @map_volume = MapVolume.new(:path => @path, :record_size => 256, :capacity => 100)
     position = @map_volume.insert!(' '*256)
     @map_volume.close!
     @map_volume = MapVolume.new(:path => @path)
@@ -115,7 +120,7 @@ describe "Existing MapVolume" do
   end
 
   it "should not have all capacity available" do
-    @map_volume.available_capacity.should < 1000
+    @map_volume.available_capacity.should < 100
   end
 
   it "should not be empty" do
