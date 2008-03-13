@@ -9,7 +9,7 @@ To be done before 0.1 ("Praha"):
 
 [ ] Spec SS#autosync
 [.] Spec RemoteStore::DRb
-[ ] Refactor Document#meta, it is a total crap now
+[.] Refactor Document#meta
 [ ] Refactor Meta#document, fix bugs
 [.] Refactor callback stuff in Document
 [.] Refactor associations
