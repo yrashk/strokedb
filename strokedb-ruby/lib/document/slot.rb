@@ -55,12 +55,7 @@ module StrokeDB
     end
 
     def value
-      if @value.is_a?(DocumentReferenceValue) 
-        @value.doc = doc
-        @value.load 
-      else
-        @value
-      end
+      @value.is_a?(DocumentReferenceValue) ? @value.load : @value
     end
 
     def to_raw
