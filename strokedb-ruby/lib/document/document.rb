@@ -350,7 +350,6 @@ module StrokeDB
         names << next_meta.name if next_meta[:name] 
       end
       collected_meta.name = names.uniq.join(',')
-      collected_meta.update_slots(:uuid => Util.random_uuid)
       collected_meta.make_immutable!
     end
 
