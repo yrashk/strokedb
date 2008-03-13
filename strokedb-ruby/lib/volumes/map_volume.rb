@@ -149,7 +149,7 @@ module StrokeDB
    
     def read_map_byte(position)
       @file.seek(HEADER_SIZE + position/8)
-      @file.readbytes(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
+      @file.read(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
     end
 
   end
