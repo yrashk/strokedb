@@ -1,10 +1,4 @@
 module StrokeDB
-  class InvalidMetaDocumentError < Exception  #:nodoc:
-    attr_reader :meta_name
-    def initialize(meta_name)
-      @meta_name = meta_name
-    end
-  end
   class SlotNotFoundError < StandardError  #:nodoc:
     attr_reader :slotname
     def initialize(slotname)
@@ -60,7 +54,7 @@ module StrokeDB
           push meta.document(@document.store)
           _module = meta
         else
-          raise InvalidMetaDocumentError.new # FIXME: may be we should use another Error?
+          raise ArgumentError.new("Meta should be either document or meta module")
         end
         if _module
           @document.extend(_module)
