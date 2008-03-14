@@ -9,6 +9,9 @@ module StrokeDB
   
   class MapVolumeCapacityExceeded < Exception
   end
+  
+  class InvalidMapVolumeError < Exception
+  end
 
   class MapVolume
 
@@ -87,7 +90,12 @@ module StrokeDB
 
     def read_file_header
       @file.seek(0)
-      header = @file.readbytes(HEADER_SIZE)
+      begin
+        header = @file.readbytes(HEADER_SIZE)
+      rescue TruncatedDataError
+        raise InvalidMapVolumeError
+      end
+      raise InvalidMapVolumeError unless header[0,4] = MAGIC_SIGNATURE
       @options['record_size'] = header[6,4].unpack("N").first
       @options['capacity'] = header[10,4].unpack("N").first
       @available_capacity = header[14,4].unpack("N").first

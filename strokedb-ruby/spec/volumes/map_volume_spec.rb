@@ -126,7 +126,27 @@ describe "Existing MapVolume" do
   it "should not be empty" do
     @map_volume.should_not be_empty
   end
-
+  
   it_should_behave_like "MapVolume"
+  
+end
+
+describe "Opening invalid file (i.e. file with invalid signature)" do
+
+  before(:each) do
+    @path = File.dirname(__FILE__) + '/../../test/storages/map.volume'
+    File.unlink(@path + ".invalid") if File.exists?(@path + ".invalid")
+    File.open(@path + ".invalid","w+") do |f|
+      f.write "Invalid file"
+    end
+  end
+
+  after(:each) do
+    File.unlink(@path + ".invalid") if File.exists?(@path + ".invalid")
+  end
+  
+  it "should fail with InvalidMapVolumeError exception" do
+    lambda { MapVolume.new(:path => @path + ".invalid") }.should raise_error(InvalidMapVolumeError)
+  end
   
 end
