@@ -124,16 +124,15 @@ module StrokeDB
       @map_size ||= ((record_size*capacity)/8)
     end
 
-    def find_first_available_position
+    def read_map
       @file.seek(HEADER_SIZE)
-      map = @file.read(map_size)
-      find_first_available_position_in_map(map)
+      @file.read(map_size)
     end
     
-    def find_first_available_position_in_map(map)
+    def find_first_available_position
       byte_num = 0
       byte = nil
-      map.each_byte do |v|  
+      read_map.each_byte do |v|  
         if v != 255
           byte = v
           break

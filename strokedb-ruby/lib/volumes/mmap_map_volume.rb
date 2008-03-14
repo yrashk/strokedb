@@ -54,8 +54,8 @@ begin
         @mmap[HEADER_SIZE,map_size] = "\x00"*map_size
       end
     
-      def find_first_available_position
-        find_first_available_position_in_map(@mmap[HEADER_SIZE,map_size])
+      def read_map
+        @mmap[HEADER_SIZE,map_size]
       end
     
       def update_map_byte(position)
