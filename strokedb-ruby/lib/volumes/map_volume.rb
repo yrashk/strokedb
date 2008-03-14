@@ -3,13 +3,13 @@ module StrokeDB
 
   class InvalidRecordSizeError < Exception
   end
-  
+
   class InvalidRecordPositionError < Exception
   end
-  
+
   class MapVolumeCapacityExceeded < Exception
   end
-  
+
   class InvalidMapVolumeError < Exception
   end
 
@@ -18,7 +18,7 @@ module StrokeDB
     HEADER_SIZE = 512
     MAGIC_SIGNATURE = "\x11\x12\x19\x81"
     VERSION = "00"
-    
+
     attr_reader :available_capacity
 
     def initialize(options = {})
@@ -31,29 +31,27 @@ module StrokeDB
       position = find_first_available_position
       write!(position,record)
     end
-    
+
     def write!(position,record)
       raise InvalidRecordSizeError if record.size != record_size
       decrement_available_capacity!(position) if available?(position)
-      @file.seek(HEADER_SIZE + map_size + position*record_size)
-      @file.write(record)
+      write_at_position!(position,record)
       position
     end
-    
+
     def read(position)
       raise InvalidRecordPositionError if available?(position)
-      @file.seek(HEADER_SIZE + map_size + position*record_size)
-      @file.read(record_size)
+      read_at_position(position)
     end
 
     def delete!(position)
       increment_available_capacity!(position)
     end
-    
+
     def available?(position)
       read_map_byte(position) & (1 << (position % 8)) == 0
     end
-    
+
     def empty?
       available_capacity == capacity
     end
@@ -80,7 +78,7 @@ module StrokeDB
       unless File.exists?(path)
         @file = File.new(path,'w+')
         @available_capacity = capacity
-        write_file_header!
+        update_file_header!
         initialize_file_map
       else
         @file = File.new(path,'r+')
@@ -100,9 +98,9 @@ module StrokeDB
       @options['capacity'] = header[10,4].unpack("N").first
       @available_capacity = header[14,4].unpack("N").first
     end
-    
-    def write_file_header!
-      header = "\x00"*HEADER_SIZE
+
+    def initialize_file_header!
+      header = "\xff"*HEADER_SIZE
       header[0,4] = MAGIC_SIGNATURE
       header[4,2] = VERSION
       header[6,4] = [record_size].pack("N")
@@ -112,6 +110,10 @@ module StrokeDB
       @file.write(header)
     end
 
+    def update_file_header!
+      initialize_file_header! # FIXME
+    end
+    
     def initialize_file_map
       map = "\x00"*map_size
       @file.seek(HEADER_SIZE)
@@ -119,7 +121,7 @@ module StrokeDB
     end
 
     def map_size
-      ((record_size*capacity)/8)
+      @map_size ||= ((record_size*capacity)/8)
     end
 
     def find_first_available_position
@@ -140,17 +142,17 @@ module StrokeDB
       end
       nil
     end
-        
+
     def decrement_available_capacity!(position)
       @available_capacity -= 1
       update_map_byte(position) {|byte| byte | 1 << (position % 8) }
-      write_file_header!
+      update_file_header!
     end
 
     def increment_available_capacity!(position)
       @available_capacity += 1
       update_map_byte(position) {|byte| byte & (255 ^ (1 << (position % 8))) }
-      write_file_header!
+      update_file_header!
     end
 
     def update_map_byte(position)
@@ -158,10 +160,20 @@ module StrokeDB
       @file.seek(HEADER_SIZE + position/8)
       @file.write([byte].pack('C'))
     end
-   
+
     def read_map_byte(position)
       @file.seek(HEADER_SIZE + position/8)
       @file.read(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
+    end
+
+    def write_at_position!(position,record)
+      @file.seek(HEADER_SIZE + map_size + position*record_size)
+      @file.write(record)
+    end
+
+    def read_at_position(position)
+      @file.seek(HEADER_SIZE + map_size + position*record_size)
+      @file.read(record_size)
     end
 
   end

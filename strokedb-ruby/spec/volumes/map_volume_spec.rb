@@ -1,6 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe "MapVolume", :shared => true do
+[MapVolume,MmapMapVolume].each do |klass|
+describe "#{klass}", :shared => true do
 
   it "should have record size" do
     @map_volume.record_size.should == 256
@@ -78,12 +79,12 @@ describe "MapVolume", :shared => true do
 
 end
 
-describe "New MapVolume" do
+describe "New #{klass}" do
   
   before(:each) do
-    @path = File.dirname(__FILE__) + '/../../test/storages/map.volume'
+    @path = File.dirname(__FILE__) + "/../../test/storages/map.volume.#{klass}"
     File.unlink(@path) if File.exists?(@path)
-    @map_volume = MapVolume.new(:path => @path, :record_size => 256, :capacity => 100)
+    @map_volume = klass.new(:path => @path, :record_size => 256, :capacity => 100)
   end
   
   after(:each) do
@@ -99,19 +100,19 @@ describe "New MapVolume" do
     @map_volume.should be_empty
   end
   
-  it_should_behave_like "MapVolume"
+  it_should_behave_like "#{klass}"
   
 end
 
 describe "Existing MapVolume" do
   
   before(:each) do
-    @path = File.dirname(__FILE__) + '/../../test/storages/map.volume'
+    @path = File.dirname(__FILE__) + "/../../test/storages/map.volume.#{klass.name.to_s.demodulize}"
     File.unlink(@path) if File.exists?(@path)
-    @map_volume = MapVolume.new(:path => @path, :record_size => 256, :capacity => 100)
+    @map_volume = klass.new(:path => @path, :record_size => 256, :capacity => 100)
     position = @map_volume.insert!(' '*256)
     @map_volume.close!
-    @map_volume = MapVolume.new(:path => @path)
+    @map_volume = klass.new(:path => @path)
   end
   
   after(:each) do
@@ -127,14 +128,14 @@ describe "Existing MapVolume" do
     @map_volume.should_not be_empty
   end
   
-  it_should_behave_like "MapVolume"
+  it_should_behave_like "#{klass}"
   
 end
 
-describe "Opening invalid file (i.e. file with invalid signature)" do
+describe "Opening invalid file with #{klass} (i.e. file with invalid signature)" do
 
   before(:each) do
-    @path = File.dirname(__FILE__) + '/../../test/storages/map.volume'
+    @path = File.dirname(__FILE__) + "/../../test/storages/map.volume.#{klass.name.to_s.demodulize}"
     File.unlink(@path + ".invalid") if File.exists?(@path + ".invalid")
     File.open(@path + ".invalid","w+") do |f|
       f.write "Invalid file"
@@ -146,7 +147,8 @@ describe "Opening invalid file (i.e. file with invalid signature)" do
   end
   
   it "should fail with InvalidMapVolumeError exception" do
-    lambda { MapVolume.new(:path => @path + ".invalid") }.should raise_error(InvalidMapVolumeError)
+    lambda { klass.new(:path => @path + ".invalid") }.should raise_error(InvalidMapVolumeError)
   end
   
+end
 end
