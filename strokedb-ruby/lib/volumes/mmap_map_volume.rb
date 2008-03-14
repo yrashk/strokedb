@@ -55,21 +55,7 @@ begin
       end
     
       def find_first_available_position
-        map = @mmap[HEADER_SIZE,map_size]
-        byte_num = 0
-        byte = map.unpack("C*").find do |v|  
-          if v != 255
-            v
-          else
-            byte_num += 1 
-            false
-          end
-        end
-        if byte 
-          byte_offset = byte.to_s(2).ljust(8,'0').index('0')
-          return byte_num*8 + byte_offset
-        end
-        nil
+        find_first_available_position_in_map(@mmap[HEADER_SIZE,map_size])
       end
     
       def update_map_byte(position)

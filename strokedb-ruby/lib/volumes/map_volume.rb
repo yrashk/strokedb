@@ -127,10 +127,16 @@ module StrokeDB
     def find_first_available_position
       @file.seek(HEADER_SIZE)
       map = @file.read(map_size)
+      find_first_available_position_in_map(map)
+    end
+    
+    def find_first_available_position_in_map(map)
       byte_num = 0
-      byte = map.unpack("C*").find do |v|  
+      byte = nil
+      map.each_byte do |v|  
         if v != 255
-          v
+          byte = v
+          break
         else
           byte_num += 1 
           false
@@ -141,6 +147,7 @@ module StrokeDB
         return byte_num*8 + byte_offset
       end
       nil
+      
     end
 
     def decrement_available_capacity!(position)
