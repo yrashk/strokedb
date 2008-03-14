@@ -151,17 +151,17 @@ module StrokeDB
 
     def decrement_available_capacity!(position)
       @available_capacity -= 1
-      update_map_byte(position) {|byte| byte | 1 << (position % 8) }
+      update_map_byte!(position) {|byte| byte | 1 << (position % 8) }
       update_file_header!
     end
 
     def increment_available_capacity!(position)
       @available_capacity += 1
-      update_map_byte(position) {|byte| byte & (255 ^ (1 << (position % 8))) }
+      update_map_byte!(position) {|byte| byte & (255 ^ (1 << (position % 8))) }
       update_file_header!
     end
 
-    def update_map_byte(position)
+    def update_map_byte!(position)
       byte = yield(read_map_byte(position))
       @file.seek(HEADER_SIZE + position/8)
       @file.write([byte].pack('C'))

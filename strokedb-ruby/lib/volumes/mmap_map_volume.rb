@@ -58,7 +58,7 @@ begin
         @mmap[HEADER_SIZE,map_size]
       end
     
-      def update_map_byte(position)
+      def update_map_byte!(position)
         byte = yield(read_map_byte(position))
         @mmap[HEADER_SIZE+position/8] = byte
       end
