@@ -14,7 +14,9 @@ module StrokeDB
   #   __meta__: [Fruit, Product]
   #   weight: 3oz
   #   color: green
-  #   price: $3  #
+  #   price: $3
+  #
+  # In document slots metas store references to metadocument.
   #
   # Document class will be extended by modules Fruit and Product.
   module Meta
