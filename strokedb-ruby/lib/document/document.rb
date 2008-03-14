@@ -1,5 +1,11 @@
 module StrokeDB
-  class SlotNotFoundError < StandardError  #:nodoc:
+  # Raised on unexisting document access.
+  #
+  # Example:
+  #
+  #  document.slot_that_does_not_exist_ever
+  #
+  class SlotNotFoundError < StandardError
     attr_reader :slotname
     def initialize(slotname)
       @slotname = slotname
@@ -37,6 +43,7 @@ module StrokeDB
       @new = content[0,1] == '1'
     end
 
+    # Collection of meta documents
     class Metas < Array  #:nodoc:
       def initialize(document)
         @document = document
