@@ -3,6 +3,8 @@ module StrokeDB
   #
   # Lazy arrays are backed by Proc returning regular array
   # on first call retrieving it from @load_with_proc.
+  #
+  # MK: TODO: think about removing of duplication.
   class LazyArray < Array
     def initialize(*args)
       @load_with_proc = proc {|v| v}
