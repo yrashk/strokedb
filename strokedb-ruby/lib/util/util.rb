@@ -1,9 +1,10 @@
 require 'digest/sha2'
 
-module StrokeDB  
+module StrokeDB
   module Util
-
     module ::Enumerable
+      # Map and each_with_index combined.
+      # TODO: think about moving it to ActiveSupport
       def map_with_index
         collected=[]
         each_with_index {|item, index| collected << yield(item, index) }
@@ -11,8 +12,9 @@ module StrokeDB
       end
       alias :collect_with_index :map_with_index
     end
-    
+
     class ::Object
+      # Uses references to documents (compared to to_raw using hashes instead)
       def to_optimized_raw
         case self
         when Array
@@ -27,13 +29,6 @@ module StrokeDB
       end
     end
 
-    class HashWithSortedKeys < Hash
-      def keys_with_sort
-        keys_without_sort.sort
-      end
-      alias_method_chain :keys, :sort
-    end
-
     def self.sha(str)
       Digest::SHA256.hexdigest(str)
     end
@@ -44,11 +39,9 @@ module StrokeDB
         ::UUID.random_create.to_s
       end
     end
-    
-    
 
     class CircularReferenceCondition < Exception ; end
-    class <<self
+    class << self
       def catch_circular_reference(value)
         stack = Thread.current['StrokeDB.reference_stack'] ||= []
         raise CircularReferenceCondition if stack.find{|v| value == v}

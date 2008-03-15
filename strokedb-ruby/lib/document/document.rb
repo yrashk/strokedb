@@ -488,12 +488,12 @@ module StrokeDB
     end
 
     def initialize_slots(slots) #:nodoc:
-      @slots = Util::HashWithSortedKeys.new
+      @slots = {}
       slots.each {|name,value| self[name] = value }
     end
 
     def initialize_raw_slots(slots) #:nodoc:
-      @slots = Util::HashWithSortedKeys.new
+      @slots = {}
       slots.each do |name,value|
         s = Slot.new(self)
         s.raw_value = value
