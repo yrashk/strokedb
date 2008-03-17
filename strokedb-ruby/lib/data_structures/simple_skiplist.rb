@@ -1,4 +1,13 @@
 require 'thread'
+# This is an optional part for RubyInline usage.
+# This must not break setup without this gem.
+begin
+  require 'rubygems'
+  require 'inline'
+rescue => e
+  STDERR.puts(e) if ENV['DEBUG']
+end
+
 module StrokeDB
   # Implements a thread-safe skiplist structure.
   # Doesn't yield new skiplists
@@ -87,12 +96,58 @@ module StrokeDB
       x
     end
     
+    begin
+      inline(:C) do |builder|
+        builder.prefix %{
+          static ID i_node_first, i_node_level;
+          #define SS_NODE_NEXT(x, level) (rb_ary_entry(rb_ary_entry(x, 0), level))
+          static int ss_node_compare(VALUE x, VALUE key)
+          {
+            if (x == Qnil) return 1;          /* tail */
+            VALUE key1 = rb_ary_entry(x, 1);
+            if (key1 == Qnil) return -1;      /* head */
+            return rb_str_cmp(key1, key);
+          }
+        }
+        builder.add_to_init %{
+          i_node_first    = rb_intern("node_first");
+          i_node_level    = rb_intern("node_level");
+        }
+        builder.c %{
+          VALUE find_nearest_node_C(VALUE key) 
+          {
+            VALUE x = rb_funcall(self, i_node_first, 0);
+            long level = FIX2LONG(rb_funcall(self, i_node_level, 1, x));
+            VALUE xnext;
+            while (level-- > 0)
+            {
+              xnext = SS_NODE_NEXT(x, level);
+              while (ss_node_compare(xnext, key) <= 0)
+              {
+                x = xnext;
+                xnext = SS_NODE_NEXT(x, level);
+              }
+            }
+            return x;
+          }
+        }
+      end
+    rescue NoMethodError => e
+      STDERR.puts(e) if ENV['DEBUG']
+    end
+    
     def find(key)
       x = find_nearest_node(key)
       return node_value(x) if node_compare(x, key) == 0
       nil # nothing found
     end
-    
+
+    def find_C(key)
+      x = find_nearest_node_C(key)
+      return node_value(x) if node_compare(x, key) == 0
+      nil # nothing found
+    end
+        
     def each
       x = node_next(node_first, 0)
       while x 
@@ -183,7 +238,7 @@ module StrokeDB
       return -1 unless x[1] # head
       x[1] <=> key
     end
-    
+        
     def node_value(x)
       x[2]
     end
@@ -226,12 +281,12 @@ if __FILE__ == $0
   include StrokeDB
   
   puts "Serialization techniques"
-  
+
   len = 10_000
-  array = (1..len).map{ [rand.to_s]*2 }
+  array = (1..len).map{ [rand(len).to_s]*2 }
   biglist = SimpleSkiplist.from_a(array)
   dumped = biglist.marshal_dump
-
+=begin
   Benchmark.bm(17) do |x|
     # First technique: to_a/from_a
     GC.start
@@ -269,11 +324,49 @@ if __FILE__ == $0
       SimpleSkiplist.allocate.marshal_load(dumped.dup)
     end
   end
-  
+=end
   puts
   puts "Find/insert techniques"
   
+  Benchmark.bm(17) do |x|
+    GC.start
+    x.report("MRI SimpleSkiplist#find      ") do 
+      100.times do
+        key = rand(len).to_s
+        biglist.find(key)
+        biglist.find(key)
+        biglist.find(key)
+        biglist.find(key)
+        biglist.find(key)
+      end
+    end
+    GC.start
+    x.report("MRI SimpleSkiplist#insert    ") do 
+      100.times do
+        key = rand(len).to_s
+        biglist.insert(key, key)
+        key = rand(len).to_s
+        biglist.insert(key, key)
+        key = rand(len).to_s
+        biglist.insert(key, key)
+        key = rand(len).to_s
+        biglist.insert(key, key)
+        key = rand(len).to_s
+        biglist.insert(key, key)
+      end
+    end
   
-  
+    GC.start
+    x.report("C SimpleSkiplist#find        ") do 
+      100.times do
+        key = rand(len).to_s
+        biglist.find_nearest_node_C(key)
+        biglist.find_nearest_node_C(key)
+        biglist.find_nearest_node_C(key)
+        biglist.find_nearest_node_C(key)
+        biglist.find_nearest_node_C(key)
+      end
+    end
+  end
 end
 
