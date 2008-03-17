@@ -92,7 +92,7 @@ module StrokeDB
       x
     end
     
-    declare_optimized_methods(:InlineC, :find_nearest_node, :find_with_update) do
+    declare_optimized_methods(:C, :find_nearest_node, :find_with_update) do
       require 'rubygems'
       require 'inline'
       inline(:C) do |builder|
@@ -112,7 +112,7 @@ module StrokeDB
           i_node_level    = rb_intern("node_level");
         }
         builder.c %{
-          VALUE find_nearest_node_InlineC(VALUE key) 
+          VALUE find_nearest_node_C(VALUE key) 
           {
             VALUE x = rb_funcall(self, i_node_first, 0);
             long level = FIX2LONG(rb_funcall(self, i_node_level, 1, x));
@@ -130,7 +130,7 @@ module StrokeDB
           }
         }
         builder.c %{
-          static VALUE find_with_update_InlineC(VALUE x, VALUE rlevel, VALUE key, VALUE update)
+          static VALUE find_with_update_C(VALUE x, VALUE rlevel, VALUE key, VALUE update)
           {
             long level = FIX2LONG(rlevel);
             VALUE xnext;
@@ -294,7 +294,7 @@ if __FILE__ == $0
   array = (1..len).map{ [rand(len).to_s]*2 }
   biglist = SimpleSkiplist.from_a(array)
   dumped = biglist.marshal_dump
-#=begin
+
   Benchmark.bm(17) do |x|
     # First technique: to_a/from_a
     GC.start
@@ -332,41 +332,13 @@ if __FILE__ == $0
       SimpleSkiplist.allocate.marshal_load(dumped.dup)
     end
   end
-#=end
+
   puts
   puts "Find/insert techniques"
-  
-  Benchmark.bm(17) do |x|
-    GC.start
-    x.report("MRI SimpleSkiplist#find      ") do 
-      100.times do
-        key = rand(len).to_s
-        biglist.find(key)
-        biglist.find(key)
-        biglist.find(key)
-        biglist.find(key)
-        biglist.find(key)
-      end
-    end
-    GC.start
-    x.report("MRI SimpleSkiplist#insert    ") do 
-      100.times do
-        key = rand(len).to_s
-        biglist.insert(key, key)
-        key = rand(len).to_s
-        biglist.insert(key, key)
-        key = rand(len).to_s
-        biglist.insert(key, key)
-        key = rand(len).to_s
-        biglist.insert(key, key)
-        key = rand(len).to_s
-        biglist.insert(key, key)
-      end
-    end
-    
-    SimpleSkiplist.optimized_with(:InlineC) do 
+  Benchmark.bm(32) do |x|
+    SimpleSkiplist.with_optimizations(:C) do |lang|
       GC.start
-      x.report("Inline C #find               ") do 
+      x.report("SimpleSkiplist#find #{lang}".ljust(32)) do 
         100.times do
           key = rand(len).to_s
           biglist.find(key)
@@ -377,7 +349,7 @@ if __FILE__ == $0
         end
       end
       GC.start
-      x.report("Inline C #insert             ") do 
+      x.report("SimpleSkiplist#insert #{lang}".ljust(32)) do 
         100.times do
           key = rand(len).to_s
           biglist.insert(key, key)

@@ -11,8 +11,8 @@ module StrokeDB
     #
     # Example: 
     #
-    #    # assume, there're methods find_InlineC and insert_InlineC
-    #    declare_optimized_methods(:InlineC, :find, :insert) { require 'bundle' }</tt>
+    #    # assume, there're methods find_C and insert_C
+    #    declare_optimized_methods(:C, :find, :insert) { require 'bundle' }</tt>
     #
     def declare_optimized_methods(lang, *meths, &block)
       meths.flatten!
@@ -29,7 +29,7 @@ module StrokeDB
     def optimized_methods(lang = nil)
       @optimized_methods ||= {}
       return @optimized_methods unless lang 
-      @optimized_methods[lang.to_s]
+      @optimized_methods[lang.to_s] || []
     end
   end
   module ClassOptimization
@@ -65,6 +65,28 @@ module StrokeDB
         yield
       ensure
         deoptimize!(lang)
+      end
+      
+      # Iterates through all the optimizations. Non-optimized
+      # mode ("pure Ruby") is yielded first. 
+      # Useful for testing and benchmarks.
+      #
+      # Example:
+      #
+      #    Klass.with_optimizations(:InlineC) do |lang|
+      #      puts "Klass#some_method is written in #{lang}"
+      #      puts Klass.new.some_method
+      #    end
+      #
+      def with_optimizations(*langs)
+        langs.flatten!
+        yield("pure Ruby")
+        langs.each do |lang|
+          optimized_with(lang) do
+            yield(lang)
+          end
+        end
+        self
       end
     end
   end
