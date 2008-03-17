@@ -1,20 +1,10 @@
 require 'thread'
 require File.expand_path(File.dirname(__FILE__) + '/../util/class_optimization')
 
-# This is an optional part for RubyInline usage.
-# This must not break setup without this gem.
-begin
-  require 'rubygems'
-  require 'inline'
-rescue => e
-  STDERR.puts(e) if ENV['DEBUG']
-end
-
 module StrokeDB
   # Implements a thread-safe skiplist structure.
   # Doesn't yield new skiplists
   class SimpleSkiplist
-    declare_optimized_methods(:InlineC, :find_nearest_node)
     include Enumerable
     
     DEFAULT_MAXLEVEL     = 32
@@ -99,7 +89,9 @@ module StrokeDB
       x
     end
     
-    begin
+    declare_optimized_methods(:InlineC, :find_nearest_node) do
+      require 'rubygems'
+      require 'inline'
       inline(:C) do |builder|
         builder.prefix %{
           static ID i_node_first, i_node_level;
@@ -135,10 +127,8 @@ module StrokeDB
           }
         }
       end
-    rescue NoMethodError => e
-      STDERR.puts(e) if ENV['DEBUG']
     end
-    
+  
     def find(key)
       x = find_nearest_node(key)
       return node_value(x) if node_compare(x, key) == 0
@@ -285,7 +275,7 @@ if __FILE__ == $0
   
   puts "Serialization techniques"
 
-  len = 10_000
+  len = 2_000
   array = (1..len).map{ [rand(len).to_s]*2 }
   biglist = SimpleSkiplist.from_a(array)
   dumped = biglist.marshal_dump
@@ -361,7 +351,7 @@ if __FILE__ == $0
     
     SimpleSkiplist.optimized_with(:InlineC) do 
       GC.start
-      x.report("C SimpleSkiplist#find        ") do 
+      x.report("Inline C SimpleSkiplist#find ") do 
         100.times do
           key = rand(len).to_s
           biglist.find(key)

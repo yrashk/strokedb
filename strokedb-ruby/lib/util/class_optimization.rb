@@ -1,18 +1,25 @@
 module StrokeDB
   class ::Class
     # Declare which methods are optimized for particular language. 
-    # It is assumed, that optimized version of a method is called
+    # It is assumed, that optimized method name looks that way: 
     # <tt>method_name_(language name)</tt>
+    #
+    # If you supply a block of code, it will be executed in a context of a class
+    # each time <tt>optimize!</tt> is called.
+    #
+    # You may add some exception handling where you call <tt>optimize!</tt>.
     #
     # Example: 
     #
     #    # assume, there're methods find_InlineC and insert_InlineC
-    #    declare_optimized_methods(:InlineC, :find, :insert)</tt>
+    #    declare_optimized_methods(:InlineC, :find, :insert) { require 'bundle' }</tt>
     #
-    def declare_optimized_methods(lang, *meths)
+    def declare_optimized_methods(lang, *meths, &block)
       meths.flatten!
       @optimized_methods ||= {}
+      @optimized_methods_init ||= {}
       @optimized_methods[lang.to_s] = meths
+      @optimized_methods_init[lang.to_s] = block
       extend ClassOptimization::ClassMethods
     end
     
@@ -32,6 +39,9 @@ module StrokeDB
       # Pure ruby methods are always accessible with suffix _PureRuby.
       #
       def optimize!(lang)
+        if block = @optimized_methods_init[lang.to_s]
+          self.instance_eval(&block)
+        end
         optimized_methods(lang).each do |meth|
           alias_method(:"#{meth}_PureRuby", :"#{meth}")
           alias_method(:"#{meth}",          :"#{meth}_#{lang}")
