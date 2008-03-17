@@ -14,7 +14,7 @@ module StrokeDB
   # Implements a thread-safe skiplist structure.
   # Doesn't yield new skiplists
   class SimpleSkiplist
-    declare_optimized_methods(:C, :find_nearest_node)
+    declare_optimized_methods(:InlineC, :find_nearest_node)
     include Enumerable
     
     DEFAULT_MAXLEVEL     = 32
@@ -117,7 +117,7 @@ module StrokeDB
           i_node_level    = rb_intern("node_level");
         }
         builder.c %{
-          VALUE find_nearest_node_C(VALUE key) 
+          VALUE find_nearest_node_InlineC(VALUE key) 
           {
             VALUE x = rb_funcall(self, i_node_first, 0);
             long level = FIX2LONG(rb_funcall(self, i_node_level, 1, x));
@@ -359,7 +359,7 @@ if __FILE__ == $0
       end
     end
     
-    SimpleSkiplist.optimize!(:C)
+    SimpleSkiplist.optimize!(:InlineC)
     
     GC.start
     x.report("C SimpleSkiplist#find        ") do 
