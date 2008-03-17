@@ -359,17 +359,17 @@ if __FILE__ == $0
       end
     end
     
-    SimpleSkiplist.optimize!(:InlineC)
-    
-    GC.start
-    x.report("C SimpleSkiplist#find        ") do 
-      100.times do
-        key = rand(len).to_s
-        biglist.find(key)
-        biglist.find(key)
-        biglist.find(key)
-        biglist.find(key)
-        biglist.find(key)
+    SimpleSkiplist.optimized_with(:InlineC) do 
+      GC.start
+      x.report("C SimpleSkiplist#find        ") do 
+        100.times do
+          key = rand(len).to_s
+          biglist.find(key)
+          biglist.find(key)
+          biglist.find(key)
+          biglist.find(key)
+          biglist.find(key)
+        end
       end
     end
   end

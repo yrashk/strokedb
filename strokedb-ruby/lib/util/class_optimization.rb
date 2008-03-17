@@ -46,6 +46,16 @@ module StrokeDB
           alias_method(:"#{meth}", :"#{meth}_PureRuby")
         end
       end
+      
+      # Executes code in a block with optimizations turned on.
+      # This ensures that appropriate <tt>deoptimize!</tt> method is called.
+      #
+      def optimized_with(lang)
+        optimize!(lang)
+        yield
+      ensure
+        deoptimize!(lang)
+      end
     end
   end
 end
