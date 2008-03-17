@@ -1,4 +1,6 @@
 require 'thread'
+require File.expand_path(File.dirname(__FILE__) + '/../util/class_optimization')
+
 # This is an optional part for RubyInline usage.
 # This must not break setup without this gem.
 begin
@@ -12,6 +14,7 @@ module StrokeDB
   # Implements a thread-safe skiplist structure.
   # Doesn't yield new skiplists
   class SimpleSkiplist
+    declare_optimized_methods(:C, :find_nearest_node)
     include Enumerable
     
     DEFAULT_MAXLEVEL     = 32
@@ -286,7 +289,7 @@ if __FILE__ == $0
   array = (1..len).map{ [rand(len).to_s]*2 }
   biglist = SimpleSkiplist.from_a(array)
   dumped = biglist.marshal_dump
-=begin
+#=begin
   Benchmark.bm(17) do |x|
     # First technique: to_a/from_a
     GC.start
@@ -324,7 +327,7 @@ if __FILE__ == $0
       SimpleSkiplist.allocate.marshal_load(dumped.dup)
     end
   end
-=end
+#=end
   puts
   puts "Find/insert techniques"
   
@@ -355,16 +358,18 @@ if __FILE__ == $0
         biglist.insert(key, key)
       end
     end
-  
+    
+    SimpleSkiplist.optimize!(:C)
+    
     GC.start
     x.report("C SimpleSkiplist#find        ") do 
       100.times do
         key = rand(len).to_s
-        biglist.find_nearest_node_C(key)
-        biglist.find_nearest_node_C(key)
-        biglist.find_nearest_node_C(key)
-        biglist.find_nearest_node_C(key)
-        biglist.find_nearest_node_C(key)
+        biglist.find(key)
+        biglist.find(key)
+        biglist.find(key)
+        biglist.find(key)
+        biglist.find(key)
       end
     end
   end
