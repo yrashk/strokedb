@@ -92,6 +92,32 @@ module StrokeDB
       x
     end
     
+    declare_optimized_methods(:Java) do
+      # Temporary off due to:
+      # ./vendor/java_inline.rb:19: cannot load Java class javax.tools.ToolProvider (NameError)
+      #
+      # require 'vendor/java_inline'
+      # inline(:Java) do |builder|
+      #   builder.package "org.jruby.strokedb"
+      #   builder.import  "java.lang.reflect.*"
+      #   builder.java %{
+      #     public static Object find_Java(String key)
+      #     {
+      #       Object o = new Object();
+      #       return o;
+      #     /*Class[] param_types = new Class[1];
+      #       param_types[0] = String;
+      #       Method method = this.getClass().getMethod("find", param_types);
+      #       Object[] invokeParam = new Object[1];
+      #       invokeParam[0] = key;
+      # 
+      #       return method.invoke(this, invokeParam);
+      #     */
+      #     }
+      #   }
+      # end
+    end
+    
     declare_optimized_methods(:C, :find_nearest_node, :find_with_update) do
       require 'rubygems'
       require 'inline'
@@ -336,7 +362,9 @@ if __FILE__ == $0
   puts
   puts "Find/insert techniques"
   Benchmark.bm(32) do |x|
-    SimpleSkiplist.with_optimizations(:C) do |lang|
+    langs = [:C]    if RUBY_PLATFORM !~ /java/
+    langs = [:Java] if RUBY_PLATFORM =~ /java/
+    SimpleSkiplist.with_optimizations(langs) do |lang|
       GC.start
       x.report("SimpleSkiplist#find #{lang}".ljust(32)) do 
         100.times do
