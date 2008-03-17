@@ -46,17 +46,7 @@ module StrokeDB
         x = node_first
         level = node_level(x)
         update = Array.new(level)
-        while level > 0
-          level -= 1
-          xnext = node_next(x, level)
-          while node_compare(xnext, key) < 0
-            x = xnext
-            xnext = node_next(x, level)
-          end
-          update[level] = x
-        end
-        
-        x = xnext
+        x = find_with_update(x, level, key, update)
         
         # rewrite existing key
   	    if node_compare(x, key) == 0
@@ -74,6 +64,19 @@ module StrokeDB
     	self
   	end
   	
+  	def find_with_update(x, level, key, update) #:nodoc:
+  	  while level > 0
+        level -= 1
+        xnext = node_next(x, level)
+        while node_compare(xnext, key) < 0
+          x = xnext
+          xnext = node_next(x, level)
+        end
+        update[level] = x
+      end
+      xnext
+	  end
+  	
     # Find is thread-safe and requires no mutexes locking.
     def find_nearest_node(key)
       x = node_first
@@ -89,7 +92,7 @@ module StrokeDB
       x
     end
     
-    declare_optimized_methods(:InlineC, :find_nearest_node) do
+    declare_optimized_methods(:InlineC, :find_nearest_node, :find_with_update) do
       require 'rubygems'
       require 'inline'
       inline(:C) do |builder|
@@ -126,6 +129,24 @@ module StrokeDB
             return x;
           }
         }
+        builder.c %{
+          static VALUE find_with_update_InlineC(VALUE x, VALUE rlevel, VALUE key, VALUE update)
+          {
+            long level = FIX2LONG(rlevel);
+            VALUE xnext;
+            while (level-- > 0)
+            {
+              xnext = SS_NODE_NEXT(x, level);
+              while (ss_node_compare(xnext, key) < 0)
+              {
+                x = xnext;
+                xnext = SS_NODE_NEXT(x, level);
+              }
+              rb_ary_store(update, level, x);
+            }
+            return xnext;
+          }
+        }
       end
     end
   
@@ -135,12 +156,6 @@ module StrokeDB
       nil # nothing found
     end
 
-    def find_C(key)
-      x = find_nearest_node_C(key)
-      return node_value(x) if node_compare(x, key) == 0
-      nil # nothing found
-    end
-        
     def each
       x = node_next(node_first, 0)
       while x 
@@ -351,7 +366,7 @@ if __FILE__ == $0
     
     SimpleSkiplist.optimized_with(:InlineC) do 
       GC.start
-      x.report("Inline C SimpleSkiplist#find ") do 
+      x.report("Inline C #find               ") do 
         100.times do
           key = rand(len).to_s
           biglist.find(key)
@@ -359,6 +374,21 @@ if __FILE__ == $0
           biglist.find(key)
           biglist.find(key)
           biglist.find(key)
+        end
+      end
+      GC.start
+      x.report("Inline C #insert             ") do 
+        100.times do
+          key = rand(len).to_s
+          biglist.insert(key, key)
+          key = rand(len).to_s
+          biglist.insert(key, key)
+          key = rand(len).to_s
+          biglist.insert(key, key)
+          key = rand(len).to_s
+          biglist.insert(key, key)
+          key = rand(len).to_s
+          biglist.insert(key, key)
         end
       end
     end
