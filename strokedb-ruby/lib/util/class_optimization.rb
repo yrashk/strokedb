@@ -36,7 +36,7 @@ module StrokeDB
     module ClassMethods
       # Switches methods into optimized versions as declared in
       # <tt>declare_optimized_methods</tt>.
-      # Pure ruby methods are always accessible with suffix _PureRuby.
+      # Pure ruby methods become accessible with suffix _PureRuby.
       #
       def optimize!(lang)
         if block = @optimized_methods_init[lang.to_s]
