@@ -8,8 +8,8 @@ module StrokeDB
   #
   #   ary = LazyArray.new.load_with { Time.now.to_s.split(/\s/) }
   #
-  #   On first attempt to access <tt>ary</tt> (including <tt>inspect</tt>) it will
-  #   evaluate load_with's Proc and update own content with its result:
+  # On first attempt to access <tt>ary</tt> (including <tt>inspect</tt>) it will
+  # evaluate load_with's Proc and update own content with its result:
   #
   #   ary
   #     # ==> ["Mon", "Mar", "17", "10:35:52", "+0200", "2008"]
