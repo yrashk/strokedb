@@ -79,5 +79,5 @@ begin
 
   end
 
-rescue
+rescue LoadError
 end
