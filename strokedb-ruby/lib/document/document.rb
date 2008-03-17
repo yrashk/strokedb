@@ -257,7 +257,18 @@ module StrokeDB
       doc
     end
 
-
+    #
+    # Find document(s) by:
+    #
+    # a) UUID
+    #
+    #    Document.find(uuid)
+    #
+    # b) search query
+    #
+    #    Document.find(:slot => "value")
+    #
+    # If first argument is Store, that particular store will be used; otherwise default store will be assumed.
     def self.find(*args)
       store = nil
       if args.empty? || args.first.is_a?(String) || args.first.is_a?(Hash)
