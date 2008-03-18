@@ -15,6 +15,9 @@ module StrokeDB
     end
   end
 
+  OPTIMIZATIONS = []
+  OPTIMIZATIONS << :C    unless RUBY_PLATFORM =~ /java/
+  OPTIMIZATIONS << :Java if     RUBY_PLATFORM =~ /java/
   
   class NoDefaultStoreError < Exception ; end
   

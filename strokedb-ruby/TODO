@@ -17,6 +17,7 @@ To be done before 0.1 ("Praha"):
 
 To be done later:
 
+[ ] Add :extension_threshold parameter to MapVolume
 [ ] Improve PointQuery (I really don't like it)
 [?] Add sorting primitives for search functionality
 [ ] Memory-based storage with permanent log?
