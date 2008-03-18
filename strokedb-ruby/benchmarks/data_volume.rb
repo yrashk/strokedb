@@ -6,7 +6,7 @@ include Benchmark
 
 @path = File.dirname(__FILE__) + "/../test/storages/data_volume"
 
-# SimpleSkiplist.optimize!(:C)
+SimpleSkiplist.optimize!(:C)
 
 [100].each do |n|
 
