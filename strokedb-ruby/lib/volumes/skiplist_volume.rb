@@ -92,18 +92,14 @@ module StrokeDB
     end
 
     def read_node(position)
-      if @nodes[position]
-        return @nodes[position]
-      end
       _node = @volume.read(position)
       level = _node[0,1].unpack('C')[0]
       node = [
-        _node[1,maxlevel*4].unpack('N*').map{|v| v == 4294967295 ? nil : read_node(v)}[0,level],
+        LazyMappingArray.new(_node[1,maxlevel*4].unpack('N*')[0,level]).map_with{|v| v == 4294967295 ? nil : read_node(v)},
         (key = _node[maxlevel*4 + 1,key_length]) == "\x00" * key_length ? nil : key,
         _node[maxlevel*4 + 1 + key_length, value_length],
         position
       ]
-      @nodes[position] = node
     end
 
 

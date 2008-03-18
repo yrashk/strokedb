@@ -78,7 +78,7 @@ module StrokeDB
       unless File.exists?(path)
         @file = File.new(path,'w+')
         @available_capacity = capacity
-        update_file_header!
+        initialize_file_header!
         initialize_file_map
       else
         @file = File.new(path,'r+')
