@@ -227,7 +227,7 @@ module StrokeDB
     # Returns string with Document's XML representation
     #
     def to_xml(opts={})
-      to_raw.to_xml({ :root => 'document', :dasherize => false}.merge(opts))
+      to_raw.to_xml({ :root => 'document', :dasherize => true}.merge(opts))
     end
 
     # Primary serialization
