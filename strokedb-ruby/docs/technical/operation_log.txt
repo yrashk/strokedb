@@ -8,7 +8,7 @@ We have 4 major mutation types:
 
 Example:
 
-[ timestamp, "create", uuid, raw_doc ]  # [10, "create", "12345678...", {'__meta__'=> ...}]
+[ timestamp, "create", uuid, raw_doc ]  # [10, "create", "12345678...", {'meta'=> ...}]
 [ timestamp, "delete", uuid ]
 [ timestamp, "update", uuid, raw_doc ]
 (or [ timestamp, "update", uuid, version_from, raw_diff ]) # TODO: find out what's easier

@@ -1,7 +1,7 @@
 module StrokeDB
   class Document
     # Versions is a helper class that is used to navigate through versions. You should not
-    # instantiate it directly, but using Document#__versions__ method
+    # instantiate it directly, but using Document#versions method
     # 
     class Versions
       attr_reader :document
@@ -25,7 +25,7 @@ module StrokeDB
       # Get current version of document
       #
       def current
-        document.new? ? document.clone.extend(VersionedDocument) : self[document.__version__]
+        document.new? ? document.clone.extend(VersionedDocument) : self[document.version]
       end
 
       #
@@ -51,7 +51,7 @@ module StrokeDB
       # Returns <tt>nil</tt> if there is no previous version
       #
       def previous
-        self[document.__previous_version__]
+        self[document.previous_version]
       end
 
       #
@@ -60,7 +60,7 @@ module StrokeDB
       # Returns an Array of version numbers
       #
       def all_versions
-        [document.__version__,*all_preceding_versions]
+        [document.version,*all_preceding_versions]
       end
 
       #
@@ -79,8 +79,8 @@ module StrokeDB
       # Returns an Array of version numbers
       #
       def all_preceding_versions
-        if previous_version = document.__previous_version__
-          [previous_version, *self[previous_version].__versions__.all_preceding_versions]
+        if previous_version = document.previous_version
+          [previous_version, *self[previous_version].versions.all_preceding_versions]
         else
           []
         end
@@ -99,7 +99,7 @@ module StrokeDB
       # Returns <tt>true</tt> if document has no previous versions
       #
       def empty?
-        document.__previous_version__.nil?
+        document.previous_version.nil?
       end
     end
   end

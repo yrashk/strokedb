@@ -82,7 +82,7 @@ module StrokeDB
         through = slot_has_many[:through]
         meta = slot_has_many[:meta]
         query = slot_has_many[:query]
-        effective_query = query.merge(:__meta__ => meta.constantize.document, reference_slotname => self).merge(additional_query)
+        effective_query = query.merge(:meta => meta.constantize.document, reference_slotname => self).merge(additional_query)
 
         result = LazyArray.new.load_with do |lazy_array|
           store.search(effective_query).map do |d| 

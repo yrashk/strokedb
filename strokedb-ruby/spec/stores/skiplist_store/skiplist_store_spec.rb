@@ -18,11 +18,11 @@ describe "Skiplist store", :shared => true  do
   
   it "should store VersionedDocument" do
     @document = Document.create! :stuff => '...'
-    vd = @document.__versions__.all.first
+    vd = @document.versions.all.first
     another_cfg = StrokeDB::Config.build :base_path => File.dirname(__FILE__) + '/../../../test/storages/skiplist_store'
     another_store = another_cfg.stores[:default]
     another_store.save!(vd)
-    another_store.find(vd.uuid,vd.__version__).should == vd
+    another_store.find(vd.uuid,vd.version).should == vd
     another_store.find(vd.uuid).should be_nil
   end
 
@@ -94,7 +94,7 @@ describe "Non-empty chunk store" do
   end
 
   it "should report existing versioned document as such" do
-    @store.exists?(@documents.first.uuid,@documents.first.__version__).should == true
+    @store.exists?(@documents.first.uuid,@documents.first.version).should == true
   end
 
   it "should report versioned document that does not exist as such" do
@@ -111,7 +111,7 @@ describe "Non-empty chunk store" do
   end
 
   it "should find a versioned document" do
-    (doc = @store.find(@documents.first.uuid,@documents.first.__version__)).should == @documents.first
+    (doc = @store.find(@documents.first.uuid,@documents.first.version)).should == @documents.first
     doc.should be_a_kind_of(VersionedDocument)
   end
 
@@ -125,7 +125,7 @@ describe "Non-empty chunk store" do
     @store.each do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.__version__}.should == @documents.sort_by {|doc| doc.__version__}
+    iterated_documents.sort_by {|doc| doc.version}.should == @documents.sort_by {|doc| doc.version}
   end
 
   it "should iterate over all stored documents and their versions if told so" do
@@ -135,11 +135,11 @@ describe "Non-empty chunk store" do
     end
     documents_with_versions = @documents.clone
     @documents.each do |doc|
-      doc.__versions__.all.each do |vd|
+      doc.versions.all.each do |vd|
         documents_with_versions << vd
       end
     end
-    iterated_documents.sort_by {|doc| doc.__version__}.should == documents_with_versions.sort_by {|doc| doc.__version__}
+    iterated_documents.sort_by {|doc| doc.version}.should == documents_with_versions.sort_by {|doc| doc.version}
   end
 
   it "should iterate over all newly stored documents if told so" do
@@ -153,7 +153,7 @@ describe "Non-empty chunk store" do
     @store.each(:after_timestamp => timestamp) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.__version__}.should == @new_documents.sort_by {|doc| doc.__version__}
+    iterated_documents.sort_by {|doc| doc.version}.should == @new_documents.sort_by {|doc| doc.version}
   end
 
   it "should iterate over all newly stored versions if told so" do
@@ -168,7 +168,7 @@ describe "Non-empty chunk store" do
     @store.each(:after_timestamp => timestamp, :include_versions => true) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.__version__}.should == (@documents + @new_documents).sort_by {|doc| doc.__version__}
+    iterated_documents.sort_by {|doc| doc.version}.should == (@documents + @new_documents).sort_by {|doc| doc.version}
   end
 
 

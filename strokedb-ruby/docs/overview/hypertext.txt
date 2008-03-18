@@ -36,8 +36,8 @@ your application to use this feature from the very start.
 
 TODO: implementation suggestions:
 1) mode for document version via VersionedDocument
-  doc.__versions__[..]        # => time-shifting/HEAD interpretation mode
-  doc.__versions__[..].strict # => strict references interpretation
+  doc.versions[..]        # => time-shifting/HEAD interpretation mode
+  doc.versions[..].strict # => strict references interpretation
 2) choose mode when reference is actually accessed:
   doc.another_doc           # => #<Reference:0x8fa78be4 ...>
   doc.another_doc.some_slot # lazily loads time-shifted document (may be HEAD)

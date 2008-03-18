@@ -11,7 +11,7 @@ module StrokeDB
   # we can express it by assigning metas to document like this:
   #
   # some_apple:
-  #   __meta__: [Fruit, Product]
+  #   meta: [Fruit, Product]
   #   weight: 3oz
   #   color: green
   #   price: $3
@@ -84,8 +84,8 @@ module StrokeDB
         Object.const_set(new_meta_name, new_meta)
         new_meta
       elsif is_a?(Document) && meta.is_a?(Document)
-        (Document.new(store,self.to_raw.except('uuid','__version__','__previous_version__'),true) +
-        Document.new(store,meta.to_raw.except('uuid','__version__','__previous_version__'),true)).extend(Meta).make_immutable!
+        (Document.new(store,self.to_raw.except('uuid','version','previous_version'),true) +
+        Document.new(store,meta.to_raw.except('uuid','version','previous_version'),true)).extend(Meta).make_immutable!
       else
         raise "Can't + #{self.class} and #{meta.class}"
       end
@@ -102,7 +102,7 @@ module StrokeDB
 
     def new(*args,&block)
       doc = Document.new(*args,&block)
-      doc[:__meta__] = []
+      doc[:meta] = []
       @metas.each {|m| doc.metas << m }
       doc
     end
@@ -117,7 +117,7 @@ module StrokeDB
       args << {} unless args.last.is_a?(Hash)
       store = args.first
       raise NoDefaultStoreError.new unless StrokeDB.default_store
-      store.search(args.last.merge(:__meta__ => @metas.map {|m| m.document(store)}))
+      store.search(args.last.merge(:meta => @metas.map {|m| m.document(store)}))
     end
 
     def find_or_create(*args)
@@ -154,11 +154,11 @@ module StrokeDB
       # Refactor this!
       args = @args.clone.map{|a| Hash === a ? a.clone : a }
       args[0] = store
-      args.last[:__meta__] = Meta.document(store)
+      args.last[:meta] = Meta.document(store)
       args.last[:name] ||= name
       meta_doc = nil
       unless uuid = args.last[:uuid]
-        meta_doc = store.search({ :name => args.last[:name], :__meta__ => Meta.document(store) }).first
+        meta_doc = store.search({ :name => args.last[:name], :meta => Meta.document(store) }).first
       else
         meta_doc = store.find(uuid)
       end
@@ -167,9 +167,9 @@ module StrokeDB
         meta_doc.extend(Meta)
         meta_doc.save!
       else
-        args.last[:__version__] = meta_doc.__version__
+        args.last[:version] = meta_doc.version
         args.last[:uuid] = meta_doc.uuid
-        unless (new_doc = Document.new(*args)).to_raw.except('__previous_version__') == meta_doc.to_raw.except('__previous_version__')
+        unless (new_doc = Document.new(*args)).to_raw.except('previous_version') == meta_doc.to_raw.except('previous_version')
           new_doc.instance_variable_set(:@saved,true)
           new_doc.send!(:update_version!,nil)
           new_doc.save!
