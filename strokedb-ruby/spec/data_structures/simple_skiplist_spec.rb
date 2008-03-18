@@ -128,6 +128,24 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
   end
   
   
+  describe "SimpleSkiplist#first_key [#{lang}]" do
+    before(:each) do
+      @maxlevel    = 8
+      @probability = 0.5
+      @list = SimpleSkiplist.new(nil, :maxlevel => @maxlevel, :probability => @probability)
+    end
+    it "should return nil for empty skiplist" do
+      @list.first_key.should == nil
+    end
+    it "should return key for non-empty skiplist" do
+      @list.insert("b", "data1")
+      @list.first_key.should == "b"
+      @list.insert("c", "data2")
+      @list.first_key.should == "b"
+    end
+  end
+  
+  
   describe "SimpleSkiplist#find_nearest [#{lang}]" do
     before(:each) do
       @maxlevel    = 8
