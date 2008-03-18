@@ -175,6 +175,10 @@ module StrokeDB
         }
       end
     end
+
+    def find_nearest(key)
+      node_value(find_nearest_node(key))
+    end
   
     def find(key)
       x = find_nearest_node(key)

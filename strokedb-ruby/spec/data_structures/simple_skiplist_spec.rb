@@ -126,7 +126,41 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       ary.size.should == 1000
     end
   end
-
+  
+  
+  describe "SimpleSkiplist#find_nearest [#{lang}]" do
+    before(:each) do
+      @maxlevel    = 8
+      @probability = 0.5
+      @list = SimpleSkiplist.new(nil, :maxlevel => @maxlevel, :probability => @probability)
+    end
+    it "should find nil in empty skiplist" do
+      @list.find_nearest("a").should == nil
+      @list.find_nearest("").should == nil
+      @list.find_nearest(nil).should == nil
+    end
+    it "should find exact value if it is present" do
+      @list.insert("b", "B")
+      @list.insert("f", "F")
+      @list.find_nearest("b").should == "B"
+      @list.find_nearest("f").should == "F"
+    end
+    it "should find nearest value or nil" do
+      @list.insert("b", "B")
+      @list.insert("f", "F")
+      @list.find_nearest("a").should == nil
+      @list.find_nearest("c").should == "B"
+      @list.find_nearest("g").should == "F"
+    end
+    it "should always find empty-string key if nothing found" do
+      @list.insert("",  "Empty")
+      @list.insert("b", "B")
+      @list.insert("f", "F")
+      @list.find_nearest("a").should == "Empty"
+      @list.find_nearest("c").should == "B"
+      @list.find_nearest("g").should == "F"
+    end
+  end
 end
 
 def raw_list(list)
