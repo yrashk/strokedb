@@ -6,7 +6,8 @@ module StrokeDB
     
     def initialize(options = {})
       @options = options.stringify_keys
-      @hindex = Index::H.new
+      FileUtils.mkdir_p @options['path']
+      @hindex = Index::H.new(@options)
       initialize_file
     end
     
@@ -34,7 +35,7 @@ module StrokeDB
     end
 
     def path
-      @options['path']
+      File.join(@options['path'],'datavol')
     end
 
     def close!

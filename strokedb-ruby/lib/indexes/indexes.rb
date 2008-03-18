@@ -6,17 +6,23 @@ module StrokeDB
     #
     class H
 
-      def initialize
-        @skiplist = SimpleSkiplist.new
+      def initialize(options = {})
+        @options = options.stringify_keys
+        @skiplist = FixedLengthSkiplistVolume.new(:path => File.join(@options['path'],'hindexvol'), 
+                                                  :key_length => 64, :value_length => 4, :capacity => 100000)
         @cache = {}
       end
       
       def insert(data,offset)
-        @skiplist.insert(Util.sha(data),offset)
+        @skiplist.insert(Util.sha(data),[offset].pack('N'))
       end
       
       def find(data)
-        @skiplist.find(Util.sha(data))
+        if result = @skiplist.find(Util.sha(data))
+          result.unpack('N')
+        else
+          nil
+        end
       end
 
 
