@@ -17,7 +17,7 @@ describe "Database search" do
     @index2.document_store = @f_store
     
     @profile_meta = Document.create!(@f_store, :name => 'Profile', 
-                                               :non_indexable_slots => [ :bio, :__version__, :__previous_version__ ])
+                                               :non_indexable_slots => [ :bio, :version, :previous_version ])
   end
   
   # Leave for investigation
@@ -26,7 +26,7 @@ describe "Database search" do
   # end
   
   it "should add new doc" do
-    doc = Document.create!(@f_store, :name => "Oleg", :state => 'Russia', :age => 21, :__meta__ => @profile_meta)
+    doc = Document.create!(@f_store, :name => "Oleg", :state => 'Russia', :age => 21, :meta => @profile_meta)
     doc.uuid.should_not be_nil
     @oleg_uuid = doc.uuid
     results = @index.find(:name => "Oleg")
@@ -35,13 +35,13 @@ describe "Database search" do
   end
   
   it "should find doc in a separate index instance" do
-    results = @index2.find(:name => "Oleg", :__meta__ => @profile_meta)
+    results = @index2.find(:name => "Oleg", :meta => @profile_meta)
     results.should_not be_empty
     results[0]["name"].should == "Oleg"
   end
   
   it "should store & find several docs" do
-    doc = Document.create!(@f_store, :name => "Yurii", :state => 'Ukraine', :__meta__ => @profile_meta)
+    doc = Document.create!(@f_store, :name => "Yurii", :state => 'Ukraine', :meta => @profile_meta)
     doc.save!
     @yura_uuid = doc.uuid
     results = @index.find(:name => "Yurii")
@@ -50,13 +50,13 @@ describe "Database search" do
   end
 
   it "should find all profiles" do
-    results = @index.find(:__meta__ => @profile_meta)
+    results = @index.find(:meta => @profile_meta)
     results.should_not be_empty
     results.map{|e| e.uuid}.to_set == [ @yura_uuid, @oleg_uuid ].to_set 
   end
   
   it "should find all profiles from Ukraine" do
-    results = @index.find(:__meta__ => @profile_meta, :state => 'Ukraine')
+    results = @index.find(:meta => @profile_meta, :state => 'Ukraine')
     results.should_not be_empty
     results.map{|e| e.uuid}.to_set == [ @yura_uuid ].to_set 
   end

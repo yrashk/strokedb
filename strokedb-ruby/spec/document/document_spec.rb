@@ -40,7 +40,7 @@ describe "Document", :shared => true do
     lambda do
       @document.remove_slot!(:new_slot)
     end.should change(@document,:slotnames)
-    (@document.slotnames - ['__previous_version__']).should == original_slotnames # TODO: check this exclusion
+    (@document.slotnames - ['previous_version']).should == original_slotnames # TODO: check this exclusion
   end
 
 
@@ -189,8 +189,8 @@ describe "Document", :shared => true do
 
   it "should be able to return current version" do
     @document.should_not be_a_kind_of(VersionedDocument)
-    @document.__versions__.current.should == @document
-    @document.__versions__.current.should be_a_kind_of(VersionedDocument)
+    @document.versions.current.should == @document
+    @document.versions.current.should be_a_kind_of(VersionedDocument)
   end
 
 
@@ -216,20 +216,20 @@ describe "New Document" do
   end
 
   it "should have version" do
-    @document.__version__.should_not be_nil
+    @document.version.should_not be_nil
   end
 
   it "should have no previous version" do
-    @document.__previous_version__.should be_nil
-    @document.__versions__.previous.should be_nil
+    @document.previous_version.should be_nil
+    @document.versions.previous.should be_nil
   end
 
-  it "should have only __version__ slotname" do
-    @document.slotnames.should == ['__version__','uuid']
+  it "should have only version slotname" do
+    @document.slotnames.to_set.should == ['version','uuid'].to_set
   end
 
   it "should have no versions" do
-    @document.__versions__.should be_empty
+    @document.versions.should be_empty
   end
 
 
@@ -240,8 +240,8 @@ describe "New Document" do
   end
 
   it "should be both first and head version" do
-    @document.__versions__.first.should == @document
-    @document.__versions__.head.should == @document
+    @document.versions.first.should == @document
+    @document.versions.head.should == @document
   end
 
   it_should_behave_like "Document"
@@ -256,7 +256,7 @@ describe "New Document with slots supplied" do
   end
 
   it "should have corresponding slotnames" do
-    @document.slotnames.to_set.should == ['slot1','slot2','__version__','uuid'].to_set
+    @document.slotnames.to_set.should == ['slot1','slot2','version','uuid'].to_set
   end
 
   it "should update slot value" do
@@ -277,20 +277,20 @@ describe "Forked documents" do
   before(:each) do
     setup_default_store
   end
-  it "should have the same __previous_version__ " do
+  it "should have the same previous_version " do
     @doc1 = Document.create!(:a => 11)
     @doc1.save!
-    @first_version = @doc1.__version__.dup
+    @first_version = @doc1.version.dup
     @doc1.a = 12
     @doc1.save!
 
     # clone
-    @doc2 = @doc1.__versions__[@first_version]
+    @doc2 = @doc1.versions[@first_version]
     @doc2.a = 21
     @doc2.save!
 
-    @doc1.__previous_version__.should == @first_version
-    @doc2.__previous_version__.should == @first_version
+    @doc1.previous_version.should == @first_version
+    @doc2.previous_version.should == @first_version
   end
 end
 
@@ -302,7 +302,7 @@ describe "Saved Document" do
   end
 
   it "should have version" do
-    @document.__version__.should match(/#{VERSION_RE}/)
+    @document.version.should match(/#{VERSION_RE}/)
   end
 
   it "should not be new" do
@@ -320,43 +320,43 @@ describe "Saved Document" do
   end
 
   it "should not change version and previous_version once not modified and saved" do
-    old_version = @document.__version__
-    old_previos_version = @document.__previous_version__
+    old_version = @document.version
+    old_previos_version = @document.previous_version
     @document.save!
-    @document.__version__.should == old_version
-    @document.__previous_version__.should == old_previos_version
+    @document.version.should == old_version
+    @document.previous_version.should == old_previos_version
   end
 
   it "should change version once modified; previous version should be set to original version" do
-    old_version = @document.__version__
+    old_version = @document.version
     @document[:a] = 1
-    @document.__version__.should_not == old_version
-    @document.__previous_version__.should == old_version
+    @document.version.should_not == old_version
+    @document.previous_version.should == old_version
   end
 
   it "should change version once Array slot is modified; previous version should be set to original version" do
     @document[:a] = []
     @document.save!
-    old_version = @document.__version__
+    old_version = @document.version
     @document[:a] << 1
-    @document.__version__.should_not == old_version
-    @document.__previous_version__.should == old_version
+    @document.version.should_not == old_version
+    @document.previous_version.should == old_version
   end
 
   it "should change version once Hash slot is modified; previous version should be set to original version" do
     @document[:a] = {}
     @document.save!
-    old_version = @document.__version__
+    old_version = @document.version
     @document[:a][:b] = 1
-    @document.__version__.should_not == old_version
-    @document.__previous_version__.should == old_version
+    @document.version.should_not == old_version
+    @document.previous_version.should == old_version
   end
 
   it "should change version once some slot is removed; previous version should be set to original version" do
-    old_version = @document.__version__
+    old_version = @document.version
     @document.remove_slot!(:some_data)
-    @document.__version__.should_not == old_version
-    @document.__previous_version__.should == old_version
+    @document.version.should_not == old_version
+    @document.previous_version.should == old_version
   end
 
   it_should_behave_like "Document"
@@ -399,7 +399,7 @@ describe "Saved VersionedDocument" do
   before(:each) do
     setup_default_store
     @document = Document.create!(:some_data => 1)
-    @versioned_document = @document.__versions__[@document.__version__]
+    @versioned_document = @document.versions[@document.version]
   end
 
   it "should not be head" do
@@ -407,7 +407,7 @@ describe "Saved VersionedDocument" do
   end
 
   it "should be reloadable" do
-    StrokeDB.default_store.should_receive(:find).with(@document.uuid,@document.__version__)
+    StrokeDB.default_store.should_receive(:find).with(@document.uuid,@document.version)
     @versioned_document.reload
   end
 
@@ -423,7 +423,7 @@ describe "VersionedDocument with references" do
     @doc3 = Document.new(:three => 3)
     @document = Document.create!(:some_link => @doc1, :some_indirect_link => [@doc2], :some_other_link => @doc3)
     @doc3.save!
-    @versioned_document = @document.__versions__[@document.__version__]
+    @versioned_document = @document.versions[@document.version]
     @versioned_document.should be_a_kind_of(VersionedDocument)
     @versioned_document.should_not be_head
   end
@@ -447,18 +447,18 @@ describe "Document with previous version" do
   end
 
   it "should have versions" do
-    @document.__version__.should_not be_empty
+    @document.version.should_not be_empty
   end
 
 
   it "should be able to access previous version" do
-    prev_version = @store.find(@document.uuid,@document.__previous_version__)
-    @document.__versions__[@document.__previous_version__].should == prev_version
-    @document.__versions__.previous.should == prev_version
+    prev_version = @store.find(@document.uuid,@document.previous_version)
+    @document.versions[@document.previous_version].should == prev_version
+    @document.versions.previous.should == prev_version
   end
 
   it "should be able to access first version" do
-    @document.__versions__.first.should == @document.__versions__.previous
+    @document.versions.first.should == @document.versions.previous
   end
 
 end
@@ -469,11 +469,11 @@ describe "Non-head version of document" do
     @document = Document.create!
     @document.new_slot = 1
     @document.save!
-    @non_head_document = @document.__versions__.previous
+    @non_head_document = @document.versions.previous
   end
 
   it "should be able to access head version" do
-    @non_head_document.__versions__.head.should == @document
+    @non_head_document.versions.head.should == @document
   end
 
 end
@@ -488,11 +488,11 @@ describe "Document with single meta" do
     setup_default_store
     setup_index
     @meta = Document.create!(@store)
-    @document = Document.create!(@store, :__meta__ => @meta)
+    @document = Document.create!(@store, :meta => @meta)
   end
 
   it "but specified within array should return single meta which should be mutable" do
-    @document = Document.create!(@store, :__meta__ => [@meta])
+    @document = Document.create!(@store, :meta => [@meta])
     @document.meta.should == @meta
     @document.meta.should be_mutable
   end
@@ -522,7 +522,7 @@ describe "Document with multiple metas" do
       end
     end
 
-    @document = Document.new(:__meta__ => @metas)
+    @document = Document.new(:meta => @metas)
   end
 
   it "should return single merged meta" do
@@ -533,7 +533,7 @@ describe "Document with multiple metas" do
     meta[1].should == 1
     meta[2].should == 2
     meta.name.should == "0,1,2"
-    @document[:__meta__].should be_a_kind_of(Array)
+    @document[:meta].should be_a_kind_of(Array)
   end
 
   it "should make single merged meta immutable" do
@@ -607,13 +607,13 @@ describe "Document with version" do
 
   it "should be equal to another document with the same version and uuid" do
     @another_document = Document.new(:some_data => 1, :uuid => @document.uuid)
-    @another_document.__version__ = @document.__version__
+    @another_document.version = @document.version
     @document.should == @another_document
   end
 
   it "should not be equal to another document with the same version but another uuid" do
     @another_document = Document.new(:some_data => 1)
-    @another_document.__version__ = @document.__version__
+    @another_document.version = @document.version
     @document.should_not == @another_document
   end
 
@@ -631,14 +631,14 @@ describe "Valid Document's JSON" do
   it "should be loadable into Document" do
     doc = Document.from_raw(@store,@decoded_json)
     doc.uuid.should == @document.uuid
-    doc.slotnames.to_set.should == ['slot1','slot2','__version__','uuid'].to_set
+    doc.slotnames.to_set.should == ['slot1','slot2','version','uuid'].to_set
   end
 
   it "should reuse cached previous version at first modification" do
     doc = Document.from_raw(@store,@decoded_json)
     doc[:hello] = 'world'
     doc[:hello] = 'world!'
-    doc[:__previous_version__].should == @document.__version__
+    doc[:previous_version].should == @document.version
   end
 
 
@@ -649,7 +649,7 @@ describe "Valid Document's JSON with meta name specified" do
   before(:each) do
     @store = setup_default_store
     @meta = Document.create!(:name => 'SomeDocument')
-    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :__meta__ => @meta)
+    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @meta)
     @json = @document.to_raw.to_json
     @decoded_json = ActiveSupport::JSON.decode(@json)
   end
@@ -681,7 +681,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     3.times do |i|
       @metas << Document.create!(@store, :name => "SomeDocument#{i}")
     end
-    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :__meta__ => @metas)
+    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @metas)
     @json = @document.to_raw.to_json
     @decoded_json = ActiveSupport::JSON.decode(@json)
   end
@@ -735,8 +735,8 @@ describe "Composite document ( result of Document#+(document) )" do
   end
 
   it "should have new version" do
-    @composite.__version__.should_not == @document1.__version__
-    @composite.__version__.should_not == @document2.__version__
+    @composite.version.should_not == @document1.version
+    @composite.version.should_not == @document2.version
   end
 
   it "should update identical slots" do

@@ -35,7 +35,7 @@ module StrokeDB
 
         def head_version(uuid)
           raw_doc = find(uuid,nil,:no_instantiation => true)
-          return raw_doc['__version__'] if raw_doc
+          return raw_doc['version'] if raw_doc
           nil
         end
 
@@ -117,7 +117,7 @@ module StrokeDB
 
         def head_version(uuid)
           raw_doc = @mutex.synchronize { find(uuid,nil,:no_instantiation => true) }
-          return raw_doc['__version__'] if raw_doc
+          return raw_doc['version'] if raw_doc
           nil
         end
 

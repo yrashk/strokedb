@@ -27,47 +27,47 @@ describe InvertedList, " with flat string attributes" do
   it "should find objects by a single attribute" do
     @il.find(:name => 'Oleg').should == [@oleg_profile[:uuid]].to_set
     @il.find(:email => 'yrashk').should == [@yrashk_profile[:uuid]].to_set
-    @il.find(:__meta__ => 'Article').should == [@article1[:uuid], @article2[:uuid]].to_set
-    @il.find(:__version__ => @article1[:slots][:__version__]).should == [@article1[:uuid]].to_set
+    @il.find(:meta => 'Article').should == [@article1[:uuid], @article2[:uuid]].to_set
+    @il.find(:version => @article1[:slots][:version]).should == [@article1[:uuid]].to_set
   end
   
   it "should not find object by a not matched attribute" do
     @il.find(:name => 'Nobody').should == [  ].to_set
-    @il.find(:__meta__ => 'NoMeta').should == [  ].to_set
-    @il.find(:__version__ => 'no-version').should == [  ].to_set
+    @il.find(:meta => 'NoMeta').should == [  ].to_set
+    @il.find(:version => 'no-version').should == [  ].to_set
   end
   
   it "should find objects by a pair of attributes" do
     @il.find(:date => '28 Jan 2008', :title => 'Hello').should == [@post1[:uuid]].to_set
-    @il.find(:date => '28 Jan 2008', :__meta__ => 'Article').should == [@article2[:uuid]].to_set
+    @il.find(:date => '28 Jan 2008', :meta => 'Article').should == [@article2[:uuid]].to_set
     @il.find(:date => '28 Jan 2008', :author => ('@#' + @yrashk_profile[:uuid])).should == [@post1[:uuid], @article2[:uuid]].to_set
   end
   
   it "should not find objects by a not matched pair of attributes" do
     @il.find(:date => '28 Jan 2008', :title => 'StrokeDB kicks ass').should == [  ].to_set
-    @il.find(:date => '28 Jan 2008', :__meta__ => 'Profile').should == [  ].to_set
+    @il.find(:date => '28 Jan 2008', :meta => 'Profile').should == [  ].to_set
     @il.find(:date => '28 Jan 2008', :author => ('@#' + @oleg_profile[:uuid])).should == [  ].to_set
   end
   
   it "should find objects by three attributes" do
     @il.find(:date     => '28 Jan 2008', 
              :author   => ('@#' + @yrashk_profile[:uuid]),
-             :__meta__ => 'Article'
+             :meta => 'Article'
              ).should == [ @article2[:uuid] ].to_set
   end
   
   it "should not find objects by not matched three attributes" do
     @il.find(:date     => '28 Jan 2008', 
              :author   => ('@#' + @oleg_profile[:uuid]),
-             :__meta__ => 'Article'
+             :meta => 'Article'
              ).should == [   ].to_set
     @il.find(:date     => '42 Jan 2008', 
              :author   => ('@#' + @yrashk_profile[:uuid]),
-             :__meta__ => 'Article'
+             :meta => 'Article'
              ).should == [   ].to_set
     @il.find(:date     => '28 Jan 2008', 
              :author   => ('@#' + @yrashk_profile[:uuid]),
-             :__meta__ => 'Profile'
+             :meta => 'Profile'
              ).should == [   ].to_set
   end
   
@@ -137,28 +137,28 @@ describe InvertedList, " with multivalue slots" do
   end
   
   it "should find multivalue objects by a single value" do
-    @il.find(:__meta__ => proc{|v| v.include? 'A' }).should == [@a[:uuid], @ab[:uuid]].to_set
-    @il.find(:__meta__ => proc{|v| v.include? 'B' }).should == [@b[:uuid], @ab[:uuid]].to_set
+    @il.find(:meta => proc{|v| v.include? 'A' }).should == [@a[:uuid], @ab[:uuid]].to_set
+    @il.find(:meta => proc{|v| v.include? 'B' }).should == [@b[:uuid], @ab[:uuid]].to_set
   end
   
   it "should not find by scalar value" do
-    @il.find(:__meta__ => 'A').should == [ ].to_set
-    @il.find(:__meta__ => 'B').should == [ ].to_set
+    @il.find(:meta => 'A').should == [ ].to_set
+    @il.find(:meta => 'B').should == [ ].to_set
   end
   
   it "should find multivalue objects with a complex predicate" do
-    @il.find(:__meta__ => proc{|v| v.include?('A') && !v.include?('B') }).should == [@a[:uuid]].to_set
-    @il.find(:__meta__ => proc{|v| v.include?('A') || v.include?('B') }).should == 
+    @il.find(:meta => proc{|v| v.include?('A') && !v.include?('B') }).should == [@a[:uuid]].to_set
+    @il.find(:meta => proc{|v| v.include?('A') || v.include?('B') }).should == 
       [@a[:uuid], @ab[:uuid], @b[:uuid]].to_set
-    @il.find(:__meta__ => proc{|v| v.include?('A') && v.include?('B') }).should == [@ab[:uuid]].to_set
+    @il.find(:meta => proc{|v| v.include?('A') && v.include?('B') }).should == [@ab[:uuid]].to_set
   end
 end
 =end
 
 
 def new_doc(meta, slots = {})
-  slots[:__meta__] = meta
-  slots[:__version__] = 'v1' + rand(10000000).to_s
+  slots[:meta] = meta
+  slots[:version] = 'v1' + rand(10000000).to_s
   {:uuid => meta.to_s + '-' + rand(1000000).to_s, :slots => slots}
 end
 

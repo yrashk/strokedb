@@ -65,11 +65,11 @@ describe "Playlist.has_many :songs association" do
     song = Song.create!(:playlist => playlist)
     playlist.name = "My playlist"
     playlist.save!
-    playlist = playlist.__versions__.previous
+    playlist = playlist.versions.previous
     playlist.should_not be_head
     song.name = "My song"
     song.save!
-    song = song.__versions__.previous
+    song = song.versions.previous
     playlist.songs.should == [song]
     playlist.songs.each do |s| 
       s.should_not be_head
@@ -102,7 +102,7 @@ describe "Playlist.has_many :songs association" do
     playlist.save!
     playlist.name = "My playlist"
     playlist.save!
-    playlist = playlist.__versions__.previous
+    playlist = playlist.versions.previous
     playlist.songs.should == [song]
     playlist.songs.each do |s| 
       s.should be_head 
