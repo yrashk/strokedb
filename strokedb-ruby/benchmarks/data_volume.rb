@@ -17,7 +17,7 @@ SimpleSkiplist.optimize!(:C)
     data_volume = DataVolume.new(:path => @path)
 
     records = []
-    n.times {|v| records << {"static" => "unique", "some_val_#{v}" => v } }
+    n.times {|v| records << {"static" => "unique", "some_val_#{v}" => v,"some_val1_#{v}" => "_#{v}", "some_valX_#{v}" => "#{v}_"   } }
     
     offsets = []
     x.report("Inserting #{n} complex different records") do

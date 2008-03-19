@@ -75,8 +75,7 @@ module StrokeDB
     end
 
     def save_node!(node)
-      node_levels = node[0]
-      node_levels = node_levels.map{|v| v.nil? ? -1 : v[-1]}
+      node_levels = node[0].map{|v| v.nil? ? -1 : v[-1]}
       packed = (node[-1,1]+node_levels).pack("CN#{node_levels.size}")
       if (szd = maxlevel - node_levels.size) > 0
         packed += "\xff\xff\xff\xff"*szd
