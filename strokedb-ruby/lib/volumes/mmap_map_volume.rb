@@ -17,10 +17,12 @@ begin
           @mmap = Mmap.new(path,'rw', Mmap::MAP_SHARED, :advice => Mmap::MADV_RANDOM)
           @available_capacity = capacity
           @mmap.extend(HEADER_SIZE+map_size)
+          self.first_available_position = 0
           initialize_file_header!
           initialize_file_map
         else
           @mmap = Mmap.new(path,'rw', Mmap::MAP_SHARED, :advice => Mmap::MADV_RANDOM)
+          self.first_available_position = -1
           read_file_header
         end
       end
