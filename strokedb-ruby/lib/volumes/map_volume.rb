@@ -118,7 +118,8 @@ module StrokeDB
     end
 
     def update_file_header!
-      initialize_file_header! # FIXME
+      @file.seek(14)
+      @file.write([available_capacity,first_available_position].pack("N2"))
     end
 
     def initialize_file_map
@@ -161,10 +162,11 @@ module StrokeDB
 
     def decrement_available_capacity!(position)
       byte = read_map_byte(position)
-      return unless byte & (1 << (position % 8)) == 0
+      mask = (1 << (position % 8))
+      return unless byte & mask  == 0
         
       @available_capacity -= 1
-      write_map_byte(position, byte | 1 << (position % 8))
+      write_map_byte(position, byte | mask)
 
       if read_map_byte(position + 1) == 255
         @first_available_position = -1
