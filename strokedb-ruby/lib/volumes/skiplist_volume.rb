@@ -76,11 +76,11 @@ module StrokeDB
 
     def save_node!(node)
       node_levels = node[0]
-      if node_levels.size < maxlevel
-        node_levels += Array.new(maxlevel - node_levels.size,nil)
-      end
-      node_levels = node_levels.map{|v| v.nil? ? -1 : v.last}
+      node_levels = node_levels.map{|v| v.nil? ? -1 : v[-1]}
       packed = (node[-1,1]+node_levels).pack("CN#{node_levels.size}")
+      if (szd = maxlevel - node_levels.size) > 0
+        packed += "\xff\xff\xff\xff"*szd
+      end
       if node[-1] == -1 # unsaved
         node[-1] = @volume.insert!(packed + node[-3] + node[-2])
       else
