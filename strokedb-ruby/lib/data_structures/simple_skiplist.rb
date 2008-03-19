@@ -40,6 +40,11 @@ module StrokeDB
       !node_next(@head, 0)
     end
     
+    def first_key
+      first = node_next(@head, 0)
+      return first ? first[1] : nil
+    end
+    
     def insert(key, value, __level = nil)
       @mutex.synchronize do
         newlevel = __level || random_level
@@ -174,6 +179,10 @@ module StrokeDB
           }
         }
       end
+    end
+
+    def find_nearest(key)
+      node_value(find_nearest_node(key))
     end
   
     def find(key)
