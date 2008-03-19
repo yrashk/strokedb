@@ -62,12 +62,17 @@ begin
     
       def update_map_byte!(position)
         byte = yield(read_map_byte(position))
-        @mmap[HEADER_SIZE+position/8] = byte
+        write_map_byte(position,byte)
       end
     
       def read_map_byte(position)
         @mmap[HEADER_SIZE+position/8]
       end
+      
+      def write_map_byte(position,byte)
+        @mmap[HEADER_SIZE+position/8] = byte
+      end
+      
 
       def write_at_position!(position,record)
         @mmap[HEADER_SIZE + map_size + position*record_size,record_size] = record

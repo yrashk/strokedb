@@ -35,7 +35,7 @@ module StrokeDB
 
     def write!(position,record)
       raise InvalidRecordSizeError if record.size != record_size
-      decrement_available_capacity!(position) if available?(position)
+      decrement_available_capacity!(position)
       write_at_position!(position,record)
       position
     end
@@ -160,12 +160,16 @@ module StrokeDB
     end
 
     def decrement_available_capacity!(position)
+      byte = read_map_byte(position)
+      return unless byte & (1 << (position % 8)) == 0
+        
       @available_capacity -= 1
-      update_map_byte!(position) {|byte| byte | 1 << (position % 8) }
+      write_map_byte(position, byte | 1 << (position % 8))
+
       if read_map_byte(position + 1) == 255
-        self.first_available_position = -1
+        @first_available_position = -1
       else
-        self.first_available_position = position + 1
+        @first_available_position = position + 1
       end
       
       update_file_header!
@@ -179,13 +183,17 @@ module StrokeDB
 
     def update_map_byte!(position)
       byte = yield(read_map_byte(position))
-      @file.seek(HEADER_SIZE + position/8)
-      @file.write([byte].pack('C'))
+      write_map_byte(position,byte)
     end
 
     def read_map_byte(position)
       @file.seek(HEADER_SIZE + position/8)
       @file.read(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
+    end
+    
+    def write_map_byte(position,byte)
+      @file.seek(HEADER_SIZE + position/8)
+      @file.write([byte].pack('C'))
     end
 
     def write_at_position!(position,record)
