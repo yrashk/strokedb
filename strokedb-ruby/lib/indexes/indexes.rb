@@ -19,7 +19,7 @@ module StrokeDB
       
       def find(data)
         if result = @skiplist.find(Util.sha(data))
-          result.unpack('N')
+          result.unpack('N').first
         else
           nil
         end

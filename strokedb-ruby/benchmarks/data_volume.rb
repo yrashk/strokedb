@@ -8,7 +8,7 @@ include Benchmark
 
 SimpleSkiplist.optimize!(:C)
 
-[100].each do |n|
+[2000].each do |n|
 
   record = "D"*512
 
@@ -25,7 +25,7 @@ SimpleSkiplist.optimize!(:C)
     end
 
     x.report("Reading #{n} complex different records") do
-      offsets.each_with_index do |offset,n| 
+      offsets.each do |offset| 
         data_volume.read(offset)  
       end
     end
@@ -35,31 +35,31 @@ SimpleSkiplist.optimize!(:C)
   end
 
 end
-# 
-# [2000].each do |n|
-# 
-#   record = "D"*512
-# 
-#   bm(60) do |x| 
-#     FileUtils.rm_rf @path
-#     data_volume = DataVolume.new(:path => @path)
-# 
-#     records = []
-#     n.times {|v| records << {"static" => "unique" } }
-#     
-#     offsets = []
-#     x.report("Inserting #{n} complex static records") do
-#       records.each {|rec| offsets << data_volume.insert!(rec) }
-#     end
-# 
-#     x.report("Reading #{n} complex static records") do
-#       offsets.each_with_index do |offset,n| 
-#         data_volume.read(offset)  
-#       end
-#     end
-#     
-#     data_volume.close!
-# 
-#   end
-# 
-# end
+
+[2000].each do |n|
+
+  record = "D"*512
+
+  bm(60) do |x| 
+    FileUtils.rm_rf @path
+    data_volume = DataVolume.new(:path => @path)
+
+    records = []
+    n.times {|v| records << {"static" => "unique" } }
+    
+    offsets = []
+    x.report("Inserting #{n} complex static records") do
+      records.each {|rec| offsets << data_volume.insert!(rec)  }
+    end
+
+    x.report("Reading #{n} complex static records") do
+      offsets.each do |offset| 
+        data_volume.read(offset)  
+      end
+    end
+    
+    data_volume.close!
+
+  end
+
+end

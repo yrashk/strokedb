@@ -79,11 +79,12 @@ module StrokeDB
       if node_levels.size < maxlevel
         node_levels += Array.new(maxlevel - node_levels.size,nil)
       end
-      node_levels = node_levels.map{|v| v.nil? ? -1 : v[-1]}.pack('N*')
+      node_levels = node_levels.map{|v| v.nil? ? -1 : v.last}
+      packed = (node[-1,1]+node_levels).pack("CN#{node_levels.size}")
       if node[-1] == -1 # unsaved
-        node[-1] = @volume.insert!(node[-1,1].pack('C') + node_levels + node[-3] + node[-2])
+        node[-1] = @volume.insert!(packed + node[-3] + node[-2])
       else
-        @volume.write!(node[-1],node[-1,1].pack('C') + node_levels + node[-3] + node[-2])
+        @volume.write!(node[-1],packed + node[-3] + node[-2])
       end
       if node[-1] == 0
         @head = node
@@ -95,7 +96,7 @@ module StrokeDB
       _node = @volume.read(position)
       level = _node[0,1].unpack('C')[0]
       node = [
-        LazyMappingArray.new(_node[1,maxlevel*4].unpack('N*')[0,level]).map_with{|v| v == 4294967295 ? nil : read_node(v)},
+        LazyMappingArray.new(_node[1,maxlevel*4].unpack("N#{level}")).map_with{|v| v == 4294967295 ? nil : read_node(v)},
         (key = _node[maxlevel*4 + 1,key_length]) == "\x00" * key_length ? nil : key,
         _node[maxlevel*4 + 1 + key_length, value_length],
         position
