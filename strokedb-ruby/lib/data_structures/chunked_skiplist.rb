@@ -57,7 +57,8 @@ module StrokeDB
       @lo_level = lo_level || 0
       @hi_level = hi_level || DEFAULT_MAXLEVEL
       @probability = probability || DEFAULT_PROBABILITY
-      @container = container || SimpleSkiplist.new(nil, :maxlevel => @hi_level + 1, :probability => @probability)
+      @container = container || SimpleSkiplist.new(nil, 
+                             :maxlevel => @hi_level + 1, :probability => @probability)
     end
     
     # If chunk is not a lowest-level list, then it
@@ -67,16 +68,38 @@ module StrokeDB
       @lo_level > 0
     end
     
+    # Insertion cases:
     # 
-    # 
+    #                               |
+    #  [ levels 16..23 ]         |  |
+    #  [ levels 08..15 ]      |  |  |
+    #  [ levels 00..07 ]   |  |  |  | 
+    #                      A  B  C  D
+    #
+    #  A - insert in a lower-level chunk
+    #  B - insert in a 08..15-levels chunk, create new 0..7-level chunk
+    #  C - insert in a 16..23-levels chunk, create new chunks of levels 
+    #      0..7 and 8..15.
+    #  D - create new 24..31-levels chunk with reference to previous head.
     #
     def insert(key, value, __level = nil)
-      newlevel = __level || random_level
+      @container.insert(key, value, __level)
+    end
+    
+    # Create new chunk, move local skiplist there,
+    # create new skiplist here and insert 
+    def promote_level(key, level, size)
       
     end
     
-    def find(key)
+    def generate_chain(key, value, size, start_level)
       
+    end
+    
+    # Finds reference to another chunk (if proxy) or an actual data.
+    #
+    def find(key)
+      proxy? ? @container.find_nearest(key) : @container.find(key)
     end
     
     # Generates random level of arbitrary size.
@@ -87,7 +110,6 @@ module StrokeDB
   		l += 1 while rand < p
   		return l
   	end
-  	
   end
 end
 

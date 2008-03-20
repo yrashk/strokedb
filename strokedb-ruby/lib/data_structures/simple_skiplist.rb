@@ -36,15 +36,22 @@ module StrokeDB
       self
     end
     
+    # Tests whether skiplist is empty.
+    #
     def empty?
       !node_next(@head, 0)
     end
     
+    # First key of a non-empty skiplist (nil for empty one)
+    #
     def first_key
       first = node_next(@head, 0)
       return first ? first[1] : nil
     end
     
+    # Insert a key-value pair. If key already exists,
+    # value will be overwritten.
+    #
     def insert(key, value, __level = nil)
       @mutex.synchronize do
         newlevel = __level || random_level
@@ -83,7 +90,7 @@ module StrokeDB
 	  end
   	
     # Find is thread-safe and requires no mutexes locking.
-    def find_nearest_node(key)
+    def find_nearest_node(key) #:nodoc:
       x = node_first
       level = node_level(x)
       while level > 0
@@ -181,17 +188,23 @@ module StrokeDB
       end
     end
 
+    # Finds a value with a nearest key to given key (from the left).
+    # For a set of keys [b, d, f], query "a" will return nil and query "c"
+    # will return a value under "b" key.
+    #
     def find_nearest(key)
       node_value(find_nearest_node(key))
     end
-  
+        
+    # Returns value, associated with key. nil if key is not found.
+    #
     def find(key)
       x = find_nearest_node(key)
       return node_value(x) if node_compare(x, key) == 0
       nil # nothing found
     end
 
-    def each
+    def each #:nodoc:
       x = node_next(node_first, 0)
       while x 
         yield(x)
@@ -200,10 +213,14 @@ module StrokeDB
       self
     end
 
+    # Constructs a skiplist from a hash values.
+    #
     def self.from_hash(hash, options = {})
       from_a(hash.to_a, options)
     end
     
+    # Constructs a skiplist from an array of key-value tuples (arrays).
+    #
     def self.from_a(ary, options = {})
       sl = new(nil, options)
       ary.each do |kv|
@@ -211,7 +228,9 @@ module StrokeDB
       end
       sl
     end
-        
+    
+    # Converts skiplist to an array of key-value pairs.
+    #    
     def to_a
       inject([]) do |arr, node|
         arr << node[1, 2]  # key, data
