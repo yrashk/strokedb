@@ -12,8 +12,9 @@ Operations we need:
 Facility we need:
 
   1) Centralized setup. Effective read/write to large files.
+     Trying to be as fast, as SQLite.
   2) Decentralized setup. Every component is chunked, EventMachine
-     protocols connect the chunks.
+     protocols connect the chunks together.
 
 COMPONENTS
 
@@ -22,10 +23,9 @@ COMPONENTS
      
      Operations: read(pointer), append(data)
      
-  2) Distributed pointer: 128 bit pointer to a raw data. 
-     First 102 bits represent an unique datavolume instance (file), 
-     which can be placed anywhere on the net (typically in a cluster).
-     Another 26 bits represent an offset in a file (26 bits can address 67M)
+  2) Distributed pointer: 160 bit pointer to a raw data. 
+     First 128 bits is a datavolume instance (file) UUID. 
+     Another 32 bits represent an offset in this file.
   
   4) SkiplistVolume consists of two files: 
      1. Map file with header and bitmap 
