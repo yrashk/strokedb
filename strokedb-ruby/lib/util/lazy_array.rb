@@ -1,15 +1,33 @@
 module StrokeDB
+  # Lazy loads items from array.
+  #
+  # Lazy arrays are backed by Proc returning regular array
+  # on first call retrieving it from @load_with_proc.
+  #
+  # Example:
+  #
+  #   ary = LazyArray.new.load_with { Time.now.to_s.split(/\s/) }
+  #
+  # On first attempt to access <tt>ary</tt> (including <tt>inspect</tt>) it will
+  # evaluate load_with's Proc and update own content with its result:
+  #
+  #   ary
+  #     # ==> ["Mon", "Mar", "17", "10:35:52", "+0200", "2008"]
+  #
   class LazyArray < Array
     def initialize(*args)
       @load_with_proc = proc {|v| v}
       super(*args)
     end
 
+    # Proc to execute lazy loading
     def load_with(&block)
       @load_with_proc = block
       self
     end
 
+    # MK: TODO: think about removing of duplication (lots of similar methods)
+    
     alias :_square_brackets :[]
     def [](*args)
       load!
@@ -44,7 +62,7 @@ module StrokeDB
     alias :_each :each
     def each
       load!
-      each do |val| 
+      each do |val|
         yield val
       end
     end
@@ -92,31 +110,32 @@ module StrokeDB
       load!
       find {|value| yield(value)}
     end
-    
+
     alias :_inspect :inspect
     def inspect
       load!
       inspect
     end
-    
+
     alias :_equal :==
     def ==(arr)
       load!
       _equal(arr)
     end
-    
+
     alias :_index :index
     def index(v)
       load!
       index(v)
     end
-    
+
     alias :_to_a :to_a
     def to_a
       load!
       to_a
     end
 
+    # Make it look like array for outer world
     def class
       Array
     end

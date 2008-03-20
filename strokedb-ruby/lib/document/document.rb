@@ -1,15 +1,11 @@
 module StrokeDB
-  class UnversionedDocumentError < Exception  #:nodoc:
-  end
-  class VersionMismatchError < Exception  #:nodoc:
-  end
-  class InvalidMetaDocumentError < Exception  #:nodoc:
-    attr_reader :meta_name
-    def initialize(meta_name)
-      @meta_name = meta_name
-    end
-  end
-  class SlotNotFoundError < StandardError  #:nodoc:
+  # Raised on unexisting document access.
+  #
+  # Example:
+  #
+  #  document.slot_that_does_not_exist_ever
+  #
+  class SlotNotFoundError < StandardError
     attr_reader :slotname
     def initialize(slotname)
       @slotname = slotname
@@ -20,9 +16,9 @@ module StrokeDB
   end
 
   # Document is one of the core classes. It is being used to represent database document.
-  # 
+  #
   # Database document is an entity that:
-  # 
+  #
   # * is uniquely identified with UUID
   # * has a number of slots, where each slot is a key-value pair (whereas pair could be a JSON object)
   #
@@ -32,7 +28,7 @@ module StrokeDB
   #    name: "My Document"
   #    language: "English"
   #    authors: ["Yurii Rashkovskii","Oleg Andreev"]
-  #   
+  #
   class Document
 
     attr_reader :store, :callbacks  #:nodoc:
@@ -47,10 +43,11 @@ module StrokeDB
       @new = content[0,1] == '1'
     end
 
+    # Collection of meta documents
     class Metas < Array  #:nodoc:
       def initialize(document)
         @document = document
-        _meta = document[:__meta__]
+        _meta = document[:meta]
         concat [_meta].flatten.compact.map{|v| v.is_a?(DocumentReferenceValue) ? v.load : v}
       end
 
@@ -64,7 +61,7 @@ module StrokeDB
           push meta.document(@document.store)
           _module = meta
         else
-          raise InvalidMetaDocumentError.new # FIXME: may be we should use another Error?
+          raise ArgumentError.new("Meta should be either document or meta module")
         end
         if _module
           @document.extend(_module)
@@ -72,7 +69,7 @@ module StrokeDB
           @document.send!(:execute_callbacks_for, _module, :on_initialization)
           @document.send!(:execute_callbacks_for, _module, :on_new_document) if @document.new?
         end
-        @document[:__meta__] = self
+        @document[:meta] = self
       end
 
     end
@@ -87,7 +84,7 @@ module StrokeDB
 
     #
     # Instantiates new document
-    # 
+    #
     # Here are few ways to call it:
     #
     #    Document.new(:slot_1 => slot_1_value, :slot_2 => slot_2_value)
@@ -116,9 +113,9 @@ module StrokeDB
     end
 
 
-    # 
+    #
     # Get slot value by its name:
-    #   
+    #
     #   document[:slot_1]
     #
     # If slot was not found, it will return <tt>nil</tt>
@@ -129,7 +126,7 @@ module StrokeDB
       end
     end
 
-    # 
+    #
     # Set slot value by its name:
     #
     #   document[:slot_1] = "some value"
@@ -143,7 +140,7 @@ module StrokeDB
     end
 
     #
-    # Checks slot presence. Unlike Document#slotnames it allows you to find even 'virtual slots' that could be 
+    # Checks slot presence. Unlike Document#slotnames it allows you to find even 'virtual slots' that could be
     # computed runtime by associations or <tt>when_slot_found</tt> callbacks
     #
     #   document.has_slot?(:slotname)
@@ -167,10 +164,10 @@ module StrokeDB
       nil
     end
 
-    # 
+    #
     # Returns an <tt>Array</tt> of explicitely defined slots
     #
-    #    document.slotnames #=> ["__version__","name","language","authors"]
+    #    document.slotnames #=> ["version","name","language","authors"]
     #
     def slotnames
       @slots.keys
@@ -186,20 +183,20 @@ module StrokeDB
     end
 
     def pretty_print #:nodoc:
-      slots = to_raw.except('__meta__')
+      slots = to_raw.except('meta')
       if is_a?(ImmutableDocument)
         s = "#<(imm)"
       else
         s = "#<"
       end
       Util.catch_circular_reference(self) do
-        if self[:__meta__] && name = meta[:name]
+        if self[:meta] && name = meta[:name]
           s << "#{name} "
         else
           s << "Doc "
         end
         slots.keys.sort.each do |k|
-          if %w(__version__ __previous_version__).member?(k) && v=self[k]
+          if %w(version previous_version).member?(k) && v=self[k]
             s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
           else
             s << "#{k}: #{self[k].inspect}, "
@@ -212,7 +209,7 @@ module StrokeDB
       end
       s
     rescue Util::CircularReferenceCondition
-      "#(#{(self[:__meta__] ? "#{meta}" : "Doc")} #{('@#'+uuid)[0,5]}...)"
+      "#(#{(self[:meta] ? "#{meta}" : "Doc")} #{('@#'+uuid)[0,5]}...)"
     end
 
     alias :to_s :pretty_print
@@ -230,7 +227,7 @@ module StrokeDB
     # Returns string with Document's XML representation
     #
     def to_xml(opts={})
-      to_raw.to_xml({ :root => 'document', :dasherize => false}.merge(opts))
+      to_raw.to_xml({ :root => 'document', :dasherize => true}.merge(opts))
     end
 
     # Primary serialization
@@ -249,7 +246,7 @@ module StrokeDB
 
     def self.from_raw(store,raw_slots,opts = {}) #:nodoc:
       doc = new(store, raw_slots, true)
-      meta_modules = collect_meta_modules(store,raw_slots['__meta__'])
+      meta_modules = collect_meta_modules(store,raw_slots['meta'])
       meta_modules.each do |meta_module|
         unless doc.is_a?(meta_module)
           doc.extend(meta_module)
@@ -260,7 +257,18 @@ module StrokeDB
       doc
     end
 
-
+    #
+    # Find document(s) by:
+    #
+    # a) UUID
+    #
+    #    Document.find(uuid)
+    #
+    # b) search query
+    #
+    #    Document.find(:slot => "value")
+    #
+    # If first argument is Store, that particular store will be used; otherwise default store will be assumed.
     def self.find(*args)
       store = nil
       if args.empty? || args.first.is_a?(String) || args.first.is_a?(Hash)
@@ -279,7 +287,7 @@ module StrokeDB
         raise TypeError
       end
     end
-    
+
     #
     # Reloads head of the same document from store. All unsaved changes will be lost!
     #
@@ -287,9 +295,9 @@ module StrokeDB
       new? ? self : store.find(uuid)
     end
 
-    # 
-    # Returns <tt>true</tt> if this is a document that has never been saved. 
-    # 
+    #
+    # Returns <tt>true</tt> if this is a document that has never been saved.
+    #
     def new?
       !!@new
     end
@@ -300,7 +308,7 @@ module StrokeDB
     #
     def head?
       return false if new? || is_a?(VersionedDocument)
-      store.head_version(uuid) == __version__
+      store.head_version(uuid) == version
     end
 
     #
@@ -314,7 +322,7 @@ module StrokeDB
       execute_callbacks :after_save
       self
     end
-    
+
     #
     # Updates slots with specified <tt>hash</tt> and returns itself.
     #
@@ -324,20 +332,20 @@ module StrokeDB
       end
       self
     end
-        
+
     #
     # Same as update_slots, but also saves the document.
     #
     def update_slots!(hash)
       update_slots(hash).save!
     end
-    
+
     #
     # Returns document's metadocument (if any). In case if document has more than one metadocument,
     # it will combine all metadocuments into one 'virtual' metadocument
     #
     def meta
-      _meta = self[:__meta__]
+      _meta = self[:meta]
       return _meta || Document.new(@store) unless _meta.kind_of?(Array)
       return _meta.first if _meta.size == 1
       _metas = _meta.clone
@@ -347,7 +355,7 @@ module StrokeDB
       _metas.each do |next_meta|
         next_meta = next_meta.clone
         collected_meta += next_meta
-        names << next_meta.name if next_meta[:name] 
+        names << next_meta.name if next_meta[:name]
       end
       collected_meta.name = names.uniq.join(',')
       collected_meta.make_immutable!
@@ -357,13 +365,13 @@ module StrokeDB
     # Instantiate a composite document
     #
     def +(document)
-      original, target = [to_raw,document.to_raw].map{|raw| raw.except('uuid','__version__','__previous_version__')}
+      original, target = [to_raw,document.to_raw].map{|raw| raw.except('uuid','version','previous_version')}
       Document.new(@store,original.merge(target).merge(:uuid => Util.random_uuid),true)
     end
 
     #
     # Should be used to add metadocuments on the fly:
-    # 
+    #
     #   document.metas << Buyer
     #   document.metas << Buyer.document
     #
@@ -375,10 +383,10 @@ module StrokeDB
 
 
     #
-    # Returns document's version (which is stored in <tt>__version__</tt> slot)
+    # Returns document's version (which is stored in <tt>version</tt> slot)
     #
-    def __version__
-      self[:__version__]
+    def version
+      self[:version]
     end
 
     #
@@ -389,25 +397,25 @@ module StrokeDB
     end
 
     #
-    # Returns document's previous version (which is stored in <tt>__previous_version__</tt> slot)
+    # Returns document's previous version (which is stored in <tt>previous_version</tt> slot)
     #
-    def __previous_version__
-      self[:__previous_version__]
+    def previous_version
+      self[:previous_version]
     end
 
-    def __version__=(v) #:nodoc:
-      self[:__version__] = v
+    def version=(v) #:nodoc:
+      self[:version] = v
     end
 
     #
     # Returns an instance of Document::Versions
     #
-    def __versions__
+    def versions
       @versions ||= Versions.new(self)
     end
 
     def __reference__ #:nodoc:
-      "@##{uuid}.#{__version__}"
+      "@##{uuid}.#{version}"
     end
 
     def ==(doc) #:nodoc:
@@ -425,7 +433,7 @@ module StrokeDB
       extend(ImmutableDocument)
       self
     end
-    
+
     def mutable?
       true
     end
@@ -435,7 +443,7 @@ module StrokeDB
       if sym.ends_with?('=')
         send(:[]=,sym.chomp('='),*args)
       else
-        unless slotnames.include?(sym) 
+        unless slotnames.include?(sym)
           if sym.ends_with?('?')
             !!send(sym.chomp('?'),*args,&block)
           else
@@ -486,18 +494,18 @@ module StrokeDB
         @new = true
         initialize_slots(slots)
         self[:uuid] = Util.random_uuid unless self[:uuid]
-        generate_new_version! unless self[:__version__]
+        generate_new_version! unless self[:version]
       end
     end
 
     def initialize_slots(slots) #:nodoc:
-      @slots = Util::HashWithSortedKeys.new
+      @slots = {}
       slots.each {|name,value| self[name] = value }
     end
 
     def initialize_raw_slots(slots) #:nodoc:
-      @slots = Util::HashWithSortedKeys.new
-      slots.each do |name,value| 
+      @slots = {}
+      slots.each do |name,value|
         s = Slot.new(self)
         s.raw_value = value
         @slots[name.to_s] = s
@@ -508,9 +516,9 @@ module StrokeDB
       meta_names = []
       case meta
       when /@##{UUID_RE}.#{VERSION_RE}/
-        if m = store.find($1,$2); meta_names << m[:name]; end 
+        if m = store.find($1,$2); meta_names << m[:name]; end
       when /@##{UUID_RE}/
-        if m = store.find($1);    meta_names << m[:name]; end 
+        if m = store.find($1);    meta_names << m[:name]; end
       when Array
         meta_names = meta.map {|m| collect_meta_modules(store,m) }.flatten
       when Document
@@ -520,12 +528,12 @@ module StrokeDB
     end
 
     def generate_new_version!
-      self.__version__ = Util.random_uuid
+      self.version = Util.random_uuid
     end
 
     def update_version!(slotname)
-      if @saved && slotname != '__version__' && slotname != '__previous_version__'
-        self[:__previous_version__] = __version__ unless __version__.nil?
+      if @saved && slotname != 'version' && slotname != 'previous_version'
+        self[:previous_version] = version unless version.nil?
         generate_new_version!
         @saved = nil
       end
@@ -542,7 +550,7 @@ module StrokeDB
     # Reloads the same version of the same document from store. All unsaved changes will be lost!
     #
     def reload
-      store.find(uuid,__version__)
+      store.find(uuid,version)
     end
 
   end
@@ -557,7 +565,7 @@ module StrokeDB
     def mutable?
       false
     end
-    
+
     def save!
     end
 

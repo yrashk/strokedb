@@ -10,8 +10,8 @@ describe "Diffing documents", :shared => true do
   it "should be appliable as patch" do
     from = @from.dup
     @diff.patch!(from)
-    (from.slotnames - ['__version__','__previous_version__']).should == (@to.slotnames-['__version__','__previous_version__'])
-    (from.slotnames - ['__version__','__previous_version__']).each do |slotname|
+    (from.slotnames - ['version','previous_version']).should == (@to.slotnames-['version','previous_version'])
+    (from.slotnames - ['version','previous_version']).each do |slotname|
       from[slotname].should == @to[slotname]
     end
   end
@@ -99,8 +99,8 @@ end
 
       @meta = Document.create! :diff_strategy_slot1 => strategy # TODO: fix this spec, it willn't care if I say strategy_slot1
 
-      @from = Document.create! :slot1 => "abcdef", :__meta__ => @meta
-      @to = Document.create! :slot1 => "abcdef1", :__meta__ => @meta
+      @from = Document.create! :slot1 => "abcdef", :meta => @meta
+      @to = Document.create! :slot1 => "abcdef1", :meta => @meta
 
       @diff = @to.diff(@from)
     end

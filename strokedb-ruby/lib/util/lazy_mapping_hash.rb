@@ -34,6 +34,16 @@ module StrokeDB
         yield(e.call(k), e.call(v))
       end
     end
+    
+    alias :_keys :keys
+    def keys
+      _keys.map {|k| @encoder.call(k)}
+    end
+
+    alias :_values :values
+    def values
+      _values.map {|v| @encoder.call(v)}
+    end
    
     def class
       Hash

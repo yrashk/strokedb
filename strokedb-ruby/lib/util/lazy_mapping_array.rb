@@ -1,4 +1,25 @@
 module StrokeDB
+  # Lazy loads items from array applying procs on each read and write.
+  #
+  # Example:
+  #
+  # @ary[i] = 10
+  #
+  # applies "unmap proc" to new item value.
+  #
+  # @ary.at(i)
+  #
+  # applies "map proc" to value just have been read.
+  #
+  # StrokeDB uses this class to "follow" links to other documents
+  # found in slots in a lazy manner.
+  #
+  # player:
+  #   model: [@#8b195509-f9c4-4fea-90c9-425b38bdda3e.ea5eda78-d410-44be-8b14-f4e33f6fa047]
+  #   generation: 4
+  #
+  # when model collection item is fetched, reference followed and turned into document
+  # instance with mapping proc of lazy mapping array.
   class LazyMappingArray < Array
     def initialize(*args)
       @map_proc = proc {|v| v}
@@ -10,7 +31,7 @@ module StrokeDB
       @map_proc = block
       self
     end
-    
+
     def unmap_with(&block)
       @unmap_proc = block
       self
@@ -26,12 +47,12 @@ module StrokeDB
       end
     end
     alias :slice :[]
-    
+
     alias :_square_brackets_set :[]=
     def []=(index,value)
       _square_brackets_set(index,@unmap_proc.call(value))
     end
-    
+
     alias :_at :at
     def at(index)
       @map_proc.call(_at(index))
@@ -44,26 +65,26 @@ module StrokeDB
     def last
       at(size-1)
     end
-   
+
     alias :_each :each
     def each
-      _each do |val| 
+      _each do |val|
         yield @map_proc.call(val)
       end
     end
-    
+
     alias :_map :map
     def map
       _map do |val|
         yield @map_proc.call(val)
       end
     end
-   
+
     alias :_zip :zip
     def zip(*args)
       map{|v|v}.zip(*args)
     end
-    
+
     alias :_push :push
     def push(value)
       _push(@unmap_proc.call(value))
@@ -89,12 +110,12 @@ module StrokeDB
     def find
       _find {|value| yield(@map_proc.call(value))}
     end
-    
+
     alias :_index :index
     def index(v)
       _index(@unmap_proc.call(v))
     end
-    
+
     def class
       Array
     end
