@@ -28,7 +28,7 @@ describe "Meta module", :shared => true do
 
   it "should save new document version if it was updated" do
     doc = SomeName.document    
-    version = doc.__version__.clone
+    version = doc.version.clone
     new_doc = nil
     2.times do |i|
       Object.send!(:remove_const,'SomeName') if defined?(SomeName)
@@ -36,18 +36,18 @@ describe "Meta module", :shared => true do
       new_doc = SomeName.document
     end
     new_doc.uuid.should == doc.uuid
-    new_doc.__previous_version__.should_not be_nil
-    new_doc.__previous_version__.should == version
-    new_doc.__version__.should_not == new_doc.__previous_version__
+    new_doc.previous_version.should_not be_nil
+    new_doc.previous_version.should == version
+    new_doc.version.should_not == new_doc.previous_version
     new_doc.description.should == "Something"
   end
 
-  it "should search for specified UUID with __meta__ reference merged in" do
+  it "should search for specified UUID with meta reference merged in" do
     a = SomeName.create!
     SomeName.find(a.uuid).should == a
   end
   
-  it "should search for specified slots with __meta__ reference merged in" do
+  it "should search for specified slots with meta reference merged in" do
     a = SomeName.create!(:slot1 => 1, :slot2 => 2)
     b = SomeName.create!(:slot1 => 1, :slot2 => 2)
     c = SomeName.create!(:slot1 => 2, :slot2 => 2)
@@ -55,7 +55,7 @@ describe "Meta module", :shared => true do
     SomeName.find(:slot1 => 1, :slot2 =>2).sort_by {|d| d.uuid}.should == [a,b].sort_by {|d| d.uuid}
   end
 
-  it "should find first document for specified slots with __meta__ reference merged in on #find_or_create" do
+  it "should find first document for specified slots with meta reference merged in on #find_or_create" do
     a = SomeName.create!(:slot1 => 1, :slot2 => 2)
     b = SomeName.create!(:slot1 => 1, :slot2 => 2)
     c = SomeName.create!(:slot1 => 2, :slot2 => 2)
@@ -64,7 +64,7 @@ describe "Meta module", :shared => true do
     (search == a || search == b).should be_true
   end
 
-  it "should create document for specified slots with __meta__ reference merged in on #find_or_create if such document was not found" do
+  it "should create document for specified slots with meta reference merged in on #find_or_create if such document was not found" do
     a = SomeName.create!(:slot1 => 1, :slot2 => 2)
     b = SomeName.create!(:slot1 => 1, :slot2 => 2)
     c = SomeName.create!(:slot1 => 2, :slot2 => 2)
@@ -232,7 +232,7 @@ describe "Combined meta module" do
 
   it "should initialize Document with all metas" do
     d = (User+Buyer+Seller).new
-    d[:__meta__].should == [User.document,Buyer.document,Seller.document]
+    d[:meta].should == [User.document,Buyer.document,Seller.document]
   end
 
   it "should be able to find respective documents" do

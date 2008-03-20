@@ -16,17 +16,17 @@ Particular document version is identified by both UUID and
 its version (see VERSIONED DOCUMENT).
 
 Example documents:
-    { :__meta__ => ['@#34b030ab-03a5-4d...'], :color => "Green", :size => "XL" }
-    { :__meta__ => ['@#00000000-0000-00...'], :name  => "Apple" }
+    { :meta => ['@#34b030ab-03a5-4d...'], :color => "Green", :size => "XL" }
+    { :meta => ['@#00000000-0000-00...'], :name  => "Apple" }
 
 Some slots are special:
 
-    __meta__ contains an array of metadocuments' references.
+    meta contains an array of metadocuments' references.
              Actually, it is not required to be an array, but some 
              low level OO wrappers (class Document for instance)
              expect it to be a reference or a list of references. 
-    __version__ is a unique timestamp of a current version.
-    __previous_version__ is a unique timestamp of a previous version.
+    version is a unique timestamp of a current version.
+    previous_version is a unique timestamp of a previous version.
 ---
 
 METADOCUMENT

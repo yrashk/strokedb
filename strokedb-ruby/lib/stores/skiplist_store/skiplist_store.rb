@@ -43,7 +43,7 @@ module StrokeDB
 
     def head_version(uuid)
       raw_doc = find(uuid,nil,:no_instantiation => true)
-      return raw_doc['__version__'] if raw_doc
+      return raw_doc['version'] if raw_doc
       nil
     end
 
@@ -52,7 +52,7 @@ module StrokeDB
       next_timestamp
 
       insert_with_cut(doc.uuid, doc, master_chunk) unless doc.is_a?(VersionedDocument)
-      insert_with_cut("#{doc.uuid}.#{doc.__version__}", doc, master_chunk)
+      insert_with_cut("#{doc.uuid}.#{doc.version}", doc, master_chunk)
 
       update_master_chunk!(doc,master_chunk)
     end  
@@ -66,7 +66,7 @@ module StrokeDB
         chunk = @chunk_storage.find(node.value)
         if chunk
           chunk.each do |node|
-            puts "    [doc: #{node.key}] => {uuid: #{node.value['__uuid__']}, version: #{node.value['__version__']}, previous_version: #{node.value['__previous_version__']}"
+            puts "    [doc: #{node.key}] => {uuid: #{node.value['__uuid__']}, version: #{node.value['version']}, previous_version: #{node.value['previous_version']}"
           end
         else
           puts "    nil! (but in MASTER somehow?...)"
@@ -198,8 +198,8 @@ module StrokeDB
 
       # Update index
       if @index_store
-        if doc.__previous_version__
-          raw_pdoc = find(doc.uuid,doc.__previous_version__,:no_instantiation => true)
+        if doc.previous_version
+          raw_pdoc = find(doc.uuid,doc.previous_version,:no_instantiation => true)
           pdoc = Document.from_raw(self,raw_pdoc.freeze,:skip_callbacks => true)
           pdoc.extend(VersionedDocument)
           @index_store.delete(pdoc)

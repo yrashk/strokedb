@@ -1,0 +1,59 @@
+
+Components of StrokeDB. How is it supposed to be for v. 0.1 or something.
+
+REQUIREMENTS
+
+Operations we need:
+
+  1) Create & store document.
+  2) Find document by UUID.
+  3) Find document by simple slot query.
+
+Facility we need:
+
+  1) Centralized setup. Effective read/write to large files.
+  2) Decentralized setup. Every component is chunked, EventMachine
+     protocols connect the chunks.
+
+COMPONENTS
+
+  1) DataVolume. An append-only file with raw content addressable by 
+     "distributed pointer". Maximum file size is 64M (like in GFS).
+     
+     Operations: read(pointer), append(data)
+     
+  2) Distributed pointer: 128 bit pointer to a raw data. 
+     First 102 bits represent an unique datavolume instance (file), 
+     which can be placed anywhere on the net (typically in a cluster).
+     Another 26 bits represent an offset in a file (26 bits can address 67M)
+  
+  4) SkiplistVolume consists of two files: 
+     1. Map file with header and bitmap 
+        (1 - chunk is in use, 0 - chunk is free).
+     2. Chunks file.
+     
+     For fixed-length items mapfile specifies exactly needed chunk size.
+     For variable-length items, mapfile specifies some average chunk size
+     and stores item length in 32 bytes before item data, and then item itself
+     in 1, 2 or more _contiguous_ chunks.
+     
+     To avoid fragmentation issues, we don't try to save space and split 
+     long data over single empty chunks. We just write to the end in case
+     required number of contiguous chunks is not already available.
+     
+     SkiplistVolume is not intended for large size items and/or large 
+     number of items. It scales by constructing higher level skiplists
+     mapping keys to lower-level skiplists. 
+     
+     Operations: find(key), find_nearest(key), insert(key)
+         
+     Very rare operation is "split" operation. You choose a level of skiplist
+     by which it should be splitted. Split operation yields N new skiplist 
+     volumes. It is done by walking through skiplist and copying items 
+     into newly created files. After copying is complete, old file is removed.
+     In case of failure, new files are simply discarded.
+     
+  5) Networking. EventMachine protocols for access to distributed volumes.
+     
+  
+
