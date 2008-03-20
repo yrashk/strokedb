@@ -7,7 +7,7 @@ include Benchmark
 @path = File.dirname(__FILE__) + "/../test/storages/map_volume"
 
 
-[2**10].each do |n|
+[2**12].each do |n|
 
   [MapVolume,MmapMapVolume].each do |klass|
     record = "D"*512
