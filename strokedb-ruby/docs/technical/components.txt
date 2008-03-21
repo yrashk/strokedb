@@ -55,5 +55,39 @@ COMPONENTS
      
   5) Networking. EventMachine protocols for access to distributed volumes.
      
+     1. Network interface to distributed datavolumes (fetching data 
+        by distributed pointer).
+     2. Protocols for asynchronous skiplists operations (find/insert).
+     3. Replication strategies: 
+        1. synchronized updates, 
+        2. session-based updates + safe automerge
+     4. Distributed transactions.
+
+  6) Indexes. There're many kinds of query out there. We are not going to
+     optimize them all. Instead, we're going to classify typical (i.e. 
+     "real world") queries and optimize them first with some default 
+     strategy. For less frequent queries we're going to provide some
+     adequate API to build custom index for specific cases.
+     For other, very-very specific cases, we leave a stable API for
+     low-level components like skiplists, networking protocols, datavolumes,
+     so that one can build a special index from scratch using our distributed
+     API.
+     
+     Hence, the plan:
+     1. Classify queries.
+     2. Define default strategy for 60% of queries.
+     3. Define an API for building indexes for other 30% of queries.
+     4. Investigate: how some very special datastructures _could possibly_
+        be done using our low-level distributed platform.
+
+
+
+
+
+
+
+
   
+
+
 
