@@ -88,9 +88,7 @@ module StrokeDB
         def read(*args)
           raise VolumeClosedException, "Throw this object away and instantiate another one."
         end
-        def write(*args)
-          raise VolumeClosedException, "Throw this object away and instantiate another one."
-        end
+        alias :write :read
       end
     end
     
