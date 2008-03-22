@@ -4,7 +4,7 @@ TODO aka ROADMAP
 ~~~~~~~~~~~~~~~~~~
 [ ] Implement new storages
  [X] Drop capacity from MapVolume (by splitting to two files, bitmap and data)
- [ ] Add multirecords to MapVolume (elastic MapVolume)
+ [.] Add multirecords to MapVolume (elastic MapVolume)
  [ ] Implement 160-bit data pointers
  [ ] ...
 [ ] Implement transactions
