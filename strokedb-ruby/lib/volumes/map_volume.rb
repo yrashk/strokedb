@@ -210,7 +210,7 @@ module StrokeDB
     
     def decrement_available_chunk!(position,length)
       @bitmap_file.seek(HEADER_SIZE + (position % 8))
-      @bitmap_file.write('\xff' * length)
+      @bitmap_file.write("\xff" * (length+1))
       @first_available_position = -1
       update_file_header!
     end
