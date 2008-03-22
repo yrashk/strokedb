@@ -66,6 +66,7 @@ module StrokeDB
 
     def close!
       @bitmap_file.close
+      @data_file.close
     end
 
     private
