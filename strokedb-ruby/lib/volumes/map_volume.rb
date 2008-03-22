@@ -59,6 +59,10 @@ module StrokeDB
     def record_size
       @options['record_size']
     end
+    
+    def bitmap_extension_pace
+      @options['bitmap_extension_pace']||8192
+    end
 
     def path
       @options['path']
@@ -68,6 +72,16 @@ module StrokeDB
       @bitmap_file.close
       @data_file.close
     end
+    
+    def map_size
+      return @map_size if @map_size
+      pos = @bitmap_file.pos
+      @bitmap_file.seek(0,IO::SEEK_END)
+      size = @bitmap_file.pos - HEADER_SIZE
+      @bitmap_file.seek(pos)
+      @map_size = size
+    end
+    
 
     private
 
@@ -124,14 +138,6 @@ module StrokeDB
       extend_map
     end
 
-    def map_size
-      return @map_size if @map_size
-      pos = @bitmap_file.pos
-      @bitmap_file.seek(0,IO::SEEK_END)
-      size = @bitmap_file.pos - HEADER_SIZE
-      @bitmap_file.seek(pos)
-      @map_size = size
-    end
 
     def read_map
       @bitmap_file.seek(HEADER_SIZE)
@@ -211,7 +217,7 @@ module StrokeDB
     def extend_map
       pos = @bitmap_file.pos
       @bitmap_file.seek(0,IO::SEEK_END)
-      @bitmap_file.write("\x00" *(@options['bitmap_extension_pace']||8192))
+      @bitmap_file.write("\x00" * bitmap_extension_pace)
       @bitmap_file.seek(pos)
       @map_size = nil
     end

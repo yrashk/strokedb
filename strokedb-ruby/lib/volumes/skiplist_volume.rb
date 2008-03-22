@@ -4,7 +4,7 @@ module StrokeDB
     def initialize(options = {})
       @options = options.stringify_keys
       @volume = MapVolume.new(:record_size => (@options['maxlevel']||DEFAULT_MAXLEVEL * 4) + 1 +
-      @options['key_length'] + @options['value_length'], :path => @options['path'], :capacity => @options['capacity'])
+      @options['key_length'] + @options['value_length'], :path => @options['path'])
       @nodes = {}
       super(nil,:maxlevel => @options['maxlevel'], :probability => @options['probability'])
     end
@@ -17,9 +17,6 @@ module StrokeDB
       @options['value_length']
     end
 
-    def capacity
-      @options['capacity']
-    end
 
     def path
       @options['path']
@@ -30,7 +27,7 @@ module StrokeDB
     end
 
     def inspect
-      "#<StrokeDB::FixedLengthSkiplistVolume:0x#{object_id.to_s(16)} path: #{path} key_length: #{key_length} value_length: #{value_length} capacity: #{capacity}"
+      "#<StrokeDB::FixedLengthSkiplistVolume:0x#{object_id.to_s(16)} path: #{path} key_length: #{key_length} value_length: #{value_length}"
     end
 
     private

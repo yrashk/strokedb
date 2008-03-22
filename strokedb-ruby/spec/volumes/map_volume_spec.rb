@@ -56,6 +56,7 @@ describe "#{klass}", :shared => true do
     @map_volume.available?(0).should == false
   end  
   
+  
 end
 
 describe "New #{klass}" do
@@ -63,7 +64,7 @@ describe "New #{klass}" do
   before(:each) do
     @path = File.dirname(__FILE__) + "/../../test/storages/map.volume.#{klass}"
     FileUtils.rm_rf(@path) if File.exists?(@path)
-    @map_volume = klass.new(:path => @path, :record_size => 256, :capacity => 100)
+    @map_volume = klass.new(:path => @path, :record_size => 256)
   end
   
   after(:each) do
@@ -75,9 +76,35 @@ describe "New #{klass}" do
     @map_volume.should be_empty
   end
   
+  it "should have bitmap allocated for 65536 records" do
+    (@map_volume.map_size * 8).should == 65536
+  end
+  
   it_should_behave_like "#{klass}"
   
 end
+
+describe "New #{klass} with bitmap extension pace of 16384" do
+  
+  before(:each) do
+    @path = File.dirname(__FILE__) + "/../../test/storages/map.volume.#{klass}"
+    FileUtils.rm_rf(@path) if File.exists?(@path)
+    @map_volume = klass.new(:path => @path, :record_size => 256, :bitmap_extension_pace => 16384)
+  end
+  
+  after(:each) do
+    @map_volume.close!
+    FileUtils.rm_rf(@path) if File.exists?(@path)
+  end
+  
+  it "should have bitmap allocated for 131072 records" do
+    (@map_volume.map_size * 8).should == 131072
+  end
+  
+  it_should_behave_like "#{klass}"
+  
+end
+
 
 describe "Existing MapVolume" do
   
