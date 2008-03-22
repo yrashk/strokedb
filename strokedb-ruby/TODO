@@ -1,44 +1,43 @@
-Legend:
-[ ] NOT DONE
-[?] MAY BE
-[.] IN PROGRESS
-Completed items are removed.
-============================
+TODO aka ROADMAP
 
-To be done before 0.1 ("Praha"):
-
-[ ] Spec SS#autosync
-[.] Spec RemoteStore::DRb
-[.] Refactor Document#meta
-[ ] Refactor Meta#document, fix bugs
-[.] Refactor callback stuff in Document
-[.] Refactor associations
-[.] Add few validations
-
-To be done later:
-
-[ ] Improve PointQuery (I really don't like it)
-[?] Add sorting primitives for search functionality
-[ ] Memory-based storage with permanent log?
-[ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
-[ ] New uuid-based versions caused some slow down, too
+0.1 (April-May 2008)
+~~~~~~~~~~~~~~~~~~
+[ ] Implement new storages
+ [?] Memory-based storage with permanent log
+[ ] Implement complex queries  
+ [ ] Improve inverted list index
+  [ ] Improve PointQuery (I really don't like it). Or drop it
+  [ ] Optimize prefixes
+  [ ] Range/set query support
+  [ ] Faster intersection
+  [ ] Custom boolean operation on results
+  [ ] Assoc's indexing
+  [ ] Sub-attributes indexing
+ [ ] Consider using Ambition API
+ [?] Add sorting primitives for search functionality
+[ ] Improve spec coverage
+ [ ] Spec SS#autosync
+ [.] Spec RemoteStore::DRb
+[ ] Refactor some document-related code
+ [.] Refactor Document#meta
+ [ ] Refactor Meta#document, fix bugs
+ [.] Refactor callback stuff in Document
+ [.] Refactor associations
+[.] Improve validations
+ [ ] collect errors and add #valid? and #errors, #errors_on methods
+ [ ] add more options to validates_presence_of
+ [ ] add validates_type_of
+ [ ] add validates_uniqueness_of
 [ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
-[ ] Investigate nested metas issue (View::Cut wasn't possible for some reason)
-[?] Pool new UUIDs
-[ ] Think about non-index named meta lookup
-[ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
-[ ] Read/Write benchmarks showing dependency of data size
 
+Later
+~~~~~
 
-UNSORTED
-========
-InvertedList index:
-
-[ ] Optimize prefixes
-[ ] Serialize & dump
-[ ] Range/set query support
-[ ] Faster intersection
-[ ] Custom boolean operation on results
-[ ] Assoc's indexing
-[ ] Sub-attributes indexing
-
+[ ] Improve performance
+	[ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
+	[ ] New uuid-based versions caused some slow down, too
+[ ] Improve Diff
+	[ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
+[ ] Investigate performance issues
+	[ ] Read/Write benchmarks showing dependency of data size
+	[?] Pool new UUIDs
