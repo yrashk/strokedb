@@ -3,11 +3,11 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe DataVolume do
   
   before(:all) do
-    FileUtils.rm_rf(File.dirname(__FILE__) + "/../../test/data_volume_spec")
+    FileUtils.rm_rf(File.dirname(__FILE__) + "/../../test/storages/data_volume_spec")
   end
   
   before(:each) do
-    @path = File.dirname(__FILE__) + "/../../test/data_volume_spec"
+    @path = File.dirname(__FILE__) + "/../../test/storages/data_volume_spec"
     @raw_uuid = Util.random_uuid_raw
     @size     = 64*1024
   end
