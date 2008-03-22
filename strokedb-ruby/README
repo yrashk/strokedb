@@ -10,8 +10,6 @@ You need to install few gems in order to run StrokeDB:
 
 	$ sudo gem install diff-lcs activesupport uuidtools RubyInline
 
-*Note*: There is no need in <tt>uuidtools</tt> if you use JRuby
-
 === Getting source code
 
 	$ git clone git://gitorious.org/strokedb/mainline.git strokedb
