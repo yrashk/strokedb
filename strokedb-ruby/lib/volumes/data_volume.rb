@@ -84,13 +84,19 @@ module StrokeDB
     def safe_close
       @file.close if @file
       @file = nil
-      instance_eval do 
-        def read(*args)
-          raise VolumeClosedException, "Throw this object away and instantiate another one."
-        end
-        alias :write :read
+      class <<self
+        alias :read  :raise_volume_closed
+        alias :write :raise_volume_closed
       end
     end
+    
+    # +read+ and +write+ methods are aliased to this
+    # when file is closed or deleted.
+    #
+    def raise_volume_closed(*args)
+      raise VolumeClosedException, "Throw this object away and instantiate another one."
+    end
+    public :raise_volume_closed
     
     # Transform filename "aabbccdd" into "aa/bb/aabbccdd"
     # for faster access to a bunch of datavolumes.
