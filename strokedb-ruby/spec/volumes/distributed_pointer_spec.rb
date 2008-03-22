@@ -7,6 +7,7 @@ describe "DistributedPointer" do
     dp.offset = 1
     dp.pack.should == "\xff"*16 + "\x01\x00\x00\x00"
   end
+  
   it "should be unpacked correctly" do
     dp = DistributedPointer.unpack("\xff"*16 + "\x05\x00\x00\x00")
     dp.volume_uuid.should == "\xff"*16
