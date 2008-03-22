@@ -9,7 +9,7 @@ include Benchmark
 
 [2**12].each do |n|
 
-  [MapVolume,MmapMapVolume].each do |klass|
+  [MapVolume].each do |klass|
     record = "D"*512
 
     bm(60) do |x| 

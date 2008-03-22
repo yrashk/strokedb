@@ -7,10 +7,6 @@ describe "#{klass}", :shared => true do
     @map_volume.record_size.should == 256
   end
   
-  it "should have capacity" do
-    @map_volume.capacity.should == 100
-  end
-  
   it "should insert record of proper size" do
     @map_volume.insert!("A"*256)
   end
@@ -33,17 +29,6 @@ describe "#{klass}", :shared => true do
     lambda { @map_volume.insert!(" "*257) }.should raise_error(InvalidRecordSizeError)
   end
   
-  it "should decrease available capacity accordingly to insertions" do
-    available_capacity = @map_volume.available_capacity
-    10.times { @map_volume.insert!(" "*256) }
-    @map_volume.available_capacity.should == available_capacity - 10
-  end
-  
-  it "should increase available capacity accordingly to deletions" do
-     @map_volume.insert!(" "*256)
-     position = @map_volume.insert!(" "*256)
-     lambda { @map_volume.delete!(position) }.should change(@map_volume,:available_capacity).by(1)
-  end
 
   it "should insert new record into previously deleted position" do
      @map_volume.insert!(" "*256)
@@ -71,29 +56,19 @@ describe "#{klass}", :shared => true do
     @map_volume.available?(0).should == false
   end  
   
-  it "should raise an exception when capacity is exceeded" do
-    @map_volume.available_capacity.times { @map_volume.insert!("C"*256) }
-    lambda { @map_volume.insert!("E"*256) }.should raise_error(MapVolumeCapacityExceeded)
-  end
-  
-
 end
 
 describe "New #{klass}" do
   
   before(:each) do
     @path = File.dirname(__FILE__) + "/../../test/storages/map.volume.#{klass}"
-    File.unlink(@path) if File.exists?(@path)
+    FileUtils.rm_rf(@path) if File.exists?(@path)
     @map_volume = klass.new(:path => @path, :record_size => 256, :capacity => 100)
   end
   
   after(:each) do
     @map_volume.close!
-    File.unlink(@path) if File.exists?(@path)
-  end
-  
-  it "should have all capacity available" do
-    @map_volume.available_capacity.should == 100
+    FileUtils.rm_rf(@path) if File.exists?(@path)
   end
   
   it "should be empty" do
@@ -108,7 +83,7 @@ describe "Existing MapVolume" do
   
   before(:each) do
     @path = File.dirname(__FILE__) + "/../../test/storages/map.volume.#{klass.name.to_s.demodulize}"
-    File.unlink(@path) if File.exists?(@path)
+    FileUtils.rm_rf(@path) if File.exists?(@path)
     @map_volume = klass.new(:path => @path, :record_size => 256, :capacity => 100)
     position = @map_volume.insert!(' '*256)
     @map_volume.close!
@@ -117,11 +92,7 @@ describe "Existing MapVolume" do
   
   after(:each) do
     @map_volume.close!
-    File.unlink(@path) if File.exists?(@path)
-  end
-
-  it "should not have all capacity available" do
-    @map_volume.available_capacity.should < 100
+    FileUtils.rm_rf(@path) if File.exists?(@path)
   end
 
   it "should not be empty" do
@@ -136,14 +107,15 @@ describe "Opening invalid file with #{klass} (i.e. file with invalid signature)"
 
   before(:each) do
     @path = File.dirname(__FILE__) + "/../../test/storages/map.volume.#{klass.name.to_s.demodulize}"
-    File.unlink(@path + ".invalid") if File.exists?(@path + ".invalid")
-    File.open(@path + ".invalid","w+") do |f|
+    FileUtils.rm_rf(@path + ".invalid") if File.exists?(@path + ".invalid")
+    FileUtils.mkdir_p(@path + ".invalid")
+    File.open(@path + ".invalid/bitmap","w+") do |f|
       f.write "Invalid file"
     end
   end
 
   after(:each) do
-    File.unlink(@path + ".invalid") if File.exists?(@path + ".invalid")
+    FileUtils.rm_rf(@path + ".invalid") if File.exists?(@path + ".invalid")
   end
   
   it "should fail with InvalidMapVolumeError exception" do
