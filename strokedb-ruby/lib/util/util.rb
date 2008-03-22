@@ -1,4 +1,5 @@
 require 'digest/sha2'
+require 'uuidtools'
 
 module StrokeDB
   module Util
@@ -33,11 +34,11 @@ module StrokeDB
       Digest::SHA256.hexdigest(str)
     end
 
-    unless RUBY_PLATFORM =~ /java/
-      require 'uuidtools'
-      def self.random_uuid
-        ::UUID.random_create.to_s
-      end
+    def self.random_uuid
+      ::UUID.random_create.to_s
+    end
+    def self.random_uuid_raw
+      ::UUID.random_create.raw
     end
 
     class CircularReferenceCondition < Exception ; end
@@ -49,6 +50,19 @@ module StrokeDB
         yield
         stack.pop
       end
+    end
+  end
+  
+  class ::String
+    # Assuming that string contains formatted UUID,
+    # convert it to raw 16 bytes.
+    def to_raw_uuid
+      ::UUID.parse(self).raw
+    end
+    # Assuming that string contains raw UUID bytes,
+    # convert to formatted string.
+    def to_formatted_uuid
+      ::UUID.parse_raw(self).to_s
     end
   end
 end
