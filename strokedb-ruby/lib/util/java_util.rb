@@ -7,7 +7,7 @@ module StrokeDB
     end
     def self.random_uuid_raw
       uuid = java.util.UUID.random_uuid
-      [uuid.getMostSignificantBits, uuid.getLeastSignificantBits].pack("Q2")
+      [uuid.most_significant_bits, uuid.least_significant_bits].pack("Q2")
     end
   end
 end
