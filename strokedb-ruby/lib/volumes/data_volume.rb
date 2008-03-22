@@ -12,7 +12,7 @@ module StrokeDB
     def initialize(dir_path, raw_uuid, size)
       @uuid = raw_uuid
       @size = size
-      @file_path = dir_path + "/" + hierarchify(raw_uuid.to_formatted_uuid) + ".dv"
+      @file_path = File.join(dir_path, hierarchify(raw_uuid.to_formatted_uuid) + ".dv")
       create_file(@file_path, size) unless File.exist?(@file_path)
       @file = File.open(@file_path, File::RDWR)
       @tail = read_tail(@file)
@@ -102,9 +102,7 @@ module StrokeDB
     # for faster access to a bunch of datavolumes.
     #
     def hierarchify(filename)
-      filename[0,2] + "/" +
-      filename[2,2] + "/" +
-      filename
+      File.join(filename[0,2], filename[2,2], filename)
     end
     
     # Read current file end position ("tail") from the file header.
