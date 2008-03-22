@@ -3,17 +3,28 @@ module StrokeDB
   class DataVolume
     attr_accessor :file_path, :uuid, :size, :tail
     
-    # Open a volume in a directory +dir_path+, with UUID (raw value)
-    # and a specified size.
-    # If the file does not exist, it is created and filled with zero bytes
-    # up to the specified size. Otherwise, it is just opened and ready for
-    # reads and writes.
+    DEFAULT_SIZE = 64*1024*1024
+    DEFAULT_PATH = "."
+    
+    # Open a volume in a directory +:path+, with UUID (raw value)
+    # and a specified +:size+. If the file does not exist, it is created 
+    # and filled with zero bytes up to the specified size. 
+    # Otherwise, it is just opened and ready for reads and writes.
     #
-    def initialize(dir_path, raw_uuid, size)
+    # Defaults:
+    #   :path => "."
+    #   :size => 64 Mb
+    #
+    # Example:
+    #   DataVolume.new(uuid, :path => "/var/dir", :size => 1024)
+    #
+    def initialize(raw_uuid, params = {})
       @uuid = raw_uuid
-      @size = size
+      @size    = params[:size] || DEFAULT_SIZE
+      dir_path = params[:path] || DEFAULT_PATH
+      
       @file_path = File.join(dir_path, hierarchify(raw_uuid.to_formatted_uuid) + ".dv")
-      create_file(@file_path, size) unless File.exist?(@file_path)
+      create_file(@file_path, @size) unless File.exist?(@file_path)
       @file = File.open(@file_path, File::RDWR)
       @tail = read_tail(@file)
     end

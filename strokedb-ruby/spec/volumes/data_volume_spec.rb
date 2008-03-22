@@ -10,10 +10,11 @@ describe DataVolume do
     @path = File.dirname(__FILE__) + "/../../test/storages/data_volume_spec"
     @raw_uuid = Util.random_uuid_raw
     @size     = 64*1024
+    @params = {:size => @size, :path => @path}
   end
   
   it "should be created with given size" do 
-    dv = DataVolume.new(@path, @raw_uuid, @size)
+    dv = DataVolume.new(@raw_uuid, @params)
     fname = dv.file_path
     File.should be_exist(fname)
     File.size(fname).should == @size
@@ -23,7 +24,7 @@ describe DataVolume do
   end
   
   it "should write some data and return its position" do
-    dv = DataVolume.new(@path, @raw_uuid, @size)
+    dv = DataVolume.new(@raw_uuid, @params)
     tail = dv.tail
     tail.should == 4
     prefix = 4
@@ -38,7 +39,7 @@ describe DataVolume do
   end
   
   it "should read & write data" do
-    dv = DataVolume.new(@path, @raw_uuid, @size)
+    dv = DataVolume.new(@raw_uuid, @params)
     p1 = dv.write("7 bytes")
     p2 = dv.write("13 more bytes")
     p3 = dv.write("1")
@@ -58,7 +59,7 @@ describe DataVolume do
   end
   
   it "should raise exception if file is closed" do
-    dv = DataVolume.new(@path, @raw_uuid, @size)
+    dv = DataVolume.new(@raw_uuid, @params)
     dv.close!
     
     lambda { dv.read(4)       }.should raise_error(DataVolume::VolumeClosedException)
