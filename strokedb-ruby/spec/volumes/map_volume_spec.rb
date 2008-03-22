@@ -56,6 +56,23 @@ describe "#{klass}", :shared => true do
     @map_volume.available?(0).should == false
   end  
   
+  it "should be able to insert records of size that is greater than record size elastically" do
+    position = @map_volume.elastic_insert!("E"*300)
+    @map_volume.elastic_read(position).should == "E"*300
+  end
+
+  it "should be able to insert records of size that is less than record size - 4 when using elastic way" do
+    position = @map_volume.elastic_insert!("E"*252)
+    @map_volume.elastic_read(position).should == "E"*252
+  end
+
+  it "should be able to insert records of size that is greater than record size elastically when bitmap can't fit it" do
+    (@map_volume.map_size).times { @map_volume.insert!('N'*256)}
+    position = @map_volume.elastic_insert!("E"*1024)
+    @map_volume.elastic_read(position).should == "E"*1024
+  end
+
+  
   
 end
 
