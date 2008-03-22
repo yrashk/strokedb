@@ -187,7 +187,7 @@ module StrokeDB
     end
 
     def read_map_byte(position)
-      extend_map if map_size*8 < position
+      extend_map if map_size*8 <= position # TODO: spec it
       @bitmap_file.seek(HEADER_SIZE + position/8)
       @bitmap_file.read(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
     end
