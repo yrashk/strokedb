@@ -6,6 +6,7 @@ TODO aka ROADMAP
  [ ] Drop capacity from MapVolume (by splitting to two files, bitmap and data)
  [ ] Add multirecords to MapVolume (elastic MapVolume)
  [ ] Implement 160-bit data pointers
+[ ] Implement transactions
  [?] Memory-based storage with permanent log
 [ ] Implement complex queries  
  [ ] Improve inverted list index
@@ -37,10 +38,10 @@ Later
 ~~~~~
 
 [ ] Improve performance
-	[ ] It seems that http://gitorious.org/projects/strokedb/repos/mainline/commit/b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
-	[ ] New uuid-based versions caused some slow down, too
+ [ ] It seems that b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
+ [ ] New uuid-based versions caused some slow down, too
 [ ] Improve Diff
-	[ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
+ [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
 [ ] Investigate performance issues
-	[ ] Read/Write benchmarks showing dependency of data size
-	[?] Pool new UUIDs
+ [ ] Read/Write benchmarks showing dependency of data size
+ [?] Pool new UUIDs
