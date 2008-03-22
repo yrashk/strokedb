@@ -3,6 +3,9 @@ TODO aka ROADMAP
 0.1 (April-May 2008)
 ~~~~~~~~~~~~~~~~~~
 [ ] Implement new storages
+ [ ] Drop capacity from MapVolume (by splitting to two files, bitmap and data)
+ [ ] Add multirecords to MapVolume (elastic MapVolume)
+ [ ] Implement 160-bit data pointers
  [?] Memory-based storage with permanent log
 [ ] Implement complex queries  
  [ ] Improve inverted list index
