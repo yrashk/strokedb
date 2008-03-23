@@ -6,7 +6,7 @@ module StrokeDB
     DEFAULT_SIZE = 64*1024*1024
     DEFAULT_PATH = "."
     
-    # Open a volume in a directory +:path+, with UUID (raw value)
+    # Open a volume in a directory +:path+, with UUID (raw value) +:raw_uuid+
     # and a specified +:size+. If the file does not exist, it is created 
     # and filled with zero bytes up to the specified size. 
     # Otherwise, it is just opened and ready for reads and writes.
