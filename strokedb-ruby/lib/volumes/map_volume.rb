@@ -1,18 +1,6 @@
 require 'readbytes'
 module StrokeDB
 
-  class InvalidRecordSizeError < Exception
-  end
-
-  class InvalidRecordPositionError < Exception
-  end
-
-  class MapVolumeCapacityExceeded < Exception
-  end
-
-  class InvalidMapVolumeError < Exception
-  end
-
   class MapVolume
 
     HEADER_SIZE = 512
@@ -53,7 +41,7 @@ module StrokeDB
       raise InvalidRecordPositionError if available?(position)
       read_at_position(position)
     end
-    
+
     def elastic_read(position)
       @data_file.seek(position*record_size)
       size = @data_file.read(4).unpack('N').first
@@ -207,14 +195,14 @@ module StrokeDB
 
       update_file_header!
     end
-    
+
     def decrement_available_chunk!(position,length)
       @bitmap_file.seek(HEADER_SIZE + (position % 8))
       @bitmap_file.write("\xff" * (length+1))
       @first_available_position = -1
       update_file_header!
     end
-    
+
 
     def increment_available_capacity!(position)
       update_map_byte!(position) {|byte| byte & (255 ^ (1 << (position % 8))) }
@@ -241,7 +229,7 @@ module StrokeDB
       @data_file.seek(position*record_size)
       @data_file.write(record)
     end
-    
+
     def elastic_write_at_position!(position,record)
       @data_file.seek(position*record_size)
       @data_file.write([record.size].pack('N') + record)
@@ -259,6 +247,15 @@ module StrokeDB
       @map_size = nil
     end
 
+  end
+
+  class InvalidRecordSizeError < Exception
+  end
+
+  class InvalidRecordPositionError < Exception
+  end
+
+  class InvalidMapVolumeError < Exception
   end
 
 end
