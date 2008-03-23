@@ -14,7 +14,15 @@ module StrokeDB
       StrokeDB.default_config = cfg
     end
   end
-
+  
+  if ENV['DEBUG'] || $DEBUG
+    def DEBUG
+      yield
+    end
+  else
+    def DEBUG
+    end
+  end
   
   class NoDefaultStoreError < Exception ; end
   
