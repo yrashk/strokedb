@@ -44,26 +44,6 @@ module StrokeDB
       t
     end
     
-    # Updates existing chunk with new +data+. Data length cannot be greater
-    # than original chunk size.
-    #
-    def update(position, data)
-      @file.seek(position)
-      size = @file.readbytes(4).unpack('N').first
-      if data.size > size
-        raise ChunkOverflowException, "Cannot put #{data.size} bytes in a #{size} bytes chunk."
-      end
-      unsafe_update(position, data)
-    end
-    
-    # Just like #update, but doesn't perform boundary check.
-    # Suitable for frequent fixed-sized updates.
-    #
-    def unsafe_update(position, data)
-      @file.seek(position)
-      @file.write([data.size].pack('N') + data)
-    end
-    
     # Close the volume file. You cannot read/insert after that operation.
     # In such case, VolumeClosedException is raised. 
     # Call DataVolume.new to open volume again.
@@ -96,11 +76,6 @@ module StrokeDB
     # method on a closed or deleted volume.
     #
     class VolumeClosedException < Exception; end
-
-    # ChunkOverflowException is thrown when you call +update+ with
-    # too big data value.
-    #
-    class ChunkOverflowException < Exception; end
         
   private
 
