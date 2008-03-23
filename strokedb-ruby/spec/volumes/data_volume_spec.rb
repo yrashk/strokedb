@@ -58,6 +58,39 @@ describe DataVolume do
     dv.close!
   end
   
+  it "should update chunk data" do
+    dv = DataVolume.new(@options)
+    p1 = dv.insert("7 bytes")
+    p2 = dv.insert("13 more bytes")
+    p3 = dv.insert("1")
+    
+    dv.read(p2).should == "13 more bytes"
+    dv.update(p2, "12 more byt_")
+    dv.read(p2).should == "12 more byt_"
+    dv.update(p2, "x")
+    dv.read(p2).should == "x"
+    
+    dv.read(p1).should == "7 bytes"
+    dv.read(p3).should == "1"
+    
+    dv.update(p2, "5")
+    dv.read(p2).should == "5"
+    
+    dv.read(p1).should == "7 bytes"
+    dv.read(p3).should == "1"
+  end
+  
+  it "should raise if trying to put too big data into existing chunk" do
+    dv = DataVolume.new(@options)
+    p1 = dv.insert("7 bytes")
+    p2 = dv.insert("13 more bytes")
+    p3 = dv.insert("1")
+    
+    dv.read(p2).should == "13 more bytes"
+    lambda { dv.update(p2, "15 more bytezzz") }.should raise_error(DataVolume::ChunkOverflowException)
+  end
+  
+  
   it "should raise exception if file is closed" do
     dv = DataVolume.new(@options)
     dv.close!

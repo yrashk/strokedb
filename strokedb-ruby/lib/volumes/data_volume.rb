@@ -44,7 +44,20 @@ module StrokeDB
       t
     end
     
-    # Close the volume file. You cannot read/write after that operation.
+    # Updates existing chunk with new +data+. Data length cannot be greater
+    # than original chunk size.
+    #
+    def update(position, data)
+      @file.seek(position)
+      size = @file.readbytes(4).unpack('N').first
+      if data.size > size
+        raise ChunkOverflowException, "Cannot put #{data.size} bytes in a #{size} bytes chunk."
+      end
+      @file.seek(position)
+      @file.write([data.size].pack('N') + data)
+    end
+    
+    # Close the volume file. You cannot read/insert after that operation.
     # In such case, VolumeClosedException is raised. 
     # Call DataVolume.new to open volume again.
     #
@@ -52,7 +65,7 @@ module StrokeDB
       safe_close
     end
     
-    # Close and delete the volume file. You cannot read/write after that 
+    # Close and delete the volume file. You cannot read/insert after that 
     # operation. In such case, VolumeClosedException is raised.
     #
     def delete!
@@ -72,12 +85,16 @@ module StrokeDB
       @options['raw_uuid'] 
     end
     
-
-    # VolumeClosedException is thrown when you call +read+ or +write+
+    # VolumeClosedException is thrown when you call +read+ or +insert+
     # method on a closed or deleted volume.
     #
     class VolumeClosedException < Exception; end
-    
+
+    # ChunkOverflowException is thrown when you call +update+ with
+    # too big data value.
+    #
+    class ChunkOverflowException < Exception; end
+        
   private
 
     def initialize_file
