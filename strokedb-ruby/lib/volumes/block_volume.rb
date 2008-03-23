@@ -1,5 +1,7 @@
 require 'readbytes'
 module StrokeDB
+  
+  # TODO: inherit from the common AbstractVolume
   class BlockVolume
     attr_reader :file_path, :blocks_count
     
@@ -8,12 +10,14 @@ module StrokeDB
     DEFAULT_PATH = "."
         
     # Open a volume in a directory +:path+, with UUID (raw value) +:raw_uuid+
-    # and a specified +:size+. If the file does not exist, it is created 
+    # and a specified +:block_size+. If the file does not exist, it is created 
     # and filled with zero bytes up to the specified size. 
     # Otherwise, it is just opened and ready for reads and writes.
+    # File contains +block_count+ blocks of :block_size: bytes size.
+    # When insertion is done to a new position, file is autoextended.
     #
-    # Required params: +:chunk_size+ and +:uuid+
-    # Default +:path+ is "."
+    # Required params: +:block_size+ and +:uuid+
+    # Default +:path+ is ".", +:blocks_count+ is 1024
     #
     # Example:
     #   DataVolume.new(:raw_uuid => uuid, :path => "/var/dir", :size => 1024)
