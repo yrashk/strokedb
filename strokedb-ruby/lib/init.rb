@@ -15,10 +15,19 @@ module StrokeDB
     end
   end
 
+  if ENV['DEBUG'] || $DEBUG
+    def DEBUG
+      yield
+    end
+  else
+    def DEBUG
+    end
+  end
+
   OPTIMIZATIONS = []
   OPTIMIZATIONS << :C    unless RUBY_PLATFORM =~ /java/
   OPTIMIZATIONS << :Java if     RUBY_PLATFORM =~ /java/
-  
+
   class NoDefaultStoreError < Exception ; end
   
 end
