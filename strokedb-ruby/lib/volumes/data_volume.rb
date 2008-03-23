@@ -93,12 +93,7 @@ module StrokeDB
     def create_file(path, size)
       FileUtils.mkdir_p(File.dirname(path))
       File.open(path, File::CREAT | File::EXCL | File::WRONLY) do |f|
-        zeros = "\x00"*1024
-        (size/1024).times do 
-          f.write(zeros)
-        end
-      end
-      File.open(path, File::WRONLY) do |f|
+        f.truncate(size)
         write_tail(f, 4) # 4 is a size of long type.
       end
     end
