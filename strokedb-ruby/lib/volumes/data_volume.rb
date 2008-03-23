@@ -53,6 +53,13 @@ module StrokeDB
       if data.size > size
         raise ChunkOverflowException, "Cannot put #{data.size} bytes in a #{size} bytes chunk."
       end
+      unsafe_update(position, data)
+    end
+    
+    # Just like #update, but doesn't perform boundary check.
+    # Suitable for frequent fixed-sized updates.
+    #
+    def unsafe_update(position, data)
       @file.seek(position)
       @file.write([data.size].pack('N') + data)
     end
