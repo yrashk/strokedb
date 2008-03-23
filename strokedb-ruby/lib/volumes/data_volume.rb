@@ -18,12 +18,13 @@ module StrokeDB
     # Example:
     #   DataVolume.new(uuid, :path => "/var/dir", :size => 1024)
     #
-    def initialize(raw_uuid, params = {})
-      @uuid = raw_uuid
-      @size    = params[:size] || DEFAULT_SIZE
-      dir_path = params[:path] || DEFAULT_PATH
+    def initialize(options = {})
+      @options = options.stringify_keys
+      @uuid = @options['raw_uuid']
+      @size    = @options['size'] || DEFAULT_SIZE
+      dir_path = @options['path'] || DEFAULT_PATH
       
-      @file_path = File.join(dir_path, hierarchify(raw_uuid.to_formatted_uuid) + ".dv")
+      @file_path = File.join(dir_path, hierarchify(@uuid.to_formatted_uuid) + ".dv")
       create_file(@file_path, @size) unless File.exist?(@file_path)
       @file = File.open(@file_path, File::RDWR)
       @tail = read_tail(@file)
@@ -41,7 +42,7 @@ module StrokeDB
     # Write some data to the end of the file.
     # Returns record position.
     #
-    def write(data)
+    def insert(data)
       @file.seek(@tail)
       @file.write([data.size].pack('N') + data)
       t = @tail
@@ -97,7 +98,7 @@ module StrokeDB
       @file = nil
       class <<self
         alias :read  :raise_volume_closed
-        alias :write :raise_volume_closed
+        alias :insert :raise_volume_closed
       end
     end
     

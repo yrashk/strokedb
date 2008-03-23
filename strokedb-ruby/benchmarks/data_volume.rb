@@ -8,24 +8,23 @@ include Benchmark
 
 SimpleSkiplist.optimize!(:C)
 
-[true,false].each do |decompose|
   [2000].each do |n|
 
     record = "D"*512
 
     bm(60) do |x| 
       FileUtils.rm_rf @path
-      data_volume = DataVolume.new(:path => @path, :decompose_compound_types => decompose)
+      data_volume = DataVolume.new(:raw_uuid => Util.random_uuid_raw, :path => @path)
 
       records = []
-      n.times {|v| records << {"static" => "unique", "some_val_#{v}" => v,"some_val1_#{v}" => "_#{v}", "some_valX_#{v}" => "#{v}_"   } }
+      n.times {|v| records << {"static" => "unique", "some_val_#{v}" => v,"some_val1_#{v}" => "_#{v}", "some_valX_#{v}" => "#{v}_"   }.to_json }
 
       offsets = []
-      x.report("Inserting #{n} complex different records (decompose: #{decompose})") do
-        records.each {|rec| offsets << data_volume.insert!(rec) }
+      x.report("Inserting #{n} complex different records") do
+        records.each {|rec| offsets << data_volume.insert(rec) }
       end
 
-      x.report("Reading #{n} complex different records (decompose: #{decompose})") do
+      x.report("Reading #{n} complex different records") do
         offsets.each do |offset| 
           data_volume.read(offset)  
         end
@@ -43,17 +42,17 @@ SimpleSkiplist.optimize!(:C)
 
     bm(60) do |x| 
       FileUtils.rm_rf @path
-      data_volume = DataVolume.new(:path => @path, :decompose_compound_types => decompose)
+      data_volume = DataVolume.new(:raw_uuid => Util.random_uuid_raw, :path => @path)
 
       records = []
-      n.times {|v| records << {"static" => "unique" } }
+      n.times {|v| records << {"static" => "unique" }.to_json }
 
       offsets = []
-      x.report("Inserting #{n} complex static records (decompose: #{decompose})") do
-        records.each {|rec| offsets << data_volume.insert!(rec)  }
+      x.report("Inserting #{n} complex static records") do
+        records.each {|rec| offsets << data_volume.insert(rec)  }
       end
 
-      x.report("Reading #{n} complex static records (decompose: #{decompose})") do
+      x.report("Reading #{n} complex static records") do
         offsets.each do |offset| 
           data_volume.read(offset)  
         end
@@ -64,4 +63,3 @@ SimpleSkiplist.optimize!(:C)
     end
 
   end
-end
