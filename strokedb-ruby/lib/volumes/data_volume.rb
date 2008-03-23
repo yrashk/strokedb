@@ -1,7 +1,7 @@
 require 'readbytes'
 module StrokeDB
   class DataVolume
-    attr_accessor :file_path, :uuid, :size, :tail
+    attr_reader :file_path, :tail
     
     DEFAULT_SIZE = 64*1024*1024
     DEFAULT_PATH = "."
@@ -19,15 +19,8 @@ module StrokeDB
     #   DataVolume.new(uuid, :path => "/var/dir", :size => 1024)
     #
     def initialize(options = {})
-      @options = options.stringify_keys
-      @uuid = @options['raw_uuid']
-      @size    = @options['size'] || DEFAULT_SIZE
-      dir_path = @options['path'] || DEFAULT_PATH
-      
-      @file_path = File.join(dir_path, hierarchify(@uuid.to_formatted_uuid) + ".dv")
-      create_file(@file_path, @size) unless File.exist?(@file_path)
-      @file = File.open(@file_path, File::RDWR)
-      @tail = read_tail(@file)
+      @options = options.stringify_keys.reverse_merge('size' => DEFAULT_SIZE, 'path' => DEFAULT_PATH)
+      initialize_file
     end
     
     # Read a record sitting in a +position+ in the volume file.
@@ -66,13 +59,33 @@ module StrokeDB
       safe_close
       File.delete(@file_path)
     end
+
+    def path
+      @options['path']
+    end
     
+    def size
+      @options['size']
+    end
+    
+    def uuid
+      @options['raw_uuid'] 
+    end
+    
+
     # VolumeClosedException is thrown when you call +read+ or +write+
     # method on a closed or deleted volume.
     #
     class VolumeClosedException < Exception; end
-
+    
   private
+
+    def initialize_file
+      @file_path = File.join(path, hierarchify(uuid.to_formatted_uuid) + ".dv")
+      create_file(@file_path, size) unless File.exist?(@file_path)
+      @file = File.open(@file_path, File::RDWR)
+      @tail = read_tail(@file)
+    end
     
     # Create file skeleton filled with zeros with a prefix 
     # containing current file tail.
