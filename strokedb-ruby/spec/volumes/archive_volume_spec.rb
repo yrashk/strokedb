@@ -1,20 +1,20 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe DataVolume do
+describe ArchiveVolume do
   
   before(:all) do
-    FileUtils.rm_rf(File.dirname(__FILE__) + "/../../test/storages/data_volume_spec")
+    FileUtils.rm_rf(File.dirname(__FILE__) + "/../../test/storages/archive_volume_spec")
   end
   
   before(:each) do
-    @path = File.dirname(__FILE__) + "/../../test/storages/data_volume_spec"
+    @path = File.dirname(__FILE__) + "/../../test/storages/archive_volume_spec"
     @raw_uuid = Util.random_uuid_raw
     @size     = 64*1024
     @options = {:raw_uuid => @raw_uuid, :size => @size, :path => @path}
   end
   
   it "should be created with given size" do 
-    dv = DataVolume.new(@options)
+    dv = ArchiveVolume.new(@options)
     fname = dv.file_path
     File.should be_exist(fname)
     File.size(fname).should == @size
@@ -24,7 +24,7 @@ describe DataVolume do
   end
   
   it "should write some data and return its position" do
-    dv = DataVolume.new(@options)
+    dv = ArchiveVolume.new(@options)
     tail = dv.tail
     tail.should == 4
     prefix = 4
@@ -39,7 +39,7 @@ describe DataVolume do
   end
   
   it "should read & write data" do
-    dv = DataVolume.new(@options)
+    dv = ArchiveVolume.new(@options)
     p1 = dv.insert("7 bytes")
     p2 = dv.insert("13 more bytes")
     p3 = dv.insert("1")
@@ -59,7 +59,7 @@ describe DataVolume do
   end
   
   it "should update chunk data" do
-    dv = DataVolume.new(@options)
+    dv = ArchiveVolume.new(@options)
     p1 = dv.insert("7 bytes")
     p2 = dv.insert("13 more bytes")
     p3 = dv.insert("1")
@@ -81,22 +81,22 @@ describe DataVolume do
   end
   
   it "should raise if trying to put too big data into existing chunk" do
-    dv = DataVolume.new(@options)
+    dv = ArchiveVolume.new(@options)
     p1 = dv.insert("7 bytes")
     p2 = dv.insert("13 more bytes")
     p3 = dv.insert("1")
     
     dv.read(p2).should == "13 more bytes"
-    lambda { dv.update(p2, "15 more bytezzz") }.should raise_error(DataVolume::ChunkOverflowException)
+    lambda { dv.update(p2, "15 more bytezzz") }.should raise_error(ArchiveVolume::ChunkOverflowException)
   end
   
   
   it "should raise exception if file is closed" do
-    dv = DataVolume.new(@options)
+    dv = ArchiveVolume.new(@options)
     dv.close!
     
-    lambda { dv.read(4)       }.should raise_error(DataVolume::VolumeClosedException)
-    lambda { dv.insert("data") }.should raise_error(DataVolume::VolumeClosedException)
+    lambda { dv.read(4)       }.should raise_error(ArchiveVolume::VolumeClosedException)
+    lambda { dv.insert("data") }.should raise_error(ArchiveVolume::VolumeClosedException)
   end
   
 end

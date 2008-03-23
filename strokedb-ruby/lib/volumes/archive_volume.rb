@@ -1,6 +1,6 @@
 require 'readbytes'
 module StrokeDB
-  class DataVolume
+  class ArchiveVolume
     attr_reader :file_path, :tail
     
     DEFAULT_SIZE = 64*1024*1024
