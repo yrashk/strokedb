@@ -254,8 +254,7 @@ module StrokeDB
 
     def extend_map
       pos = @bitmap_file.pos
-      @bitmap_file.seek(0,IO::SEEK_END)
-      @bitmap_file.write("\x00" * bitmap_extension_pace)
+      @bitmap_file.truncate(pos + bitmap_extension_pace)
       @bitmap_file.seek(pos)
       @map_size = nil
     end
