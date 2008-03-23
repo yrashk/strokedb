@@ -16,7 +16,7 @@ module StrokeDB
     #   :size => 64 Mb
     #
     # Example:
-    #   DataVolume.new(uuid, :path => "/var/dir", :size => 1024)
+    #   DataVolume.new(:raw_uuid => uuid, :path => "/var/dir", :size => 1024)
     #
     def initialize(options = {})
       @options = options.stringify_keys.reverse_merge('size' => DEFAULT_SIZE, 'path' => DEFAULT_PATH)
