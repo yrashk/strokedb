@@ -41,7 +41,7 @@ module StrokeDB
     def [](*args)
       r = _square_brackets(*args)
       if (args.first.is_a?(Range) || args.size == 2) && r.is_a?(Array)
-        Array.new(r).map {|v| @map_proc.call(v) }
+        LazyMappingArray.new(r).map_with(&@map_proc).unmap_with(&@unmap_proc)
       else
         @map_proc.call(r)
       end
@@ -116,6 +116,10 @@ module StrokeDB
       _index(@unmap_proc.call(v))
     end
 
+    def to_a
+       Array.new(map{|v| v})
+    end
+    
     def class
       Array
     end
