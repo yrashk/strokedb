@@ -20,7 +20,7 @@ module StrokeDB
     # Default +:path+ is ".", +:blocks_count+ is 1024
     #
     # Example:
-    #   DataVolume.new(:raw_uuid => uuid, :path => "/var/dir", :size => 1024)
+    #   DataVolume.new(:raw_uuid => uuid, :path => "/var/dir", :block_size => 1024)
     #
     def initialize(options = {})
       @options = options.stringify_keys.reverse_merge(
