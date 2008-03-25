@@ -1,5 +1,34 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
+describe ArchiveVolume, "initialization" do
+
+  before(:all) do
+    FileUtils.rm_rf(File.dirname(__FILE__) + "/../../test/storages/archive_volume_spec")
+  end
+  
+  before(:each) do
+    @path = File.dirname(__FILE__) + "/../../test/storages/archive_volume_spec"
+    @size     = 64*1024
+    @options = {:size => @size, :path => @path}
+  end
+  
+  it "should go well with raw uuid" do
+    raw_uuid = Util.random_uuid_raw
+    ArchiveVolume.new(@options.merge(:uuid => raw_uuid)).uuid.should == raw_uuid.to_formatted_uuid
+  end
+
+  it "should go well with formatted uuid" do
+    uuid = Util.random_uuid
+    ArchiveVolume.new(@options.merge(:uuid => uuid)).uuid.should == uuid
+  end
+  
+  it "should generate new UUID if none given" do
+    ArchiveVolume.new(@options).uuid.should match(/#{UUID_RE}/)
+  end
+  
+  
+end
+
 describe ArchiveVolume do
   
   before(:all) do
@@ -10,9 +39,9 @@ describe ArchiveVolume do
     @path = File.dirname(__FILE__) + "/../../test/storages/archive_volume_spec"
     @raw_uuid = Util.random_uuid_raw
     @size     = 64*1024
-    @options = {:raw_uuid => @raw_uuid, :size => @size, :path => @path}
+    @options = {:uuid => @raw_uuid, :size => @size, :path => @path}
   end
-  
+
   it "should be created with given size" do 
     dv = ArchiveVolume.new(@options)
     fname = dv.file_path

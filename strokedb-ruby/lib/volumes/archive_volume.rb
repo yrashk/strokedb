@@ -6,7 +6,7 @@ module StrokeDB
     DEFAULT_SIZE = 64*1024*1024
     DEFAULT_PATH = "."
     
-    # Open a volume in a directory +:path+, with UUID (raw value) +:raw_uuid+
+    # Open a volume in a directory +:path+, with UUID +:uuid+
     # and a specified +:size+. If the file does not exist, it is created 
     # and filled with zero bytes up to the specified size. 
     # Otherwise, it is just opened and ready for reads and writes.
@@ -16,7 +16,7 @@ module StrokeDB
     #   :size => 64 Mb
     #
     # Example:
-    #   DataVolume.new(:raw_uuid => uuid, :path => "/var/dir", :size => 1024)
+    #   DataVolume.new(:uuid => uuid, :path => "/var/dir", :size => 1024)
     #
     def initialize(options = {})
       @options = options.stringify_keys.reverse_merge('size' => DEFAULT_SIZE, 'path' => DEFAULT_PATH)
@@ -70,7 +70,16 @@ module StrokeDB
     end
     
     def uuid
-      @options['raw_uuid'] 
+      case @options['uuid'] 
+      when /^(.){16}$/
+        @options['uuid'] = @options['uuid'].to_formatted_uuid
+      when /^#{UUID_RE}$/
+        @options['uuid']
+      when nil
+        @options['uuid'] = Util.random_uuid
+      else
+        raise ArgumentError, "invalid UUID"
+      end
     end
     
     # VolumeClosedException is thrown when you call +read+ or +insert+
