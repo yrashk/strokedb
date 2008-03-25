@@ -1,5 +1,37 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
+describe BlockVolume, "initialization" do
+
+  before(:all) do
+    FileUtils.rm_rf(File.dirname(__FILE__) + "/../../test/storages/block_volume_spec")
+  end
+  
+  before(:each) do
+    @path = File.dirname(__FILE__) + "/../../test/storages/block_volume_spec"
+    @size     = 2
+    @count    = 2
+    @options = {:block_size => @size, 
+                :blocks_count => @count, 
+                :path => @path}
+  end
+  
+  it "should go well with raw uuid" do
+    raw_uuid = Util.random_uuid_raw
+    BlockVolume.new(@options.merge(:uuid => raw_uuid)).uuid.should == raw_uuid.to_formatted_uuid
+  end
+
+  it "should go well with formatted uuid" do
+    uuid = Util.random_uuid
+    BlockVolume.new(@options.merge(:uuid => uuid)).uuid.should == uuid
+  end
+  
+  it "should generate new UUID if none given" do
+    BlockVolume.new(@options).uuid.should match(/#{UUID_RE}/)
+  end
+  
+  
+end
+
 describe BlockVolume do
   
   before(:all) do
@@ -11,7 +43,7 @@ describe BlockVolume do
     @raw_uuid = Util.random_uuid_raw
     @size     = 2
     @count    = 2
-    @options = {:raw_uuid => @raw_uuid, 
+    @options = {:uuid => @raw_uuid, 
                 :block_size => @size, 
                 :blocks_count => @count, 
                 :path => @path}

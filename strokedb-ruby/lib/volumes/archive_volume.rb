@@ -71,14 +71,12 @@ module StrokeDB
     
     def uuid
       case @options['uuid'] 
-      when /^(.){16}$/
-        @options['uuid'] = @options['uuid'].to_formatted_uuid
       when /^#{UUID_RE}$/
         @options['uuid']
       when nil
         @options['uuid'] = Util.random_uuid
       else
-        raise ArgumentError, "invalid UUID"
+        @options['uuid'] = @options['uuid'].to_formatted_uuid
       end
     end
     
@@ -94,7 +92,7 @@ module StrokeDB
   private
 
     def initialize_file
-      @file_path = File.join(path, hierarchify(uuid.to_formatted_uuid) + ".dv")
+      @file_path = File.join(path, hierarchify(uuid) + ".av")
       create_file(@file_path, size) unless File.exist?(@file_path)
       @file = File.open(@file_path, File::RDWR)
       @tail = read_tail(@file)
