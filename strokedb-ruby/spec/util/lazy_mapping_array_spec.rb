@@ -35,13 +35,13 @@ describe "LazyMappingArray instance with block specified" do
   end
 
   it "should call mapping proc on #[start,length]" do
-    @array[0,2].should == @original[0,2].map(&@mapper)
-    @array[3,2].should == @original[3,2].map(&@mapper)
+    @array[0,2].to_a.should == @original[0,2].map(&@mapper)
+    @array[3,2].to_a.should == @original[3,2].map(&@mapper)
   end
 
   it "should call mapping proc on #[range]" do
-    @array[0..1].should == @original[0..1].map(&@mapper)
-    @array[3..4].should == @original[3..4].map(&@mapper)
+    @array[0..1].to_a.should == @original[0..1].map(&@mapper)
+    @array[3..4].to_a.should == @original[3..4].map(&@mapper)
   end
 
   it "should call mapping proc on #slice(index)" do
@@ -49,11 +49,11 @@ describe "LazyMappingArray instance with block specified" do
   end
 
   it "should call mapping proc on #slice(start,length)" do
-    @array.slice(0,2).should == @original.slice(0,2).map(&@mapper)
+    @array.slice(0,2).to_a.should == @original.slice(0,2).map(&@mapper)
   end
 
   it "should call mapping proc on #slice(range)" do
-    @array.slice(0..1).should == @original.slice(0..1).map(&@mapper)
+    @array.slice(0..1).to_a.should == @original.slice(0..1).map(&@mapper)
   end
 
   it "should call mapping proc on #at(index)" do
