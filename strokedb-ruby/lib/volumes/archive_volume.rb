@@ -36,10 +36,11 @@ module StrokeDB
     # Returns record position.
     #
     def insert(data)
+      raise VolumeCapacityExceeded if (new_tail = @tail + 4 + data.size) > size
       @file.seek(@tail)
       @file.write([data.size].pack('N') + data)
       t = @tail
-      @tail += 4 + data.size 
+      @tail = new_tail
       write_tail(@file, @tail)
       t
     end
@@ -76,6 +77,10 @@ module StrokeDB
     # method on a closed or deleted volume.
     #
     class VolumeClosedException < Exception; end
+    
+    # VolumeCapacityExceeded is thrown when you are trying to +insert+ data
+    # that is larger than available capacity.
+    class VolumeCapacityExceeded < Exception; end
         
   private
 

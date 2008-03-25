@@ -66,4 +66,11 @@ describe ArchiveVolume do
     lambda { dv.insert("data") }.should raise_error(ArchiveVolume::VolumeClosedException)
   end
   
+  it "should raise exception if capacity is exceeded" do
+    dv = ArchiveVolume.new(@options)
+    # Since ArchiveVolume maintains some system information like header and record size
+    # record size of file size will exceed volume's capacity
+    lambda { dv.insert(" "*@size) }.should raise_error(ArchiveVolume::VolumeCapacityExceeded)
+  end
+  
 end
