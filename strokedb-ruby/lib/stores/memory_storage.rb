@@ -7,7 +7,7 @@ module StrokeDB
     end
     
     def save_as_head!(document, timestamp)
-      write(document.uuid, document, timestamp)
+      save!(document,timestamp, :head => true)
 		end      
     
     def find(uuid, version=nil, opts = {})
@@ -42,18 +42,18 @@ module StrokeDB
       @container.each do |key, value|
           next if after && (value[1] <= after)
           if uuid_match = key.match(/^#{UUID_RE}$/) || (include_versions && uuid_match = key.match(/#{UUID_RE}./) )
-            yield value[0]
+            yield Document.from_raw(options[:store],value[0])
           end
       end
  		end
 
-    def perform_save!(document, timestamp)
+    def perform_save!(document, timestamp, options = {})
       uuid = document.uuid
       version = document.version
-      document = document.to_raw
+      raw_document = document.to_raw
       uuid_version = uuid + (version ? ".#{version}" : "")
-      write(uuid, document, timestamp)
-      write(uuid_version, document, timestamp)
+      write(uuid, raw_document, timestamp) unless document.is_a?(VersionedDocument)
+      write(uuid_version, raw_document, timestamp) unless options[:head]
     end
 
     private

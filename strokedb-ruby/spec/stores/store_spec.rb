@@ -30,14 +30,6 @@ describe "Store", :shared => true  do
     @store.should be_a_kind_of(Enumerable)
   end
 
-  it "should put store_uuid and timestamp into each chunk it saves" do
-    @document = Document.new :stuff => '...'
-    @store.save!(@document)
-    [@uuid].map{|uuid| @store.chunk_storage.find(uuid)}.compact.each do |chunk|
-      chunk.store_uuid.should == @store.uuid
-      chunk.timestamp.should_not be_nil
-    end
-  end
 
 end
 

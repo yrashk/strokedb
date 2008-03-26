@@ -51,7 +51,7 @@ module StrokeDB
 
 
     def each(options = {},&block)
-      @storage.each(options,&block)
+      @storage.each(options.merge(:store => self),&block)
     end
 
     def next_timestamp!
@@ -102,7 +102,6 @@ module StrokeDB
 
 
     private
-
 
     def save_as_head!(doc)
       @storage.save_as_head!(doc,timestamp)

@@ -14,13 +14,15 @@ module StrokeDB
     def find(uuid, version=nil, opts = {})
       uuid_version = uuid + (version ? ".#{version}" : "")
       key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : NIL_UUID.to_raw_uuid)
-      raw_doc = StrokeDB::deserialize(read_at_ptr(@uindex.find(key)))[0]
-      unless opts[:no_instantiation]
-        doc = Document.from_raw(opts[:store], raw_doc.freeze) # FIXME: there should be a better source for store (probably)
-        doc.extend(VersionedDocument) if version
-        doc
-      else
-        raw_doc
+      if ptr = @uindex.find(key)
+        raw_doc = StrokeDB::deserialize(read_at_ptr(ptr))[0]
+        unless opts[:no_instantiation]
+          doc = Document.from_raw(opts[:store], raw_doc.freeze) # FIXME: there should be a better source for store (probably)
+          doc.extend(VersionedDocument) if version
+          doc
+        else
+          raw_doc
+        end
       end
     end
 
@@ -40,7 +42,7 @@ module StrokeDB
       @container.each do |key, value|
         next if after && (value[1] <= after)
         if uuid_match = key.match(/^#{UUID_RE}$/) || (include_versions && uuid_match = key.match(/#{UUID_RE}./) )
-          yield value[0]
+          yield Document.from_raw(options[:store],value[0])
         end
       end
     end
@@ -49,7 +51,7 @@ module StrokeDB
       position = @archive.insert(StrokeDB::serialize([document,timestamp.counter]))
       ptr = DistributedPointer.new(@archive.uuid,position).pack
       uuid = document.uuid.to_raw_uuid
-      @uindex.insert(uuid + NIL_UUID.to_raw_uuid, ptr)
+      @uindex.insert(uuid + NIL_UUID.to_raw_uuid, ptr) unless document.is_a?(VersionedDocument)
       @uindex.insert(uuid + document.version.to_raw_uuid, ptr)
     rescue ArchiveVolume::VolumeCapacityExceeded	 
       create_new_archive!
@@ -75,7 +77,7 @@ module StrokeDB
         uuid
       end
     end
-    
+
     def read_at_ptr(ptr)
       dptr = DistributedPointer.unpack(ptr)
       volume_uuid = dptr.volume_uuid
@@ -84,7 +86,7 @@ module StrokeDB
       else
         archive = ArchiveVolume.new(:path => @options['path'], :uuid => volume_uuid)
         result = archive.read(dptr.offset)
-        archive.safe_close!
+        archive.close!
         result
       end
     end
