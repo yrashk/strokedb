@@ -3,7 +3,7 @@ module StrokeDB
 
     def initialize(options = {})
       @options = options.stringify_keys
-      @volume = MapVolume.new(:record_size => (@options['maxlevel']||DEFAULT_MAXLEVEL * 4) + 1 +
+      @volume = MapVolume.new(:record_size => (@options['maxlevel']||DEFAULT_MAXLEVEL) * 4 + 1 +
       @options['key_length'] + @options['value_length'], :path => @options['path'])
       @nodes = {}
       super(nil,:maxlevel => @options['maxlevel'], :probability => @options['probability'])
@@ -16,7 +16,6 @@ module StrokeDB
     def value_length
       @options['value_length']
     end
-
 
     def path
       @options['path']
@@ -33,6 +32,7 @@ module StrokeDB
     private
 
     # SimpleSkiplist overrides
+
 
     def node_next(x, level)
       if node = x[0][level]
@@ -73,26 +73,31 @@ module StrokeDB
 
     def save_node!(node)
       node_levels = node[0].map{|v| v.nil? ? -1 : v[-1]}
-      packed = (node[-1,1]+node_levels).pack("CN#{node_levels.size}")
+      packed = ([maxlevel]+node_levels).pack("CN#{node_levels.size}")
+      key = node[-3]
+      value = node[-2]
+
       if (szd = maxlevel - node_levels.size) > 0
         packed += "\xff\xff\xff\xff"*szd
       end
+
       if node[-1] == -1 # unsaved
-        node[-1] = @volume.insert!(packed + node[-3] + node[-2])
+        node[-1] = @volume.insert!(packed + key + value)
       else
-        @volume.write!(node[-1],packed + node[-3] + node[-2])
+        @volume.write!(node[-1],packed + key + value)
       end
-      if node[-1] == 0
-        @head = node
-      end
+      @head = node if node[-1] == 0
       node
     end
 
     def read_node(position)
       _node = @volume.read(position)
       level = _node[0,1].unpack('C')[0]
+      links = _node[1,maxlevel*4].unpack("N#{level}")
       node = [
-        LazyMappingArray.new(_node[1,maxlevel*4].unpack("N#{level}")).map_with{|v| v == 4294967295 ? nil : read_node(v)},
+        LazyMappingArray.new(links).map_with do |v| 
+          v == 4294967295 ? nil : read_node(v)
+        end.unmap_with {|v| v[-1] },
         (key = _node[maxlevel*4 + 1,key_length]) == "\x00" * key_length ? nil : key,
         _node[maxlevel*4 + 1 + key_length, value_length],
         position
