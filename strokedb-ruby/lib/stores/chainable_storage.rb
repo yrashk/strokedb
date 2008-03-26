@@ -48,7 +48,7 @@ module StrokeDB
     def save_with_chained_storages!(document, timestamp, source=nil)
       perform_save!(document, timestamp)
       (@chained_storages||{}).each_pair do |storage,savings|
-          savings << chunk unless  storage == source || savings.include?(chunk) # TODO: here we had a bug (storage == document), spec it
+          savings << [document,timestamp] unless  storage == source || savings.include?([document,timestamp]) # TODO: here we had a bug (storage == document), spec it
       end
     end
 
