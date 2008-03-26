@@ -14,7 +14,7 @@ module StrokeDB
     def find(uuid, version=nil, opts = {})
       uuid_version = uuid + (version ? ".#{version}" : "")
       key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : NIL_UUID.to_raw_uuid)
-      if ptr = @uindex.find(key)
+      if (ptr = @uindex.find(key)) && (ptr != "\x00" * 20) # no way ptr will be zero
         raw_doc = StrokeDB::deserialize(read_at_ptr(ptr))[0]
         unless opts[:no_instantiation]
           doc = Document.from_raw(opts[:store], raw_doc.freeze) # FIXME: there should be a better source for store (probably)
