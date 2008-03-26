@@ -13,7 +13,7 @@ module StrokeDB
       @chained_storages.delete(storage)
       storage.remove_chained_storage!(self) if storage.has_chained_storage?(self)
       if @chained_storages.keys.empty?
-        class <<self
+        class << self
           alias :save! :save_without_chained_storages!
         end
       end
@@ -27,7 +27,7 @@ module StrokeDB
       return unless @chained_storages.is_a?(Hash)
       @chained_storages.each_pair do |storage, savings|
         next if storage == origin
-        savings.each {|saving| storage.save!(saving, self)}
+        savings.each {|saving| storage.save!(saving[0], saving[1], self)}
         storage.sync_chained_storages!(self)
         @chained_storages[storage] = [] 
       end
@@ -36,19 +36,19 @@ module StrokeDB
     def sync_chained_storage!(storage)
       return unless @chained_storages.is_a?(Hash)
       (@chained_storages[storage]||[]).each do |saving|
-        storage.save!(saving,self)
+        storage.save!(saving[0],saving[1],self)
       end
       @chained_storages[storage] = []
     end
 
-    def save_without_chained_storages!(chunk, source=nil)
-      perform_save!(chunk)
+    def save_without_chained_storages!(document, timestamp, source=nil)
+      perform_save!(document, timestamp)
     end
 
-    def save_with_chained_storages!(chunk,source=nil)
-      perform_save!(chunk)
+    def save_with_chained_storages!(document, timestamp, source=nil)
+      perform_save!(document, timestamp)
       (@chained_storages||{}).each_pair do |storage,savings|
-          savings << chunk unless  storage == chunk || savings.include?(chunk)
+          savings << [document,timestamp] unless  storage == document || savings.include?([document,timestamp])
       end
     end
 

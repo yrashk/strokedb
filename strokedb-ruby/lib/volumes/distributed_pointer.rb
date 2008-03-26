@@ -10,21 +10,18 @@ module StrokeDB
     attr_accessor :volume_uuid, :offset
     
     # Initialize pointer with given components.
-    # * raw_uuid is a raw bytestring, not nicely formatted UUID! 
+    # * uuid UUID (either raw or formatted)
     # * offset is a positive integer
     #
-    def initialize(raw_uuid, offset)
-      @volume_uuid = raw_uuid
+    def initialize(uuid, offset)
+      @volume_uuid = uuid.to_raw_uuid
       @offset      = offset
     end
     
     # Creates a pointer object using binary string.
     #
     def self.unpack(string160bit)
-      dp = new(nil, nil)
-      dp.volume_uuid = string160bit[0, 16]
-      dp.offset =  string160bit[16, 4].unpack("L")[0]
-      dp
+      new(string160bit[0, 16], string160bit[16, 4].unpack("L")[0])
     end
     
     # Converts pointer object to it's string representation.

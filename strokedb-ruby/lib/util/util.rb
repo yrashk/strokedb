@@ -54,15 +54,13 @@ module StrokeDB
   end
   
   class ::String
-    # Assuming that string contains formatted UUID,
-    # convert it to raw 16 bytes.
+    # Convert to raw (16 bytes) string (self can be already raw or formatted).
     def to_raw_uuid
-      ::UUID.parse(self).raw
+      size == 16 ? self.freeze : ::UUID.parse(self).raw
     end
-    # Assuming that string contains raw UUID bytes,
-    # convert to formatted string.
+    # Convert to formatted string (self can be raw or already formatted).
     def to_formatted_uuid
-      ::UUID.parse_raw(self).to_s
+      size == 16 ? ::UUID.parse_raw(self).to_s : self.freeze
     end
   end
 end
