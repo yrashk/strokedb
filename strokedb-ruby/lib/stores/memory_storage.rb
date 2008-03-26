@@ -1,6 +1,6 @@
 module StrokeDB
   class MemoryStorage < Storage
-
+    
     def initialize(options = {})
     	@options = options.stringify_keys
       @container = SimpleSkiplist.new
@@ -12,7 +12,11 @@ module StrokeDB
     
     def find(uuid, version=nil, opts = {})
       uuid_version = uuid + (version ? ".#{version}" : "")
-      read(uuid_version)
+      unless result = read(uuid_version) && authoritative_source
+        authoritative_source.find(uuid,version,opts)
+      else
+        result
+      end
     end
     
     def exists?(uuid,version=nil)

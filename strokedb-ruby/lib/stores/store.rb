@@ -64,7 +64,7 @@ module StrokeDB
     end
 
     def inspect
-      "#<Store #{uuid}#{empty? ? " (empty)" : ""}>"
+      "#<Store #{uuid}>"
     end
 
     def autosync!

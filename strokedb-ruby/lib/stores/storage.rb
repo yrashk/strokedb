@@ -7,8 +7,5 @@ module StrokeDB
     def initialize(opts={})
     end
 
-    
-    # we had an authoritative source thing here
-
   end
 end

@@ -14,10 +14,9 @@ module StrokeDB
     def find(uuid, version=nil, opts = {})
       uuid_version = uuid + (version ? ".#{version}" : "")
       key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : NIL_UUID.to_raw_uuid)
-      raw_doc = StrokeDB::deserialize(@uindex.find(key))[0]
+      raw_doc = StrokeDB::deserialize(read_at_ptr(@uindex.find(key)))[0]
       unless opts[:no_instantiation]
         doc = Document.from_raw(opts[:store], raw_doc.freeze) # FIXME: there should be a better source for store (probably)
-        doc = Document.from_raw(self,raw_doc.freeze)
         doc.extend(VersionedDocument) if version
         doc
       else
@@ -73,6 +72,19 @@ module StrokeDB
           f.write(uuid)
         end
         uuid
+      end
+    end
+    
+    def read_at_ptr(ptr)
+      dptr = DistributedPointer.unpack(ptr)
+      volume_uuid = dptr.volume_uuid
+      if volume_uuid == @archive.uuid.to_raw_uuid
+        @archive.read(dptr.offset)
+      else
+        archive = ArchiveVolume.new(:path => @options['path'], :uuid => volume_uuid)
+        result = archive.read(dptr.offset)
+        archive.safe_close!
+        result
       end
     end
 
