@@ -76,7 +76,7 @@ module StrokeDB
       packed = ([maxlevel]+node_levels).pack("CN#{node_levels.size}")
       key = node[-3]
       value = node[-2]
-
+      
       if (szd = maxlevel - node_levels.size) > 0
         packed += "\xff\xff\xff\xff"*szd
       end
@@ -98,7 +98,7 @@ module StrokeDB
         LazyMappingArray.new(links).map_with do |v| 
           v == 4294967295 ? nil : read_node(v)
         end.unmap_with {|v| v[-1] },
-        (key = _node[maxlevel*4 + 1,key_length]) == "\x00" * key_length ? nil : key,
+        _node[maxlevel*4 + 1,key_length], 
         _node[maxlevel*4 + 1 + key_length, value_length],
         position
       ]
