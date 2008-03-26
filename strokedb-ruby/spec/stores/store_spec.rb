@@ -58,7 +58,6 @@ describe "New store" do
   it "should create corresponding StoreInfo document" do
     @store.document.should be_a_kind_of(StoreInfo)
     @store.document.uuid.should == @store.uuid
-    @store.document.kind.should == 'skiplist'
   end
 
   it "should be empty" do

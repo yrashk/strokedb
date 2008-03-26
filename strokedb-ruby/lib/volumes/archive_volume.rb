@@ -3,7 +3,12 @@ module StrokeDB
   class ArchiveVolume
     attr_reader :file_path, :tail
     
-    DEFAULT_SIZE = 64*1024*1024
+    if defined?(::Spec)
+      DEFAULT_SIZE = 512*1024
+    else 
+      DEFAULT_SIZE = 64*1024*1024
+    end
+    
     DEFAULT_PATH = "."
     
     # Open a volume in a directory +:path+, with UUID +:uuid+

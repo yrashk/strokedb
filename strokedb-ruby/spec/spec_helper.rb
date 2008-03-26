@@ -8,7 +8,10 @@ def setup_default_store(store=nil)
     return store
   end
   @mem_storage = StrokeDB::MemoryStorage.new
-  StrokeDB.stub!(:default_store).and_return(StrokeDB::Store.new(:storage => @mem_storage,:index => @index))
+  @path = File.join(File.dirname(__FILE__), '/../test/storages/spec')
+  FileUtils.rm_rf @path
+  StrokeDB.stub!(:default_store).and_return(StrokeDB::Store.new(:storage => @mem_storage,:index => @index, 
+                                                                :path => @path))
   StrokeDB.default_store
 end
 

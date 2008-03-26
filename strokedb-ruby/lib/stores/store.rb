@@ -30,17 +30,28 @@ module StrokeDB
     end
 
     def head_version(uuid)
-    	@storage.head_version(uuid)
+      @storage.head_version(uuid,{ :store => self })
     end
 
     def save!(doc)
       next_timestamp!
       storage.save!(doc, timestamp)
+      # 
+      if @index_store
+        if doc.previous_version
+          raw_pdoc = find(doc.uuid,doc.previous_version,:no_instantiation => true)
+          pdoc = Document.from_raw(self,raw_pdoc.freeze,:skip_callbacks => true)
+          pdoc.extend(VersionedDocument)
+          @index_store.delete(pdoc)
+        end
+        @index_store.insert(doc)
+        @index_store.save!
+      end
     end  
 
 
     def each(options = {},&block)
-    	@storage.each(options,&block)
+      @storage.each(options,&block)
     end
 
     def next_timestamp!
@@ -84,7 +95,7 @@ module StrokeDB
         @autosync_mutex.synchronize { @stop_autosync = true; storage.sync_chained_storages! }
       end
     end
-    
+
     def path
       @options['path']
     end
@@ -94,14 +105,14 @@ module StrokeDB
 
 
     def save_as_head!(doc)
-    		@storage.save_as_head!(doc,timestamp)
+      @storage.save_as_head!(doc,timestamp)
     end
-    
+
     def initialize_files
       FileUtils.mkdir_p(path)
       uuid_file = File.join(path,'UUID')
       timestamp_file = File.join(path,'TIMESTAMP')
-      
+
       if File.exists?(uuid_file)
         @uuid = IO.read(uuid_file)
       else

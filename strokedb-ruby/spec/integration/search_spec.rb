@@ -5,7 +5,7 @@ describe "Database search" do
   before(:all) do
     @path = File.dirname(__FILE__) + "/../../test/storages/database_search"
     FileUtils.rm_rf @path
-    @f_storage = FileChunkStorage.new(:path => @path + "/storage")
+    @f_storage = FileStorage.new(:path => @path + "/storage")
     @f_storage.clear!
     @index_storage = InvertedListFileStorage.new(:path => @path+"/index")
     @index_storage.clear!

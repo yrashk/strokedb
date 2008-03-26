@@ -83,6 +83,7 @@ describe "Document", :shared => true do
 
   it "should not save batch update slots" do
     @document.save! # ensure it is not new
+    doc = @document.reload
     @document.update_slots(:aaa1 => "aaa", :bbb1 => true)
     doc = @document.reload
     doc[:aaa1].should be_nil

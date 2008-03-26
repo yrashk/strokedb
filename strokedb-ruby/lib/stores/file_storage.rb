@@ -28,8 +28,8 @@ module StrokeDB
       !!find(uuid,version,:no_instantiation => true)
     end
 
-    def head_version(uuid)
-      if doc = find(uuid,nil, :no_instantiation => true)
+    def head_version(uuid, opts = {})
+      if doc = find(uuid,nil,opts.merge({ :no_instantiation => true }))
         doc['version']
       end	 
     end

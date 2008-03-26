@@ -12,10 +12,16 @@ module StrokeDB
     
     def find(uuid, version=nil, opts = {})
       uuid_version = uuid + (version ? ".#{version}" : "")
-      unless result = read(uuid_version) && authoritative_source
-        authoritative_source.find(uuid,version,opts)
+      unless raw_doc = read(uuid_version)
+        authoritative_source.find(uuid,version,opts) if authoritative_source
       else
-        result
+        unless opts[:no_instantiation]
+          doc = Document.from_raw(opts[:store], raw_doc.freeze) # FIXME: there should be a better source for store (probably)
+          doc.extend(VersionedDocument) if version
+          doc
+        else
+          raw_doc
+        end
       end
     end
     
@@ -24,8 +30,8 @@ module StrokeDB
       !@container.find(uuid_version).nil?
     end
 
-    def head_version(uuid)
-      if doc = find(uuid,nil)
+    def head_version(uuid, opts = {})
+      if doc = find(uuid,nil, opts)
       	 doc.version
       end	 
     end
@@ -42,8 +48,11 @@ module StrokeDB
  		end
 
     def perform_save!(document, timestamp)
-      uuid_version = document.uuid + (document.version ? ".#{document.version}" : "")
-      write(document.uuid, document, timestamp)
+      uuid = document.uuid
+      version = document.version
+      document = document.to_raw
+      uuid_version = uuid + (version ? ".#{version}" : "")
+      write(uuid, document, timestamp)
       write(uuid_version, document, timestamp)
     end
 
