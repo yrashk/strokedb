@@ -393,7 +393,7 @@ module StrokeDB
     # Return document's uuid
     #
     def uuid
-      self[:uuid]
+      @uuid ||= self[:uuid]
     end
 
     #
