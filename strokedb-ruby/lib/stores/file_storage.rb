@@ -3,8 +3,7 @@ module StrokeDB
 
     def initialize(options = {})
       @options = options.stringify_keys
-      @archive = ArchiveVolume.new(:path => @options['path'], :uuid => last_archive_uuid)
-      @uindex = FixedLengthSkiplistVolume.new(:path => File.join(@options['path'],'uindex'), :key_length => 32 , :value_length => 20)
+      initialize_files
     end
 
     def save_as_head!(document, timestamp)
@@ -65,7 +64,6 @@ module StrokeDB
     end
 
     def last_archive_uuid
-      FileUtils.mkdir_p(@options['path'])
       last_filename = File.join(@options['path'],'LAST')
       if File.exists?(last_filename)
         IO.read(last_filename) 
@@ -95,6 +93,18 @@ module StrokeDB
       @options['path']
     end
 
+    def clear!
+      FileUtils.rm_rf(@options['path'])
+      initialize_files
+    end
+    
+    private
+    
+    def initialize_files
+      FileUtils.mkdir_p(@options['path'])
+      @archive = ArchiveVolume.new(:path => @options['path'], :uuid => last_archive_uuid)
+      @uindex = FixedLengthSkiplistVolume.new(:path => File.join(@options['path'],'uindex'), :key_length => 32 , :value_length => 20)
+    end
 
   end
 end

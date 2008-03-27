@@ -30,7 +30,7 @@ describe "Database sync" do
   end
   
   def save!
-    StrokeDB.default_store.chunk_storage.sync_chained_storages!
+    StrokeDB.default_store.storage.sync_chained_storages!
   end
   
 end

@@ -3,7 +3,7 @@ module StrokeDB
     
     def initialize(options = {})
     	@options = options.stringify_keys
-      @container = SimpleSkiplist.new
+    	clear!
     end
     
     def save_as_head!(document, timestamp)
@@ -56,6 +56,10 @@ module StrokeDB
       write(uuid_version, raw_document, timestamp) unless options[:head]
     end
 
+    def clear!
+      @container = SimpleSkiplist.new
+    end
+    
     private
 
     def read(key)
