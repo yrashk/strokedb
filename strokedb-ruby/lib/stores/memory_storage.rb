@@ -52,7 +52,7 @@ module StrokeDB
       version = document.version
       raw_document = document.to_raw
       uuid_version = uuid + (version ? ".#{version}" : "")
-      write(uuid, raw_document, timestamp) unless document.is_a?(VersionedDocument)
+      write(uuid, raw_document, timestamp) if options[:head] || !document.is_a?(VersionedDocument)
       write(uuid_version, raw_document, timestamp) unless options[:head]
     end
 
