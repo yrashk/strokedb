@@ -70,10 +70,6 @@ module StrokeDB
       find(uuid) || StoreInfo.create!(self, :uuid => uuid)
     end
 
-    def empty?
-      !@storage.find('MASTER')
-    end
-
     def inspect
       "#<Store #{uuid}>"
     end

@@ -4,8 +4,8 @@ describe "Database sync" do
   
   before(:all) do
     @path = File.dirname(__FILE__) + '/../../test/storages/regression/database-sync'
-    build_config!
     FileUtils.rm_rf @path
+    build_config!
   end
   
   it "empty save test" do

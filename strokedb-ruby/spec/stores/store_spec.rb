@@ -38,7 +38,7 @@ describe "New store" do
   before(:each) do
     @store = setup_default_store
   end
-
+  
   it "should have its own UUID" do
     @store.uuid.should match(/^#{UUID_RE}$/)
   end
@@ -52,9 +52,6 @@ describe "New store" do
     @store.document.uuid.should == @store.uuid
   end
 
-  it "should be empty" do
-    @store.should be_empty
-  end
 
   it "should return nil as head_version for unexistent document (well there is no documents at all)" do
     @store.head_version(Util.random_uuid).should be_nil
@@ -76,9 +73,6 @@ describe "Non-empty store" do
     end
   end
 
-  it "should not be empty" do
-    @store.should_not be_empty
-  end
 
   it "should report existing document as such" do
     @store.exists?(@documents.first.uuid).should == true
