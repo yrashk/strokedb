@@ -59,6 +59,9 @@ module StrokeDB
     def clear!
       @container = SimpleSkiplist.new
     end
+
+    def close!
+    end
     
     private
 

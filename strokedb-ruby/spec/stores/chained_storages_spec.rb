@@ -17,6 +17,11 @@ Storage.subclasses.map{|e| e.constantize}.each do |storage|
       
       @counter = LTS.zero
     end
+    
+    after(:each) do
+      @target_storage.close!
+      @target_storage1.close!
+    end
 
     it "should collect update to target store" do
       @storage.save!(@document,@counter)

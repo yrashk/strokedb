@@ -98,6 +98,12 @@ module StrokeDB
       initialize_files
     end
     
+    def close!
+      @archive.close!
+      @uindex.close!
+    end
+      
+    
     private
     
     def initialize_files
