@@ -83,9 +83,9 @@ describe "Config" do
   it "should add a store" do
     @paths << (@root_path + "file_storage")
     @config.add_storage :fs, :file, :path => @paths.last
-    @config.add_store :store, :skiplist, :storage => :fs, :cut_level => 4
-    @config.stores[:store].should be_an_instance_of(SkiplistStore)
-    @config.stores[:store].chunk_storage.should == @config.storages[:fs]
+    @config.add_store :store, nil, :storage => :fs, :cut_level => 4, :path => @paths.last
+    @config.stores[:store].should be_an_instance_of(Store)
+    @config.stores[:store].storage.should == @config.storages[:fs]
   end
   
   it "should add a default store with default index" do
@@ -94,8 +94,8 @@ describe "Config" do
     @paths << (@root_path + "inverted_list_file_default_index")
     @config.add_storage :index_storage, :inverted_list_file, :path => @paths.last
     @config.add_index :default, :inverted_list, :index_storage
-    @config.add_store :default, :skiplist, :storage => :fs, :cut_level => 4
-    @config.stores[:default].should be_an_instance_of(SkiplistStore)
+    @config.add_store :default, nil, :storage => :fs, :cut_level => 4, :path => @paths.last
+    @config.stores[:default].should be_an_instance_of(Store)
     @config.indexes[:default].document_store.should == @config.stores[:default]
   end
 
@@ -126,14 +126,15 @@ describe "Config builder" do
     StrokeDB.default_config.should_not == config
   end
   
-  it "should use skiplist store by default" do
+  it "should use Store by default" do
     config = StrokeDB::Config.build :base_path => @base_path
-    config.stores[:default].should be_a_kind_of(SkiplistStore)
+    config.stores[:default].should be_a_kind_of(Store)
   end
 
   it "should use specified store if told so" do
     StrokeDB.send!(:remove_const,'SomeFunnyStore') if defined?(SomeFunnyStore)
-    StrokeDB::SomeFunnyStore = Class.new(SkiplistStore)
+    StrokeDB::SomeFunnyStore = Class.new(Store)
+    pending("not that important now")
     config = StrokeDB::Config.build :store => :some_funny, :base_path => @base_path
     config.stores[:default].should be_a_kind_of(SomeFunnyStore)
   end
@@ -244,12 +245,5 @@ describe "Config builder" do
     cfg.build_config.should == config
     cfg.should == StrokeDB.default_config
   end
-  
-  
-
-  
-  after(:each) do
-    FileUtils.rm_rf @base_path
-  end
-  
+    
 end

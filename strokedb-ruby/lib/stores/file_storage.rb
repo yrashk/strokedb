@@ -90,6 +90,10 @@ module StrokeDB
         result
       end
     end
+    
+    def path
+      @options['path']
+    end
 
 
   end
