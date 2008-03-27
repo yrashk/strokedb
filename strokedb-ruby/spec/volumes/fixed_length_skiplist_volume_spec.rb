@@ -146,6 +146,23 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     #   @list.find_nearest("g").should == "F"
     # end
   end
+  
+  describe "Saved FixedLengthSkiplistVolume" do
+    before(:each) do
+      @maxlevel    = 8
+      @probability = 0.5
+      @path = File.dirname(__FILE__) + '/../../test/storages/fixed_length_sl_volume'
+      FileUtils.rm_rf @path
+      @list = FixedLengthSkiplistVolume.new(:path => @path, :maxlevel => @maxlevel, :probability => @probability, :key_length => 10, :value_length => 10)
+      @list.insert("A"*10,"B"*10)
+    end
+    
+    it "should be loaded properly" do
+      @new_list = FixedLengthSkiplistVolume.new(:path => @path, :maxlevel => @maxlevel, :probability => @probability, :key_length => 10, :value_length => 10)
+      @new_list.find("A"*10).should == "B"*10
+    end
+    
+  end
 end
 
 def raw_list(list)
