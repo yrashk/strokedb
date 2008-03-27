@@ -18,6 +18,7 @@ TODO aka ROADMAP
   [ ] Custom boolean operation on results
   [ ] Assoc's indexing
   [ ] Sub-attributes indexing
+  [ ] Create efficient implementation
  [ ] Consider using Ambition API
  [?] Add sorting primitives for search functionality
 [ ] Improve spec coverage
