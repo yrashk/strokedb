@@ -7,6 +7,7 @@ include Benchmark
 
 FileUtils.rm_rf "test/storages/bigstore"
 StrokeDB::Config.build :default => true, :base_path => "test/storages/bigstore"
+StrokeDB.default_store.index_store = nil
 
 N = 1_000
 

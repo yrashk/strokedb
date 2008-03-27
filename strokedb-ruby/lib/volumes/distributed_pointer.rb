@@ -30,6 +30,10 @@ module StrokeDB
       @volume_uuid + [@offset].pack("L")
     end
     
+    def self.pack(uuid,offset)
+      uuid.to_raw_uuid + [offset].pack("L")
+    end
+    
     def inspect #:nodoc:
       "#<DistributedPointer #{@volume_uuid.to_formatted_uuid}:#{@offset}>"
     end
