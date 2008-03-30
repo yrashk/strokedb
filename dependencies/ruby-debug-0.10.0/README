@@ -1,0 +1,77 @@
+= ruby-debug
+
+== Overview
+
+ruby-debug is a fast implementation of the standard debugger debug.rb.
+The faster execution speed is achieved by utilizing a new hook Ruby C API.
+
+== Requirements
+
+ruby-debug requires Ruby 1.8.4 or higher.
+
+Unless you get the packages as a binary (Microsoft Windows binaries
+are sometimes available), you'll need a C compiler and Ruby
+development headers, and a Make program so the extension in
+ruby-debug-base can be compiled when it is installed.
+
+== Install
+
+ruby-debug is provided as a RubyGem.  To install:
+
+<tt>gem install ruby-debug</tt>
+
+This should also pull in <tt>ruby-debug-base</tt> as a dependency.
+
+For Emacs support and the Reference Manual, get
+<tt>ruby-debug-extra</tt>.  This is not a RubyGem, you'll need a Make
+program and a POSIX shell. With this installed, run:
+
+<pre>
+  sh ./configure
+  make
+  make install
+</pre>
+
+== Usage
+
+There are two ways of running ruby-debug.
+
+=== rdebug executable:
+
+$ rdebug <your-script>
+
+When you start your script this way, the debugger will stop at
+the first line of code in the script file. So you will be able 
+to set up your breakpoints.
+
+=== ruby-debug API
+
+The second way is to use the ruby-debug API to interrupt your
+code execution at run time.
+
+  require 'ruby-debug' ; Debugger.start
+  ...
+  def your_method
+    ...
+    debugger
+    ...
+  end
+
+When Kernel#debugger method is executed, the debugger is activated
+and you will be able to inspect and step through your code.
+
+== Performance
+
+The debug.rb script that comes with the standard Ruby library uses
+Kernel#set_trace_func API. Implementing the debugger in pure Ruby has
+a negative impact on the speed of your program execution. This is
+because the Ruby interpreter creates a Binding object each trace call,
+even though it is not being used most of the time. ruby-debug moves
+most of the functionality for Binding access and for breakpoint
+testing to a native extension. Because this code is in C and because
+and can be selectively enabled or disabled, the overhead in running
+your program can be minimized.
+
+== License
+
+See LICENSE for license information.
