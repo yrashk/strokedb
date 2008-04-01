@@ -226,14 +226,14 @@ describe "Config builder" do
 
   it "should dump config in base_path (except 'default' key)" do
     cfg = StrokeDB::Config.build :default => true, :base_path => @base_path
-    config = ActiveSupport::JSON.decode(IO.read(@base_path + '/config'))
+    config = JSON.parse(IO.read(@base_path + '/config'))
     config.should == cfg.build_config
   end
 
   it "should load dumped config" do
     cfg = StrokeDB::Config.build :default => true, :base_path => @base_path
     cfg.storages.values.each {|s| s.close! if s.respond_to?(:close!)}
-    config = ActiveSupport::JSON.decode(IO.read(@base_path + '/config'))
+    config = JSON.parse(IO.read(@base_path + '/config'))
     cfg = StrokeDB::Config.load(@base_path + '/config')
     cfg.build_config.should == config
     cfg.should_not == StrokeDB.default_config
@@ -242,7 +242,7 @@ describe "Config builder" do
   it "should load dumped config and make it default if told so" do
     cfg = StrokeDB::Config.build :default => true, :base_path => @base_path
     cfg.storages.values.each {|s| s.close! if s.respond_to?(:close!)}
-    config = ActiveSupport::JSON.decode(IO.read(@base_path + '/config'))
+    config = JSON.parse(IO.read(@base_path + '/config'))
     cfg = StrokeDB::Config.load(@base_path + '/config',true)
     cfg.build_config.should == config
     cfg.should == StrokeDB.default_config

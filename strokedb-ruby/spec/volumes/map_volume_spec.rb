@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-[MapVolume,*MapVolume.subclasses.map{|name| name.constantize}].each do |klass|
+[MapVolume].each do |klass|
 describe "#{klass}", :shared => true do
 
   it "should have record size" do

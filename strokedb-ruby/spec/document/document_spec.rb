@@ -626,7 +626,7 @@ describe "Valid Document's JSON" do
     @store = mock("Store")
     @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2")
     @json = @document.to_raw.to_json
-    @decoded_json = ActiveSupport::JSON.decode(@json)
+    @decoded_json = JSON.parse(@json)
   end
 
   it "should be loadable into Document" do
@@ -652,7 +652,7 @@ describe "Valid Document's JSON with meta name specified" do
     @meta = Document.create!(:name => 'SomeDocument')
     @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @meta)
     @json = @document.to_raw.to_json
-    @decoded_json = ActiveSupport::JSON.decode(@json)
+    @decoded_json = JSON.parse(@json)
   end
 
   it "should load meta's module if it is available" do
@@ -684,7 +684,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     end
     @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @metas)
     @json = @document.to_raw.to_json
-    @decoded_json = ActiveSupport::JSON.decode(@json)
+    @decoded_json = JSON.parse(@json)
   end
 
   it "should load all available meta modules" do

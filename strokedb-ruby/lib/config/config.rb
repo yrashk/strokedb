@@ -8,7 +8,7 @@ module StrokeDB
     class << self
     
       def load(filename,default = false)
-        build(ActiveSupport::JSON.decode(IO.read(filename)).merge(:default => default))
+        build(JSON.parse(IO.read(filename)).merge(:default => default))
       end
       
       def build(opts={})
@@ -92,14 +92,14 @@ module StrokeDB
     private
     
     def constantize(name,type)
-      type_fullname(name,type).constantize
+      StrokeDB.const_get type_fullname(name,type)
     rescue 
-      exception = "::StrokeDB::Unknown#{name.to_s.camelize}TypeError".constantize
+      exception = StrokeDB.const_get("Unknown#{name.to_s.camelize}TypeError")
       raise exception, "Unable to load #{name} type #{type}"
     end
     
     def type_fullname(type, name)
-      "::StrokeDB::#{name.to_s.camelize}#{type.to_s.camelize}"
+      "#{name.to_s.camelize}#{type.to_s.camelize}"
     end
     
   end
