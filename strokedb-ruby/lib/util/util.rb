@@ -4,7 +4,6 @@ module StrokeDB
   module Util
     module ::Enumerable
       # Map and each_with_index combined.
-      # TODO: think about moving it to ActiveSupport
       def map_with_index
         collected=[]
         each_with_index {|item, index| collected << yield(item, index) }

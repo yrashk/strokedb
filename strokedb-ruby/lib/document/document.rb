@@ -38,7 +38,7 @@ module StrokeDB
     end
     def marshal_load(content) #:nodoc:
       @callbacks = {}
-      initialize_raw_slots(ActiveSupport::JSON.decode(content[2,content.length]))
+      initialize_raw_slots(JSON.parse(content[2,content.length]))
       @saved = content[1,1] == '1'
       @new = content[0,1] == '1'
     end

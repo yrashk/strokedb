@@ -1,15 +1,4 @@
-active_support_path = File.dirname(__FILE__) + '/../dependencies/activesupport-2.0.2/lib/'
 ruby_debug_path     = File.dirname(__FILE__) + '/../dependencies/ruby-debug-0.10.0/cli/'
-
-# Use bundled ActiveSupport with fallback to gems
-if File.exist?(active_support_path)
-  $:.unshift( active_support_path )
-else
-  puts "Using ActiveSupport gem"
-  require 'rubygems'
-end
-
-require 'active_support'
 
 if ENV["DEBUGGER"]
   if File.exist?(ruby_debug_path)
@@ -24,6 +13,17 @@ if ENV["DEBUGGER"]
 else
   module Kernel
     def debugger; end
+  end
+end
+
+require 'rubygems'
+begin
+  require 'json'
+rescue LoadError
+  begin
+    require 'json_pure'
+  rescue LoadError
+    raise LoadError, 'Could not find json or json_pure'
   end
 end
 
