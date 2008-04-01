@@ -27,6 +27,7 @@ rescue LoadError
   end
 end
 
+require 'set'
 require 'fileutils'
 require 'drb'
 require 'drb/acl'
