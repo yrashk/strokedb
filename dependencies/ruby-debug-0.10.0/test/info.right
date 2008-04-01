@@ -1,0 +1,35 @@
+gcd.rb:4
+def gcd(a, b)
+# # ***************************************************
+# # This tests step, next, finish and continue
+# # ***************************************************
+# set debuggertesting on
+Currently testing the debugger is on.
+# set callstyle last
+Frame call-display style is last.
+# help info
+Generic command for showing things about the program being debugged.
+-- 
+List of info subcommands:
+--  
+info args -- Argument variables of current stack frame
+info breakpoints -- Status of user-settable breakpoints
+info display -- Expressions to display when program stops
+info file -- File names and timestamps of files read in
+info global_variables -- global variables
+info instance_variables -- instance variables
+info line -- Line number and file name of current position in source
+info locals -- Local variables of the current stack frame
+info program -- Execution status of the program
+info stack -- Backtrace of the stack
+info threads -- IDs of currently known threads
+info variables -- local and instance variables
+# info args
+# info line
+Line 4 of "./gcd.rb"
+# info locals
+# info stack
+--> #0 at line gcd.rb:4
+# info display
+There are no auto-display expressions now.
+# quit

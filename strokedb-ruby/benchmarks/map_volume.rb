@@ -28,7 +28,7 @@ end
 [2**10,2**12].each do |n|
 
   [64,128,512,1024,4096].each do |s|
-    record = "D"*rand(512.kilobytes)
+    record = "D"*rand(512 * 1024)
 
     bm(80) do |x| 
       FileUtils.rm_rf @path

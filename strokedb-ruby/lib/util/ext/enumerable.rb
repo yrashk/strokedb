@@ -1,0 +1,12 @@
+# extracted from ActiveRecord (http://rubyforge.org/projects/activesupport/)
+
+module Enumerable
+  # Collect an enumerable into sets, grouped by the result of a block. Useful,
+  # for example, for grouping records by date.
+  def group_by
+    inject({}) do |groups, element|
+      (groups[yield(element)] ||= []) << element
+      groups
+    end
+  end if RUBY_VERSION < '1.9'
+end

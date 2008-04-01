@@ -10,7 +10,7 @@ raw_doc = {"a"=>[2**63,{5=>"a"*100 },3],"ar"=>[1,2]*10,"b"=>Math::PI,"x"=>"a"*10
 
 puts "Dumping #{N} times..."
 bm(32) do |x| 
-  x.report("ActiveSupport to_json") do
+  x.report("JSON to_json") do
     (N/5).times do
       raw_doc.to_json
       raw_doc.to_json
@@ -36,13 +36,13 @@ j_doc = raw_doc.to_json
 puts " \n "
 puts "Loading #{N} times..."
 bm(32) do |x| 
-  x.report("ActiveSupport::JSON.decode") do
+  x.report("JSON.parse") do
     (N/5).times do
-      ActiveSupport::JSON.decode(j_doc)
-      ActiveSupport::JSON.decode(j_doc)
-      ActiveSupport::JSON.decode(j_doc)
-      ActiveSupport::JSON.decode(j_doc)
-      ActiveSupport::JSON.decode(j_doc)
+      JSON.parse(j_doc)
+      JSON.parse(j_doc)
+      JSON.parse(j_doc)
+      JSON.parse(j_doc)
+      JSON.parse(j_doc)
     end
   end
   x.report("Marshal.load") do

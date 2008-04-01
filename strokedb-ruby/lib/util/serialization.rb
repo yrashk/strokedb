@@ -4,7 +4,7 @@ module StrokeDB
       x.to_json
     end
     def deserialize(x)
-      ActiveSupport::JSON.decode(x)
+      JSON.parse(x)
     end
   end
 
@@ -20,7 +20,7 @@ module StrokeDB
 
   
   def self.serialization_method=(method_name)
-    StrokeDB.extend("::StrokeDB::#{method_name.to_s.camelize}SerializationMethod".constantize)
+    StrokeDB.extend StrokeDB.const_get("#{method_name.to_s.camelize}SerializationMethod")
   end
   
   self.serialization_method = :marshal
