@@ -116,6 +116,16 @@ module StrokeDB
       _index(@unmap_proc.call(v))
     end
 
+    alias :_substract :-
+    def -(a)
+      _substract(a.map {|v| @unmap_proc.call(v) })
+    end
+
+    alias :_include? :include?
+    def include?(v)
+      _include?(@unmap_proc.call(v))
+    end
+    
     def to_a
        Array.new(map{|v| v})
     end

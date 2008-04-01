@@ -142,6 +142,18 @@ describe "LazyMappingArray instance with block specified" do
   it "should call mapping proc on #index" do
     @array.index(1).should == 0
   end
+  
+  it "should call unmapping proc on #-" do
+    @array << "20"
+    @array << "10"
+    @array = @array - ["10"]
+    Array.new(@array).last.should == 20
+  end
+  
+  it "should call unmapping proc on #include?" do
+    @array.should include("1")
+    @array.should_not include("10")
+  end
 
 end
 

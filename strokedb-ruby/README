@@ -8,7 +8,9 @@ metadocuments, integration with runtime (it is just a ruby library).
 
 You need to install few gems in order to run StrokeDB:
 
-	$ sudo gem install diff-lcs activesupport uuidtools RubyInline
+	$ sudo gem install diff-lcs uuidtools RubyInline
+
+*Note*: There is no need in <tt>uuidtools</tt> if you use JRuby
 
 === Getting source code
 
