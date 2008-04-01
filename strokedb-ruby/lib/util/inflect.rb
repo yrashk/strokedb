@@ -1,5 +1,7 @@
-# from facets
-module Language
+# from the English gem (http://english.rubyforge.org/)
+# http://english.rubyforge.org/rdoc/classes/English/Inflect.html
+#
+# last updated from http://english.rubyforge.org/svn/trunk/lib/english/inflect.rb on 3-31-2008
 
 module English
 
@@ -134,6 +136,8 @@ module English
     word 'Swiss'     , 'Swiss'
     word 'life'      , 'lives'
     word 'wife'      , 'wives'
+    word 'virus'     , 'viri'
+    word 'octopus'   , 'octopi'
     word 'goose'     , 'geese'
     word 'criterion' , 'criteria'
     word 'alias'     , 'aliases'
@@ -198,15 +202,16 @@ module English
 
   end
 end
-end
+
 
 class String
   def singular
-    Language::English::Inflect.singular(self)
+    English::Inflect.singular(self)
   end
   alias_method(:singularize, :singular)
+
   def plural
-    Language::English::Inflect.plural(self)
+    English::Inflect.plural(self)
   end
   alias_method(:pluralize, :plural)
 end
