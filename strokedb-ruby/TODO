@@ -32,7 +32,7 @@ TODO aka ROADMAP
  [ ] collect errors and add #valid? and #errors, #errors_on methods (seems to be quite important)
  [ ] add more options to validates_presence_of
  [X] add validates_type_of
- [ ] add validates_uniqueness_of
+ [X] add validates_uniqueness_of
 [ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
 
 Later
