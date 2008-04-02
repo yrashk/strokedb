@@ -14,9 +14,9 @@ describe "Adding meta" do
   
   it "and saving document should not alter list of actual metas" do
     @user.metas << Buyer
-    metas = @user[:meta].map(&:to_raw)
+    metas = @user[:meta].map{|v| v.to_raw }
     @user.save!
-    @user[:meta].map(&:to_raw).should == metas
+    @user[:meta].map{|v| v.to_raw }.should == metas
   end
 
   
