@@ -53,6 +53,7 @@ module StrokeDB
 
       @meta_initialization_procs << Proc.new do
         @args.last.reverse_merge!("validates_presence_of_#{slotname}" => { :meta => name, :slotname => slotname, :message => message, :on => on })
+        p @args
       end
     end 
     
@@ -62,10 +63,10 @@ module StrokeDB
     #     validates_type_of :first_name, :as => :string
     #   end
     #
-    # The first_name slot must be of type String (is_a? String).
+    # The first_name value for each Person must be unique.
     #
     # Configuration options:
-    # * <tt>message</tt> - A custom error message (default is: "should be of type ...")
+    # * <tt>message</tt> - A custom error message (default is: "document with value already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
     # * <tt>if</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
@@ -90,6 +91,23 @@ module StrokeDB
       end
     end
 
+    # Validates that the specified slot value is unique in the store
+    #
+    #   Person = Meta.new do
+    #     validates_uniqueness_of :first_name
+    #   end
+    #
+    # The first_name slot must be in the document.
+    #
+    # Configuration options:
+    # * <tt>message</tt> - A custom error message (default is: "should be present on ...")
+    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
     def validates_uniqueness_of(slotname, opts={}, &block)
       opts = opts.stringify_keys
       slotname = slotname.to_s
