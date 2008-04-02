@@ -19,10 +19,9 @@ module StrokeDB
     def insert(doc)
       slots = indexable_slots_for_doc(doc)
       q = PointQuery.new(slots)
-      #pp q.slots
       list.insert(q.slots, doc.uuid)
     end
-    
+     
     def delete(doc)
       slots = indexable_slots_for_doc(doc)
       q = PointQuery.new(slots)

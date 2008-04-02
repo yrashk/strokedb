@@ -91,6 +91,7 @@ describe "Song.validates_presence_of :name, :on => :update" do
   it "should validate presence of name on document update" do
     validate_on_update(true)
   end
+  
 end
 
 describe "User.validates_type_of :email, :as => :email" do
@@ -142,5 +143,54 @@ describe "User.validates_type_of :email, :as => :string" do
     e = Email.create!
     lambda { u = User.create!(:email => e)}.should raise_error(Validations::ValidationError)
   end
-    
+  
+  it "should save User if no error raised" do
+    u = User.create!(:email => "a@b.com")
+    User.find(:email => "a@b.com").size.should == 1
+  end
+
+end   
+
+describe "User.validates_uniqueness of :email" do
+
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const, 'User') if defined?(User)
+    User = Meta.new do
+      validates_uniqueness_of :email
+    end
+  end
+  
+  it "should not raise an error if :email is unique" do
+    u = User.create!(:email => "name@server.com")
+    lambda { v = User.create!(:email => "name2@server.com") }.should_not raise_error(Validations::ValidationError)
+  end
+  
+  it "should raise an error if duplicate :email exists" do
+    u = User.create!(:email => "name@server.com")
+    lambda { v = User.create!(:email => "name@server.com") }.should raise_error(Validations::ValidationError)
+  end
+  
+  it "should not raise an error if :email is not defined" do
+    lambda { u = User.create! }.should_not raise_error(Validations::ValidationError)
+  end
+  
+end
+
+describe "Meta with validation enabled" do
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const, 'User') if defined?(User)
+    User = Meta.new do
+      validates_uniqueness_of :email
+    end
+  end
+  
+  it "should be able to find instances of all documents" do
+    doc = User.create! :email => "yrashk@gmail.com"
+    User.find.should == [doc]
+  end
+  
 end
