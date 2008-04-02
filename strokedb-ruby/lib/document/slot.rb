@@ -1,8 +1,37 @@
 module StrokeDB
-  module ArrayWithLazyDocumentLoader
+  class LazyMappingHashWithModificationCallback < LazyMappingHash
+    def with_modification_callback(&block)
+      @modification_callback = block
+      self
+    end
+    def []=(*args)
+      super(*args)
+      @modification_callback.call if @modification_callback
+    end
   end
 
-  module HashWithLazyDocumentLoader
+  class LazyMappingArrayWithModificationCallback < LazyMappingArray
+    def with_modification_callback(&block)
+      @modification_callback = block
+      self
+    end
+    def []=(*args)
+      super(*args)
+      @modification_callback.call if @modification_callback
+    end
+    def push(*args)
+      super(*args)
+      @modification_callback.call if @modification_callback
+    end
+    def <<(*args)
+      super(*args)
+      @modification_callback.call if @modification_callback
+    end
+    def unshift(*args)
+      super(*args)
+      @modification_callback.call if @modification_callback
+    end
+
   end
 
   class DocumentReferenceValue < String
@@ -27,7 +56,7 @@ module StrokeDB
       "#<DocRef #{self[0,5]}..>"
     end
     alias :to_raw :str
-    
+
     def ==(v)
       case v
       when DocumentReferenceValue
@@ -74,7 +103,7 @@ module StrokeDB
       result = encode_value(@value)
       enforce_collections(result)
     end
-    
+
     def encode_value(v,skip_documents=false)
       case v
       when Document
@@ -105,20 +134,22 @@ module StrokeDB
       when /@##{UUID_RE}.#{VERSION_RE}/
         DocumentReferenceValue.new(v,doc)
       when Array
-        LazyMappingArray.new(v).map_with do |element| 
+        LazyMappingArrayWithModificationCallback.new(v).map_with do |element| 
           decoded = decode_value(element)
           @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
         end.unmap_with do |element|
-          doc.send!(:update_version!,nil)
           encode_value(element)
+        end.with_modification_callback do
+          doc.send!(:update_version!,nil)
         end
       when Hash
-        LazyMappingHash.new(v).map_with do |element|
+        LazyMappingHashWithModificationCallback.new(v).map_with do |element|
           decoded = decode_value(element)
           @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
         end.unmap_with do |element|
-          doc.send!(:update_version!,nil)
           encode_value(element)
+        end.with_modification_callback do
+          doc.send!(:update_version!,nil)
         end
       when Symbol
         v.to_s
@@ -126,7 +157,7 @@ module StrokeDB
         v
       end
     end
-    
+
     def enforce_collections(v,skip_documents = false)
       return v unless v.is_a?(Array) || v.is_a?(Hash)
       case v

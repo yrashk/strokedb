@@ -148,8 +148,8 @@ describe "User.validates_type_of :email, :as => :string" do
     u = User.create!(:email => "a@b.com")
     User.find(:email => "a@b.com").size.should == 1
   end
-   
-end
+
+end   
 
 describe "User.validates_uniqueness of :email" do
 
@@ -174,6 +174,23 @@ describe "User.validates_uniqueness of :email" do
   
   it "should not raise an error if :email is not defined" do
     lambda { u = User.create! }.should_not raise_error(Validations::ValidationError)
+  end
+  
+end
+
+describe "Meta with validation enabled" do
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const, 'User') if defined?(User)
+    User = Meta.new do
+      validates_uniqueness_of :email
+    end
+  end
+  
+  it "should be able to find instances of all documents" do
+    doc = User.create! :email => "yrashk@gmail.com"
+    User.find.should == [doc]
   end
   
 end
