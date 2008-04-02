@@ -90,6 +90,17 @@ module StrokeDB
       end
     end
 
+    def validates_uniqueness_of(slotname, opts={}, &block)
+      opts = opts.stringify_keys
+      slotname = slotname.to_s
+      on = (opts['on'] || 'save').to_s.downcase
+      message = opts['message'] || 'A document with a #{slotname} of #{value} already exists'
+      
+      @meta_initialization_procs << Proc.new do
+        @args.last.reverse_merge!("validates_uniqueness_of_#{slotname}" => { :meta => name, :slotname => slotname, :message => message, :on => on })
+      end
+    end
+
     private 
 
     def initialize_validations
@@ -99,6 +110,11 @@ module StrokeDB
       
       install_validations_for(:validates_type_of) do |doc, validation, slotname|
         !doc.has_slot?(slotname) || doc[slotname].is_a?(Kernel.const_get(validation[:type].to_s.capitalize))
+      end
+
+      install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
+        meta = Kernel.const_get(doc.meta.name)
+        !doc.has_slot?(slotname) || !meta.find(slotname.to_sym => doc[slotname]) || !(meta.find(slotname.to_sym => doc[slotname]).size > 0)
       end
     end
 
