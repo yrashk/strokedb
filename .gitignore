@@ -6,3 +6,5 @@ strokedb-ruby/docs/software
 strokedb-ruby/docs/*/*.key
 strokedb-ruby/.*strokedb
 strokedb-ruby/TAGS
+*.swp
+strokedb-ruby/examples/.*.strokedb

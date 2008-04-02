@@ -3,15 +3,6 @@ require 'uuidtools'
 
 module StrokeDB
   module Util
-    module ::Enumerable
-      # Map and each_with_index combined.
-      def map_with_index
-        collected=[]
-        each_with_index {|item, index| collected << yield(item, index) }
-        collected
-      end
-      alias :collect_with_index :map_with_index
-    end
 
     class ::Object
       # Uses references to documents (compared to to_raw using hashes instead)
