@@ -145,7 +145,7 @@ describe "User.validates_type_of :email, :as => :string" do
   end
   
   it "should save User if no error raised" do
-    u = User.create(:email => "a@b.com")
+    u = User.create!(:email => "a@b.com")
     User.find(:email => "a@b.com").size.should == 1
   end
    
