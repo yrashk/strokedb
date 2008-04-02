@@ -31,7 +31,7 @@ module StrokeDB
       unless validation_type = opts['as']
         raise "validates_type_of requires :as => type"
       end
-      message = opts['message'] || 'puts #{meta}\'s #{slotname} should be of type #{validation_type}'
+      message = opts['message'] || '#{meta}\'s #{slotname} should be of type #{validation_type}'
       
       @meta_initialization_procs << Proc.new do
         @args.last.reverse_merge!("validates_type_of_#{slotname}" => { :meta => name, :slotname => slotname, :message => message, :on => on, :type => validation_type })
@@ -59,7 +59,7 @@ module StrokeDB
         type_validations.each do |slotname_to_validate|
           if validation=doc.meta["validates_type_of_#{slotname_to_validate}"] 
             on = validation['on']
-            klass = Kernel.const_get(validation[:type].to_s.capitalize)
+            klass = Kernel.const_get(validation[:type].to_s.camel_case)
             if (on == 'create' && doc.new? && doc.has_slot?(slotname_to_validate) && !doc[slotname_to_validate].is_a?(klass)) ||
                (on == 'update' && !doc.new? && doc.has_slot?(slotname_to_validate) && !doc[slotname_to_validate].is_a?(klass)) ||
                (on == 'save' && doc.has_slot?(slotname_to_validate) && !doc[slotname_to_validate].is_a?(klass))
