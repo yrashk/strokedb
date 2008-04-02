@@ -130,3 +130,55 @@ describe "Song.validates_presence_of :name, :on => :update" do
   end
 
 end
+
+describe "User.validates_type_of :email, :as => :email" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const, 'User') if defined?(User)
+    Object.send!(:remove_const, 'Email') if defined?(Email)
+    Email = Meta.new
+    User = Meta.new do
+      validates_type_of :email, :as => :email
+    end
+  end
+  
+  it "should not validate type of :email if none present" do
+    lambda { User.create! }.should_not raise_error(Validations::ValidationError)
+  end
+  
+  it "should not raise error if :email is of type Email" do
+    e = Email.create!
+    lambda { u = User.create!(:email => e) }.should_not raise_error(Validations::ValidationError)
+  end
+  
+  it "should raise error if :email is not an Email" do
+    lambda { u = User.create!(:email => "name@server.com") }.should raise_error(Validations::ValidationError)
+  end
+  
+end
+
+describe "User.validates_type_of :email, :as => :string" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const, 'User') if defined?(User)
+    Object.send!(:remove_const, 'Email') if defined?(Email)
+    User = Meta.new do
+      validates_type_of :email, :as => :string
+    end
+  end
+    
+  it "should not raise error if :email is a String" do
+    lambda { u = User.create!(:email => "name@server.com") }.should_not raise_error(Validations::ValidationError)
+  end
+    
+  it "should raise error if :email is not a String" do
+    Email = Meta.new
+    e = Email.create!
+    lambda { u = User.create!(:email => e)}.should raise_error(Validations::ValidationError)
+  end
+    
+end
