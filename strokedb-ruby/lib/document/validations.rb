@@ -53,7 +53,6 @@ module StrokeDB
 
       @meta_initialization_procs << Proc.new do
         @args.last.reverse_merge!("validates_presence_of_#{slotname}" => { :meta => name, :slotname => slotname, :message => message, :on => on })
-        p @args
       end
     end 
     
