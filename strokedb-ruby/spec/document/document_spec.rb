@@ -334,13 +334,38 @@ describe "Saved Document" do
     @document.previous_version.should == old_version
   end
 
+  it "should not change version once Array slot is accessed" do
+    @document[:a] = [1]
+    @document.save!
+    old_version = @document.version
+    @document[:a].index(0)
+    @document.version.should == old_version
+  end
+
   it "should change version once Array slot is modified; previous version should be set to original version" do
     @document[:a] = []
     @document.save!
     old_version = @document.version
+    @document = @document.reload
     @document[:a] << 1
     @document.version.should_not == old_version
     @document.previous_version.should == old_version
+    @document = @document.reload
+    @document[:a].unshift 1
+    @document.version.should_not == old_version
+    @document.previous_version.should == old_version
+    @document = @document.reload
+    @document[:a][0] = 1
+    @document.version.should_not == old_version
+    @document.previous_version.should == old_version
+  end
+
+  it "should not change version once Hash slot is accessed" do
+    @document[:a] = {}
+    @document.save!
+    old_version = @document.version
+    val = @document[:a][:b]
+    @document.version.should == old_version
   end
 
   it "should change version once Hash slot is modified; previous version should be set to original version" do

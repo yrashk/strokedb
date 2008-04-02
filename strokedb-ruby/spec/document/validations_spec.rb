@@ -144,3 +144,21 @@ describe "User.validates_type_of :email, :as => :string" do
   end
     
 end
+
+describe "Meta with validation enabled" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const, 'User') if defined?(User)
+    User = Meta.new do
+      validates_type_of :email, :as => :string
+    end
+  end
+  
+  it "should be able to find instances of all documents" do
+    doc = User.create! :email => "yrashk@gmail.com"
+    User.find.should == [doc]
+  end
+  
+end
