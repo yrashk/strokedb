@@ -1,6 +1,6 @@
-require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe "Skiplist store", :shared => true  do
+describe "Store", :shared => true  do
 
   it "should increment timestamp when storing a document" do
     @document = Document.new :stuff => '...'
@@ -19,7 +19,7 @@ describe "Skiplist store", :shared => true  do
   it "should store VersionedDocument" do
     @document = Document.create! :stuff => '...'
     vd = @document.versions.all.first
-    another_cfg = StrokeDB::Config.build :base_path => File.dirname(__FILE__) + '/../../../test/storages/skiplist_store'
+    another_cfg = StrokeDB::Config.build :base_path => File.dirname(__FILE__) + '/../../test/storages/skiplist_store'
     another_store = another_cfg.stores[:default]
     another_store.save!(vd)
     another_store.find(vd.uuid,vd.version).should == vd
@@ -30,23 +30,15 @@ describe "Skiplist store", :shared => true  do
     @store.should be_a_kind_of(Enumerable)
   end
 
-  it "should put store_uuid and timestamp into each chunk it saves" do
-    @document = Document.new :stuff => '...'
-    @store.save!(@document)
-    [@uuid].map{|uuid| @store.chunk_storage.find(uuid)}.compact.each do |chunk|
-      chunk.store_uuid.should == @store.uuid
-      chunk.timestamp.should_not be_nil
-    end
-  end
 
 end
 
-describe "New skiplist chunk store" do
+describe "New store" do
 
   before(:each) do
     @store = setup_default_store
   end
-
+  
   it "should have its own UUID" do
     @store.uuid.should match(/^#{UUID_RE}$/)
   end
@@ -58,23 +50,19 @@ describe "New skiplist chunk store" do
   it "should create corresponding StoreInfo document" do
     @store.document.should be_a_kind_of(StoreInfo)
     @store.document.uuid.should == @store.uuid
-    @store.document.kind.should == 'skiplist'
   end
 
-  it "should be empty" do
-    @store.should be_empty
-  end
 
   it "should return nil as head_version for unexistent document (well there is no documents at all)" do
     @store.head_version(Util.random_uuid).should be_nil
   end
 
-  it_should_behave_like "Skiplist store"
+  it_should_behave_like "Store"
 
 end
 
 
-describe "Non-empty chunk store" do
+describe "Non-empty store" do
 
   before(:each) do
     @store = setup_default_store
@@ -85,9 +73,6 @@ describe "Non-empty chunk store" do
     end
   end
 
-  it "should not be empty" do
-    @store.should_not be_empty
-  end
 
   it "should report existing document as such" do
     @store.exists?(@documents.first.uuid).should == true
@@ -172,44 +157,44 @@ describe "Non-empty chunk store" do
   end
 
 
-  it_should_behave_like "Skiplist store"
+  it_should_behave_like "Store"
 
 
 end
 
-
-describe "[Regression] First chunk cut" do
-
-
-  before(:all) do
-    @store = setup_default_store
-    @doc1 = Document.new(@store,:stuff => 123)
-    @doc2 = Document.new(@store,:stuff => 123)
-    @doc3 = Document.new(@store,:stuff => 123)
-  end
-
-  it "should store a document with big uuid in a first chunk" do
-    $DEBUG_CHEATERS_LEVEL = 2
-    @store.save!(@doc3)
-    @store.find(@doc3.uuid).uuid.should == @doc3.uuid
-    #  end
-    #  it "should store a document with lower uuid in a first chunk" do
-    $DEBUG_CHEATERS_LEVEL = 2
-    @store.save!(@doc1)
-    @store.find(@doc1.uuid).uuid.should == @doc1.uuid
-    @store.find(@doc3.uuid).uuid.should == @doc3.uuid
-    #  end
-    #  it "should cut a chunk with a document with medium uuid" do
-    $DEBUG_CHEATERS_LEVEL = 5
-    @store.save!(@doc2)
-    @store.find(@doc1.uuid).uuid.should == @doc1.uuid
-    @store.find(@doc3.uuid).uuid.should == @doc3.uuid
-    @store.find(@doc2.uuid).uuid.should == @doc2.uuid
-  end
-
-  after(:each) do
-    $DEBUG_CHEATERS_LEVEL = nil
-  end
-end
+# 
+# describe "[Regression] First chunk cut" do
+# 
+# 
+#   before(:all) do
+#     @store = setup_default_store
+#     @doc1 = Document.new(@store,:stuff => 123)
+#     @doc2 = Document.new(@store,:stuff => 123)
+#     @doc3 = Document.new(@store,:stuff => 123)
+#   end
+# 
+#   it "should store a document with big uuid in a first chunk" do
+#     $DEBUG_CHEATERS_LEVEL = 2
+#     @store.save!(@doc3)
+#     @store.find(@doc3.uuid).uuid.should == @doc3.uuid
+#     #  end
+#     #  it "should store a document with lower uuid in a first chunk" do
+#     $DEBUG_CHEATERS_LEVEL = 2
+#     @store.save!(@doc1)
+#     @store.find(@doc1.uuid).uuid.should == @doc1.uuid
+#     @store.find(@doc3.uuid).uuid.should == @doc3.uuid
+#     #  end
+#     #  it "should cut a chunk with a document with medium uuid" do
+#     $DEBUG_CHEATERS_LEVEL = 5
+#     @store.save!(@doc2)
+#     @store.find(@doc1.uuid).uuid.should == @doc1.uuid
+#     @store.find(@doc3.uuid).uuid.should == @doc3.uuid
+#     @store.find(@doc2.uuid).uuid.should == @doc2.uuid
+#   end
+# 
+#   after(:each) do
+#     $DEBUG_CHEATERS_LEVEL = nil
+#   end
+# end
 
 

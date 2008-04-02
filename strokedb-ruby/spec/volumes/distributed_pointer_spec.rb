@@ -2,9 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "DistributedPointer" do
   it "should be packed correctly" do
-    dp = DistributedPointer.new(nil, nil)
-    dp.volume_uuid = "\xff"*16
-    dp.offset = 1
+    dp = DistributedPointer.new("\xff"*16, 1)
     dp.pack.should == "\xff"*16 + "\x01\x00\x00\x00"
   end
   

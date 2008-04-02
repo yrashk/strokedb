@@ -14,7 +14,7 @@ module StrokeDB
       def build(opts={})
         opts = opts.stringify_keys
         config = new(opts['default'])
-        storages = opts['storages'] || [:memory_chunk, :file_chunk]
+        storages = opts['storages'] || [:memory, :file]
         initialized_storages = []
         storages.each do |storage|
           initialized_storages << config.add_storage(storage,storage,:path => File.join(opts['base_path']||'./',storage.to_s))
@@ -30,7 +30,7 @@ module StrokeDB
         index = opts['index'] || :inverted_list
         config.add_index(:default,index,index_storages.first)
         unless store = opts['store'] 
-          config.add_store(:default,:skiplist, {:storage => storages.first}.merge(opts['store_options']||{}))
+          config.add_store(:default,nil, {:storage => storages.first, :path => opts['base_path']}.merge(opts['store_options']||{})) # FIXME: nil isn't nice
         else 
           config.add_store(:default,store,{:storage => storages.first}.merge(opts['store_options']||{}))
         end

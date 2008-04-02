@@ -125,6 +125,19 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       ary.should == ary.sort{|a,b| a[0] <=> b[0] }
       ary.size.should == 1000
     end
+    
+    it "should have iterate pairs with #each" do
+      c = []
+      @list.each do |key, value|
+        c << [key, value]
+      end
+			c.should have_at_least(10).items
+      c[0..10].each do |a|
+        a[0].should == a[1]  # key == value
+      end
+      c.should == c.sort{|a, b| a[0] <=> b[0] }  # sorted order
+    end
+    
   end
   
   

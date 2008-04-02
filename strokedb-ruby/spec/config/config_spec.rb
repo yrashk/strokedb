@@ -19,14 +19,14 @@ describe "Config" do
   end
   
   it "should add known storages without specific parameters" do
-    @config.add_storage :mem, :memory_chunk
-    @config.storages[:mem].should be_an_instance_of(MemoryChunkStorage)
+    @config.add_storage :mem, :memory
+    @config.storages[:mem].should be_an_instance_of(MemoryStorage)
   end
 
   it "should add known storages with specific parameters" do
-    @paths << (@root_path + "file_chunk_storage")
-    @config.add_storage :fs, :file_chunk, :path => @paths.last
-    @config.storages[:fs].should be_an_instance_of(FileChunkStorage)
+    @paths << (@root_path + "file_storage")
+    @config.add_storage :fs, :file, :path => @paths.last
+    @config.storages[:fs].should be_an_instance_of(FileStorage)
     @config.storages[:fs].path.should == @paths.last
   end
   
@@ -36,7 +36,7 @@ describe "Config" do
   
   it "should raise an exception on chain with insufficient storages" do
     lambda { @config.chain }.should raise_error
-    @config.add_storage :mem, :memory_chunk
+    @config.add_storage :mem, :memory
     lambda { @config.chain :mem }.should raise_error
   end
 
@@ -45,11 +45,11 @@ describe "Config" do
   end
 
   it "should chain storages together" do
-    @paths << (@root_path + "file_chunk_storage_chain")
-    @config.add_storage :mem1, :memory_chunk
-    @config.add_storage :mem2, :memory_chunk
-    @config.add_storage :mem3, :memory_chunk
-    @config.add_storage :fs, :file_chunk, :path => @paths.last
+    @paths << (@root_path + "file_storage_chain")
+    @config.add_storage :mem1, :memory
+    @config.add_storage :mem2, :memory
+    @config.add_storage :mem3, :memory
+    @config.add_storage :fs, :file, :path => @paths.last
     @config.chain :mem1, :mem2, :fs
     @config.chain :mem2, :mem3
     @config.storages[:mem1].should have_chained_storage(@config.storages[:mem2])
@@ -68,8 +68,8 @@ describe "Config" do
   end
 
   it "should add an index" do
-    @paths << (@root_path + "file_chunk_storage_index")
-    @config.add_storage :fs, :file_chunk, :path => @paths.last
+    @paths << (@root_path + "file_storage_index")
+    @config.add_storage :fs, :file, :path => @paths.last
     @paths << (@root_path + "inverted_list_file_index")
     @config.add_storage :idx_st, :inverted_list_file, :path => @paths.last
     @config.add_index :idx, :inverted_list, :idx_st
@@ -81,21 +81,21 @@ describe "Config" do
   end
 
   it "should add a store" do
-    @paths << (@root_path + "file_chunk_storage")
-    @config.add_storage :fs, :file_chunk, :path => @paths.last
-    @config.add_store :store, :skiplist, :storage => :fs, :cut_level => 4
-    @config.stores[:store].should be_an_instance_of(SkiplistStore)
-    @config.stores[:store].chunk_storage.should == @config.storages[:fs]
+    @paths << (@root_path + "file_storage")
+    @config.add_storage :fs, :file, :path => @paths.last
+    @config.add_store :store, nil, :storage => :fs, :cut_level => 4, :path => @paths.last
+    @config.stores[:store].should be_an_instance_of(Store)
+    @config.stores[:store].storage.should == @config.storages[:fs]
   end
   
   it "should add a default store with default index" do
-    @paths << (@root_path + "file_chunk_storage_default_index")
-    @config.add_storage :fs, :file_chunk, :path => @paths.last
+    @paths << (@root_path + "file_storage_default_index")
+    @config.add_storage :fs, :file, :path => @paths.last
     @paths << (@root_path + "inverted_list_file_default_index")
     @config.add_storage :index_storage, :inverted_list_file, :path => @paths.last
     @config.add_index :default, :inverted_list, :index_storage
-    @config.add_store :default, :skiplist, :storage => :fs, :cut_level => 4
-    @config.stores[:default].should be_an_instance_of(SkiplistStore)
+    @config.add_store :default, nil, :storage => :fs, :cut_level => 4, :path => @paths.last
+    @config.stores[:default].should be_an_instance_of(Store)
     @config.indexes[:default].document_store.should == @config.stores[:default]
   end
 
@@ -126,14 +126,15 @@ describe "Config builder" do
     StrokeDB.default_config.should_not == config
   end
   
-  it "should use skiplist store by default" do
+  it "should use Store by default" do
     config = StrokeDB::Config.build :base_path => @base_path
-    config.stores[:default].should be_a_kind_of(SkiplistStore)
+    config.stores[:default].should be_a_kind_of(Store)
   end
 
   it "should use specified store if told so" do
     StrokeDB.send!(:remove_const,'SomeFunnyStore') if defined?(SomeFunnyStore)
-    StrokeDB::SomeFunnyStore = Class.new(SkiplistStore)
+    StrokeDB::SomeFunnyStore = Class.new(Store)
+    pending("not that important now")
     config = StrokeDB::Config.build :store => :some_funny, :base_path => @base_path
     config.stores[:default].should be_a_kind_of(SomeFunnyStore)
   end
@@ -141,8 +142,8 @@ describe "Config builder" do
   it "should add storages as he is told to" do
     StrokeDB.send!(:remove_const,'Chunk1Storage') if defined?(Chunk1Storage)
     StrokeDB.send!(:remove_const,'Chunk2Storage') if defined?(Chunk2Storage)
-    StrokeDB::Chunk1Storage = Class.new(MemoryChunkStorage)
-    StrokeDB::Chunk2Storage = Class.new(MemoryChunkStorage)
+    StrokeDB::Chunk1Storage = Class.new(MemoryStorage)
+    StrokeDB::Chunk2Storage = Class.new(MemoryStorage)
     config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2], :base_path => @base_path
     config.storages[:chunk_1].should be_a_kind_of(Chunk1Storage)
     config.storages[:chunk_2].should be_a_kind_of(Chunk2Storage)
@@ -151,26 +152,26 @@ describe "Config builder" do
   it "should initialize all storages with base_path+storage_name" do
     StrokeDB.send!(:remove_const,'Chunk1Storage') if defined?(Chunk1Storage)
     StrokeDB.send!(:remove_const,'Chunk2Storage') if defined?(Chunk2Storage)
-    StrokeDB::Chunk1Storage = Class.new(MemoryChunkStorage)
-    StrokeDB::Chunk2Storage = Class.new(MemoryChunkStorage)
-    Chunk1Storage.should_receive(:new).with(:path => @base_path + '/chunk_1').and_return(MemoryChunkStorage.new)
-    Chunk2Storage.should_receive(:new).with(:path => @base_path + '/chunk_2').and_return(MemoryChunkStorage.new)
+    StrokeDB::Chunk1Storage = Class.new(MemoryStorage)
+    StrokeDB::Chunk2Storage = Class.new(MemoryStorage)
+    Chunk1Storage.should_receive(:new).with(:path => @base_path + '/chunk_1').and_return(MemoryStorage.new)
+    Chunk2Storage.should_receive(:new).with(:path => @base_path + '/chunk_2').and_return(MemoryStorage.new)
     config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2], :base_path => @base_path
   end
   
-  it "should add :memory_chunk and :file_chunk by default" do
+  it "should add :memory and :file by default" do
     config = StrokeDB::Config.build :base_path => @base_path
-    config.storages[:memory_chunk].should be_a_kind_of(MemoryChunkStorage)
-    config.storages[:file_chunk].should be_a_kind_of(FileChunkStorage)
+    config.storages[:memory].should be_a_kind_of(MemoryStorage)
+    config.storages[:file].should be_a_kind_of(FileStorage)
   end
 
   it "should chain given storages sequentially" do
     StrokeDB.send!(:remove_const,'Chunk1Storage') if defined?(Chunk1Storage)
     StrokeDB.send!(:remove_const,'Chunk2Storage') if defined?(Chunk2Storage)
     StrokeDB.send!(:remove_const,'Chunk3Storage') if defined?(Chunk3Storage)
-    StrokeDB::Chunk1Storage = Class.new(MemoryChunkStorage)
-    StrokeDB::Chunk2Storage = Class.new(MemoryChunkStorage)
-    StrokeDB::Chunk3Storage = Class.new(MemoryChunkStorage)
+    StrokeDB::Chunk1Storage = Class.new(MemoryStorage)
+    StrokeDB::Chunk2Storage = Class.new(MemoryStorage)
+    StrokeDB::Chunk3Storage = Class.new(MemoryStorage)
     config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2,:chunk_3], :base_path => @base_path
     config.storages[:chunk_1].should have_chained_storage(config[:chunk_2])
     config.storages[:chunk_2].should have_chained_storage(config[:chunk_1])
@@ -182,9 +183,9 @@ describe "Config builder" do
     StrokeDB.send!(:remove_const,'Chunk1Storage') if defined?(Chunk1Storage)
     StrokeDB.send!(:remove_const,'Chunk2Storage') if defined?(Chunk2Storage)
     StrokeDB.send!(:remove_const,'Chunk3Storage') if defined?(Chunk3Storage)
-    StrokeDB::Chunk1Storage = Class.new(MemoryChunkStorage)
-    StrokeDB::Chunk2Storage = Class.new(MemoryChunkStorage)
-    StrokeDB::Chunk3Storage = Class.new(MemoryChunkStorage)
+    StrokeDB::Chunk1Storage = Class.new(MemoryStorage)
+    StrokeDB::Chunk2Storage = Class.new(MemoryStorage)
+    StrokeDB::Chunk3Storage = Class.new(MemoryStorage)
     config = StrokeDB::Config.build :storages => [:chunk_1,:chunk_2,:chunk_3], :base_path => @base_path
     config.storages[:chunk_1].authoritative_source.should == config[:chunk_2]
     config.storages[:chunk_2].authoritative_source.should == config[:chunk_3]
@@ -230,7 +231,8 @@ describe "Config builder" do
   end
 
   it "should load dumped config" do
-    StrokeDB::Config.build :default => true, :base_path => @base_path
+    cfg = StrokeDB::Config.build :default => true, :base_path => @base_path
+    cfg.storages.values.each {|s| s.close! if s.respond_to?(:close!)}
     config = JSON.parse(IO.read(@base_path + '/config'))
     cfg = StrokeDB::Config.load(@base_path + '/config')
     cfg.build_config.should == config
@@ -238,18 +240,12 @@ describe "Config builder" do
   end
   
   it "should load dumped config and make it default if told so" do
-    StrokeDB::Config.build :default => true, :base_path => @base_path
+    cfg = StrokeDB::Config.build :default => true, :base_path => @base_path
+    cfg.storages.values.each {|s| s.close! if s.respond_to?(:close!)}
     config = JSON.parse(IO.read(@base_path + '/config'))
     cfg = StrokeDB::Config.load(@base_path + '/config',true)
     cfg.build_config.should == config
     cfg.should == StrokeDB.default_config
   end
-  
-  
-
-  
-  after(:each) do
-    FileUtils.rm_rf @base_path
-  end
-  
+    
 end

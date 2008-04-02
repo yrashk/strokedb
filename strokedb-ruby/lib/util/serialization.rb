@@ -1,4 +1,13 @@
 module StrokeDB
+
+  class ::Array
+    def to_raw
+      map do |v|
+        v.respond_to?(:to_raw) ? v.to_raw : v
+      end
+    end
+  end
+  
   module JsonSerializationMethod
     def serialize(x)
       x.to_json

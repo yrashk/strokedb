@@ -204,13 +204,21 @@ module StrokeDB
       nil # nothing found
     end
 
-    def each #:nodoc:
+    def each_node #:nodoc:
       x = node_next(node_first, 0)
       while x 
         yield(x)
         x = node_next(x, 0)
       end
       self
+    end
+    
+    # Iterates over skiplist kay-value pairs
+    #
+    def each
+      each_node do |node|
+        yield(node_key(node), node_value(node))
+      end 
     end
 
     # Constructs a skiplist from a hash values.
@@ -232,8 +240,8 @@ module StrokeDB
     # Converts skiplist to an array of key-value pairs.
     #    
     def to_a
-      inject([]) do |arr, node|
-        arr << node[1, 2]  # key, data
+      inject([]) do |arr, pair|
+        arr << pair
         arr
       end
     end
@@ -300,7 +308,11 @@ module StrokeDB
       return -1 unless x[1] # head
       x[1] <=> key
     end
-        
+    
+    def node_key(x)
+      x[1]
+    end
+    
     def node_value(x)
       x[2]
     end

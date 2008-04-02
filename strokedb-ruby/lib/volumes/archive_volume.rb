@@ -3,7 +3,12 @@ module StrokeDB
   class ArchiveVolume
     attr_reader :file_path, :tail
     
-    DEFAULT_SIZE = 64*1024*1024
+    if defined?(::Spec)
+      DEFAULT_SIZE = 512*1024
+    else 
+      DEFAULT_SIZE = 64*1024*1024
+    end
+    
     DEFAULT_PATH = "."
     
     # Open a volume in a directory +:path+, with UUID +:uuid+
@@ -93,8 +98,11 @@ module StrokeDB
 
     def initialize_file
       @file_path = File.join(path, hierarchify(uuid) + ".av")
-      create_file(@file_path, size) unless File.exist?(@file_path)
-      @file = File.open(@file_path, File::RDWR)
+      unless File.exist?(@file_path)
+        create_file(@file_path, size) 
+      else
+        @file = File.open(@file_path, File::RDWR)
+      end
       @tail = read_tail(@file)
     end
     
@@ -103,10 +111,9 @@ module StrokeDB
     #
     def create_file(path, size)
       FileUtils.mkdir_p(File.dirname(path))
-      File.open(path, File::CREAT | File::EXCL | File::WRONLY) do |f|
-        f.truncate(size)
-        write_tail(f, 4) # 4 is a size of long type.
-      end
+      @file = File.open(path, File::CREAT | File::EXCL | File::RDWR) 
+      @file.truncate(size)
+      write_tail(@file, 4) # 4 is a size of long type.
     end
     
     # Close the file if it is opened and remove
