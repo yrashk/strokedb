@@ -59,7 +59,7 @@ module StrokeDB
         type_validations.each do |slotname_to_validate|
           if validation=doc.meta["validates_type_of_#{slotname_to_validate}"] 
             on = validation['on']
-            klass = Kernel.const_get(validation[:type].to_s.camel_case)
+            klass = Kernel.const_get(validation[:type].to_s.camelize)
             if (on == 'create' && doc.new? && doc.has_slot?(slotname_to_validate) && !doc[slotname_to_validate].is_a?(klass)) ||
                (on == 'update' && !doc.new? && doc.has_slot?(slotname_to_validate) && !doc[slotname_to_validate].is_a?(klass)) ||
                (on == 'save' && doc.has_slot?(slotname_to_validate) && !doc[slotname_to_validate].is_a?(klass))
