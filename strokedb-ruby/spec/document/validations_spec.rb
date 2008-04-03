@@ -303,7 +303,7 @@ describe "validates_numericality_of" do
     setup
     Item = Meta.new do
       validates_numericality_of :price
-      validates_numericality_of :quantity, :as => :integer
+      validates_numericality_of :quantity, :only_integer => true
     end
   end
   it "should treat absent slot as valid" do
@@ -332,10 +332,6 @@ describe "validates_numericality_of" do
     i = Item.new(:quantity => 1.5)
     i.should_not be_valid
     i.errors.messages.should == [ "Value of quantity must be integer" ]
-  end
-  
-  it "should raise error when :as other than :integer specified" do
-    lambda { Foo = Meta.new { validates_numericality_of :bar, :as => :string } }.should raise_error(ArgumentError)
   end
   
 end
