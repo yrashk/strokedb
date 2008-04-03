@@ -259,10 +259,12 @@ module StrokeDB
       end
 
       install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
-        value = doc[slotname].to_s
-        regex = validation[:only_integer] ? /\A[+-]?\d+\Z/ : /^\d*\.{0,1}\d+$/
         !doc.has_slot?(slotname) ||
-        !(value =~ regex).nil?
+        if validation[:only_integer] 
+          !(doc[slotname].to_s =~ /\A[+-]?\d+\Z/).nil?
+        else 
+          Kernel.Float(doc[slotname]) rescue nil
+        end
       end
 
       install_validations_for(:validates_confirmation_of) do |doc, validation, slotname|
