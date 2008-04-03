@@ -11,12 +11,8 @@ require 'ostruct'
 #   validates_associated
 #   validates_numericality_of
 #
-#   :if and :unless options for all
-#
-# Consider also using validatable gem (DataMapper is now switching to it)
 module StrokeDB
   module Validations
-
     # Validates that the specified slot exists in the document. Happens by default on save. Example:
     #
     #   Person = Meta.new do
@@ -28,10 +24,10 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "should be present on ...")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_presence_of(slotname, opts={}, &block)
@@ -49,10 +45,10 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "document with value already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     # 
@@ -79,10 +75,10 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "A document with a ... of ... already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_uniqueness_of(slotname, opts={}, &block)
@@ -164,14 +160,24 @@ module StrokeDB
       slotname = slotname.to_s
       on = (opts['on'] || 'save').to_s.downcase
       message = opts['message'] || message
+    
+      check_condition(opts['if']) if opts['if']
+      check_condition(opts['unless']) if opts['unless']
 
-      hash = { :slotname => slotname, :message => message, :on => on }
-      hash.merge!(yield(opts)) if block_given?
+      options_hash = { 
+        :slotname => slotname, 
+        :message => message, 
+        :on => on,
+        :if => opts['if'],  
+        :unless => opts['unless']
+      }
+
+      options_hash.merge!(yield(opts)) if block_given?
 
       validation_slot = "validates_#{validation_name}_#{slotname}"
 
       @meta_initialization_procs << Proc.new do
-        @args.last.reverse_merge!(validation_slot => { :meta => name }.merge(hash))
+        @args.last.reverse_merge!(validation_slot => { :meta => name }.merge(options_hash))
       end
     end
 
@@ -201,8 +207,10 @@ module StrokeDB
           if validation = doc.meta[meta_slotname] 
             on = validation['on']
 
-            should_call = (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
-
+            should_call = ((on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save') &&
+              (!validation[:if]     || evaluate_condition(validation[:if], doc)) &&
+              (!validation[:unless] || !evaluate_condition(validation[:unless], doc))
+	  
             if should_call && !block.call(doc, validation, slotname_to_validate)
               os = OpenStruct.new(validation)
               os.document = doc
@@ -221,6 +229,33 @@ module StrokeDB
           yield slotname[prefix.length..-1], slotname
         end
       end
+    end
+    
+    def check_condition(condition)
+      case condition
+      when Symbol, String then return
+      else
+        unless condition_block?(condition)
+          raise(
+            ArgumentError,
+                "Validations need to be either a symbol, string (to be eval'ed), proc/method, or " +
+                "class implementing a static validation method"
+          )
+        end
+      end
+    end
+
+    def evaluate_condition(condition, doc)
+      case condition
+      when Symbol then doc.send(condition)
+      when String then eval(condition, doc.send(:binding))
+      else
+        condition.call(doc)
+      end
+    end
+    
+    def condition_block?(condition)
+      condition.respond_to?("call") && (condition.arity == 1 || condition.arity == -1)
     end
   end  
 end
