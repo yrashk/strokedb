@@ -77,7 +77,7 @@ module StrokeDB
       if is_a?(Module) && meta.is_a?(Module)
         new_meta = Module.new
         instance_variables.each do |iv|
-          new_meta.instance_variable_set(iv,instance_variable_get(iv).clone)
+          new_meta.instance_variable_set(iv,instance_variable_get(iv) ? instance_variable_get(iv).clone : nil)
         end
         new_meta.instance_variable_set(:@metas,@metas.clone)
         new_meta.instance_variable_get(:@metas) << meta

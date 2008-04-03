@@ -30,12 +30,14 @@ module StrokeDB
         @saved_virtual_slots.each do |slot, value|
           doc[slot] = value
         end
-        doc['version'] = @version
+        unless @saved_virtual_slots.empty?
+          doc['version'] = @version
 
-        if @previous_version
-          doc['previous_version'] = @previous_version 
-        else
-          doc.remove_slot!('previous_version')
+          if @previous_version
+            doc['previous_version'] = @previous_version 
+          else
+            doc.remove_slot!('previous_version')
+          end
         end
 
         @version = nil
