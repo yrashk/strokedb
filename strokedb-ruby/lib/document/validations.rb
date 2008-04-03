@@ -98,6 +98,23 @@ module StrokeDB
       register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{value} already exists')
     end
 
+    # Validates that the specified slot value is a number
+    #
+    #   Person = Meta.new do
+    #     validates_numericallity_of :money
+    #   end
+    #
+    # Only integer (default is false)
+    #
+    #   Person = Meta.new do
+    #     validates_numericallity_of :money, :only_integer => true
+    #   end
+    def validates_numericallity_of(slotname, opts={}, &block)
+      register_validation("numericallity_of", slotname, opts, '#{meta}\'s #{slotname} should be a number') do |opts|
+        { :integer => opts['only_integer'] }
+      end
+    end
+    
     private 
     
     def register_validation(validation_name, slotname, opts, message)
@@ -128,6 +145,18 @@ module StrokeDB
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
         meta = Kernel.const_get(doc.meta.name)
         !doc.has_slot?(slotname) || !meta.find(slotname.to_sym => doc[slotname]) || !(meta.find(slotname.to_sym => doc[slotname]).size > 0)
+      end
+      
+      install_validations_for(:validates_numericallity_of) do |doc, validation, slotname|
+        if validation[:integer]
+          doc[slotname].to_s =~ /\A[+-]?\d+\Z/
+        else
+          begin
+            Kernel.Float(doc[slotname])
+          rescue ArgumentError, TypeError
+            next
+          end
+        end
       end
     end
 

@@ -178,6 +178,82 @@ describe "User.validates_uniqueness of :email" do
   
 end
 
+
+describe "User.validates_numericallity_of :cash", :shared => true do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const, 'User') if defined?(User)
+    User = Meta.new do
+      validates_numericallity_of :cash
+    end
+  end
+  
+  it "should not raise error if :cash is a Float" do
+    lambda { u = User.create!(:cash => 100.12) }.should_not raise_error(Validations::ValidationError)
+  end
+  
+  it "should not raise error if :cash is a Fixnum" do
+    lambda { u = User.create!(:cash => 120) }.should_not raise_error(Validations::ValidationError)
+  end
+  
+  it "should raise error if :cash is not a Float or Fixnum" do
+    lambda { u = User.create!(:cash => 'lots of money')}.should raise_error(Validations::ValidationError)
+  end
+  
+  it "should save User if no error raised" do
+    u = User.create!(:cash => 120.00)
+    User.find(:cash => 120.00).size.should == 1
+  end
+  
+end
+
+describe "User.validates_numericallity_of :age, :only_integer => true" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const, 'User') if defined?(User)
+    User = Meta.new do
+      validates_numericallity_of :age, :only_integer => true
+    end
+  end
+
+  it "should not raise error if :age is a Fixnum" do
+    lambda { u = User.create!(:age => 22) }.should_not raise_error(Validations::ValidationError)
+  end
+  
+  it "should raise error if :age is a Float" do
+    lambda { u = User.create!(:age => 20.0)}.should raise_error(Validations::ValidationError)
+  end
+  
+  it "should raise error if :age is not a Fixnum" do
+    lambda { u = User.create!(:age => "twenty two")}.should raise_error(Validations::ValidationError)
+  end
+  
+  it "should save User if no error raised" do
+    u = User.create!(:age => 22)
+    User.find(:age => 22).size.should == 1
+  end
+
+end
+
+describe "User.validates_numericallity_of :cash, :only_integer => false (default)" do
+
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const, 'User') if defined?(User)
+    User = Meta.new do
+      validates_numericallity_of :cash, :integer => false
+    end
+  end
+
+  it_should_behave_like "User.validates_numericallity_of :cash"
+
+end
+
 describe "Meta with validation enabled" do
   before(:each) do
     setup_default_store
