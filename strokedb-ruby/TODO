@@ -29,7 +29,7 @@ TODO aka ROADMAP
  [.] Refactor callback stuff in Document
  [.] Refactor associations
 [.] Improve validations
- [ ] collect errors and add #valid? and #errors, #errors_on methods (seems to be quite important)
+ [X] collect errors and add #valid? and #errors, #errors_on methods (seems to be quite important)
  [ ] add more options to validates_presence_of
  [X] add validates_type_of
  [X] add validates_uniqueness_of

@@ -1,5 +1,4 @@
-require 'strokedb'
-require 'fileutils'
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe 'DocRef' do
 
@@ -51,10 +50,13 @@ describe 'DocRef' do
 
     a.children.size.should == 1
     a.children.should include(b)
+    
 
     b.add_child c
 
     a.children.should include(b)
+    a.children.should_not include(b.extend(VersionedDocument))
+    
     b.children.should include(c)
   end
 
@@ -70,9 +72,6 @@ describe 'DocRef' do
     ([a, b] - [a, b]).should == []
     #a.children.reject{|c| [b].include?(c) }.should == [] # old workaround
     (a.children - [b]).should == []
-
-    (T.find - T.find).should == []
-    (T.find - T.find).size.should == 0
   end
 
   it 'should work after re-opening database' do
