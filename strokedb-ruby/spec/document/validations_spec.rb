@@ -287,12 +287,10 @@ describe "validates_confirmation_of" do
   end
 
   it "should not serialize confirmation slot" do
-  pending "implement virtual slots" do
     u = User.new(:password => "sekret", :password_confirmation => "sekret").save!
 
     u_copy = User.find(u.uuid)
     u_copy.has_slot?("password_confirmation").should_not be_true
-  end
   end
 end
 

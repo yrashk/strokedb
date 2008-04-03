@@ -33,6 +33,10 @@ describe "Document slot virtualization" do
     f_copy = Foo.find(f.uuid)
     f_copy.has_slot?("virtual_slot").should_not be_true
   end
+
+  it "should respect :if"
+  it "should respect :unless"
+  it "should respect both :if and :unless"
 end
 
 

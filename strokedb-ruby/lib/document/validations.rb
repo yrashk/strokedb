@@ -141,6 +141,8 @@ module StrokeDB
     #   method, proc or string should return or evaluate to a true or false value.      
     def validates_confirmation_of(slotname, opts = {}, &block)
       register_validation("confirmation_of", slotname, opts, '#{meta}\'s #{slotname} doesn\'t match confirmation')
+
+      virtualizes(slotname.to_s + "_confirmation")
     end
     
     # this module gets mixed into Document
