@@ -28,10 +28,24 @@ describe "Document slot virtualization" do
   end
 
   it "should not serialize slot value" do
-    f = Foo.new(:virtual_slot => 123).save!
+    f = Foo.create!(:virtual_slot => 123)
 
     f_copy = Foo.find(f.uuid)
     f_copy.has_slot?("virtual_slot").should_not be_true
+  end
+  
+  it "should preserve version after saving document" do
+    f = Foo.new(:virtual_slot => 123)
+    lambda do
+      f.save!
+    end.should_not change(f,:version)
+  end
+
+  it "should preserve previous version after saving document" do
+    f = Foo.new(:virtual_slot => 123)
+    lambda do
+      f.save!
+    end.should_not change(f,:previous_version)
   end
 
   it "should respect :if"

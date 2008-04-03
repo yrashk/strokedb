@@ -5,7 +5,7 @@ module StrokeDB
 
       check_condition(opts['if']) if opts['if']
       check_condition(opts['unless']) if opts['unless']
-      
+
       slotnames = [slotnames] unless slotnames.is_a?(Array)
       slotnames.each {|slotname| register_virtual(slotname, opts)}
     end
@@ -13,8 +13,10 @@ module StrokeDB
     private
 
     def initialize_virtualizations
-      after_validation do |doc|
+      before_save do |doc|
         @saved_virtual_slots = {}
+        @version = doc.version
+        @previous_version = doc.previous_version
 
         grep_slots(doc, "virtualizes_") do |virtual_slot, slotname|
           virtual_slot = virtual_slot.to_sym
@@ -27,11 +29,19 @@ module StrokeDB
         @saved_virtual_slots.each do |slot, value|
           doc[slot] = value
         end
+        doc['version'] = @version
 
-        @saved_virtual_slots = {}
+        if @previous_version
+          doc['previous_version'] = @previous_version 
+        else
+          doc.remove_slot!('previous_version')
+        end
+
+        @version = nil
+        @previous_version = nil
       end
     end
-    
+
     def register_virtual(slotname, opts)
       slotname = slotname.to_s
 
