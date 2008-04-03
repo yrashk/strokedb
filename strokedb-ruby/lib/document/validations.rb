@@ -141,6 +141,8 @@ module StrokeDB
     #   method, proc or string should return or evaluate to a true or false value.      
     def validates_confirmation_of(slotname, opts = {}, &block)
       register_validation("confirmation_of", slotname, opts, '#{meta}\'s #{slotname} doesn\'t match confirmation')
+
+      virtualizes(slotname.to_s + "_confirmation")
     end
     
     # this module gets mixed into Document
@@ -277,7 +279,7 @@ module StrokeDB
 
     def install_validations_for(sym, &block)
       on_validation(sym) do |doc|
-        grep_validations(doc, sym.to_s + "_") do |slotname_to_validate, meta_slotname|
+        grep_slots(doc, sym.to_s + "_") do |slotname_to_validate, meta_slotname|
           if validation = doc.meta[meta_slotname] 
             on = validation['on']
 
@@ -295,41 +297,6 @@ module StrokeDB
           end
         end
       end
-    end
-
-    def grep_validations(doc, prefix)
-      doc.meta.slotnames.each do |slotname|
-        if slotname[0..(prefix.length - 1)] == prefix
-          yield slotname[prefix.length..-1], slotname
-        end
-      end
-    end
-    
-    def check_condition(condition)
-      case condition
-      when Symbol, String then return
-      else
-        unless condition_block?(condition)
-          raise(
-            ArgumentError,
-                "Validations need to be either a symbol, string (to be eval'ed), proc/method, or " +
-                "class implementing a static validation method"
-          )
-        end
-      end
-    end
-
-    def evaluate_condition(condition, doc)
-      case condition
-      when Symbol then doc.send(condition)
-      when String then eval(condition, doc.send(:binding))
-      else
-        condition.call(doc)
-      end
-    end
-    
-    def condition_block?(condition)
-      condition.respond_to?("call") && (condition.arity == 1 || condition.arity == -1)
     end
   end  
 end

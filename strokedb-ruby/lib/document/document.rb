@@ -341,6 +341,8 @@ module StrokeDB
         raise InvalidDocumentError.new(self) unless valid?
       end
 
+      execute_callbacks :after_validation
+
       store.save!(self)
       @new = false
       @saved = true
