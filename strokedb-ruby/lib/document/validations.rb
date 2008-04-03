@@ -106,7 +106,7 @@ module StrokeDB
       validation_type = opts[:only_integer] ? 'integer' : 'numeric'
 
       register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
-        { :validation_type => validation_type.capitalize }
+        { :validation_type => validation_type.capitalize, :only_integer => opts['only_integer'] }
       end          
 
     end
@@ -227,8 +227,10 @@ module StrokeDB
       end
 
       install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
+        value = doc[slotname].to_s
+        regex = validation[:only_integer] ? /\A[+-]?\d+\Z/ : /^\d*\.{0,1}\d+$/
         !doc.has_slot?(slotname) ||
-        (doc[slotname].is_a? Kernel.const_get(validation[:validation_type]))
+        !(value =~ regex).nil?
       end
     end
 
