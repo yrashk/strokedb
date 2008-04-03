@@ -215,7 +215,7 @@ describe "validates_type_of" do
   end
 end
 
-describe "validates_uniqueness" do
+describe "validates_uniqueness_of" do
   before :each do
     setup
     User = Meta.new { validates_uniqueness_of :email }
@@ -266,7 +266,34 @@ describe "validates_uniqueness" do
 end
 
 describe "validates_confirmation_of" do
-  it "should be implemented"
+  before :each do
+    setup
+
+    User = Meta.new { validates_confirmation_of :password }
+  end
+
+  it "should be valid when confirmed" do
+    User.new(:password => "sekret", :password_confirmation => "sekret").should be_valid
+  end
+  
+  it "should be valid when confirmation is not set" do
+    User.new(:password => "sekret").should be_valid
+  end
+  
+  it "should not be valid when not confirmed" do
+    u = User.new(:password => "sekret", :password_confirmation => "invalid_guess")
+    u.should_not be_valid
+    u.errors.messages.should == [ "User's password doesn't match confirmation" ]
+  end
+
+  it "should not serialize confirmation slot" do
+  pending "implement virtual slots" do
+    u = User.new(:password => "sekret", :password_confirmation => "sekret").save!
+
+    u_copy = User.find(u.uuid)
+    u_copy.has_slot?("password_confirmation").should_not be_true
+  end
+  end
 end
 
 describe "validates_acceptance_of" do
@@ -274,10 +301,6 @@ describe "validates_acceptance_of" do
 end
 
 describe "validates_length_of" do
-  it "should be implemented"
-end
-
-describe "validates_uniqueness_of" do
   it "should be implemented"
 end
 
@@ -298,8 +321,7 @@ describe "validates_associated" do
 end
 
 describe "validates_numericality_of" do
-
-  before(:each) do
+  before :each do
     setup
     Item = Meta.new do
       validates_numericality_of :price
@@ -337,6 +359,7 @@ describe "validates_numericality_of" do
 end
 
 describe "Complex validations" do
+  it "should gather errors for all slots"
   it "should run all validations for the same slot"
   it "should run all validations from all metas"
   it "should somehow deal with the case when different metas contain same validations types for the same slot"
