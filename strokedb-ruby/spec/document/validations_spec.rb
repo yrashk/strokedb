@@ -177,79 +177,48 @@ describe "validates_uniqueness" do
 end
 
 
-describe "User.validates_numericality_of :cash", :shared => true do
-  
+describe "validates_numericality_of" do
   before(:each) do
-    setup_default_store
-    setup_index
-    Object.send!(:remove_const, 'User') if defined?(User)
-    User = Meta.new do
-      validates_numericality_of :cash
-    end
+    setup
+    User = Meta.new { validates_numericality_of :cash }
   end
-  
-  it "should not raise error if :cash is a Float" do
-    lambda { u = User.create!(:cash => 100.12) }.should_not raise_error(Validations::ValidationError)
+
+  it "should treat absent slot as valid" do
+    User.new.should be_valid
   end
-  
-  it "should not raise error if :cash is a Fixnum" do
-    lambda { u = User.create!(:cash => 120) }.should_not raise_error(Validations::ValidationError)
+
+  it "should actually check for numeric types" do
+    User.new(:cash => 100).should be_valid
+    User.new(:cash => 100.2).should be_valid
   end
-  
-  it "should raise error if :cash is not a Float or Fixnum" do
-    lambda { u = User.create!(:cash => 'lots of money')}.should raise_error(Validations::ValidationError)
+
+  it "should treat other types as invalid" do
+    User.new(:cash => User.create!).should_not be_valid
+    User.new(:cash => "not a number").should_not be_valid
+    User.new(:cash => nil).should_not be_valid
   end
-  
-  it "should save User if no error raised" do
-    u = User.create!(:cash => 120.00)
-    User.find(:cash => 120.00).size.should == 1
-  end
-  
 end
 
-describe "User.validates_numericality_of :age, :only_integer => true" do
-  
+describe "validates_numericality_of :only_integer => true" do
   before(:each) do
-    setup_default_store
-    setup_index
-    Object.send!(:remove_const, 'User') if defined?(User)
-    User = Meta.new do
-      validates_numericality_of :age, :only_integer => true
-    end
+    setup
+    User = Meta.new { validates_numericality_of :age, :only_integer => true }
   end
 
-  it "should not raise error if :age is a Fixnum" do
-    lambda { u = User.create!(:age => 22) }.should_not raise_error(Validations::ValidationError)
-  end
-  
-  it "should raise error if :age is a Float" do
-    lambda { u = User.create!(:age => 20.0)}.should raise_error(Validations::ValidationError)
-  end
-  
-  it "should raise error if :age is not a Fixnum" do
-    lambda { u = User.create!(:age => "twenty two")}.should raise_error(Validations::ValidationError)
-  end
-  
-  it "should save User if no error raised" do
-    u = User.create!(:age => 22)
-    User.find(:age => 22).size.should == 1
+  it "should treat absent slot as valid" do
+    User.new.should be_valid
   end
 
-end
-
-describe "User.validates_numericality_of :cash, :only_integer => false (default)" do
-
-  before(:each) do
-    setup_default_store
-    setup_index
-    Object.send!(:remove_const, 'User') if defined?(User)
-    User = Meta.new do
-      validates_numericality_of :cash, :integer => false
-    end
+  it "should actually check for Integer numbers" do
+    User.new(:age => 100).should be_valid
   end
 
-  it_should_behave_like "User.validates_numericality_of :cash"
-
+  it "should treat other types as invalid" do
+    User.new(:age => 100.2).should_not be_valid
+    User.new(:age => User.create!).should_not be_valid
+    User.new(:age => "not a number").should_not be_valid
+    User.new(:age => nil).should_not be_valid
+  end
 end
 
 describe "Meta with validation enabled" do
