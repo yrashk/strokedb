@@ -3,7 +3,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 def setup
   setup_default_store
   setup_index
-  Object.send!(:remove_const, 'Song') if defined?(Song)
+  Object.send!(:remove_const, 'Foo') if defined?(Foo)
+  Object.send!(:remove_const, 'Bar') if defined?(Bar)
   Object.send!(:remove_const, 'User') if defined?(User)
   Object.send!(:remove_const, 'Email') if defined?(Email)
 end
@@ -14,8 +15,8 @@ describe "Document validation" do
   end
 
   it "should treat an empty document as valid" do
-    Song = Meta.new
-    s = Song.new
+    Foo = Meta.new
+    s = Foo.new
 
     s.should be_valid
     s.errors.should be_empty
@@ -55,17 +56,17 @@ describe "validates_presence_of" do
   end
 
   it "should tell valid if slot is there" do
-    Song = Meta.new { validates_presence_of :name, :on => :save }
-    s = Song.new({:name => "Rick Roll"})
+    Foo = Meta.new { validates_presence_of :name, :on => :save }
+    s = Foo.new({:name => "Rick Roll"})
     s.should be_valid
   end
 
   it "should tell invalid if slot is absent" do
-    Song = Meta.new { validates_presence_of :name, :on => :save }
-    s = Song.new
+    Foo = Meta.new { validates_presence_of :name, :on => :save }
+    s = Foo.new
 
     s.should_not be_valid
-    s.errors.messages.should == [ "Song's name should be present on save" ]
+    s.errors.messages.should == [ "Foo's name should be present on save" ]
   end
 end
 
@@ -75,20 +76,20 @@ describe "Validation helpers" do
   before(:each) { setup }
 
   it "should respect :on => :create" do
-    Song = Meta.new { validates_presence_of :name, :on => :create }
-    s1 = Song.new
+    Foo = Meta.new { validates_presence_of :name, :on => :create }
+    s1 = Foo.new
     bang { s1.save! }
 
-    s2 = Song.new(:name => "Rick Roll")
+    s2 = Foo.new(:name => "Rick Roll")
     no_bang { s2.save! }
     s2.remove_slot!(:name)
     no_bang { s2.save! }
   end
 
   it "should respect :on => :update" do
-    Song = Meta.new { validates_presence_of :name, :on => :update }
+    Foo = Meta.new { validates_presence_of :name, :on => :update }
     
-    s = Song.new
+    s = Foo.new
     no_bang { s.save! }
     bang { s.save! }
     s[:name] = "Rick Roll"
@@ -96,24 +97,83 @@ describe "Validation helpers" do
   end
 
   it "should respect :on => :save" do
-    Song = Meta.new { validates_presence_of :name, :on => :save }
-    s1 = Song.new
+    Foo = Meta.new { validates_presence_of :name, :on => :save }
+    s1 = Foo.new
     bang { s1.save! }
 
-    s2 = Song.new(:name => "Rick Roll")
+    s2 = Foo.new(:name => "Rick Roll")
     no_bang { s2.save! }
     s2.remove_slot!(:name)
     bang { s2.save! }
   end
 
   it "should respect :message" do
-    Song = Meta.new do 
+    Foo = Meta.new do 
       validates_presence_of :name, :on => :save, :message => 'On #{on} Meta #{meta} SlotName #{slotname}'
     end
 
-    s = Song.new
+    s = Foo.new
     s.valid?.should be_false
-    s.errors.messages.should == [ "On save Meta Song SlotName name" ]
+    s.errors.messages.should == [ "On save Meta Foo SlotName name" ]
+  end
+
+  it "should respect :if" do
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => proc { true } end
+    bang { Foo.create! }
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => proc { false } end
+    no_bang { Bar.create! }
+  end
+  
+  it "should respect :unless" do
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :unless => proc { false } end
+    bang { Foo.create! }
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :unless => proc { true } end
+    no_bang { Bar.create! }
+  end
+  
+  it "should respect both :if and :unless when given" do
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => proc { false }, :unless => proc { false } end
+    no_bang { Foo.create! }
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => proc { true }, :unless => proc { false } end
+    bang { Bar.create! }
+  end
+ 
+  it "should allow to use document slot for :if and :unless evaluation" do
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => :slot end
+    bang { Foo.create!(:slot => true) }
+    no_bang { Foo.create!(:slot => false) }
+    
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :unless => :slot end
+    no_bang { Bar.create!(:slot => true) }
+    bang { Bar.create!(:slot => false) }
+  end
+  
+  it "should allow to use a string for :if and :unless evaluation" do
+    Foo = Meta.new do 
+      validates_presence_of :name, :on => :save, :if => "!some_method"
+      def some_method; self.some_slot end
+    end
+    
+    no_bang { Foo.create!(:some_slot => true) }
+    bang { Foo.create!(:some_slot => false) }
+    
+    Bar = Meta.new do 
+      validates_presence_of :name, :on => :save, :unless => "!some_method"
+      def some_method; self.some_slot end
+    end
+    
+    bang { Bar.create!(:some_slot => true) }
+    no_bang { Bar.create!(:some_slot => false) }
+  end
+
+  it "should raise an ArgumentError when given something not callable for :if and :unless" do
+    lambda do
+      Meta.new { validates_presence_of :name, :on => :save, :if => 123  }
+    end.should raise_error(ArgumentError)
+
+    lambda do
+      Meta.new { validates_presence_of :name, :on => :save, :unless => 123  }
+    end.should raise_error(ArgumentError)
   end
 
   def bang
@@ -202,6 +262,48 @@ describe "validates_uniqueness" do
     u.email = "hax0r@hax0r.com"
     u.should be_valid
   end
+end
+
+describe "validates_confirmation_of" do
+  it "should be implemented"
+end
+
+describe "validates_acceptance_of" do
+  it "should be implemented"
+end
+
+describe "validates_length_of" do
+  it "should be implemented"
+end
+
+describe "validates_uniqueness_of" do
+  it "should be implemented"
+end
+
+describe "validates_format_of" do
+  it "should be implemented"
+end
+
+describe "validates_inclusion_of" do
+  it "should be implemented"
+end
+
+describe "validates_exclusion_of" do
+  it "should be implemented"
+end
+
+describe "validates_associated" do
+  it "should be implemented"
+end
+
+describe "validates_numericality_of" do
+  it "should be implemented"
+end
+
+describe "Complex validations" do
+  it "should run all validations for the same slot"
+  it "should run all validations from all metas"
+  it "should somehow deal with the case when different metas contain same validations types for the same slot"
 end
 
 describe "Meta with validation enabled" do
