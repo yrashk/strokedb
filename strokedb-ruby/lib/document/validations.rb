@@ -101,16 +101,16 @@ module StrokeDB
     # Validates that the specified slot value is a number
     #
     #   Person = Meta.new do
-    #     validates_numericallity_of :money
+    #     validates_numericality_of :money
     #   end
     #
     # Only integer (default is false)
     #
     #   Person = Meta.new do
-    #     validates_numericallity_of :money, :only_integer => true
+    #     validates_numericality_of :money, :only_integer => true
     #   end
-    def validates_numericallity_of(slotname, opts={}, &block)
-      register_validation("numericallity_of", slotname, opts, '#{meta}\'s #{slotname} should be a number') do |opts|
+    def validates_numericality_of(slotname, opts={}, &block)
+      register_validation("numericality_of", slotname, opts, '#{meta}\'s #{slotname} should be a number') do |opts|
         { :integer => opts['only_integer'] }
       end
     end
@@ -147,7 +147,7 @@ module StrokeDB
         !doc.has_slot?(slotname) || !meta.find(slotname.to_sym => doc[slotname]) || !(meta.find(slotname.to_sym => doc[slotname]).size > 0)
       end
       
-      install_validations_for(:validates_numericallity_of) do |doc, validation, slotname|
+      install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
         if validation[:integer]
           doc[slotname].to_s =~ /\A[+-]?\d+\Z/
         else

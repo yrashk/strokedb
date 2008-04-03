@@ -179,14 +179,14 @@ describe "User.validates_uniqueness of :email" do
 end
 
 
-describe "User.validates_numericallity_of :cash", :shared => true do
+describe "User.validates_numericality_of :cash", :shared => true do
   
   before(:each) do
     setup_default_store
     setup_index
     Object.send!(:remove_const, 'User') if defined?(User)
     User = Meta.new do
-      validates_numericallity_of :cash
+      validates_numericality_of :cash
     end
   end
   
@@ -209,14 +209,14 @@ describe "User.validates_numericallity_of :cash", :shared => true do
   
 end
 
-describe "User.validates_numericallity_of :age, :only_integer => true" do
+describe "User.validates_numericality_of :age, :only_integer => true" do
   
   before(:each) do
     setup_default_store
     setup_index
     Object.send!(:remove_const, 'User') if defined?(User)
     User = Meta.new do
-      validates_numericallity_of :age, :only_integer => true
+      validates_numericality_of :age, :only_integer => true
     end
   end
 
@@ -239,18 +239,18 @@ describe "User.validates_numericallity_of :age, :only_integer => true" do
 
 end
 
-describe "User.validates_numericallity_of :cash, :only_integer => false (default)" do
+describe "User.validates_numericality_of :cash, :only_integer => false (default)" do
 
   before(:each) do
     setup_default_store
     setup_index
     Object.send!(:remove_const, 'User') if defined?(User)
     User = Meta.new do
-      validates_numericallity_of :cash, :integer => false
+      validates_numericality_of :cash, :integer => false
     end
   end
 
-  it_should_behave_like "User.validates_numericallity_of :cash"
+  it_should_behave_like "User.validates_numericality_of :cash"
 
 end
 
