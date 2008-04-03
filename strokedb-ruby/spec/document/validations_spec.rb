@@ -215,6 +215,30 @@ describe "validates_type_of" do
   end
 end
 
+describe "validates_format_of" do
+  before(:each) do
+    validations_setup
+    User = Meta.new { validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i }
+  end
+
+  it "should treat absent slot as valid" do
+    User.new.should be_valid
+  end
+
+  it "should be valid when :email value match regexp" do
+    User.new(:email => 'cool@strokedb.com').should be_valid
+  end
+  
+  it "should be invalid when :email value do not match regexp" do
+    User.new(:email => 'cool-strokedb.com').should_not be_valid
+  end
+  
+  it "should raise an exception if no regex is provided" do
+    lambda { Meta.new { validates_format_of :email, :with => "nothing" } }.should raise_error(ArgumentError)
+  end
+  
+end
+
 describe "validates_uniqueness_of" do
   before :each do
     validations_setup
