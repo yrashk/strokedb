@@ -97,6 +97,74 @@ module StrokeDB
     def validates_uniqueness_of(slotname, opts={}, &block)
       register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{value} already exists')
     end
+    
+    # this module gets mixed into Document
+    module InstanceMethods
+      class Errors
+        include Enumerable
+
+        def initialize(base)
+          @base, @errors = base, {}
+        end
+
+        def add(slot, msg)
+          slot = slot.to_s
+          @errors[slot] = [] if @errors[slot].nil?
+          @errors[slot] << msg
+        end
+
+        def invalid?(slot)
+          !@errors[slot.to_s].nil?
+        end
+
+        def on(slot)
+          errors = @errors[slot.to_s]
+          return nil if errors.nil?
+          errors.size == 1 ? errors.first : errors
+        end
+
+        alias :[] :on
+
+        # Returns true if no errors have been added.
+        def empty?
+          @errors.empty?
+        end
+
+        # Removes all errors that have been added.
+        def clear
+          @errors = {}
+        end
+        
+        # Returns all the error messages in an array.
+        def messages
+          @errors.values.inject([]) { |error_messages, slot| error_messages + slot }
+        end
+
+        # Returns the total number of errors added. Two errors added to the
+        # same slot will be counted as such.
+        def size
+          @errors.values.inject(0) { |error_count, slot| error_count + slot.size }
+        end
+
+        alias_method :count, :size
+        alias_method :length, :size
+      end
+
+      # Runs validations and returns true if no errors were added otherwise false.
+      def valid?
+        errors.clear
+        
+        execute_callbacks :on_validation
+
+        errors.empty?
+      end
+
+      # Returns the Errors object that holds all information about attribute
+      # error messages.
+      def errors
+        @errors ||= Errors.new(self)
+      end
+    end
 
     private 
     
@@ -127,12 +195,17 @@ module StrokeDB
 
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
         meta = Kernel.const_get(doc.meta.name)
-        !doc.has_slot?(slotname) || !meta.find(slotname.to_sym => doc[slotname]) || !(meta.find(slotname.to_sym => doc[slotname]).size > 0)
+
+        !doc.has_slot?(slotname) || !(found = meta.find(slotname.to_sym => doc[slotname])) || !(found.size > 0)
+      end
+
+      before_save do |doc|
+        doc.valid?
       end
     end
 
     def install_validations_for(sym, &block)
-      before_save(sym) do |doc|
+      on_validation(sym) do |doc|
         grep_validations(doc, sym.to_s + "_") do |slotname_to_validate, meta_slotname|
           if validation = doc.meta[meta_slotname] 
             on = validation['on']

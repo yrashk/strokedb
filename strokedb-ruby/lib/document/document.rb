@@ -14,6 +14,17 @@ module StrokeDB
       "SlotNotFoundError: Can't find slot #{@slotname}"
     end
   end
+  
+  class InvalidDocument < StandardError #:nodoc:
+    attr_reader :document
+    def initialize(document)
+      @document = document
+    end
+
+    def message
+      "Validation failed: #{@document.errors.messages.join(", ")}"
+    end
+  end
 
   # Document is one of the core classes. It is being used to represent database document.
   #
@@ -30,6 +41,7 @@ module StrokeDB
   #    authors: ["Yurii Rashkovskii","Oleg Andreev"]
   #
   class Document
+    include Validations::InstanceMethods
 
     attr_reader :store, :callbacks  #:nodoc:
 
@@ -312,15 +324,33 @@ module StrokeDB
     end
 
     #
-    # Saves the document
+    # Saves the document. If validations do not pass, InvalidDocument
+    # exception is raised.
     #
     def save!
       execute_callbacks :before_save
+
+      raise InvalidDocument.new(self) unless valid?
+
       store.save!(self)
       @new = false
       @saved = true
       execute_callbacks :after_save
       self
+    end
+    
+    #
+    # Saves the document. Returns <tt>true</tt> if validation and saving was
+    # OK. If +perform_validation+ is set to false (it's true by default),
+    # validation will be skipped.
+    #
+    def save(perform_validation = true)
+      if perform_validation && valid? || !perform_validation
+        save!
+        true
+      else
+        false
+      end
     end
 
     #
