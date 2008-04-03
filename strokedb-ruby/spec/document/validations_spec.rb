@@ -148,7 +148,9 @@ describe "validates_type_of" do
 
     User.new(:email => e).should_not be_valid
     User.new(:email => "name@server.com").should_not be_valid
-    User.new(:email => nil).should_not be_valid
+    u = User.new(:email => nil)
+    u.should_not be_valid
+    u.errors.messages.should == [ "User's email should be of type Email" ]
   end
 end
 
@@ -173,12 +175,32 @@ describe "validates_uniqueness" do
     u1 = User.create!(:email => "name@server.com")
     u2 = User.new(:email => "name@server.com")
     u2.should_not be_valid
+    u2.errors.messages.should == [ "A document with a email of name@server.com already exists" ]
+  end
+
+  it "should respect slot name" do
+    u1 = User.create!(:email => "name@server.com")
+    u2 = User.new(:otherfield => "name@server.com")
+    u2.should be_valid
   end
 
   it "should allow to modify an existing document" do
-    u1 = User.create!(:email => "name@server.com", :status => :newbie)
-    u1.status = :hacker
-    u1.should be_valid
+    u = User.create!(:email => "name@server.com", :status => :newbie)
+    u.status = :hacker
+    u.should be_valid
+    u.save!
+    u.status = :hax0r
+    u.should be_valid
+    u.save!
+    u.email = "hax0r@hax0r.com"
+    u.should be_valid
+    u.save!
+    u.email = "name@server.com"
+    u.status = :newbie_again
+    u.should be_valid
+    u.save!
+    u.email = "hax0r@hax0r.com"
+    u.should be_valid
   end
 end
 
