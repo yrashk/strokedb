@@ -1,3 +1,5 @@
+require 'ostruct'
+
 # TODO (taken from ActiveRecord):
 #   validates_confirmation_of
 #   validates_acceptance_of
@@ -25,7 +27,7 @@ module StrokeDB
         eval("\"#{@msg}\"")
       end
     end
-    
+
     # Validates that the specified slot exists in the document. Happens by default on save. Example:
     #
     #   Person = Meta.new do
@@ -198,10 +200,6 @@ module StrokeDB
 
         !doc.has_slot?(slotname) || !(found = meta.find(slotname.to_sym => doc[slotname])) || !(found.size > 0)
       end
-
-      before_save do |doc|
-        doc.valid?
-      end
     end
 
     def install_validations_for(sym, &block)
@@ -213,7 +211,12 @@ module StrokeDB
             should_call = (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
 
             if should_call && !block.call(doc, validation, slotname_to_validate)
-              raise ValidationError.new(doc,validation['meta'],slotname_to_validate,on,validation['message'])
+              #raise ValidationError.new(doc,validation['meta'],slotname_to_validate,on,validation['message'])
+              # use OpenStruct to format a message
+              os = OpenStruct.new(validation)
+              os.doc = doc
+              
+              doc.errors.add(slotname_to_validate, os.instance_eval("\"#{validation['message']}\""))
             end
           end
         end
