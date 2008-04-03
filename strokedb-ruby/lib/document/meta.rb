@@ -34,12 +34,15 @@ module StrokeDB
           extend Associations
           extend Validations
           extend Coercions
+          extend Virtualizations
+          extend Util
         end
         mod.module_eval(&block) if block_given?
         mod.module_eval do
           initialize_associations
           initialize_validations
           initialize_coercions
+          initialize_virtualizations
         end
         if meta_name = extract_meta_name(*args)
           Object.const_set(meta_name,mod)
@@ -74,7 +77,7 @@ module StrokeDB
       if is_a?(Module) && meta.is_a?(Module)
         new_meta = Module.new
         instance_variables.each do |iv|
-          new_meta.instance_variable_set(iv,instance_variable_get(iv).clone)
+          new_meta.instance_variable_set(iv,instance_variable_get(iv) ? instance_variable_get(iv).clone : nil)
         end
         new_meta.instance_variable_set(:@metas,@metas.clone)
         new_meta.instance_variable_get(:@metas) << meta
@@ -93,7 +96,9 @@ module StrokeDB
       end
     end
 
-    CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found on_new_document on_validation on_set_slot)
+    CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found on_new_document on_validation 
+      after_validation on_set_slot)
+
     CALLBACKS.each do |callback_name|
       module_eval %{
         def #{callback_name}(uid=nil,&block)
@@ -145,7 +150,7 @@ module StrokeDB
       end
       metadocs.size > 1 ? metadocs.inject { |a,b| a + b}.make_immutable! : metadocs.first
     end
-
+    
     private
 
     def make_document(store=nil)

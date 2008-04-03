@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-def setup
+def validations_setup
   setup_default_store
   setup_index
   Object.send!(:remove_const, 'Foo') if defined?(Foo)
@@ -12,7 +12,7 @@ end
 
 describe "Document validation" do
   before :each do
-    setup
+    validations_setup
   end
 
   it "should treat an empty document as valid" do
@@ -53,7 +53,7 @@ end
 
 describe "validates_presence_of" do
   before :each do
-    setup 
+    validations_setup 
   end
 
   it "should tell valid if slot is there" do
@@ -74,7 +74,7 @@ end
 # we use validates_presence_of to test common validations behavior (:on, :message)
 
 describe "Validation helpers" do
-  before(:each) { setup }
+  before(:each) { validations_setup }
 
   it "should respect :on => :create" do
     Foo = Meta.new { validates_presence_of :name, :on => :create }
@@ -188,7 +188,7 @@ end
 
 describe "validates_type_of" do
   before(:each) do
-    setup
+    validations_setup
 
     Email = Meta.new
     User = Meta.new { validates_type_of :email, :as => :email }
@@ -215,9 +215,33 @@ describe "validates_type_of" do
   end
 end
 
+describe "validates_format_of" do
+  before(:each) do
+    validations_setup
+    User = Meta.new { validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i }
+  end
+
+  it "should treat absent slot as valid" do
+    User.new.should be_valid
+  end
+
+  it "should be valid when :email value match regexp" do
+    User.new(:email => 'cool@strokedb.com').should be_valid
+  end
+  
+  it "should be invalid when :email value do not match regexp" do
+    User.new(:email => 'cool-strokedb.com').should_not be_valid
+  end
+  
+  it "should raise an exception if no regex is provided" do
+    lambda { Meta.new { validates_format_of :email, :with => "nothing" } }.should raise_error(ArgumentError)
+  end
+  
+end
+
 describe "validates_uniqueness_of" do
   before :each do
-    setup
+    validations_setup
     User = Meta.new { validates_uniqueness_of :email }
   end
 
@@ -267,7 +291,7 @@ end
 
 describe "validates_confirmation_of" do
   before :each do
-    setup
+    validations_setup
 
     User = Meta.new { validates_confirmation_of :password }
   end
@@ -287,12 +311,10 @@ describe "validates_confirmation_of" do
   end
 
   it "should not serialize confirmation slot" do
-  pending "implement virtual slots" do
     u = User.new(:password => "sekret", :password_confirmation => "sekret").save!
 
     u_copy = User.find(u.uuid)
     u_copy.has_slot?("password_confirmation").should_not be_true
-  end
   end
 end
 
@@ -322,7 +344,7 @@ end
 
 describe "validates_numericality_of" do
   before :each do
-    setup
+    validations_setup
     Item = Meta.new do
       validates_numericality_of :price
       validates_numericality_of :quantity, :only_integer => true
@@ -363,13 +385,7 @@ describe "validates_numericality_of" do
   end
   
   it "should treat float in exponential notation as valid" do
-    i = Item.new(:price => 1.23456E3)
-    i.should be_valid
-    i.errors.messages.should == []
-  end
-  
-  it "should treat float in exponential notation with negative exponent as valid" do
-    i = Item.new(:price => 1.23456E-3)
+    i = Item.new(:price => "1.23456E-3")
     i.should be_valid
     i.errors.messages.should == []
   end
@@ -391,7 +407,7 @@ end
 
 describe "Meta with validation enabled" do
   before(:each) do
-    setup
+    validations_setup
     User = Meta.new { validates_uniqueness_of :email }
   end
   

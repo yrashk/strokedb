@@ -34,33 +34,6 @@ module StrokeDB
       end
     end
 
-    def check_condition(condition)
-      case condition
-      when Symbol, String then return
-      else
-        unless condition_block?(condition)
-          raise(
-          ArgumentError,
-          "Validations need to be either a symbol, string (to be eval'ed), proc/method, or " +
-          "class implementing a static validation method"
-          )
-        end
-      end
-    end
-
-    def evaluate_condition(condition, doc)
-      case condition
-      when Symbol then doc.send(condition)
-      when String then eval(condition, doc.send(:binding))
-      else
-        condition.call(doc)
-      end
-    end
-
-    def condition_block?(condition)
-      condition.respond_to?("call") && (condition.arity == 1 || condition.arity == -1)
-    end
-
     def register_coercion(slotname, opts)
       slotname = slotname.to_s
       to = opts['to'].to_s 
