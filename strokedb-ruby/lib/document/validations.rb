@@ -16,17 +16,6 @@ require 'ostruct'
 # Consider also using validatable gem (DataMapper is now switching to it)
 module StrokeDB
   module Validations
-    class ValidationError < StandardError
-      attr_reader :document, :meta, :slotname, :on
-      
-      def initialize(doc,meta,slotname,on,msg)
-        @document, @meta, @slotname, @on, @msg = doc,meta,slotname,on,msg
-      end
-      
-      def message
-        eval("\"#{@msg}\"")
-      end
-    end
 
     # Validates that the specified slot exists in the document. Happens by default on save. Example:
     #
@@ -215,8 +204,6 @@ module StrokeDB
             should_call = (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
 
             if should_call && !block.call(doc, validation, slotname_to_validate)
-              #raise ValidationError.new(doc,validation['meta'],slotname_to_validate,on,validation['message'])
-              # use OpenStruct to format a message
               os = OpenStruct.new(validation)
               os.doc = doc
               
