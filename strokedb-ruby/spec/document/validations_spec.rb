@@ -217,7 +217,7 @@ end
 
 describe "validates_format_of" do
   before(:each) do
-    setup
+    validations_setup
     User = Meta.new { validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i }
   end
 
