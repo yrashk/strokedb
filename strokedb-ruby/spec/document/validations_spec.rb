@@ -174,6 +174,12 @@ describe "validates_uniqueness" do
     u2 = User.new(:email => "name@server.com")
     u2.should_not be_valid
   end
+
+  it "should allow to modify an existing document" do
+    u1 = User.create!(:email => "name@server.com", :status => :newbie)
+    u1.status = :hacker
+    u1.should be_valid
+  end
 end
 
 describe "Meta with validation enabled" do

@@ -198,7 +198,11 @@ module StrokeDB
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
         meta = Kernel.const_get(doc.meta.name)
 
-        !doc.has_slot?(slotname) || !(found = meta.find(slotname.to_sym => doc[slotname])) || !(found.size > 0)
+        !doc.has_slot?(slotname) || 
+        !(found = meta.find(slotname.to_sym => doc[slotname])) || 
+        (found.size == 0) || 
+        (found.first == doc) ||
+        (found.first.version == doc.previous_version)
       end
     end
 
