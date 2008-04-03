@@ -264,6 +264,48 @@ describe "validates_uniqueness" do
   end
 end
 
+describe "validates_confirmation_of" do
+  it "should be implemented"
+end
+
+describe "validates_acceptance_of" do
+  it "should be implemented"
+end
+
+describe "validates_length_of" do
+  it "should be implemented"
+end
+
+describe "validates_uniqueness_of" do
+  it "should be implemented"
+end
+
+describe "validates_format_of" do
+  it "should be implemented"
+end
+
+describe "validates_inclusion_of" do
+  it "should be implemented"
+end
+
+describe "validates_exclusion_of" do
+  it "should be implemented"
+end
+
+describe "validates_associated" do
+  it "should be implemented"
+end
+
+describe "validates_numericality_of" do
+  it "should be implemented"
+end
+
+describe "Complex validations" do
+  it "should run all validations for the same slot"
+  it "should run all validations from all metas"
+  it "should somehow deal with the case when different metas contain same validations types for the same slot"
+end
+
 describe "Meta with validation enabled" do
   before(:each) do
     setup
