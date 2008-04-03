@@ -31,12 +31,12 @@ describe "Document validation" do
     end
   end
 
-  it "should raise InvalidDocument on a save! call" do
-    lambda { erroneous_stuff.save! }.should raise_error(InvalidDocument)
+  it "should raise InvalidDocumentError on a save! call" do
+    lambda { erroneous_stuff.save! }.should raise_error(InvalidDocumentError)
   end
 
-  it "should not raise InvalidDocument on a save!(false) call" do
-    lambda { erroneous_stuff.save!(false) }.should_not raise_error(InvalidDocument)
+  it "should not raise InvalidDocumentError on a save!(false) call" do
+    lambda { erroneous_stuff.save!(false) }.should_not raise_error(InvalidDocumentError)
   end
 
   def erroneous_stuff
@@ -117,11 +117,11 @@ describe "Validation helpers" do
   end
 
   def bang
-    lambda { yield }.should raise_error(InvalidDocument)
+    lambda { yield }.should raise_error(InvalidDocumentError)
   end
 
   def no_bang
-    lambda { yield }.should_not raise_error(InvalidDocument)
+    lambda { yield }.should_not raise_error(InvalidDocumentError)
   end
 end
 
