@@ -108,6 +108,39 @@ module StrokeDB
       end          
     end
     
+    # Validates whether the value of the specified attribute is of the correct form by matching it against the regular expression
+    # provided.
+    #
+    #   Person = Meta.new do
+    #     validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i, :on => :create
+    #   end
+    #
+    # Note: use \A and \Z to match the start and end of the string, ^ and $ match the start/end of a line.
+    #
+    # A regular expression must be provided or else an exception will be raised.
+    #
+    # Configuration options:
+    # * <tt>message</tt> - A custom error message (default is: "is invalid")
+    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
+    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
+    # * <tt>with</tt> - The regular expression used to validate the format with (note: must be supplied!)
+    # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    def validates_format_of(slotname, opts={}, &block)
+      register_validation("format_of", slotname, opts, 'Value of #{slotname} should match #{slotvalue}') do |opts|
+        unless regexp = opts['with'].is_a?(Regexp)
+          raise ArgumentError, "validates_format_of requires :with => regexp"
+        end
+        { :with => opts['with'] }
+      end
+    end
+    
+    
     # Encapsulates the pattern of wanting to validate a password or email
     # address field with a confirmation. Example:
     #
@@ -247,7 +280,11 @@ module StrokeDB
       install_validations_for(:validates_type_of) do |doc, validation, slotname|
         !doc.has_slot?(slotname) || doc[slotname].is_a?(Kernel.const_get(validation[:validation_type]))
       end
-
+      
+      install_validations_for(:validates_format_of) do |doc, validation, slotname|
+        !doc.has_slot?(slotname) || doc[slotname] =~ validation[:with]
+      end
+      
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
         meta = Kernel.const_get(doc.meta.name)
 
