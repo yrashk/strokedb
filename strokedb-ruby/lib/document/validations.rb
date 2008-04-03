@@ -117,7 +117,7 @@ module StrokeDB
     #   method, proc or string should return or evaluate to a true or false value.
     # * <tt>only_integer</tt> Specifies whether the value has to be an integer, e.g. an integral value (default is false)    
     def validates_numericality_of(slotname, opts={}, &block)
-      register_validation("numericality_of", slotname, opts, '#{meta}\'s #{slotname} should be a number')
+      register_validation("numericality_of", slotname, opts, '#{meta}\'s #{slotname} should be a number') { |opts| opts }
     end
     
     # this module gets mixed into Document
@@ -197,7 +197,7 @@ module StrokeDB
       message = opts['message'] || message
 
       hash = { :slotname => slotname, :message => message, :on => on }
-      hash.merge!(opts)
+      #hash.merge!(opts)
       hash.merge!(yield(opts)) if block_given?
 
       validation_slot = "validates_#{validation_name}_#{slotname}"
