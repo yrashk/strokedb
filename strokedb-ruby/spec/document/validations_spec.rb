@@ -350,6 +350,12 @@ describe "validates_numericality_of" do
     i.errors.messages.should == []
   end
   
+  it "should treat float in exponential notation as valid" do
+    i = Item.new(:price => 1.23456E3)
+    i.should be_valid
+    i.errors.messages.should == []
+  end
+  
   it "should treat float as invalid when integer is specified" do
     i = Item.new(:quantity => 1.5)
     i.should_not be_valid
