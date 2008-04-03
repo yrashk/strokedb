@@ -227,6 +227,7 @@ module StrokeDB
     alias :to_s :pretty_print
     alias :inspect :pretty_print
 
+    
 
     #
     # Returns string with Document's JSON representation
@@ -446,6 +447,15 @@ module StrokeDB
         false
       end
     end
+    
+    def eql?(doc) #:nodoc:
+      self == doc
+    end
+    
+    def hash #:nodoc:
+      uuid.hash
+    end
+    
 
     def make_immutable!
       extend(ImmutableDocument)

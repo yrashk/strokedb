@@ -7,6 +7,7 @@ def setup
   Object.send!(:remove_const, 'Bar') if defined?(Bar)
   Object.send!(:remove_const, 'User') if defined?(User)
   Object.send!(:remove_const, 'Email') if defined?(Email)
+  Object.send!(:remove_const, 'Item') if defined?(Item)
 end
 
 describe "Document validation" do
@@ -297,47 +298,46 @@ describe "validates_associated" do
 end
 
 describe "validates_numericality_of" do
+
   before(:each) do
     setup
-    User = Meta.new { validates_numericality_of :cash }
+    Item = Meta.new do
+      validates_numericality_of :price
+      validates_numericality_of :quantity, :as => :integer
+    end
   end
-
   it "should treat absent slot as valid" do
-    User.new.should be_valid
+    Item.new.should be_valid
   end
-
-  it "should actually check for numeric types" do
-    User.new(:cash => 100).should be_valid
-    User.new(:cash => 100.2).should be_valid
+  
+  it "should raise error on String value" do
+    i = Item.new(:price => "A")
+    i.should_not be_valid
+    i.errors.messages.should == [ "Value of price must be numeric" ]
   end
-
-  it "should treat other types as invalid" do
-    User.new(:cash => User.create!).should_not be_valid
-    User.new(:cash => "not a number").should_not be_valid
-    User.new(:cash => nil).should_not be_valid
+  
+  it "should treat integer as valid" do
+    i = Item.new(:price => 1)  
+    i.should be_valid
+    i.errors.messages.should == []
   end
-end
-
-describe "validates_numericality_of :only_integer => true" do
-  before(:each) do
-    setup
-    User = Meta.new { validates_numericality_of :age, :only_integer => true }
+  
+  it "should treat float as valid" do
+    i = Item.new(:price => 2.5)
+    i.should be_valid
+    i.errors.messages.should == []
   end
-
-  it "should treat absent slot as valid" do
-    User.new.should be_valid
+  
+  it "should treat float as invalid when integer is specified" do
+    i = Item.new(:quantity => 1.5)
+    i.should_not be_valid
+    i.errors.messages.should == [ "Value of quantity must be integer" ]
   end
-
-  it "should actually check for Integer numbers" do
-    User.new(:age => 100).should be_valid
+  
+  it "should raise error when :as other than :integer specified" do
+    lambda { Foo = Meta.new { validates_numericality_of :bar, :as => :string } }.should raise_error(ArgumentError)
   end
-
-  it "should treat other types as invalid" do
-    User.new(:age => 100.2).should_not be_valid
-    User.new(:age => User.create!).should_not be_valid
-    User.new(:age => "not a number").should_not be_valid
-    User.new(:age => nil).should_not be_valid
-  end
+  
 end
 
 describe "Complex validations" do

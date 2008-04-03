@@ -85,26 +85,30 @@ module StrokeDB
       register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists')
     end
     
-    # Validates that the specified slot value is a number
+    # Validates that the specified slot value is numeric
     #
-    #   Person = Meta.new do
-    #     validates_numericality_of :money
+    #   Item = Meta.new do
+    #     validates_numericality_of :price
     #   end
     #
     # Configuration options:
-    # * <tt>message</tt> - A custom error message (default is: "should be a number")
-    # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    # * <tt>as</tt> - Specify integer
+    # * <tt>message</tt> - A custom error message (default is: "Value of ... must be numeric | integer")
+    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>only_integer</tt> Specifies whether the value has to be an integer, e.g. an integral value (default is false)    
     def validates_numericality_of(slotname, opts={}, &block)
-      register_validation("numericality_of", slotname, opts, '#{meta}\'s #{slotname} should be a number') do |opts|
-        { :only_integer => opts['only_integer'] }
-      end
+     validation_type = opts[:as] || :numeric
+
+      register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
+        raise ArgumentError, "Specify only :integer" unless opts['as'] == :integer || opts['as'] == nil
+        { :validation_type => validation_type.to_s.capitalize }
+      end          
+
     end
     
     # this module gets mixed into Document
@@ -221,14 +225,10 @@ module StrokeDB
         (found.first == doc) ||
         (found.first.version == doc.previous_version)
       end
-      
+
       install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
         !doc.has_slot?(slotname) ||
-        if validation["only_integer"]
-          doc[slotname].to_s =~ /\A[+-]?\d+\Z/
-        else
-          Kernel.Float(doc[slotname]) rescue nil
-        end
+        (doc[slotname].is_a? Kernel.const_get(validation[:validation_type]))
       end
     end
 
