@@ -264,8 +264,6 @@ describe "validates_uniqueness" do
   end
 end
 
-<<<<<<< HEAD:strokedb-ruby/spec/document/validations_spec.rb
-=======
 describe "validates_confirmation_of" do
   it "should be implemented"
 end
@@ -297,10 +295,8 @@ end
 describe "validates_associated" do
   it "should be implemented"
 end
->>>>>>> 1de7e2cb3aac267c0e571b31867e34eba9d7488f:strokedb-ruby/spec/document/validations_spec.rb
 
 describe "validates_numericality_of" do
-<<<<<<< HEAD:strokedb-ruby/spec/document/validations_spec.rb
   before(:each) do
     setup
     User = Meta.new { validates_numericality_of :cash }
@@ -342,15 +338,12 @@ describe "validates_numericality_of :only_integer => true" do
     User.new(:age => "not a number").should_not be_valid
     User.new(:age => nil).should_not be_valid
   end
-=======
-  it "should be implemented"
 end
 
 describe "Complex validations" do
   it "should run all validations for the same slot"
   it "should run all validations from all metas"
   it "should somehow deal with the case when different metas contain same validations types for the same slot"
->>>>>>> 1de7e2cb3aac267c0e571b31867e34eba9d7488f:strokedb-ruby/spec/document/validations_spec.rb
 end
 
 describe "Meta with validation enabled" do
