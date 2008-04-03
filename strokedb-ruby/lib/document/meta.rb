@@ -107,8 +107,6 @@ module StrokeDB
       args << {} unless args.last.is_a?(Hash)
       args.last[:meta] = @metas
       doc = Document.new(*args,&block)
-      # doc[:meta] = []
-      # @metas.each {|m| doc.metas << m }
       doc
     end
 
