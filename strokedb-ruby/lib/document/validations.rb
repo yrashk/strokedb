@@ -94,7 +94,7 @@ module StrokeDB
     # The price slot must be numeric
     #
     # Configuration options:
-    # * <tt>as</tt> - Specify integer
+    # * <tt>only_integer</tt> - Specify integer
     # * <tt>message</tt> - A custom error message (default is: "Value of ... must be numeric | integer")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
@@ -105,11 +105,10 @@ module StrokeDB
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_numericality_of(slotname, opts={}, &block)
   
-      validation_type = opts[:as] || :numeric
+      validation_type = opts[:only_integer] ? 'integer' : 'numeric'
 
       register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
-        raise ArgumentError, "Specify only :integer" unless opts['as'] == :integer || opts['as'] == nil
-        { :validation_type => validation_type.to_s.capitalize }
+        { :validation_type => validation_type.capitalize }
       end          
 
     end
