@@ -14,7 +14,7 @@ describe "Document slot coercion" do
   before :each do
     setup
   end
-  
+
   it "should coerce initialization slot specified to a number" do
     Foo = Meta.new do
       coerces :some_slot, :to => :number
@@ -31,23 +31,44 @@ describe "Document slot coercion" do
     foo.some_slot = "1"
     foo.some_slot.should == 1
   end
-  
-  it "should coerce initialization slot specified to a string" do
-     Foo = Meta.new do
-       coerces :some_slot, :to => :string
-     end
-     foo = Foo.new(:some_slot => 1)
-     foo.some_slot.should == "1"
-   end
 
-   it "should coerce slot specified to a string" do
-     Foo = Meta.new do
-       coerces :some_slot, :to => :string
-     end
-     foo = Foo.new
-     foo.some_slot = 1
-     foo.some_slot.should == "1"
-   end
+  it "should coerce initialization slot specified to a string" do
+    Foo = Meta.new do
+      coerces :some_slot, :to => :string
+    end
+    foo = Foo.new(:some_slot => 1)
+    foo.some_slot.should == "1"
+  end
+
+  it "should coerce slot specified to a string" do
+    Foo = Meta.new do
+      coerces :some_slot, :to => :string
+    end
+    foo = Foo.new
+    foo.some_slot = 1
+    foo.some_slot.should == "1"
+  end
+
+  it "should coerce initialization slots specified" do
+    Foo = Meta.new do
+      coerces [:some_slot, :another_slot], :to => :string
+    end
+    foo = Foo.new(:some_slot => 1, :another_slot => 2)
+    foo.some_slot.should == "1"
+    foo.another_slot.should == "2"
+  end
+
+  it "should coerce slots specified" do
+    Foo = Meta.new do
+      coerces [:some_slot, :another_slot], :to => :string
+    end
+    foo = Foo.new
+    foo.some_slot = 1
+    foo.some_slot.should == "1"
+    foo.another_slot = 2
+    foo.another_slot.should == "2"
+  end
+
 
   it "should not coerce initialization non-numeric slot specified to a number" do
     Foo = Meta.new do

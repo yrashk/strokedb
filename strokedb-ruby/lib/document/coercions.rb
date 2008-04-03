@@ -1,28 +1,14 @@
 module StrokeDB
   module Coercions
-    def coerces(slotname, opts = {})
+    def coerces(slotnames, opts = {})
       opts = opts.stringify_keys
-      slotname = slotname.to_s
       raise ArgumentError, "coerces should have :to specified" unless opts['to']
-      to = opts['to'].to_s 
-      
+
       check_condition(opts['if']) if opts['if']
       check_condition(opts['unless']) if opts['unless']
-
-      options_hash = { 
-        :slotname => slotname, 
-        :if => opts['if'],  
-        :to => to,
-        :unless => opts['unless']
-      }
-
-      # options_hash.merge!(yield(opts)) if block_given?
-
-      coercion_slot = "coerces_#{slotname}"
-
-      @meta_initialization_procs << Proc.new do
-        @args.last.reverse_merge!(coercion_slot => { :meta => name }.merge(options_hash))
-      end
+      
+      slotnames = [slotnames] unless slotnames.is_a?(Array)
+      slotnames.each {|slotname| register_coercion(slotname,opts)}
     end
 
     private
@@ -31,7 +17,7 @@ module StrokeDB
       on_set_slot(:coerces) do |doc, slotname, value|
         if coercion = doc.meta["coerces_#{slotname}"] 
           should_call = (!coercion[:if]     || evaluate_condition(coercion[:if], doc)) &&
-                        (!coercion[:unless] || !evaluate_condition(coercion[:unless], doc))
+          (!coercion[:unless] || !evaluate_condition(coercion[:unless], doc))
           if should_call 
             case coercion[:to]
             when 'number'
@@ -73,6 +59,26 @@ module StrokeDB
 
     def condition_block?(condition)
       condition.respond_to?("call") && (condition.arity == 1 || condition.arity == -1)
+    end
+
+    def register_coercion(slotname, opts)
+      slotname = slotname.to_s
+      to = opts['to'].to_s 
+
+      options_hash = { 
+        :slotname => slotname, 
+        :if => opts['if'],  
+        :to => to,
+        :unless => opts['unless']
+      }
+
+      # options_hash.merge!(yield(opts)) if block_given?
+
+      coercion_slot = "coerces_#{slotname}"
+
+      @meta_initialization_procs << Proc.new do
+        @args.last.reverse_merge!(coercion_slot => { :meta => name }.merge(options_hash))
+      end
     end
   end  
 end
