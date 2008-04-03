@@ -1,6 +1,4 @@
 # TODO (taken from ActiveRecord):
-#   validate (with a method)
-#   validates_each
 #   validates_confirmation_of
 #   validates_acceptance_of
 #   validates_length_of
@@ -46,16 +44,9 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_presence_of(slotname, opts={}, &block)
-      opts = opts.stringify_keys
-      slotname = slotname.to_s
-      on = (opts['on'] || 'save').to_s.downcase
-      message = opts['message'] || '#{meta}\'s #{slotname} should be present on #{on}'
-
-      @meta_initialization_procs << Proc.new do
-        @args.last.reverse_merge!("validates_presence_of_#{slotname}" => { :meta => name, :slotname => slotname, :message => message, :on => on })
-      end
+      register_validation("presence_of", slotname, opts, '#{meta}\'s #{slotname} should be present on #{on}')
     end 
-    
+   
     # Validates that the specified slot value has a specific type. Happens by default on save. Example:
     #
     #   Person = Meta.new do
@@ -77,16 +68,12 @@ module StrokeDB
     # === Warning
     # When the slot doesn't exist, validation gets skipped.
     def validates_type_of(slotname, opts={}, &block)
-      opts = opts.stringify_keys
-      slotname = slotname.to_s
-      on = (opts['on'] || 'save').to_s.downcase
-      unless validation_type = opts['as']
-        raise ArgumentError, "validates_type_of requires :as => type"
-      end
-      message = opts['message'] || '#{meta}\'s #{slotname} should be of type #{validation_type}'
-      
-      @meta_initialization_procs << Proc.new do
-        @args.last.reverse_merge!("validates_type_of_#{slotname}" => { :meta => name, :slotname => slotname, :message => message, :on => on, :type => validation_type })
+      register_validation("type_of", slotname, opts, '#{meta}\'s #{slotname} should be of type #{validation_type}') do |opts|
+        unless type = opts['as']
+          raise ArgumentError, "validates_type_of requires :as => type"
+        end
+
+        { :type => type }
       end
     end
 
@@ -99,7 +86,7 @@ module StrokeDB
     # The first_name slot must be in the document.
     #
     # Configuration options:
-    # * <tt>message</tt> - A custom error message (default is: "should be present on ...")
+    # * <tt>message</tt> - A custom error message (default is: "A document with a ... of ... already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
     # * <tt>if</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
@@ -108,17 +95,26 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_uniqueness_of(slotname, opts={}, &block)
-      opts = opts.stringify_keys
-      slotname = slotname.to_s
-      on = (opts['on'] || 'save').to_s.downcase
-      message = opts['message'] || 'A document with a #{slotname} of #{value} already exists'
-      
-      @meta_initialization_procs << Proc.new do
-        @args.last.reverse_merge!("validates_uniqueness_of_#{slotname}" => { :meta => name, :slotname => slotname, :message => message, :on => on })
-      end
+      register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{value} already exists')
     end
 
     private 
+    
+    def register_validation(validation_name, slotname, opts, message)
+      opts = opts.stringify_keys
+      slotname = slotname.to_s
+      on = (opts['on'] || 'save').to_s.downcase
+      message = opts['message'] || message
+
+      hash = { :slotname => slotname, :message => message, :on => on }
+      hash.merge!(yield(opts)) if block_given?
+
+      validation_slot = "validates_#{validation_name}_#{slotname}"
+
+      @meta_initialization_procs << Proc.new do
+        @args.last.reverse_merge!(validation_slot => { :meta => name }.merge(hash))
+      end
+    end
 
     def initialize_validations
       install_validations_for(:validates_presence_of) do |doc, validation, slotname|
@@ -140,10 +136,10 @@ module StrokeDB
         grep_validations(doc, sym.to_s + "_") do |slotname_to_validate, meta_slotname|
           if validation = doc.meta[meta_slotname] 
             on = validation['on']
-            
-            if (on == 'create' && doc.new? && !block.call(doc, validation, slotname_to_validate)) ||
-               (on == 'update' && !doc.new? && !block.call(doc, validation, slotname_to_validate)) ||
-               (on == 'save' && !block.call(doc, validation, slotname_to_validate))
+
+            should_call = (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
+
+            if should_call && !block.call(doc, validation, slotname_to_validate)
               raise ValidationError.new(doc,validation['meta'],slotname_to_validate,on,validation['message'])
             end
           end
