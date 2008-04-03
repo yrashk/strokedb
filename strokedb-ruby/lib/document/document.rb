@@ -542,6 +542,7 @@ module StrokeDB
         meta.each {|m| metas.add_meta(m) }
       end
       slots.except('meta').each {|name,value| self[name] = value }
+      # now, when we have all slots initialized, we can run initialization callbacks
       execute_callbacks :on_initialization
       execute_callbacks :on_new_document if new?
     end

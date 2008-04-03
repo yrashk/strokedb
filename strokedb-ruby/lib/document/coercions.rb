@@ -40,6 +40,8 @@ module StrokeDB
               else
                 value
               end
+            when 'string'
+              value.to_s
             end
           end
         end
