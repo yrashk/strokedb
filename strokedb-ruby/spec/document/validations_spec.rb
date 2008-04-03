@@ -363,7 +363,7 @@ describe "validates_numericality_of" do
   end
   
   it "should treat float in exponential notation as valid" do
-    i = Item.new(:price => 1e-300)
+    i = Item.new(:price => "1.23456E-3")
     i.should be_valid
     i.errors.messages.should == []
   end
