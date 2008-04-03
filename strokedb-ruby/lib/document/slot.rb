@@ -83,14 +83,15 @@ module StrokeDB
   end
 
   class Slot
-    attr_reader :doc, :value
+    attr_reader :doc, :value, :name
 
-    def initialize(doc)
-      @doc = doc
+    def initialize(doc, name = nil)
+      @doc, @name = doc, name
       @decoded = {}
     end
 
     def value=(v)
+      v = doc.send!(:execute_callbacks,:on_set_slot, name, v)||v unless name == 'meta'
       @value = decode_value(enforce_collections(encode_value(v,true),true))
     end
 

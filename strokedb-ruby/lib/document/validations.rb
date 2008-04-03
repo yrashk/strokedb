@@ -1,7 +1,6 @@
 require 'ostruct'
 
 # TODO (taken from ActiveRecord):
-#   validates_confirmation_of
 #   validates_acceptance_of
 #   validates_length_of
 #   validates_uniqueness_of
@@ -85,6 +84,65 @@ module StrokeDB
       register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists')
     end
     
+    # Validates that the specified slot value is numeric
+    #
+    #   Item = Meta.new do
+    #     validates_numericality_of :price
+    #   end
+    #
+    # Configuration options:
+    # * <tt>only_integer</tt> - Specify integer
+    # * <tt>message</tt> - A custom error message (default is: "Value of ... must be numeric | integer")
+    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    def validates_numericality_of(slotname, opts={}, &block)
+      validation_type = opts[:only_integer] ? 'integer' : 'numeric'
+
+      register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
+        { :validation_type => validation_type.capitalize, :only_integer => opts['only_integer'] }
+      end          
+    end
+    
+    # Encapsulates the pattern of wanting to validate a password or email
+    # address field with a confirmation. Example:
+    #
+    #   Model:
+    #     Person = Meta.new
+    #       validates_confirmation_of :password
+    #       validates_confirmation_of :email_address, :message => "should match confirmation"
+    #     end
+    #
+    #   View:
+    #     <%= password_field "person", "password" %>
+    #     <%= password_field "person", "password_confirmation" %>
+    #
+    # The added +password_confirmation+ slot is virtual; it exists only as
+    # an in-memory slot for validating the password. To achieve this, the
+    # validation adds accessors to the model for the confirmation slot.
+    # NOTE: This check is performed only if +password_confirmation+ is not nil,
+    # and by default only on save. To require confirmation, make sure to add a
+    # presence check for the confirmation attribute:
+    #
+    #   validates_presence_of :password_confirmation, :if => :password_changed?
+    #
+    # Configuration options:
+    # * <tt>message</tt> - A custom error message (default is: "doesn't match confirmation")
+    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.      
+    def validates_confirmation_of(slotname, opts = {}, &block)
+      register_validation("confirmation_of", slotname, opts, '#{meta}\'s #{slotname} doesn\'t match confirmation')
+    end
+    
     # this module gets mixed into Document
     module InstanceMethods
       class Errors
@@ -152,7 +210,7 @@ module StrokeDB
         @errors ||= Errors.new(self)
       end
     end
-
+    
     private 
     
     def register_validation(validation_name, slotname, opts, message)
@@ -198,6 +256,22 @@ module StrokeDB
         (found.size == 0) || 
         (found.first == doc) ||
         (found.first.version == doc.previous_version)
+      end
+
+      install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
+        !doc.has_slot?(slotname) ||
+        if validation[:only_integer] 
+          !(doc[slotname].to_s =~ /\A[+-]?\d+\Z/).nil?
+        else 
+          Kernel.Float(doc[slotname]) rescue nil
+        end
+      end
+
+      install_validations_for(:validates_confirmation_of) do |doc, validation, slotname|
+        confirm_slotname = slotname + "_confirmation"
+        !doc.has_slot?(slotname) ||
+        !doc.has_slot?(confirm_slotname) ||
+        doc[slotname] == doc[confirm_slotname]
       end
     end
 

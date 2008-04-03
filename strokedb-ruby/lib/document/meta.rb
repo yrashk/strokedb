@@ -33,11 +33,13 @@ module StrokeDB
           extend Meta
           extend Associations
           extend Validations
+          extend Coercions
         end
         mod.module_eval(&block) if block_given?
         mod.module_eval do
           initialize_associations
           initialize_validations
+          initialize_coercions
         end
         if meta_name = extract_meta_name(*args)
           Object.const_set(meta_name,mod)
@@ -91,7 +93,7 @@ module StrokeDB
       end
     end
 
-    CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found on_new_document on_validation)
+    CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found on_new_document on_validation on_set_slot)
     CALLBACKS.each do |callback_name|
       module_eval %{
         def #{callback_name}(uid=nil,&block)
@@ -101,9 +103,10 @@ module StrokeDB
     end
 
     def new(*args,&block)
+      args = args.clone
+      args << {} unless args.last.is_a?(Hash)
+      args.last[:meta] = @metas
       doc = Document.new(*args,&block)
-      doc[:meta] = []
-      @metas.each {|m| doc.metas << m }
       doc
     end
 

@@ -193,6 +193,14 @@ describe "Document", :shared => true do
     @document.versions.current.should == @document
     @document.versions.current.should be_a_kind_of(VersionedDocument)
   end
+  
+  it "should have #hash calculated from uuid" do
+    hash = @document.hash 
+    another_doc = Document.from_raw(@document.store,@document.to_raw)
+    another_doc_with_different_uuid = Document.from_raw(@document.store,@document.to_raw.merge('uuid' => Util.random_uuid))
+    another_doc.hash.should == hash
+    another_doc_with_different_uuid.hash.should_not == hash
+  end
 
 
 end
@@ -635,6 +643,7 @@ describe "Document with version" do
     @another_document = Document.new(:some_data => 1, :uuid => @document.uuid)
     @another_document.version = @document.version
     @document.should == @another_document
+    @document.should be_eql(@another_document)
   end
 
   it "should not be equal to another document with the same version but another uuid" do

@@ -7,6 +7,7 @@ def setup
   Object.send!(:remove_const, 'Bar') if defined?(Bar)
   Object.send!(:remove_const, 'User') if defined?(User)
   Object.send!(:remove_const, 'Email') if defined?(Email)
+  Object.send!(:remove_const, 'Item') if defined?(Item)
 end
 
 describe "Document validation" do
@@ -214,7 +215,7 @@ describe "validates_type_of" do
   end
 end
 
-describe "validates_uniqueness" do
+describe "validates_uniqueness_of" do
   before :each do
     setup
     User = Meta.new { validates_uniqueness_of :email }
@@ -265,7 +266,34 @@ describe "validates_uniqueness" do
 end
 
 describe "validates_confirmation_of" do
-  it "should be implemented"
+  before :each do
+    setup
+
+    User = Meta.new { validates_confirmation_of :password }
+  end
+
+  it "should be valid when confirmed" do
+    User.new(:password => "sekret", :password_confirmation => "sekret").should be_valid
+  end
+  
+  it "should be valid when confirmation is not set" do
+    User.new(:password => "sekret").should be_valid
+  end
+  
+  it "should not be valid when not confirmed" do
+    u = User.new(:password => "sekret", :password_confirmation => "invalid_guess")
+    u.should_not be_valid
+    u.errors.messages.should == [ "User's password doesn't match confirmation" ]
+  end
+
+  it "should not serialize confirmation slot" do
+  pending "implement virtual slots" do
+    u = User.new(:password => "sekret", :password_confirmation => "sekret").save!
+
+    u_copy = User.find(u.uuid)
+    u_copy.has_slot?("password_confirmation").should_not be_true
+  end
+  end
 end
 
 describe "validates_acceptance_of" do
@@ -273,10 +301,6 @@ describe "validates_acceptance_of" do
 end
 
 describe "validates_length_of" do
-  it "should be implemented"
-end
-
-describe "validates_uniqueness_of" do
   it "should be implemented"
 end
 
@@ -297,10 +321,69 @@ describe "validates_associated" do
 end
 
 describe "validates_numericality_of" do
-  it "should be implemented"
+  before :each do
+    setup
+    Item = Meta.new do
+      validates_numericality_of :price
+      validates_numericality_of :quantity, :only_integer => true
+    end
+  end
+  it "should treat absent slot as valid" do
+    Item.new.should be_valid
+  end
+  
+  it "should raise error on String value" do
+    i = Item.new(:price => "A")
+    i.should_not be_valid
+    i.errors.messages.should == [ "Value of price must be numeric" ]
+  end
+  
+  it "should treat integer as valid" do
+    i = Item.new(:price => 1)  
+    i.should be_valid
+    i.errors.messages.should == []
+  end
+  
+  it "should treat negative integer as valid" do
+    i = Item.new(:price => -1)  
+    i.should be_valid
+    i.errors.messages.should == []
+  end
+  
+  it "should treat float as valid" do
+    i = Item.new(:price => 2.5)
+    i.should be_valid
+    i.errors.messages.should == []
+  end
+  
+  it "should treat negative float as valid" do
+    i = Item.new(:price => -2.5)
+    i.should be_valid
+    i.errors.messages.should == []
+  end
+  
+  it "should treat float in exponential notation as valid" do
+    i = Item.new(:price => 1.23456E3)
+    i.should be_valid
+    i.errors.messages.should == []
+  end
+  
+  it "should treat float in exponential notation with negative exponent as valid" do
+    i = Item.new(:price => 1.23456E-3)
+    i.should be_valid
+    i.errors.messages.should == []
+  end
+  
+  it "should treat float as invalid when integer is specified" do
+    i = Item.new(:quantity => 1.5)
+    i.should_not be_valid
+    i.errors.messages.should == [ "Value of quantity must be integer" ]
+  end
+  
 end
 
 describe "Complex validations" do
+  it "should gather errors for all slots"
   it "should run all validations for the same slot"
   it "should run all validations from all metas"
   it "should somehow deal with the case when different metas contain same validations types for the same slot"

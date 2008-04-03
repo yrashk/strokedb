@@ -14,7 +14,7 @@ module StrokeDB
       "SlotNotFoundError: Can't find slot #{@slotname}"
     end
   end
-  
+
   class InvalidDocumentError < StandardError #:nodoc:
     attr_reader :document
     def initialize(document)
@@ -64,6 +64,10 @@ module StrokeDB
       end
 
       def <<(meta)
+        add_meta(meta, :call_initialization_callbacks => true)
+      end
+
+      def add_meta(meta, opts = {})
         _module = nil
         case meta
         when Document
@@ -78,8 +82,10 @@ module StrokeDB
         if _module
           @document.extend(_module)
           _module.send!(:setup_callbacks,@document) rescue nil
-          @document.send!(:execute_callbacks_for, _module, :on_initialization)
-          @document.send!(:execute_callbacks_for, _module, :on_new_document) if @document.new?
+          if opts.stringify_keys['call_initialization_callbacks'] 
+            @document.send!(:execute_callbacks_for, _module, :on_initialization)
+            @document.send!(:execute_callbacks_for, _module, :on_new_document) if @document.new?
+          end
         end
         @document[:meta] = self
       end
@@ -145,7 +151,7 @@ module StrokeDB
     #
     def []=(slotname,value)
       slotname = slotname.to_s
-      slot = @slots[slotname] || @slots[slotname] = Slot.new(self)
+      slot = @slots[slotname] || @slots[slotname] = Slot.new(self,slotname)
       slot.value = value
       update_version!(slotname)
       slot.value
@@ -226,6 +232,7 @@ module StrokeDB
 
     alias :to_s :pretty_print
     alias :inspect :pretty_print
+
 
 
     #
@@ -340,7 +347,7 @@ module StrokeDB
       execute_callbacks :after_save
       self
     end
-    
+
     #
     # Updates slots with specified <tt>hash</tt> and returns itself.
     #
@@ -447,6 +454,15 @@ module StrokeDB
       end
     end
 
+    def eql?(doc) #:nodoc:
+      self == doc
+    end
+
+    def hash #:nodoc:
+      uuid.hash
+    end
+
+
     def make_immutable!
       extend(ImmutableDocument)
       self
@@ -518,13 +534,23 @@ module StrokeDB
 
     def initialize_slots(slots) #:nodoc:
       @slots = {}
-      slots.each {|name,value| self[name] = value }
+      slots = slots.stringify_keys
+      # there is a reason for meta slot is initialized separately — 
+      # we need to setup coercions before initializing actual slots
+      if meta = slots['meta']
+        meta = [meta] unless meta.is_a?(Array)
+        meta.each {|m| metas.add_meta(m) }
+      end
+      slots.except('meta').each {|name,value| self[name] = value }
+      # now, when we have all slots initialized, we can run initialization callbacks
+      execute_callbacks :on_initialization
+      execute_callbacks :on_new_document if new?
     end
 
     def initialize_raw_slots(slots) #:nodoc:
       @slots = {}
       slots.each do |name,value|
-        s = Slot.new(self)
+        s = Slot.new(self,name)
         s.raw_value = value
         @slots[name.to_s] = s
       end
