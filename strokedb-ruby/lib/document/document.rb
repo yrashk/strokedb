@@ -15,7 +15,7 @@ module StrokeDB
     end
   end
   
-  class InvalidDocument < StandardError #:nodoc:
+  class InvalidDocumentError < StandardError #:nodoc:
     attr_reader :document
     def initialize(document)
       @document = document
@@ -324,14 +324,14 @@ module StrokeDB
     end
 
     #
-    # Saves the document. If validations do not pass, InvalidDocument
+    # Saves the document. If validations do not pass, InvalidDocumentError
     # exception is raised.
     #
     def save!(perform_validation = true)
       execute_callbacks :before_save
 
       if perform_validation
-        raise InvalidDocument.new(self) unless valid?
+        raise InvalidDocumentError.new(self) unless valid?
       end
 
       store.save!(self)

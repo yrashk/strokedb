@@ -16,17 +16,6 @@ require 'ostruct'
 # Consider also using validatable gem (DataMapper is now switching to it)
 module StrokeDB
   module Validations
-    class ValidationError < StandardError
-      attr_reader :document, :meta, :slotname, :on
-      
-      def initialize(doc,meta,slotname,on,msg)
-        @document, @meta, @slotname, @on, @msg = doc,meta,slotname,on,msg
-      end
-      
-      def message
-        eval("\"#{@msg}\"")
-      end
-    end
 
     # Validates that the specified slot exists in the document. Happens by default on save. Example:
     #
@@ -75,7 +64,7 @@ module StrokeDB
           raise ArgumentError, "validates_type_of requires :as => type"
         end
 
-        { :type => type }
+        { :validation_type => type.to_s.capitalize }
       end
     end
 
@@ -97,7 +86,7 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_uniqueness_of(slotname, opts={}, &block)
-      register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{value} already exists')
+      register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists')
     end
     
     # Validates that the specified slot value is a number
@@ -215,13 +204,17 @@ module StrokeDB
       end
       
       install_validations_for(:validates_type_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) || doc[slotname].is_a?(Kernel.const_get(validation[:type].to_s.capitalize))
+        !doc.has_slot?(slotname) || doc[slotname].is_a?(Kernel.const_get(validation[:validation_type]))
       end
 
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
         meta = Kernel.const_get(doc.meta.name)
 
-        !doc.has_slot?(slotname) || !(found = meta.find(slotname.to_sym => doc[slotname])) || !(found.size > 0)
+        !doc.has_slot?(slotname) || 
+        !(found = meta.find(slotname.to_sym => doc[slotname])) || 
+        (found.size == 0) || 
+        (found.first == doc) ||
+        (found.first.version == doc.previous_version)
       end
       
       install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
@@ -243,11 +236,10 @@ module StrokeDB
             should_call = (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
 
             if should_call && !block.call(doc, validation, slotname_to_validate)
-              #raise ValidationError.new(doc,validation['meta'],slotname_to_validate,on,validation['message'])
-              # use OpenStruct to format a message
               os = OpenStruct.new(validation)
-              os.doc = doc
-              
+              os.document = doc
+              os.slotvalue = doc[slotname_to_validate]
+
               doc.errors.add(slotname_to_validate, os.instance_eval("\"#{validation['message']}\""))
             end
           end
