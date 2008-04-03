@@ -7,6 +7,7 @@ def setup
   Object.send!(:remove_const, 'Bar') if defined?(Bar)
   Object.send!(:remove_const, 'User') if defined?(User)
   Object.send!(:remove_const, 'Email') if defined?(Email)
+  Object.send!(:remove_const, 'Item') if defined?(Item)
 end
 
 describe "Document validation" do
@@ -297,7 +298,47 @@ describe "validates_associated" do
 end
 
 describe "validates_numericality_of" do
-  it "should be implemented"
+  
+  before(:each) do
+    setup
+    Item = Meta.new do
+      validates_numericality_of :price
+      validates_numericality_of :quantity, :as => :integer
+    end
+  end
+  
+  it "should treat absent slot as valid" do
+    Item.new.should be_valid
+  end
+  
+  it "should raise error on String value" do
+    i = Item.new(:price => "A")
+    i.should_not be_valid
+    i.errors.messages.should == [ "Value of price must be numeric" ]
+  end
+  
+  it "should treat integer as valid" do
+    i = Item.new(:price => 1)  
+    i.should be_valid
+    i.errors.messages.should == []
+  end
+  
+  it "should treat float as valid" do
+    i = Item.new(:price => 2.5)
+    i.should be_valid
+    i.errors.messages.should == []
+  end
+  
+  it "should treat float as invalid when integer is specified" do
+    i = Item.new(:quantity => 1.5)
+    i.should_not be_valid
+    i.errors.messages.should == [ "Value of quantity must be integer" ]
+  end
+  
+  it "should raise error when :as other than :integer specified" do
+    lambda { Foo = Meta.new { validates_numericality_of :bar, :as => :string } }.should raise_error(ArgumentError)
+  end
+  
 end
 
 describe "Complex validations" do

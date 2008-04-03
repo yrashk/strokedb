@@ -85,6 +85,37 @@ module StrokeDB
       register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists')
     end
     
+    # Validates that the specified slot value is numeric
+    #
+    #   Item = Meta.new do
+    #     validates_numericality_of :price
+    #   end
+    #
+    # The price slot must be numeric
+    #
+    # Configuration options:
+    # * <tt>as</tt> - Specify integer
+    # * <tt>message</tt> - A custom error message (default is: "Value of ... must be numeric | integer")
+    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    def validates_numericality_of(slotname, opts={}, &block)
+  
+      validation_type = opts[:as] || :numeric
+
+      register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
+        raise ArgumentError, "Specify only :integer" unless opts['as'] == :integer || opts['as'] == nil
+        { :validation_type => validation_type.to_s.capitalize }
+      end          
+
+    end
+    
+        
+    
     # this module gets mixed into Document
     module InstanceMethods
       class Errors
@@ -198,6 +229,11 @@ module StrokeDB
         (found.size == 0) || 
         (found.first == doc) ||
         (found.first.version == doc.previous_version)
+      end
+
+      install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
+        !doc.has_slot?(slotname) ||
+        (doc[slotname].is_a? Kernel.const_get(validation[:validation_type]))
       end
     end
 
