@@ -174,11 +174,16 @@ module StrokeDB
     #     validates_numericality_of :money
     #   end
     #
-    # Only integer (default is false)
-    #
-    #   Person = Meta.new do
-    #     validates_numericality_of :money, :only_integer => true
-    #   end
+    # Configuration options:
+    # * <tt>message</tt> - A custom error message (default is: "should be a number")
+    # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>only_integer</tt> Specifies whether the value has to be an integer, e.g. an integral value (default is false)    
     def validates_numericality_of(slotname, opts={}, &block)
       register_validation("numericality_of", slotname, opts, '#{meta}\'s #{slotname} should be a number') do |opts|
         { :integer => opts['only_integer'] }
