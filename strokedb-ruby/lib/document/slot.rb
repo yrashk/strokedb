@@ -1,5 +1,5 @@
 module StrokeDB
-  class LazyMappingHashWithModificationCallback < LazyMappingHash
+  class HashSlotValue < LazyMappingHash
     def with_modification_callback(&block)
       @modification_callback = block
       self
@@ -10,7 +10,7 @@ module StrokeDB
     end
   end
 
-  class LazyMappingArrayWithModificationCallback < LazyMappingArray
+  class ArraySlotValue < LazyMappingArray
     def with_modification_callback(&block)
       @modification_callback = block
       self
@@ -30,6 +30,17 @@ module StrokeDB
     def unshift(*args)
       super(*args)
       @modification_callback.call if @modification_callback
+    end
+
+    def include?(v) 
+      case v
+      when VersionedDocument
+        super(v)
+      when Document
+        v.versions.all.find{|d| super(d)} # FIXME: versions.all could be pretty slow
+      else
+        super(v)
+      end
     end
 
   end
@@ -134,7 +145,7 @@ module StrokeDB
       when /@##{UUID_RE}.#{VERSION_RE}/
         DocumentReferenceValue.new(v,doc)
       when Array
-        LazyMappingArrayWithModificationCallback.new(v).map_with do |element| 
+        ArraySlotValue.new(v).map_with do |element| 
           decoded = decode_value(element)
           @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
         end.unmap_with do |element|
@@ -143,7 +154,7 @@ module StrokeDB
           doc.send!(:update_version!,nil)
         end
       when Hash
-        LazyMappingHashWithModificationCallback.new(v).map_with do |element|
+        HashSlotValue.new(v).map_with do |element|
           decoded = decode_value(element)
           @decoded[decoded] ||= decoded.is_a?(DocumentReferenceValue) ? decoded.load : decoded
         end.unmap_with do |element|

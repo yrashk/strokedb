@@ -3,194 +3,317 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 def setup
   setup_default_store
   setup_index
-  Object.send!(:remove_const,'Song') if defined?(Song)
+  Object.send!(:remove_const, 'Foo') if defined?(Foo)
+  Object.send!(:remove_const, 'Bar') if defined?(Bar)
+  Object.send!(:remove_const, 'User') if defined?(User)
+  Object.send!(:remove_const, 'Email') if defined?(Email)
 end
 
-def validate_on_create(should = true)
-  create = lambda { Song.create! }
-  
-  if should
-    create.should raise_error(Validations::ValidationError)
-
-    begin
-      s = Song.new
-      s.save!
-    rescue Validations::ValidationError
-      exception = $!
-      $!.document.should == s
-      $!.meta.should == "Song"
-      $!.slotname.should == "name"
-    end
-  else
-    create.should_not raise_error(Validations::ValidationError)
-  end
-end
-
-def validate_on_update(should = true)
-  s = Song.create! :name => "My song"
-  s.remove_slot!(:name)
-  save = lambda { s.save! }
-  error = raise_error(Validations::ValidationError)
-
-  should ? save.should(error) : save.should_not(error)
-end
-
-describe "validates_presence_of :on => save", :shared => true do
-  it "should validate presence of name on document creation" do
-    validate_on_create
-  end
-  
-  it "should validate presence of name on document update" do
-    validate_on_update
-  end
-end
-
-describe "Song.validates_presence_of :name" do
+describe "Document validation" do
   before :each do
     setup
-    Song = Meta.new { validates_presence_of :name }
+  end
+
+  it "should treat an empty document as valid" do
+    Foo = Meta.new
+    s = Foo.new
+
+    s.should be_valid
+    s.errors.should be_empty
+  end
+
+  it "should not treat a document with errors as valid" do
+    s = erroneous_stuff
+
+    s.should_not be_valid
+    s.errors.count.should == 2
+    %w(123 456).each do |msg|
+      s.errors.messages.include?(msg).should be_true
+    end
+  end
+
+  it "should raise InvalidDocumentError on a save! call" do
+    lambda { erroneous_stuff.save! }.should raise_error(InvalidDocumentError)
+  end
+
+  it "should not raise InvalidDocumentError on a save!(false) call" do
+    lambda { erroneous_stuff.save!(false) }.should_not raise_error(InvalidDocumentError)
+  end
+
+  def erroneous_stuff
+    Meta.new do
+      on_validation do |doc|
+        doc.errors.add(:something, "123")
+        doc.errors.add(:other,     "456")
+      end
+    end.new
+  end
+end
+
+describe "validates_presence_of" do
+  before :each do
+    setup 
+  end
+
+  it "should tell valid if slot is there" do
+    Foo = Meta.new { validates_presence_of :name, :on => :save }
+    s = Foo.new({:name => "Rick Roll"})
+    s.should be_valid
+  end
+
+  it "should tell invalid if slot is absent" do
+    Foo = Meta.new { validates_presence_of :name, :on => :save }
+    s = Foo.new
+
+    s.should_not be_valid
+    s.errors.messages.should == [ "Foo's name should be present on save" ]
+  end
+end
+
+# we use validates_presence_of to test common validations behavior (:on, :message)
+
+describe "Validation helpers" do
+  before(:each) { setup }
+
+  it "should respect :on => :create" do
+    Foo = Meta.new { validates_presence_of :name, :on => :create }
+    s1 = Foo.new
+    bang { s1.save! }
+
+    s2 = Foo.new(:name => "Rick Roll")
+    no_bang { s2.save! }
+    s2.remove_slot!(:name)
+    no_bang { s2.save! }
+  end
+
+  it "should respect :on => :update" do
+    Foo = Meta.new { validates_presence_of :name, :on => :update }
+    
+    s = Foo.new
+    no_bang { s.save! }
+    bang { s.save! }
+    s[:name] = "Rick Roll"
+    no_bang { s.save! }
+  end
+
+  it "should respect :on => :save" do
+    Foo = Meta.new { validates_presence_of :name, :on => :save }
+    s1 = Foo.new
+    bang { s1.save! }
+
+    s2 = Foo.new(:name => "Rick Roll")
+    no_bang { s2.save! }
+    s2.remove_slot!(:name)
+    bang { s2.save! }
+  end
+
+  it "should respect :message" do
+    Foo = Meta.new do 
+      validates_presence_of :name, :on => :save, :message => 'On #{on} Meta #{meta} SlotName #{slotname}'
+    end
+
+    s = Foo.new
+    s.valid?.should be_false
+    s.errors.messages.should == [ "On save Meta Foo SlotName name" ]
+  end
+
+  it "should respect :if" do
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => proc { true } end
+    bang { Foo.create! }
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => proc { false } end
+    no_bang { Bar.create! }
+  end
+  
+  it "should respect :unless" do
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :unless => proc { false } end
+    bang { Foo.create! }
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :unless => proc { true } end
+    no_bang { Bar.create! }
+  end
+  
+  it "should respect both :if and :unless when given" do
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => proc { false }, :unless => proc { false } end
+    no_bang { Foo.create! }
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => proc { true }, :unless => proc { false } end
+    bang { Bar.create! }
   end
  
-  it_should_behave_like "validates_presence_of :on => save"
+  it "should allow to use document slot for :if and :unless evaluation" do
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => :slot end
+    bang { Foo.create!(:slot => true) }
+    no_bang { Foo.create!(:slot => false) }
+    
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :unless => :slot end
+    no_bang { Bar.create!(:slot => true) }
+    bang { Bar.create!(:slot => false) }
+  end
+  
+  it "should allow to use a string for :if and :unless evaluation" do
+    Foo = Meta.new do 
+      validates_presence_of :name, :on => :save, :if => "!some_method"
+      def some_method; self.some_slot end
+    end
+    
+    no_bang { Foo.create!(:some_slot => true) }
+    bang { Foo.create!(:some_slot => false) }
+    
+    Bar = Meta.new do 
+      validates_presence_of :name, :on => :save, :unless => "!some_method"
+      def some_method; self.some_slot end
+    end
+    
+    bang { Bar.create!(:some_slot => true) }
+    no_bang { Bar.create!(:some_slot => false) }
+  end
+
+  it "should raise an ArgumentError when given something not callable for :if and :unless" do
+    lambda do
+      Meta.new { validates_presence_of :name, :on => :save, :if => 123  }
+    end.should raise_error(ArgumentError)
+
+    lambda do
+      Meta.new { validates_presence_of :name, :on => :save, :unless => 123  }
+    end.should raise_error(ArgumentError)
+  end
+
+  def bang
+    lambda { yield }.should raise_error(InvalidDocumentError)
+  end
+
+  def no_bang
+    lambda { yield }.should_not raise_error(InvalidDocumentError)
+  end
 end
 
-describe "Song.validates_presence_of :name, :on => :save" do
+describe "validates_type_of" do
+  before(:each) do
+    setup
+
+    Email = Meta.new
+    User = Meta.new { validates_type_of :email, :as => :email }
+  end
+
+  it "should treat absent slot as valid" do
+    User.new.should be_valid
+  end
+
+  it "should actually check the type" do
+    e = Email.create!
+    User.new(:email => e).should be_valid
+  end
+
+  it "should treat other types as invalid" do
+    OmgEmail = Meta.new
+    e = OmgEmail.create!
+
+    User.new(:email => e).should_not be_valid
+    User.new(:email => "name@server.com").should_not be_valid
+    u = User.new(:email => nil)
+    u.should_not be_valid
+    u.errors.messages.should == [ "User's email should be of type Email" ]
+  end
+end
+
+describe "validates_uniqueness" do
   before :each do
     setup
-    Song = Meta.new { validates_presence_of :name, :on => :save }
+    User = Meta.new { validates_uniqueness_of :email }
+  end
+
+  it "should treat absent slot as valid" do
+    u1 = User.create!
+    User.new.should be_valid
+  end
+
+  it "should treat unique slot values as valid" do
+    u1 = User.create!(:email => "name@server.com")
+    u2 = User.new(:email => "othername@otherserver.com")
+    u2.should be_valid
   end
   
-  it_should_behave_like "validates_presence_of :on => save"
+  it "should treat duplicate slot values as invalid" do
+    u1 = User.create!(:email => "name@server.com")
+    u2 = User.new(:email => "name@server.com")
+    u2.should_not be_valid
+    u2.errors.messages.should == [ "A document with a email of name@server.com already exists" ]
+  end
+
+  it "should respect slot name" do
+    u1 = User.create!(:email => "name@server.com")
+    u2 = User.new(:otherfield => "name@server.com")
+    u2.should be_valid
+  end
+
+  it "should allow to modify an existing document" do
+    u = User.create!(:email => "name@server.com", :status => :newbie)
+    u.status = :hacker
+    u.should be_valid
+    u.save!
+    u.status = :hax0r
+    u.should be_valid
+    u.save!
+    u.email = "hax0r@hax0r.com"
+    u.should be_valid
+    u.save!
+    u.email = "name@server.com"
+    u.status = :newbie_again
+    u.should be_valid
+    u.save!
+    u.email = "hax0r@hax0r.com"
+    u.should be_valid
+  end
 end
 
-describe "Song.validates_presence_of :name, :on => :create" do
-  before :each do
-    setup
-    Song = Meta.new { validates_presence_of :name, :on => :create }
-  end
-  
-  it "should validate presence of name on document creation" do
-    validate_on_create
-  end
-  
-  it "should not validate presence of name on document update" do
-    validate_on_update(false)
-  end
+describe "validates_confirmation_of" do
+  it "should be implemented"
 end
 
-describe "Song.validates_presence_of :name, :on => :update" do
-  before :each do 
-    setup
-    Song = Meta.new { validates_presence_of :name, :on => :update }
-  end
-  
-  it "should not validate presence of name on document creation" do
-    validate_on_create(false)
-  end
-  
-  it "should validate presence of name on document update" do
-    validate_on_update(true)
-  end
-  
+describe "validates_acceptance_of" do
+  it "should be implemented"
 end
 
-describe "User.validates_type_of :email, :as => :email" do
-  
-  before(:each) do
-    setup_default_store
-    setup_index
-    Object.send!(:remove_const, 'User') if defined?(User)
-    Object.send!(:remove_const, 'Email') if defined?(Email)
-    Email = Meta.new
-    User = Meta.new do
-      validates_type_of :email, :as => :email
-    end
-  end
-  
-  it "should not validate type of :email if none present" do
-    lambda { User.create! }.should_not raise_error(Validations::ValidationError)
-  end
-  
-  it "should not raise error if :email is of type Email" do
-    e = Email.create!
-    lambda { u = User.create!(:email => e) }.should_not raise_error(Validations::ValidationError)
-  end
-  
-  it "should raise error if :email is not an Email" do
-    lambda { u = User.create!(:email => "name@server.com") }.should raise_error(Validations::ValidationError)
-  end
-  
+describe "validates_length_of" do
+  it "should be implemented"
 end
 
-describe "User.validates_type_of :email, :as => :string" do
-  
-  before(:each) do
-    setup_default_store
-    setup_index
-    Object.send!(:remove_const, 'User') if defined?(User)
-    Object.send!(:remove_const, 'Email') if defined?(Email)
-    User = Meta.new do
-      validates_type_of :email, :as => :string
-    end
-  end
-    
-  it "should not raise error if :email is a String" do
-    lambda { u = User.create!(:email => "name@server.com") }.should_not raise_error(Validations::ValidationError)
-  end
-    
-  it "should raise error if :email is not a String" do
-    Email = Meta.new
-    e = Email.create!
-    lambda { u = User.create!(:email => e)}.should raise_error(Validations::ValidationError)
-  end
-  
-  it "should save User if no error raised" do
-    u = User.create!(:email => "a@b.com")
-    User.find(:email => "a@b.com").size.should == 1
-  end
+describe "validates_uniqueness_of" do
+  it "should be implemented"
+end
 
-end   
+describe "validates_format_of" do
+  it "should be implemented"
+end
 
-describe "User.validates_uniqueness of :email" do
+describe "validates_inclusion_of" do
+  it "should be implemented"
+end
 
-  before(:each) do
-    setup_default_store
-    setup_index
-    Object.send!(:remove_const, 'User') if defined?(User)
-    User = Meta.new do
-      validates_uniqueness_of :email
-    end
-  end
-  
-  it "should not raise an error if :email is unique" do
-    u = User.create!(:email => "name@server.com")
-    lambda { v = User.create!(:email => "name2@server.com") }.should_not raise_error(Validations::ValidationError)
-  end
-  
-  it "should raise an error if duplicate :email exists" do
-    u = User.create!(:email => "name@server.com")
-    lambda { v = User.create!(:email => "name@server.com") }.should raise_error(Validations::ValidationError)
-  end
-  
-  it "should not raise an error if :email is not defined" do
-    lambda { u = User.create! }.should_not raise_error(Validations::ValidationError)
-  end
-  
+describe "validates_exclusion_of" do
+  it "should be implemented"
+end
+
+describe "validates_associated" do
+  it "should be implemented"
+end
+
+describe "validates_numericality_of" do
+  it "should be implemented"
+end
+
+describe "Complex validations" do
+  it "should run all validations for the same slot"
+  it "should run all validations from all metas"
+  it "should somehow deal with the case when different metas contain same validations types for the same slot"
 end
 
 describe "Meta with validation enabled" do
   before(:each) do
-    setup_default_store
-    setup_index
-    Object.send!(:remove_const, 'User') if defined?(User)
-    User = Meta.new do
-      validates_uniqueness_of :email
-    end
+    setup
+    User = Meta.new { validates_uniqueness_of :email }
   end
   
   it "should be able to find instances of all documents" do
     doc = User.create! :email => "yrashk@gmail.com"
     User.find.should == [doc]
   end
-  
 end
