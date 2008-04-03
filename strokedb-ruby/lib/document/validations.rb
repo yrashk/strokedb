@@ -99,7 +99,7 @@ module StrokeDB
     # The first_name slot must be in the document.
     #
     # Configuration options:
-    # * <tt>message</tt> - A custom error message (default is: "should be present on ...")
+    # * <tt>message</tt> - A custom error message (default is: "A document with a ... of ... already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
     # * <tt>if</tt> - (UNSUPPORTED) Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
