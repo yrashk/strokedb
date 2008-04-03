@@ -40,19 +40,22 @@ describe 'DocRef' do
   it 'should not add child if exists' do
     a = T.find_or_create :name => 'a'
     b = T.find_or_create :name => 'b'
-
-    a.add_child b
-
-    a = T.find_or_create :name => 'a'
-    b = T.find_or_create :name => 'b'
-
-    a.children.size.should == 1
-    a.children.should include(b)
+    c = T.find_or_create :name => 'c'
 
     a.add_child b
 
     a.children.size.should == 1
     a.children.should include(b)
+
+    a.add_child b
+
+    a.children.size.should == 1
+    a.children.should include(b)
+
+    b.add_child c
+
+    a.children.should include(b)
+    b.children.should include(c)
   end
 
   it 'should work with -' do
@@ -67,6 +70,9 @@ describe 'DocRef' do
     ([a, b] - [a, b]).should == []
     #a.children.reject{|c| [b].include?(c) }.should == [] # old workaround
     (a.children - [b]).should == []
+
+    (T.find - T.find).should == []
+    (T.find - T.find).size.should == 0
   end
 
   it 'should work after re-opening database' do
