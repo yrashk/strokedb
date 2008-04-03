@@ -327,10 +327,12 @@ module StrokeDB
     # Saves the document. If validations do not pass, InvalidDocument
     # exception is raised.
     #
-    def save!
+    def save!(perform_validation = true)
       execute_callbacks :before_save
 
-      raise InvalidDocument.new(self) unless valid?
+      if perform_validation
+        raise InvalidDocument.new(self) unless valid?
+      end
 
       store.save!(self)
       @new = false
@@ -339,20 +341,6 @@ module StrokeDB
       self
     end
     
-    #
-    # Saves the document. Returns <tt>true</tt> if validation and saving was
-    # OK. If +perform_validation+ is set to false (it's true by default),
-    # validation will be skipped.
-    #
-    def save(perform_validation = true)
-      if perform_validation && valid? || !perform_validation
-        save!
-        true
-      else
-        false
-      end
-    end
-
     #
     # Updates slots with specified <tt>hash</tt> and returns itself.
     #

@@ -18,7 +18,6 @@ describe "Document validation" do
     s = Song.new
 
     s.should be_valid
-    s.save.should be_true
     s.errors.should be_empty
   end
 
@@ -26,7 +25,6 @@ describe "Document validation" do
     s = erroneous_stuff
 
     s.should_not be_valid
-    s.save.should be_false
     s.errors.count.should == 2
     %w(123 456).each do |msg|
       s.errors.messages.include?(msg).should be_true
@@ -35,6 +33,10 @@ describe "Document validation" do
 
   it "should raise InvalidDocument on a save! call" do
     lambda { erroneous_stuff.save! }.should raise_error(InvalidDocument)
+  end
+
+  it "should not raise InvalidDocument on a save!(false) call" do
+    lambda { erroneous_stuff.save!(false) }.should_not raise_error(InvalidDocument)
   end
 
   def erroneous_stuff
@@ -75,33 +77,33 @@ describe "Validation helpers" do
   it "should respect :on => :create" do
     Song = Meta.new { validates_presence_of :name, :on => :create }
     s1 = Song.new
-    s1.save.should == false
+    bang { s1.save! }
 
     s2 = Song.new(:name => "Rick Roll")
-    s2.save.should == true
+    no_bang { s2.save! }
     s2.remove_slot!(:name)
-    s2.save.should == true
+    no_bang { s2.save! }
   end
 
   it "should respect :on => :update" do
     Song = Meta.new { validates_presence_of :name, :on => :update }
     
     s = Song.new
-    s.save.should == true
-    s.save.should == false
+    no_bang { s.save! }
+    bang { s.save! }
     s[:name] = "Rick Roll"
-    s.save.should == true
+    no_bang { s.save! }
   end
 
   it "should respect :on => :save" do
     Song = Meta.new { validates_presence_of :name, :on => :save }
     s1 = Song.new
-    s1.save.should == false
+    bang { s1.save! }
 
     s2 = Song.new(:name => "Rick Roll")
-    s2.save.should == true
+    no_bang { s2.save! }
     s2.remove_slot!(:name)
-    s2.save.should == false
+    bang { s2.save! }
   end
 
   it "should respect :message" do
@@ -112,6 +114,14 @@ describe "Validation helpers" do
     s = Song.new
     s.valid?.should be_false
     s.errors.messages.should == [ "On save Meta Song SlotName name" ]
+  end
+
+  def bang
+    lambda { yield }.should raise_error(InvalidDocument)
+  end
+
+  def no_bang
+    lambda { yield }.should_not raise_error(InvalidDocument)
   end
 end
 
