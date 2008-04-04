@@ -48,6 +48,17 @@ describe "Document slot virtualization" do
     end.should_not change(f,:previous_version)
   end
 
+  it "should allow to validate the virtual slot" do
+    Bar = Meta.new do
+      virtualizes :mylovelyslot
+      validates_presence_of :mylovelyslot
+    end
+
+    b = Bar.new(:mylovelyslot => 456)
+    b.should be_valid
+    lambda { b.save! }.should_not raise_error(InvalidDocumentError)
+  end
+
   it "should respect :if"
   it "should respect :unless"
   it "should respect both :if and :unless"
