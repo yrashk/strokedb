@@ -326,10 +326,6 @@ describe "validates_length_of" do
   it "should be implemented"
 end
 
-describe "validates_format_of" do
-  it "should be implemented"
-end
-
 describe "validates_inclusion_of" do
   it "should be implemented"
 end
@@ -363,31 +359,26 @@ describe "validates_numericality_of" do
   it "should treat integer as valid" do
     i = Item.new(:price => 1)  
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat negative integer as valid" do
     i = Item.new(:price => -1)  
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat float as valid" do
     i = Item.new(:price => 2.5)
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat negative float as valid" do
     i = Item.new(:price => -2.5)
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat float in exponential notation as valid" do
     i = Item.new(:price => "1.23456E-3")
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat float as invalid when integer is specified" do
