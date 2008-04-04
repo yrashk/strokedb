@@ -71,8 +71,6 @@ describe "validates_presence_of" do
   end
 end
 
-# we use validates_presence_of to test common validations behavior (:on, :message)
-
 describe "Validation helpers" do
   before(:each) { validations_setup }
 
@@ -177,6 +175,7 @@ describe "Validation helpers" do
     end.should raise_error(ArgumentError)
   end
 
+  it "should get reimplemented without validates_presence_of use"
   it "should respect :allow_nil"
   it "should respect :allow_blank"
 
@@ -316,15 +315,44 @@ describe "validates_confirmation_of" do
   end
 
   it "should not serialize confirmation slot" do
-    u = User.new(:password => "sekret", :password_confirmation => "sekret").save!
+    u = User.create!(:password => "sekret", :password_confirmation => "sekret")
 
-    u_copy = User.find(u.uuid)
-    u_copy.has_slot?("password_confirmation").should_not be_true
+    User.find(u.uuid).has_slot?("password_confirmation").should_not be_true
   end
 end
 
 describe "validates_acceptance_of" do
-  it "should be implemented"
+  before :each do
+    validations_setup
+  end
+
+  it "should treat accepted value as valid" do
+    Meta.new { validates_acceptance_of :eula, :accept => "yep" }.new(:eula => "yep").should be_valid
+  end
+  
+  it "should treat not accepted value as invalid" do
+    Meta.new { validates_acceptance_of :eula, :accept => "yep" }.new(:eula => "nope").should_not be_valid
+  end
+
+  it "should respect allow_nil" do
+    Meta.new { validates_acceptance_of :eula, :accept => "yep", :allow_nil => true }.new.should be_valid
+    Meta.new { validates_acceptance_of :eula, :accept => "yep", :allow_nil => false }.new.should_not be_valid
+  end
+
+  it "should set :allow_nil to true by default" do
+    Meta.new { validates_acceptance_of :eula, :accept => "yep" }.new.should be_valid
+  end
+
+  it "should set :accept to \"1\" by default" do
+    Meta.new { validates_acceptance_of :eula }.new(:eula => "1").should be_valid
+  end
+
+  it "should make a slot virtual" do
+    Foo = Meta.new { validates_acceptance_of :eula, :accept => "yep" }
+    f = Foo.create!(:eula => "yep")
+
+    Foo.find(f.uuid).has_slot?("eula").should_not be_true
+  end
 end
 
 describe "validates_length_of" do

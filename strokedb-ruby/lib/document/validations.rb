@@ -1,14 +1,10 @@
 require 'ostruct'
 
 # TODO (taken from ActiveRecord):
-#   validates_acceptance_of
 #   validates_length_of
-#   validates_uniqueness_of
-#   validates_format_of
 #   validates_inclusion_of
 #   validates_exclusion_of
 #   validates_associated
-#   validates_numericality_of
 #
 module StrokeDB
   module Validations
@@ -179,6 +175,41 @@ module StrokeDB
       virtualizes(slotname.to_s + "_confirmation")
     end
     
+    # Encapsulates the pattern of wanting to validate the acceptance of a terms
+    # of service check box (or similar agreement). Example:
+    #
+    #   Person = Meta.new
+    #     validates_acceptance_of :terms_of_service
+    #     validates_acceptance_of :eula, :message => "must be abided"
+    #   end
+    #
+    # The terms_of_service and eula slots are virtualized. This check is
+    # performed only if terms_of_service is not nil and by default on save.
+    #
+    # Configuration options:
+    # * <tt>message</tt> - A custom error message (default is: "must be accepted")
+    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>allow_nil</tt> - Skip validation if attribute is nil. (default is true)
+    # * <tt>accept</tt> - Specifies value that is considered accepted.  The default value is a string "1", which
+    #   makes it easy to relate to an HTML checkbox. This should be set to 'true' if you are validating a database
+    #   column, since the attribute is typecast from "1" to <tt>true</tt> before validation.
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.      
+    def validates_acceptance_of(slotname, opts = {}, &block)
+      register_validation("acceptance_of", slotname, opts, '#{slotname} must be accepted') do |opts|
+        allow_nil = opts['allow_nil'].nil? ? true : !!opts['allow_nil']
+        accept = opts['accept'] || "1"
+
+        { :allow_nil => allow_nil, :accept => accept }
+      end
+
+      virtualizes(slotname.to_s)
+    end
+
     # this module gets mixed into Document
     module InstanceMethods
       class Errors
@@ -313,6 +344,10 @@ module StrokeDB
         !doc.has_slot?(confirm_slotname) ||
         doc[slotname] == doc[confirm_slotname]
       end
+      
+      install_validations_for(:validates_acceptance_of) do |doc, validation, slotname|
+        doc[slotname] == validation[:accept] 
+      end
     end
 
     def install_validations_for(sym, &block)
@@ -327,8 +362,8 @@ module StrokeDB
 
             value = doc[slotname_to_validate]
             
-            next if value.nil? && validation[:allow_nil]
-            next if value.blank? && validation[:allow_blank]
+            next if validation[:allow_nil] && value.nil?
+            next if validation[:allow_blank] && value.blank?
 
             if !block.call(doc, validation, slotname_to_validate)
               os = OpenStruct.new(validation)
