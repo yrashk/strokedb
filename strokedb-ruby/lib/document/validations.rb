@@ -321,14 +321,19 @@ module StrokeDB
           if validation = doc.meta[meta_slotname] 
             on = validation['on']
 
-            should_call = ((on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save') &&
-              (!validation[:if]     || evaluate_condition(validation[:if], doc)) &&
-              (!validation[:unless] || !evaluate_condition(validation[:unless], doc))
-	  
-            if should_call && !block.call(doc, validation, slotname_to_validate)
+            next unless (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
+            next if validation[:if]     && !evaluate_condition(validation[:if], doc)
+            next if validation[:unless] &&  evaluate_condition(validation[:unless], doc)
+
+            value = doc[slotname_to_validate]
+            
+            next if value.nil? && validation[:allow_nil]
+            next if value.blank? && validation[:allow_blank]
+
+            if !block.call(doc, validation, slotname_to_validate)
               os = OpenStruct.new(validation)
               os.document = doc
-              os.slotvalue = doc[slotname_to_validate]
+              os.slotvalue = value
 
               doc.errors.add(slotname_to_validate, os.instance_eval("\"#{validation['message']}\""))
             end
