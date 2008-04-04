@@ -429,7 +429,11 @@ describe "validates_numericality_of" do
       end
     end
     
-    it "should raise ArgumentError if value is not numeric"
+    it "should raise ArgumentError if value is not numeric" do
+      lambda do
+        Meta.new { validates_numericality_of :number, :greater_than => "chicken" }
+      end.should raise_error(ArgumentError)
+    end
     
     it "should be valid if value > 42" do
       i = Item.new(:number => 44)

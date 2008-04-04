@@ -102,6 +102,11 @@ module StrokeDB
                               :less_than_or_equal_to, :less_than ]
       validation_type = opts[:only_integer] ? 'integer' : 'numeric'
       numeric_checks = opts.reject {|key, value| !numeric_options.include?(key) }
+      
+      (numeric_checks.keys - [:odd, :even]).each do |option|
+        raise ArgumentError, "#{option} must be a number" unless opts[option].is_a?(Numeric)
+      end
+      
       register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
         {
           :validation_type => validation_type.capitalize,
