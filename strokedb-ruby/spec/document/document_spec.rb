@@ -305,7 +305,7 @@ end
 describe "Saved Document" do
 
   before(:each) do
-    setup_default_store
+    @store = setup_default_store
     @document = Document.create!(:some_data => 1)
   end
 
@@ -391,9 +391,40 @@ describe "Saved Document" do
     @document.version.should_not == old_version
     @document.previous_version.should == old_version
   end
+  
+  it "should be deleteable" do
+    old_version = @document.version
+    @document.delete!
+    @document.should be_a_kind_of(DeletedDocument)
+    @document.version.should_not == old_version
+    @document.previous_version.should == old_version
+  end
 
   it_should_behave_like "Document"
 
+end
+
+describe "Deleted document" do
+  
+  before(:each) do
+    @store = setup_default_store
+    @document = Document.create!(:some_data => 1)
+    @old_version = @document.version
+    @document.delete!
+  end
+  
+  it "should be undeletable" do
+    @document = @document.undelete!
+    @document.should_not be_a_kind_of(DeletedDocument)
+    @store.find(@document.uuid).should == @document
+  end
+  
+
+  it "should have old version after undeletion" do
+    @document = @document.undelete!
+    @document.version.should == @old_version
+  end
+  
 end
 
 describe "Head Document with references" do
@@ -507,6 +538,10 @@ describe "Non-head version of document" do
 
   it "should be able to access head version" do
     @non_head_document.versions.head.should == @document
+  end
+  
+  it "should not be deletable" do
+    lambda { @non_head_document.delete! }.should raise_error(DocumentDeletionError)
   end
 
 end

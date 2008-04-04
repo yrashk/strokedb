@@ -56,6 +56,13 @@ module StrokeDB
 
       update_master_chunk!(doc,master_chunk)
     end  
+    
+    def save_as_head!(doc)
+      master_chunk = find_or_create_master_chunk
+      insert_with_cut(doc.uuid, doc, master_chunk)
+      update_master_chunk!(doc,master_chunk)
+    end
+    
 
     def full_dump
       puts "Full storage dump:"
@@ -187,11 +194,6 @@ module StrokeDB
       master_chunk
     end
     
-    def save_as_head!(doc)
-      master_chunk = find_or_create_master_chunk
-      insert_with_cut(doc.uuid, doc, master_chunk)
-      update_master_chunk!(doc,master_chunk)
-    end
     
     def update_master_chunk!(doc,master_chunk)
       @chunk_storage.save!(master_chunk)
