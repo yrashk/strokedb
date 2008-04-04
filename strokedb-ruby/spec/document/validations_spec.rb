@@ -71,8 +71,6 @@ describe "validates_presence_of" do
   end
 end
 
-# we use validates_presence_of to test common validations behavior (:on, :message)
-
 describe "Validation helpers" do
   before(:each) { validations_setup }
 
@@ -176,6 +174,10 @@ describe "Validation helpers" do
       Meta.new { validates_presence_of :name, :on => :save, :unless => 123  }
     end.should raise_error(ArgumentError)
   end
+
+  it "should get reimplemented without validates_presence_of use"
+  it "should respect :allow_nil"
+  it "should respect :allow_blank"
 
   def bang
     lambda { yield }.should raise_error(InvalidDocumentError)
@@ -287,6 +289,8 @@ describe "validates_uniqueness_of" do
     u.email = "hax0r@hax0r.com"
     u.should be_valid
   end
+
+  it "should respect :case_sensitive"
 end
 
 describe "validates_confirmation_of" do
@@ -311,22 +315,47 @@ describe "validates_confirmation_of" do
   end
 
   it "should not serialize confirmation slot" do
-    u = User.new(:password => "sekret", :password_confirmation => "sekret").save!
+    u = User.create!(:password => "sekret", :password_confirmation => "sekret")
 
-    u_copy = User.find(u.uuid)
-    u_copy.has_slot?("password_confirmation").should_not be_true
+    User.find(u.uuid).has_slot?("password_confirmation").should_not be_true
   end
 end
 
 describe "validates_acceptance_of" do
-  it "should be implemented"
+  before :each do
+    validations_setup
+  end
+
+  it "should treat accepted value as valid" do
+    Meta.new { validates_acceptance_of :eula, :accept => "yep" }.new(:eula => "yep").should be_valid
+  end
+  
+  it "should treat not accepted value as invalid" do
+    Meta.new { validates_acceptance_of :eula, :accept => "yep" }.new(:eula => "nope").should_not be_valid
+  end
+
+  it "should respect allow_nil" do
+    Meta.new { validates_acceptance_of :eula, :accept => "yep", :allow_nil => true }.new.should be_valid
+    Meta.new { validates_acceptance_of :eula, :accept => "yep", :allow_nil => false }.new.should_not be_valid
+  end
+
+  it "should set :allow_nil to true by default" do
+    Meta.new { validates_acceptance_of :eula, :accept => "yep" }.new.should be_valid
+  end
+
+  it "should set :accept to \"1\" by default" do
+    Meta.new { validates_acceptance_of :eula }.new(:eula => "1").should be_valid
+  end
+
+  it "should make a slot virtual" do
+    Foo = Meta.new { validates_acceptance_of :eula, :accept => "yep" }
+    f = Foo.create!(:eula => "yep")
+
+    Foo.find(f.uuid).has_slot?("eula").should_not be_true
+  end
 end
 
 describe "validates_length_of" do
-  it "should be implemented"
-end
-
-describe "validates_format_of" do
   it "should be implemented"
 end
 
@@ -363,31 +392,26 @@ describe "validates_numericality_of" do
   it "should treat integer as valid" do
     i = Item.new(:price => 1)  
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat negative integer as valid" do
     i = Item.new(:price => -1)  
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat float as valid" do
     i = Item.new(:price => 2.5)
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat negative float as valid" do
     i = Item.new(:price => -2.5)
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat float in exponential notation as valid" do
     i = Item.new(:price => "1.23456E-3")
     i.should be_valid
-    i.errors.messages.should == []
   end
   
   it "should treat float as invalid when integer is specified" do
@@ -395,7 +419,121 @@ describe "validates_numericality_of" do
     i.should_not be_valid
     i.errors.messages.should == [ "Value of quantity must be integer" ]
   end
+ 
+  # activerecord supports them, why shouldn't we? :)
+  describe "should respect :greater_than" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :number, :greater_than => 42
+      end
+    end
+    
+    it "should raise ArgumentError if value is not numeric"
+    
+    it "should be valid if value > 42" do
+      i = Item.new(:number => 44)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+      i.number = 44.3
+      i.should be_valid
+      i.errors.messages.should == [ ]  
+    end
+    
+    it "should not be valid if value < 42" do
+      i = Item.new(:number => 41)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value is too small" ]
+    end
+    
+    it "should not be valid if value == 42" do
+      i = Item.new(:number => 42)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value must be greater than 42" ]
+    end
+  end
   
+  describe "should respect :greater_than_or_equal_to" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :number, :greater_than_or_equal_to => 42
+      end
+    end
+    
+    it "should raise ArgumentError if value is not numeric"
+    
+    it "should be valid if value > 42" do
+      i = Item.new(:number => 44)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+      i.number = 44.3
+      i.should be_valid
+      i.errors.messages.should == [ ]  
+    end
+    
+    it "should be valid if value == 42" do
+      i = Item.new(:number => 42)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+    end
+    
+    it "should not be valid if value < 42" do
+      i = Item.new(:number => 41)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value is too small" ]
+    end
+  end
+  
+  it "should respect :equal_to"
+  it "should respect :less_than"
+  it "should respect :less_than_or_equal_to"
+  
+  describe "should respect :odd" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :oddnumber, :odd => true
+      end
+    end
+    
+    it "should be valid when value is odd" do
+      i = Item.new(:oddnumber => 1)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+    end
+    
+    it "should not be valid when value is even" do
+      i = Item.new(:oddnumber => 2)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value is not odd" ]
+    end
+  end
+  
+  describe "should respect :even" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :evennumber, :even => true
+      end
+    end
+    
+    it "should raise ArgumentError when argument is not true"
+      
+    it "should raise ArgumentError when evennumber is not integral"
+    
+    it "should be valid when value is even" do
+      i = Item.new(:evennumber => 4)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+    end
+    
+    it "should not be valid when value is odd" do
+      i = Item.new(:evennumber => 1)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value is not even" ]
+    end
+  end
 end
 
 describe "Complex validations" do

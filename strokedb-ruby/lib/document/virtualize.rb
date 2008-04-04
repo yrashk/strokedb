@@ -14,7 +14,7 @@ module StrokeDB
 
     # FIXME: willn't usage of instance variables below make a mess in a threaded mode?
     def initialize_virtualizations
-      before_save do |doc|
+      after_validation do |doc|
         @saved_virtual_slots = {}
         @version = doc.version
         @previous_version = doc.previous_version

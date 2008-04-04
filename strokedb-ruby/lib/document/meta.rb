@@ -59,7 +59,6 @@ module StrokeDB
         meta_doc
       end
 
-
       private
 
       def extract_meta_name(*args)
@@ -69,7 +68,6 @@ module StrokeDB
           args[1][:name] unless args.empty?
         end
       end
-
 
     end
 
@@ -156,35 +154,43 @@ module StrokeDB
     def make_document(store=nil)
       store ||= StrokeDB.default_store
       raise NoDefaultStoreError.new unless store
-      @meta_initialization_procs.each {|proc| proc.call }
-      @meta_initialization_procs.clear
-      # TODO: Silly, buggy deep clone implementation!
-      # Refactor this!
-      args = @args.clone.map{|a| Hash === a ? a.clone : a }
-      args[0] = store
-      args.last[:meta] = Meta.document(store)
-      args.last[:name] ||= name
-      meta_doc = nil
-      unless uuid = args.last[:uuid]
-        meta_doc = store.search({ :name => args.last[:name], :meta => Meta.document(store) }).first
+      @meta_initialization_procs.each {|proc| proc.call }.clear
+
+      values = @args.clone.select{|a| Hash === a}.first
+      values[:meta] = Meta.document(store)
+      values[:name] ||= name
+      
+      if meta_doc = find_meta_doc(values, store)
+        values[:version] = meta_doc.version
+        values[:uuid] = meta_doc.uuid
+        args = [store, values]
+        meta_doc = updated_meta_doc(args) if changed?(meta_doc,args)
       else
-        meta_doc = store.find(uuid)
-      end
-      unless meta_doc
+        args = [store, values]
         meta_doc = Document.new(*args)
         meta_doc.extend(Meta)
         meta_doc.save!
-      else
-        args.last[:version] = meta_doc.version
-        args.last[:uuid] = meta_doc.uuid
-        unless (new_doc = Document.new(*args)).to_raw.except('previous_version') == meta_doc.to_raw.except('previous_version')
-          new_doc.instance_variable_set(:@saved,true)
-          new_doc.send!(:update_version!,nil)
-          new_doc.save!
-          meta_doc = new_doc
-        end
       end
       meta_doc
+    end
+
+    def find_meta_doc(values, store)
+      if uuid = values[:uuid]
+        meta_doc = store.find(uuid)
+      else
+        meta_doc = store.search({ :name => values[:name], :meta => Meta.document(store) }).first
+      end
+    end
+
+    def changed?(meta_doc,args)
+      !(Document.new(*args).to_raw.except('previous_version') == meta_doc.to_raw.except('previous_version'))
+    end
+    
+    def updated_meta_doc(args)
+      new_doc = Document.new(*args)
+      new_doc.instance_variable_set(:@saved,true)
+      new_doc.send!(:update_version!,nil)
+      new_doc.save!
     end
 
     def add_callback(name,uid=nil,&block)
