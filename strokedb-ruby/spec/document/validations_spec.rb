@@ -447,13 +447,13 @@ describe "validates_numericality_of" do
     it "should not be valid if value < 42" do
       i = Item.new(:number => 41)
       i.should_not be_valid
-      i.errors.messages.should == [ "value is too small" ]
+      i.errors.messages.should == [ "Value is too small" ]
     end
     
     it "should not be valid if value == 42" do
       i = Item.new(:number => 42)
       i.should_not be_valid
-      i.errors.messages.should == [ "value must be greater than 42" ]
+      i.errors.messages.should == [ "Value must be greater than 42" ]
     end
   end
   
@@ -465,7 +465,11 @@ describe "validates_numericality_of" do
       end
     end
     
-    it "should raise ArgumentError if value is not numeric"
+    it "should raise ArgumentError if value is not numeric" do
+      lambda do
+        Meta.new { validates_numericality_of :number, :greater_than => "chicken" }
+      end.should raise_error(ArgumentError)
+    end
     
     it "should be valid if value > 42" do
       i = Item.new(:number => 44)
@@ -485,11 +489,44 @@ describe "validates_numericality_of" do
     it "should not be valid if value < 42" do
       i = Item.new(:number => 41)
       i.should_not be_valid
-      i.errors.messages.should == [ "value is too small" ]
+      i.errors.messages.should == [ "Value is too small" ]
     end
   end
   
-  it "should respect :equal_to"
+  describe "should respect :equal_to" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :number, :equal_to => 42
+      end
+    end
+    
+    it "should raise ArgumentError if value is not numeric" do
+      lambda do
+        Meta.new { validates_numericality_of :number, :greater_than => "chicken" }
+      end.should raise_error(ArgumentError)
+    end
+    
+    it "should be valid if value == 42" do
+      i = Item.new(:number => 42)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+    end
+    
+    it "should not be valid if value > 42" do
+      i = Item.new(:number => 44)
+      i.should_not be_valid
+      i.errors.messages.should == [ "Value is too big" ]
+    end
+    
+    it "should not be valid if value < 42" do
+      i = Item.new(:number => 41)
+      i.should_not be_valid
+      i.errors.messages.should == [ "Value is too small" ]
+    end
+  end
+  
+  
   it "should respect :less_than"
   it "should respect :less_than_or_equal_to"
   
@@ -510,7 +547,7 @@ describe "validates_numericality_of" do
     it "should not be valid when value is even" do
       i = Item.new(:oddnumber => 2)
       i.should_not be_valid
-      i.errors.messages.should == [ "value is not odd" ]
+      i.errors.messages.should == [ "Value is not odd" ]
     end
   end
   
@@ -535,7 +572,7 @@ describe "validates_numericality_of" do
     it "should not be valid when value is odd" do
       i = Item.new(:evennumber => 1)
       i.should_not be_valid
-      i.errors.messages.should == [ "value is not even" ]
+      i.errors.messages.should == [ "Value is not even" ]
     end
   end
 end

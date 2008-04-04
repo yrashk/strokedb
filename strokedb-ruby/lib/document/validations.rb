@@ -348,23 +348,22 @@ module StrokeDB
           case option
           when "odd"
             if (doc[slotname].to_s =~ /\A[+-]?\d+\Z/) && value == true
-              validation[:message] = 'value is not odd' unless valid &&= doc[slotname].odd?
+              validation[:message] = 'Value is not odd' unless valid &&= doc[slotname].odd?
             end
           when "even"
             if (doc[slotname].to_s =~ /\A[+-]?\d+\Z/) && value == true
-              validation[:message] = 'value is not even' unless valid &&= doc[slotname].even?
+              validation[:message] = 'Value is not even' unless valid &&= doc[slotname].even?
             end
           when "greater_than"
-            if (Kernel.Float(doc[slotname]) rescue false)
-              next if valid &&= (doc[slotname] > value)
-              validation[:message] = 'value is too small' unless (doc[slotname] > value)
-              validation[:message] = "value must be greater than #{value}" if (doc[slotname] == value)
-            end
+            next if valid &&= (doc[slotname] > value)
+            validation[:message] = 'Value is too small' unless (doc[slotname] > value)
+            validation[:message] = "Value must be greater than #{value}" if (doc[slotname] == value)
           when "greater_than_or_equal_to"
-            if (Kernel.Float(doc[slotname]) rescue false)
-              next if valid &&= (doc[slotname] >= value)
-              validation[:message] = 'value is too small' unless (doc[slotname] >= value)
-            end
+            next if valid &&= (doc[slotname] >= value)
+            validation[:message] = 'Value is too small' unless (doc[slotname] >= value)
+          when "equal_to"
+            next if valid &&= (doc[slotname] == value)
+            validation[:message] = (doc[slotname] < value) ? 'Value is too small' : 'Value is too big'
           end
         end
         valid ||= !doc.has_slot?(slotname)
