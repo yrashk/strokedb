@@ -25,7 +25,7 @@ module StrokeDB
     # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    def validates_presence_of(slotname, opts={}, &block)
+    def validates_presence_of(slotname, opts={})
       register_validation("presence_of", slotname, opts, '#{meta}\'s #{slotname} should be present on #{on}')
     end 
    
@@ -49,7 +49,7 @@ module StrokeDB
     # 
     # === Warning
     # When the slot doesn't exist, validation gets skipped.
-    def validates_type_of(slotname, opts={}, &block)
+    def validates_type_of(slotname, opts={})
       register_validation("type_of", slotname, opts, '#{meta}\'s #{slotname} should be of type #{validation_type}') do |opts|
         unless type = opts['as']
           raise ArgumentError, "validates_type_of requires :as => type"
@@ -77,7 +77,7 @@ module StrokeDB
     # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    def validates_uniqueness_of(slotname, opts={}, &block)
+    def validates_uniqueness_of(slotname, opts={})
       register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists')
     end
     
@@ -97,7 +97,7 @@ module StrokeDB
     # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    def validates_numericality_of(slotname, opts={}, &block)
+    def validates_numericality_of(slotname, opts={})
       numeric_checks_keys = [ :odd, :even, :greater_than, :greater_than_or_equal_to, :equal_to,
                               :less_than_or_equal_to, :less_than ]
       validation_type = opts[:only_integer] ? 'integer' : 'numeric'
@@ -134,7 +134,7 @@ module StrokeDB
     # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    def validates_format_of(slotname, opts={}, &block)
+    def validates_format_of(slotname, opts={})
       register_validation("format_of", slotname, opts, 'Value of #{slotname} should match #{slotvalue}') do |opts|
         unless regexp = opts['with'].is_a?(Regexp)
           raise ArgumentError, "validates_format_of requires :with => regexp"
@@ -175,7 +175,7 @@ module StrokeDB
     # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.      
-    def validates_confirmation_of(slotname, opts = {}, &block)
+    def validates_confirmation_of(slotname, opts = {})
       register_validation("confirmation_of", slotname, opts, '#{meta}\'s #{slotname} doesn\'t match confirmation')
 
       virtualizes(slotname.to_s + "_confirmation")
@@ -205,7 +205,7 @@ module StrokeDB
     # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.      
-    def validates_acceptance_of(slotname, opts = {}, &block)
+    def validates_acceptance_of(slotname, opts = {})
       register_validation("acceptance_of", slotname, opts, '#{slotname} must be accepted') do |opts|
         allow_nil = opts['allow_nil'].nil? ? true : !!opts['allow_nil']
         accept = opts['accept'] || "1"
