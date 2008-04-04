@@ -51,8 +51,7 @@ module StrokeDB
       end
 
       def document(store=nil)
-        store ||= StrokeDB.default_store
-        raise NoDefaultStoreError.new unless store
+        raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
         unless meta_doc = store.find(NIL_UUID)
           meta_doc = Document.create!(store,:name => Meta.name, :uuid => NIL_UUID)
         end
@@ -152,8 +151,7 @@ module StrokeDB
     private
 
     def make_document(store=nil)
-      store ||= StrokeDB.default_store
-      raise NoDefaultStoreError.new unless store
+      raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
       @meta_initialization_procs.each {|proc| proc.call }.clear
 
       values = @args.clone.select{|a| Hash === a}.first
@@ -176,9 +174,9 @@ module StrokeDB
 
     def find_meta_doc(values, store)
       if uuid = values[:uuid]
-        meta_doc = store.find(uuid)
+        store.find(uuid)
       else
-        meta_doc = store.search({ :name => values[:name], :meta => Meta.document(store) }).first
+        store.search({ :name => values[:name], :meta => Meta.document(store) }).first
       end
     end
 
