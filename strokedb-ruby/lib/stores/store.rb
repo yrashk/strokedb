@@ -48,6 +48,11 @@ module StrokeDB
         @index_store.save!
       end
     end  
+    
+    def save_as_head!(doc)
+      @storage.save_as_head!(doc,timestamp)
+    end
+    
 
 
     def each(options = {},&block)
@@ -98,10 +103,6 @@ module StrokeDB
 
 
     private
-
-    def save_as_head!(doc)
-      @storage.save_as_head!(doc,timestamp)
-    end
 
     def initialize_files
       FileUtils.mkdir_p(path)
