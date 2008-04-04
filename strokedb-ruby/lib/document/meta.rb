@@ -154,17 +154,13 @@ module StrokeDB
     def make_document(store=nil)
       store ||= StrokeDB.default_store
       raise NoDefaultStoreError.new unless store
-      @meta_initialization_procs.each {|proc| proc.call }
-      @meta_initialization_procs.clear
-      # TODO: Silly, buggy deep clone implementation!
-      # Refactor this!
+      @meta_initialization_procs.each {|proc| proc.call }.clear
+
       values = @args.clone.select{|a| Hash === a}.first
       values[:meta] = Meta.document(store)
       values[:name] ||= name
       
-      meta_doc = find_meta_doc(values, store)
-      
-      if meta_doc
+      if meta_doc = find_meta_doc(values, store)
         values[:version] = meta_doc.version
         values[:uuid] = meta_doc.uuid
         args = [store, values]
@@ -178,6 +174,14 @@ module StrokeDB
       meta_doc
     end
 
+    def find_meta_doc(values, store)
+      if uuid = values[:uuid]
+        meta_doc = store.find(uuid)
+      else
+        meta_doc = store.search({ :name => values[:name], :meta => Meta.document(store) }).first
+      end
+    end
+
     def changed?(meta_doc,args)
       !(Document.new(*args).to_raw.except('previous_version') == meta_doc.to_raw.except('previous_version'))
     end
@@ -189,16 +193,6 @@ module StrokeDB
       new_doc.save!
     end
 
-    def find_meta_doc(values, store)
-      meta_doc = nil
-      if uuid = values[:uuid]
-        meta_doc = store.find(uuid)
-      else
-        meta_doc = store.search({ :name => values[:name], :meta => Meta.document(store) }).first
-      end
-      meta_doc
-    end
-        
     def add_callback(name,uid=nil,&block)
       @callbacks ||= []
       @callbacks << Callback.new(self,name,uid,&block)
