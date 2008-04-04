@@ -98,10 +98,10 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_numericality_of(slotname, opts={})
-      numeric_checks_keys = [ :odd, :even, :greater_than, :greater_than_or_equal_to, :equal_to,
+      numeric_options = [ :odd, :even, :greater_than, :greater_than_or_equal_to, :equal_to,
                               :less_than_or_equal_to, :less_than ]
       validation_type = opts[:only_integer] ? 'integer' : 'numeric'
-      numeric_checks = opts.reject {|key, value| !numeric_checks_keys.include?(key) }
+      numeric_checks = opts.reject {|key, value| !numeric_options.include?(key) }
       register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
         {
           :validation_type => validation_type.capitalize,
