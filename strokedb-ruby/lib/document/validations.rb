@@ -74,6 +74,7 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "A document with a ... of ... already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>case_sensitive</tt> - Looks for an exact match.  Ignored by non-text columns (true by default).
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.

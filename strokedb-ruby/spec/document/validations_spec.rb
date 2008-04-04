@@ -177,6 +177,9 @@ describe "Validation helpers" do
     end.should raise_error(ArgumentError)
   end
 
+  it "should respect :allow_nil"
+  it "should respect :allow_blank"
+
   def bang
     lambda { yield }.should raise_error(InvalidDocumentError)
   end
@@ -287,6 +290,8 @@ describe "validates_uniqueness_of" do
     u.email = "hax0r@hax0r.com"
     u.should be_valid
   end
+
+  it "should respect :case_sensitive"
 end
 
 describe "validates_confirmation_of" do
@@ -386,7 +391,15 @@ describe "validates_numericality_of" do
     i.should_not be_valid
     i.errors.messages.should == [ "Value of quantity must be integer" ]
   end
-  
+ 
+  # activerecord supports them, why shouldn't we? :)
+  it "should respect :greater_than"
+  it "should respect :greater_than_or_equal_to"
+  it "should respect :equal_to"
+  it "should respect :less_than"
+  it "should respect :less_than_or_equal_to"
+  it "should respect :odd"
+  it "should respect :even"
 end
 
 describe "Complex validations" do
