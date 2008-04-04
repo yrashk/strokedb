@@ -1,10 +1,24 @@
 module StrokeDB
   module Virtualizations
+    #
+    # Makes a virtual slot. Virtual slot is by all means a regular slot with
+    # one exception: it doesn't get serialized on save. Nevertheless its value
+    # is preserved while the document is in memory. You can also set :restore
+    # option to false (it is true by default), in such case the slot will be
+    # removed before save and not restored. It may be useful for ad hoc slots.
+    #
+    # Virtual slots get validated as usual.
+    #
+    #   User = Meta.new do
+    #     virtualizes :password, :restore => false
+    #     validates_presence_of :crypted_password
+    #   end
+    #
+    # Regular password is not meant to get serialized in this example, only the
+    # crypted one.
+    #
     def virtualizes(slotnames, opts = {})
       opts = opts.stringify_keys
-
-      check_condition(opts['if']) if opts['if']
-      check_condition(opts['unless']) if opts['unless']
 
       slotnames = [slotnames] unless slotnames.is_a?(Array)
       slotnames.each {|slotname| register_virtual(slotname, opts)}
@@ -19,9 +33,11 @@ module StrokeDB
         @version = doc.version
         @previous_version = doc.previous_version
 
-        grep_slots(doc, "virtualizes_") do |virtual_slot, slotname|
-          virtual_slot = virtual_slot.to_sym
-          @saved_virtual_slots[virtual_slot] = doc[virtual_slot]
+        grep_slots(doc, "virtualizes_") do |virtual_slot, meta_slotname|
+          if doc.meta[meta_slotname][:restore]
+            @saved_virtual_slots[virtual_slot] = doc[virtual_slot]
+          end
+
           doc.remove_slot!(virtual_slot)
         end
       end
@@ -42,16 +58,18 @@ module StrokeDB
 
         @version = nil
         @previous_version = nil
+        @saved_virtual_slots = {}
       end
     end
 
     def register_virtual(slotname, opts)
       slotname = slotname.to_s
 
+      restore = opts['restore'].nil? ? true : !!opts['restore']
+
       options_hash = { 
         :slotname => slotname, 
-        :if => opts['if'],  
-        :unless => opts['unless']
+        :restore => restore
       }
 
       virtualize_slot = "virtualizes_#{slotname}"

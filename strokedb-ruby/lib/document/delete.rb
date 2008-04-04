@@ -17,6 +17,7 @@ module StrokeDB
       raise DocumentDeletionError, "can't delete non-head document" unless head?
       metas << DeletedDocument
       save!
+      make_immutable!
     end
     
   end

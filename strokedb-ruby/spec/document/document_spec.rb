@@ -397,6 +397,7 @@ describe "Saved Document" do
     old_version = @document.version
     @document.delete!
     @document.should be_a_kind_of(DeletedDocument)
+    @document.should_not be_mutable
     @document.version.should_not == old_version
     @document.previous_version.should == old_version
   end
@@ -417,6 +418,7 @@ describe "Deleted document" do
   it "should be undeletable" do
     @document = @document.undelete!
     @document.should_not be_a_kind_of(DeletedDocument)
+    @document.should be_mutable
     @store.find(@document.uuid).should == @document
   end
   
