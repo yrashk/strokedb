@@ -33,9 +33,8 @@ bm(30) do |x|
   x.report("[C] creating #{N} documents...") do
     N.times do |i|
       d = Document.create!(:index => i)
+      StrokeDB.default_store.stop_autosync!
     end
-    StrokeDB.default_store.stop_autosync!
-
   end
   
 end
