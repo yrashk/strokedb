@@ -98,10 +98,16 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_numericality_of(slotname, opts={}, &block)
+      numeric_checks_keys = [ :odd, :even, :greater_than, :greater_than_or_equal_to, :equal_to,
+                              :less_than_or_equal_to, :less_than ]
       validation_type = opts[:only_integer] ? 'integer' : 'numeric'
-
+      numeric_checks = opts.reject {|key, value| !numeric_checks_keys.include?(key) }
       register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
-        { :validation_type => validation_type.capitalize, :only_integer => opts['only_integer'] }
+        {
+          :validation_type => validation_type.capitalize,
+          :only_integer => opts['only_integer'],
+          :numeric_checks => numeric_checks
+        }
       end          
     end
     
@@ -330,12 +336,33 @@ module StrokeDB
       end
 
       install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) ||
-        if validation[:only_integer] 
-          !(doc[slotname].to_s =~ /\A[+-]?\d+\Z/).nil?
-        else 
-          Kernel.Float(doc[slotname]) rescue nil
+        valid = true
+        valid &&= !((doc[slotname].to_s =~ /\A[+-]?\d+\Z/).nil?) if validation[:only_integer]
+        valid &&= (Kernel.Float(doc[slotname]) rescue false) unless validation[:only_integer]
+        validation[:numeric_checks].each do |option, value|
+          case option
+          when "odd"
+            if (doc[slotname].to_s =~ /\A[+-]?\d+\Z/) && value == true
+              validation[:message] = 'value is not odd' unless valid &&= doc[slotname].odd?
+            end
+          when "even"
+            if (doc[slotname].to_s =~ /\A[+-]?\d+\Z/) && value == true
+              validation[:message] = 'value is not even' unless valid &&= doc[slotname].even?
+            end
+          when "greater_than"
+            if (Kernel.Float(doc[slotname]) rescue false)
+              next if valid &&= (doc[slotname] > value)
+              validation[:message] = 'value is too small' unless (doc[slotname] > value)
+              validation[:message] = "value must be greater than #{value}" if (doc[slotname] == value)
+            end
+          when "greater_than_or_equal_to"
+            if (Kernel.Float(doc[slotname]) rescue false)
+              next if valid &&= (doc[slotname] >= value)
+              validation[:message] = 'value is too small' unless (doc[slotname] >= value)
+            end
+          end
         end
+        valid ||= !doc.has_slot?(slotname)
       end
 
       install_validations_for(:validates_confirmation_of) do |doc, validation, slotname|

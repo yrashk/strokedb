@@ -421,13 +421,119 @@ describe "validates_numericality_of" do
   end
  
   # activerecord supports them, why shouldn't we? :)
-  it "should respect :greater_than"
-  it "should respect :greater_than_or_equal_to"
+  describe "should respect :greater_than" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :number, :greater_than => 42
+      end
+    end
+    
+    it "should raise ArgumentError if value is not numeric"
+    
+    it "should be valid if value > 42" do
+      i = Item.new(:number => 44)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+      i.number = 44.3
+      i.should be_valid
+      i.errors.messages.should == [ ]  
+    end
+    
+    it "should not be valid if value < 42" do
+      i = Item.new(:number => 41)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value is too small" ]
+    end
+    
+    it "should not be valid if value == 42" do
+      i = Item.new(:number => 42)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value must be greater than 42" ]
+    end
+  end
+  
+  describe "should respect :greater_than_or_equal_to" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :number, :greater_than_or_equal_to => 42
+      end
+    end
+    
+    it "should raise ArgumentError if value is not numeric"
+    
+    it "should be valid if value > 42" do
+      i = Item.new(:number => 44)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+      i.number = 44.3
+      i.should be_valid
+      i.errors.messages.should == [ ]  
+    end
+    
+    it "should be valid if value == 42" do
+      i = Item.new(:number => 42)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+    end
+    
+    it "should not be valid if value < 42" do
+      i = Item.new(:number => 41)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value is too small" ]
+    end
+  end
+  
   it "should respect :equal_to"
   it "should respect :less_than"
   it "should respect :less_than_or_equal_to"
-  it "should respect :odd"
-  it "should respect :even"
+  
+  describe "should respect :odd" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :oddnumber, :odd => true
+      end
+    end
+    
+    it "should be valid when value is odd" do
+      i = Item.new(:oddnumber => 1)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+    end
+    
+    it "should not be valid when value is even" do
+      i = Item.new(:oddnumber => 2)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value is not odd" ]
+    end
+  end
+  
+  describe "should respect :even" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :evennumber, :even => true
+      end
+    end
+    
+    it "should raise ArgumentError when argument is not true"
+      
+    it "should raise ArgumentError when evennumber is not integral"
+    
+    it "should be valid when value is even" do
+      i = Item.new(:evennumber => 4)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+    end
+    
+    it "should not be valid when value is odd" do
+      i = Item.new(:evennumber => 1)
+      i.should_not be_valid
+      i.errors.messages.should == [ "value is not even" ]
+    end
+  end
 end
 
 describe "Complex validations" do
