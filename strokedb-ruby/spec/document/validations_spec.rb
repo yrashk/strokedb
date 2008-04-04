@@ -527,8 +527,77 @@ describe "validates_numericality_of" do
   end
   
   
-  it "should respect :less_than"
-  it "should respect :less_than_or_equal_to"
+  describe "should respect :less_than" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :number, :less_than => 42
+      end
+    end
+    
+    it "should raise ArgumentError if value is not numeric" do
+      lambda do
+        Meta.new { validates_numericality_of :number, :less_than => "chicken" }
+      end.should raise_error(ArgumentError)
+    end
+    
+    it "should be valid if value < 42" do
+      i = Item.new(:number => 41)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+      i.number = 41.3
+      i.should be_valid
+      i.errors.messages.should == [ ]  
+    end
+    
+    it "should not be valid if value > 42" do
+      i = Item.new(:number => 43)
+      i.should_not be_valid
+      i.errors.messages.should == [ "Value is too big" ]
+    end
+    
+    it "should not be valid if value == 42" do
+      i = Item.new(:number => 42)
+      i.should_not be_valid
+      i.errors.messages.should == [ "Value must be less than 42" ]
+    end
+  end
+  
+  describe "should respect :less_than_or_equal_to" do
+    before :each do
+      validations_setup
+      Item = Meta.new do
+        validates_numericality_of :number, :less_than_or_equal_to => 42
+      end
+    end
+    
+    it "should raise ArgumentError if value is not numeric" do
+      lambda do
+        Meta.new { validates_numericality_of :number, :less_than_or_equal_to => "chicken" }
+      end.should raise_error(ArgumentError)
+    end
+    
+    it "should be valid if value < 42" do
+      i = Item.new(:number => 41)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+      i.number = 41.3
+      i.should be_valid
+      i.errors.messages.should == [ ]  
+    end
+    
+    it "should be valid if value == 42" do
+      i = Item.new(:number => 42)
+      i.should be_valid
+      i.errors.messages.should == [ ]
+    end
+    
+    it "should not be valid if value > 42" do
+      i = Item.new(:number => 43)
+      i.should_not be_valid
+      i.errors.messages.should == [ "Value is too big" ]
+    end
+  end
   
   describe "should respect :odd" do
     before :each do

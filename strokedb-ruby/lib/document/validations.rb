@@ -360,10 +360,17 @@ module StrokeDB
             validation[:message] = "Value must be greater than #{value}" if (doc[slotname] == value)
           when "greater_than_or_equal_to"
             next if valid &&= (doc[slotname] >= value)
-            validation[:message] = 'Value is too small' unless (doc[slotname] >= value)
+            validation[:message] = 'Value is too small'
           when "equal_to"
             next if valid &&= (doc[slotname] == value)
             validation[:message] = (doc[slotname] < value) ? 'Value is too small' : 'Value is too big'
+          when "less_than_or_equal_to"
+            next if valid &&= (doc[slotname] <= value)
+            validation[:message] = 'Value is too big'
+          when "less_than"
+            next if valid &&= (doc[slotname] < value)
+            validation[:message] = 'Value is too big' unless (doc[slotname] < value)
+            validation[:message] = "Value must be less than #{value}" if (doc[slotname] == value)
           end
         end
         valid ||= !doc.has_slot?(slotname)
