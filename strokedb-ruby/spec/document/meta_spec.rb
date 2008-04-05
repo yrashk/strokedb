@@ -142,6 +142,35 @@ describe "Meta module with on_initialization callback" do
   
 end
 
+
+describe "Meta module with on_load callback" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new do
+      on_load do |obj|
+        Kernel.send!(:on_load_called,obj.new?)
+      end
+    end
+  end
+  
+  it "should not receive this callback on meta instantiation" do
+    Kernel.should_not_receive(:on_load_called)
+    doc = SomeName.new
+  end
+
+  it "should  receive this callback on document load" do
+    doc = SomeName.create!
+    Kernel.should_receive(:on_load_called).with(false)
+    SomeName.find(doc.uuid)
+  end
+  
+  
+end
+
 describe "Meta module with before_save callback" do
   
   before(:each) do

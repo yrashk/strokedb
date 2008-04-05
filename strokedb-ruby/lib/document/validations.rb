@@ -1,11 +1,24 @@
 require 'ostruct'
 
 # TODO (taken from ActiveRecord):
-#   validates_length_of
 #   validates_associated
 #
 module StrokeDB
   module Validations
+    ERROR_MESSAGES = {
+      :should_be_present => '#{meta}\'s #{slotname} should be present on #{on}',
+      :invalid_type      => '#{meta}\'s #{slotname} should be of type #{validation_type}',
+      :already_exists    => 'A document with a #{slotname} of #{slotvalue} already exists',
+      :not_included      => 'Value of #{slotname} is not included in the list',
+      :not_excluded      => 'Value of #{slotname} is reserved',
+      :invalid_format    => 'Value of #{slotname} should match #{slotvalue}',
+      :not_confirmed     => '#{meta}\'s #{slotname} doesn\'t match confirmation',
+      :not_accepted      => '#{slotname} must be accepted',
+      :wrong_length      => '#{slotname} has the wrong length (should be %d characters)',
+      :too_short         => '#{slotname} is too short (minimum is %d characters)',
+      :too_long          => '#{slotname} is too long (maximum is %d characters)',
+    }.freeze unless defined? ERROR_MESSAGES
+
     # Validates that the specified slot exists in the document. Happens by default on save. Example:
     #
     #   Person = Meta.new do
@@ -24,7 +37,7 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_presence_of(slotname, opts={})
-      register_validation("presence_of", slotname, opts, '#{meta}\'s #{slotname} should be present on #{on}')
+      register_validation("presence_of", slotname, opts, :should_be_present)
     end 
    
     # Validates that the specified slot value has a specific type. Happens by default on save. Example:
@@ -48,12 +61,13 @@ module StrokeDB
     # === Warning
     # When the slot doesn't exist, validation gets skipped.
     def validates_type_of(slotname, opts={})
-      register_validation("type_of", slotname, opts, '#{meta}\'s #{slotname} should be of type #{validation_type}') do |opts|
-        unless type = opts['as']
-          raise ArgumentError, "validates_type_of requires :as => type"
-        end
+      register_validation("type_of", slotname, opts, :invalid_type) do |opts|
+        raise ArgumentError, "validates_type_of requires :as => type" unless type = opts['as']
 
-        { :validation_type => type.to_s.capitalize }
+        { 
+          :validation_type => type.to_s.capitalize,
+          :allow_nil => !!opts['allow_nil'] 
+        }
       end
     end
 
@@ -69,6 +83,8 @@ module StrokeDB
     # * <tt>message</tt> - A custom error message (default is: "A document with a ... of ... already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
     # * <tt>case_sensitive</tt> - Looks for an exact match.  Ignored by non-text columns (true by default).
+    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
+    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
@@ -76,22 +92,25 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_uniqueness_of(slotname, opts={})
-      register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists')
+      register_validation("uniqueness_of", slotname, opts, :already_exists) do |opts|
+        { :allow_nil => !!opts['allow_nil'], :allow_blank => !!opts['allow_blank'] }
+      end
     end
     
-    # Validates whether the value of the specified attribute is available in a particular enumerable object.
+    # Validates whether the value of the specified slot is available in a particular enumerable object.
     #
     #   Person = Meta.new do
     #     validates_inclusion_of :gender, :in => %w( m f ), :message => "woah! what are you then!??!!"
     #     validates_inclusion_of :age, :in => 0..99
-    #     validates_inclusion_of :format, :in => %w( jpg gif png ), :message => "extension %s is not included in the list"
+    #     validates_inclusion_of :format, :in => %w( jpg gif png ), :message => 'extension #{slotvalue} is not included in the list'
     #   end
     #
     # Configuration options:
     # * <tt>in</tt> - An enumerable object of available items
-    # * <tt>message</tt> - Specifies a customer error message (default is: "is not included in the list")
-    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
-    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
+    # * <tt>message</tt> - Specifies a customer error message (default is: "is
+    #   not included in the list")
+    # * <tt>allow_nil</tt> - If set to true, skips this validation if the slot is null (default is: false)
+    # * <tt>allow_blank</tt> - If set to true, skips this validation if the slot is blank (default is: false)
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should occur
     #   (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }). The method, proc or string
     #   should return or evaluate to a true or false value.
@@ -99,64 +118,102 @@ module StrokeDB
     #   (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }). The method, proc or string
     #   should return or evaluate to a true or false value.
     def validates_inclusion_of(slotname, opts={})
-      if opts[:in]
-        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to?("include?")
-        register_validation("inclusion_of", slotname, opts, "Value of #{slotname} is not included in the list") do |opts|
-          { :in => opts['in'] }
-        end
-      else
-        raise ArgumentError, "validates_inclusion_of requires :in => Enumerable"
+      register_validation("inclusion_of", slotname, opts, :not_included) do |opts|
+        raise ArgumentError, "validates_inclusion_of requires :in set" unless opts['in']
+        raise ArgumentError, "object must respond to the method include?" unless opts['in'].respond_to? :include?
+        
+        { 
+          :in => opts['in'],
+          :allow_nil => !!opts['allow_nil'],
+          :allow_blank => !!opts['allow_blank'] 
+        }
       end
     end 
     
-    def validates_exclusion_of(slotname, opts={})
-      if opts[:in]
-        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to?("include?")
-        register_validation("exclusion_of", slotname, opts, "Value of #{slotname} is included in the list") do |opts|
-          { :in => opts['in'] }
-        end
-      else
-        raise ArgumentError, "validates_exclusion_of requires :in => Enumerable"
-      end
-    end 
-      
-    # Validates that the specified slot value is numeric
+    # Validates that the value of the specified slot is not in a particular enumerable object.
     #
-    #   Item = Meta.new do
-    #     validates_numericality_of :price
+    #   class Person < ActiveRecord::Base
+    #     validates_exclusion_of :username, :in => %w( admin superuser ), :message => "You don't belong here"
+    #     validates_exclusion_of :age, :in => 30..60, :message => "This site is only for under 30 and over 60"
+    #     validates_exclusion_of :format, :in => %w( mov avi ), :message => 'extension #{slotvalue} is not allowed'
     #   end
     #
     # Configuration options:
-    # * <tt>only_integer</tt> - Specify integer
-    # * <tt>message</tt> - A custom error message (default is: "Value of ... must be numeric | integer")
-    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>in</tt> - An enumerable object of items that the value shouldn't be part of
+    # * <tt>message</tt> - Specifies a customer error message (default is: "is reserved")
+    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
+    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    def validates_numericality_of(slotname, opts={})
-      numeric_options = [ :odd, :even, :greater_than, :greater_than_or_equal_to, :equal_to,
-                              :less_than_or_equal_to, :less_than ]
-      validation_type = opts[:only_integer] ? 'integer' : 'numeric'
-      numeric_checks = opts.reject {|key, value| !numeric_options.include?(key) }
-      
-      (numeric_checks.keys - [:odd, :even]).each do |option|
-        raise ArgumentError, "#{option} must be a number" unless opts[option].is_a?(Numeric)
+    def validates_exclusion_of(slotname, opts={})
+      register_validation("exclusion_of", slotname, opts, :not_excluded) do |opts|
+        raise ArgumentError, "validates_exclusion_of requires :in set" unless opts['in']
+        raise ArgumentError, "object must respond to the method include?" unless opts['in'].respond_to? :include?
+        
+        { 
+          :in => opts['in'],
+          :allow_nil => !!opts['allow_nil'],
+          :allow_blank => !!opts['allow_blank'] 
+        }
       end
+    end 
       
-      register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
+    # Validates whether the value of the specified attribute is numeric by trying to convert it to
+    # a float with Kernel.Float (if <tt>only_integer</tt> is false) or applying it to the regular expression
+    # <tt>/\A[\+\-]?\d+\Z/</tt> (if <tt>only_integer</tt> is set to true).
+    #
+    #   Item = Meta.new do
+    #     validates_numericality_of :price
+    #   end
+    #
+    # * <tt>message</tt> - A custom error message (default is: "is not a number")
+    # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>only_integer</tt> Specifies whether the value has to be an integer, e.g. an integral value (default is false)
+    # * <tt>allow_nil</tt> Skip validation if attribute is nil (default is
+    #   false). Notice that for fixnum and float columns empty strings are converted to nil
+    # * <tt>greater_than</tt> Specifies the value must be greater than the supplied value
+    # * <tt>greater_than_or_equal_to</tt> Specifies the value must be greater than or equal the supplied value
+    # * <tt>equal_to</tt> Specifies the value must be equal to the supplied value
+    # * <tt>less_than</tt> Specifies the value must be less than the supplied value
+    # * <tt>less_than_or_equal_to</tt> Specifies the value must be less than or equal the supplied value
+    # * <tt>odd</tt> Specifies the value must be an odd number
+    # * <tt>even</tt> Specifies the value must be an even number
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    NUMERICALITY_CHECKS = { 'greater_than' => :>, 'greater_than_or_equal_to' => :>=,
+                                'equal_to' => :==, 'less_than' => :<, 'less_than_or_equal_to' => :<=,
+                                'odd' => :odd?, 'even' => :even? }.freeze
+
+    def validates_numericality_of(slotname, opts={})
+      register_validation("numericality_of", slotname, opts, nil) do |opts|
+        numeric_checks = opts.reject { |key, val| !NUMERICALITY_CHECKS.include? key }
+
+        %w(odd even).each do |o|
+          raise ArgumentError, ":#{o} must be set to true if set at all" if opts.include?(o) && opts[o] != true
+        end
+
+        (numeric_checks.keys - %w(odd even)).each do |option|
+          raise ArgumentError, "#{option} must be a number" unless opts[option].is_a? Numeric
+        end
+ 
         {
-          :validation_type => validation_type.capitalize,
           :only_integer => opts['only_integer'],
-          :numeric_checks => numeric_checks
+          :numeric_checks => numeric_checks,
+          :allow_nil => !!opts['allow_nil']
         }
       end          
     end
     
-    # Validates whether the value of the specified attribute is of the correct form by matching it against the regular expression
-    # provided.
+    # Validates whether the value of the specified attribute is of the correct
+    # form by matching it against the regular expression provided.
     #
     #   Person = Meta.new do
     #     validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i, :on => :create
@@ -164,22 +221,21 @@ module StrokeDB
     #
     # Note: use \A and \Z to match the start and end of the string, ^ and $ match the start/end of a line.
     #
-    # A regular expression must be provided or else an exception will be raised.
+    # A regular expression must be provided or else an exception will be
+    # raised.
     #
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "is invalid")
-    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
-    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
     # * <tt>with</tt> - The regular expression used to validate the format with (note: must be supplied!)
     # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
+    #   method or string should return or evaluate to a true or false value.
     def validates_format_of(slotname, opts={})
-      register_validation("format_of", slotname, opts, 'Value of #{slotname} should match #{slotvalue}') do |opts|
+      register_validation("format_of", slotname, opts, :invalid_format) do |opts|
         unless regexp = opts['with'].is_a?(Regexp)
           raise ArgumentError, "validates_format_of requires :with => regexp"
         end
@@ -212,14 +268,14 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "doesn't match confirmation")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.      
+    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
+    #   method or string should return or evaluate to a true or false value.
     def validates_confirmation_of(slotname, opts = {})
-      register_validation("confirmation_of", slotname, opts, '#{meta}\'s #{slotname} doesn\'t match confirmation')
+      register_validation("confirmation_of", slotname, opts, :not_confirmed)
 
       virtualizes(slotname.to_s + "_confirmation")
     end
@@ -242,22 +298,106 @@ module StrokeDB
     # * <tt>accept</tt> - Specifies value that is considered accepted.  The default value is a string "1", which
     #   makes it easy to relate to an HTML checkbox. This should be set to 'true' if you are validating a database
     #   column, since the attribute is typecast from "1" to <tt>true</tt> before validation.
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.      
+    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
+    #   method or string should return or evaluate to a true or false value.
     def validates_acceptance_of(slotname, opts = {})
-      register_validation("acceptance_of", slotname, opts, '#{slotname} must be accepted') do |opts|
+      register_validation("acceptance_of", slotname, opts, :not_accepted) do |opts|
         allow_nil = opts['allow_nil'].nil? ? true : !!opts['allow_nil']
         accept = opts['accept'] || "1"
 
         { :allow_nil => allow_nil, :accept => accept }
       end
 
-      virtualizes(slotname.to_s)
+      virtualizes slotname.to_s
     end
+    
+    # Validates that the specified slot matches the length restrictions
+    # supplied. Only one option can be used at a time:
+    #
+    #   Person = Meta.new do
+    #     validates_length_of :first_name, :maximum=>30
+    #     validates_length_of :last_name, :maximum=>30, :message=>"less than %d if you don't mind"
+    #     validates_length_of :fax, :in => 7..32, :allow_nil => true
+    #     validates_length_of :phone, :in => 7..32, :allow_blank => true
+    #     validates_length_of :user_name, :within => 6..20, :too_long => "pick a shorter name", :too_short => "pick a longer name"
+    #     validates_length_of :fav_bra_size, :minimum=>1, :too_short=>"please enter at least %d character"
+    #     validates_length_of :smurf_leader, :is=>4, :message=>"papa is spelled with %d characters... don't play me."
+    #   end
+    #
+    # Configuration options:
+    # * <tt>minimum</tt> - The minimum size of the attribute
+    # * <tt>maximum</tt> - The maximum size of the attribute
+    # * <tt>is</tt> - The exact size of the attribute
+    # * <tt>within</tt> - A range specifying the minimum and maximum size of the attribute
+    # * <tt>in</tt> - A synonym(or alias) for :within
+    # * <tt>allow_nil</tt> - Attribute may be nil; skip validation.
+    # * <tt>allow_blank</tt> - Attribute may be blank; skip validation.
+    #
+    # * <tt>too_long</tt> - The error message if the attribute goes over the maximum (default is: "is too long (maximum is %d characters)")
+    # * <tt>too_short</tt> - The error message if the attribute goes under the minimum (default is: "is too short (min is %d characters)")
+    # * <tt>wrong_length</tt> - The error message if using the :is method and the attribute is the wrong size (default is: "is the wrong length (should be %d characters)")
+    # * <tt>message</tt> - The error message to use for a :minimum, :maximum, or :is violation.  An alias of the appropriate too_long/too_short/wrong_length message
+    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    RANGE_OPTIONS = %w(is within in minimum maximum).freeze unless defined? RANGE_OPTIONS
+    RANGE_VALIDATIONS = {
+      'is'      => [ :==, ERROR_MESSAGES[:wrong_length] ],
+      'minimum' => [ :>=, ERROR_MESSAGES[:too_short] ],
+      'maximum' => [ :<=, ERROR_MESSAGES[:too_long] ]
+    }.freeze unless defined? RANGE_VALIDATIONS
+
+    def validates_length_of(slotname, opts = {})
+      register_validation("length_of", slotname, opts, nil) do |opts|
+        range_options = opts.reject { |opt, val| !RANGE_OPTIONS.include? opt }
+
+        case range_options.size
+          when 0
+            raise ArgumentError, 'Range unspecified. Specify the :within, :maximum, :minimum, or :is option.'
+          when 1
+            # Valid number of options; do nothing.
+          else
+            raise ArgumentError, 'Too many range options specified. Choose only one.'
+        end
+
+        ropt = range_options.keys.first
+        ropt_value = range_options[ropt]
+
+        opthash = {
+          :allow_nil => !!opts['allow_nil'],
+          :allow_blank => !!opts['allow_blank'] 
+        }
+
+        case ropt
+          when 'within', 'in'
+            raise ArgumentError, ":#{ropt} must be a Range" unless ropt_value.is_a? Range
+
+            opthash[:too_short] = (opts['too_short'] || ERROR_MESSAGES[:too_short]) % ropt_value.begin
+            opthash[:too_long]  = (opts['too_long']  || ERROR_MESSAGES[:too_long])  % ropt_value.end
+            opthash[:range] = ropt_value
+          
+          when 'is', 'minimum', 'maximum'
+            raise ArgumentError, ":#{ropt} must be a nonnegative Integer" unless ropt_value.is_a?(Integer) and ropt_value >= 0
+
+            # Declare different validations per option.
+            opthash[:message]  = (opts['message'] || RANGE_VALIDATIONS[ropt][1]) % ropt_value
+            opthash[:method]   = RANGE_VALIDATIONS[ropt][0]
+            opthash[:argument] = ropt_value
+        end
+
+        opthash
+      end
+    end
+    
+    alias_method :validates_size_of, :validates_length_of
 
     # this module gets mixed into Document
     module InstanceMethods
@@ -333,8 +473,8 @@ module StrokeDB
       opts = opts.stringify_keys
       slotname = slotname.to_s
       on = (opts['on'] || 'save').to_s.downcase
-      message = opts['message'] || message
-    
+      message = opts['message'] || (message.is_a?(Symbol) ? ERROR_MESSAGES[message] : message)
+
       check_condition(opts['if']) if opts['if']
       check_condition(opts['unless']) if opts['unless']
 
@@ -355,110 +495,143 @@ module StrokeDB
       end
     end
 
+    NUMERICALITY_ERRORS = { 
+      'greater_than' => '#{slotname} must be greater than %d', 
+      'greater_than_or_equal_to' => '#{slotname} must be greater than or equal to %d',
+      'equal_to' => '#{slotname} must be equal to %d', 
+      'less_than' => '#{slotname} must be less than %d',
+      'less_than_or_equal_to' => '#{slotname} must be less than or equal to %d',
+      'odd' => '#{slotname} must be odd',
+      'even' => '#{slotname} must be even'
+    }.freeze unless defined? NUMERICALITY_ERRORS
+
     def initialize_validations
       install_validations_for(:validates_presence_of) do |doc, validation, slotname|
         doc.has_slot? slotname
       end
       
       install_validations_for(:validates_type_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) || doc[slotname].is_a?(Kernel.const_get(validation[:validation_type]))
+        doc[slotname].is_a? Kernel.const_get(validation[:validation_type])
       end
       
       install_validations_for(:validates_inclusion_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) || validation[:in].include?(doc[slotname])
+        validation[:in].include? doc[slotname]
       end
       
       install_validations_for(:validates_exclusion_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) || !validation[:in].include?(doc[slotname])
+        !validation[:in].include?(doc[slotname])
       end
      
       install_validations_for(:validates_format_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) || doc[slotname] =~ validation[:with]
+        !(doc[slotname] !~ validation[:with])
       end
       
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
         meta = Kernel.const_get(doc.meta.name)
 
-        !doc.has_slot?(slotname) || 
         !(found = meta.find(slotname.to_sym => doc[slotname])) || 
         (found.size == 0) || 
         (found.first == doc) ||
         (found.first.version == doc.previous_version)
       end
+      
+      # using lambda here enables us to use return
+      numericality = lambda do |doc, validation, slotname|
+        value = doc[slotname]
 
-      install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
-        valid = true
-        valid &&= !((doc[slotname].to_s =~ /\A[+-]?\d+\Z/).nil?) if validation[:only_integer]
-        valid &&= (Kernel.Float(doc[slotname]) rescue false) unless validation[:only_integer]
-        validation[:numeric_checks].each do |option, value|
-          case option
-          when "odd"
-            if (doc[slotname].to_s =~ /\A[+-]?\d+\Z/) && value == true
-              validation[:message] = 'Value is not odd' unless valid &&= doc[slotname].odd?
-            end
-          when "even"
-            if (doc[slotname].to_s =~ /\A[+-]?\d+\Z/) && value == true
-              validation[:message] = 'Value is not even' unless valid &&= doc[slotname].even?
-            end
-          when "greater_than"
-            next if valid &&= (doc[slotname] > value)
-            validation[:message] = 'Value is too small' unless (doc[slotname] > value)
-            validation[:message] = "Value must be greater than #{value}" if (doc[slotname] == value)
-          when "greater_than_or_equal_to"
-            next if valid &&= (doc[slotname] >= value)
-            validation[:message] = 'Value is too small'
-          when "equal_to"
-            next if valid &&= (doc[slotname] == value)
-            validation[:message] = (doc[slotname] < value) ? 'Value is too small' : 'Value is too big'
-          when "less_than_or_equal_to"
-            next if valid &&= (doc[slotname] <= value)
-            validation[:message] = 'Value is too big'
-          when "less_than"
-            next if valid &&= (doc[slotname] < value)
-            validation[:message] = 'Value is too big' unless (doc[slotname] < value)
-            validation[:message] = "Value must be less than #{value}" if (doc[slotname] == value)
+        if validation[:only_integer]
+          return (validation[:message] || "#{slotname} must be integer") unless value.to_s =~ /\A[+-]?\d+\Z/
+          value = value.to_i
+        else
+          value = Kernel.Float(value) rescue false
+          return (validation[:message] || "#{slotname} is not a number") unless value
+        end
+
+        errors = []
+
+        validation[:numeric_checks].each do |option, optvalue|
+          testresult = if %w(odd even).include? option
+            value.to_i.send(NUMERICALITY_CHECKS[option])
+          else
+            value.send(NUMERICALITY_CHECKS[option], optvalue)
+          end
+
+          unless testresult
+            errors << ((validation[:message] || NUMERICALITY_ERRORS[option]) % optvalue)
           end
         end
-        valid ||= !doc.has_slot?(slotname)
+
+        errors.empty? ? true : errors
       end
 
+      install_validations_for(:validates_numericality_of, &numericality) 
       install_validations_for(:validates_confirmation_of) do |doc, validation, slotname|
         confirm_slotname = slotname + "_confirmation"
-        !doc.has_slot?(slotname) ||
-        !doc.has_slot?(confirm_slotname) ||
-        doc[slotname] == doc[confirm_slotname]
+        !doc.has_slot?(confirm_slotname) || doc[slotname] == doc[confirm_slotname]
       end
       
       install_validations_for(:validates_acceptance_of) do |doc, validation, slotname|
         doc[slotname] == validation[:accept] 
+      end
+     
+      install_validations_for(:validates_length_of) do |doc, validation, slotname|
+        value = doc[slotname]
+        size = case value
+               when NilClass then 0
+               when String then value.split(//).size
+               else 
+                 value.size
+               end
+
+        if range = validation[:range]
+          if value.nil? or size < range.begin
+            validation[:too_short]
+          elsif size > range.end
+            validation[:too_long]
+          else
+            true
+          end
+        else
+          !value.nil? && size.send(validation[:method], validation[:argument])
+        end
       end
     end
 
     def install_validations_for(sym, &block)
       on_validation(sym) do |doc|
         grep_slots(doc, sym.to_s + "_") do |slotname_to_validate, meta_slotname|
-          if validation = doc.meta[meta_slotname] 
-            on = validation['on']
+          next unless validation = doc.meta[meta_slotname] 
+          
+          on = validation['on']
 
-            next unless (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
-            next if validation[:if]     && !evaluate_condition(validation[:if], doc)
-            next if validation[:unless] &&  evaluate_condition(validation[:unless], doc)
+          next unless (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
+          next if validation[:if]     && !evaluate_condition(validation[:if], doc)
+          next if validation[:unless] &&  evaluate_condition(validation[:unless], doc)
 
-            value = doc[slotname_to_validate]
-            
-            next if validation[:allow_nil] && value.nil?
-            next if validation[:allow_blank] && value.blank?
+          value = doc[slotname_to_validate]
+          
+          next if validation[:allow_nil] && value.nil?
+          next if validation[:allow_blank] && value.blank?
 
-            if !block.call(doc, validation, slotname_to_validate)
-              os = OpenStruct.new(validation)
-              os.document = doc
-              os.slotvalue = value
-
-              doc.errors.add(slotname_to_validate, os.instance_eval("\"#{validation['message']}\""))
-            end
+          case validation_result = block.call(doc, validation, slotname_to_validate)
+            when true then next
+            when false
+              add_error(doc, validation, slotname_to_validate, validation[:message])
+            when String
+              add_error(doc, validation, slotname_to_validate, validation_result)
+            when Array
+              validation_result.each { |message| add_error(doc, validation, slotname_to_validate, message) }
           end
         end
       end
+    end
+
+    def add_error(doc, validation, slotname, message)
+      os = OpenStruct.new(validation)
+      os.document = doc
+      os.slotvalue = doc[slotname]
+
+      doc.errors.add(slotname, os.instance_eval("\"#{message}\""))
     end
   end  
 end

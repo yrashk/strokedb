@@ -93,7 +93,7 @@ module StrokeDB
       end
     end
 
-    CALLBACKS = %w(on_initialization before_save after_save when_slot_not_found on_new_document on_validation 
+    CALLBACKS = %w(on_initialization on_load before_save after_save when_slot_not_found on_new_document on_validation 
       after_validation on_set_slot)
 
     CALLBACKS.each do |callback_name|
