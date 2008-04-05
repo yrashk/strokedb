@@ -69,6 +69,8 @@ module StrokeDB
     # * <tt>message</tt> - A custom error message (default is: "A document with a ... of ... already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
     # * <tt>case_sensitive</tt> - Looks for an exact match.  Ignored by non-text columns (true by default).
+    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
+    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
@@ -76,7 +78,9 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_uniqueness_of(slotname, opts={})
-      register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists')
+      register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists') do |opts|
+        { :allow_nil => !!opts['allow_nil'], :allow_blank => !!opts['allow_blank'] }
+      end
     end
     
     # Validates whether the value of the specified slot is available in a particular enumerable object.
@@ -103,7 +107,11 @@ module StrokeDB
       if opts[:in]
         raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to? :include?
         register_validation("inclusion_of", slotname, opts, "Value of #{slotname} is not included in the list") do |opts|
-          { :in => opts['in'] }
+          { 
+            :in => opts['in'],
+            :allow_nil => !!opts['allow_nil'],
+            :allow_blank => !!opts['allow_blank'] 
+          }
         end
       else
         raise ArgumentError, "validates_inclusion_of requires :in => Enumerable"
@@ -133,7 +141,11 @@ module StrokeDB
       if opts[:in]
         raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to? :include?
         register_validation("exclusion_of", slotname, opts, "Value of #{slotname} is reserved") do |opts|
-          { :in => opts['in'] }
+          { 
+            :in => opts['in'],
+            :allow_nil => !!opts['allow_nil'],
+            :allow_blank => !!opts['allow_blank'] 
+          }
         end
       else
         raise ArgumentError, "validates_exclusion_of requires :in => Enumerable"
@@ -166,22 +178,26 @@ module StrokeDB
     # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
-    NUMERIC_OPTIONS = [ :odd, :even, :greater_than, :greater_than_or_equal_to, :equal_to,
-                        :less_than_or_equal_to, :less_than ].freeze
+    NUMERICALITY_CHECKS = { 'greater_than' => :>, 'greater_than_or_equal_to' => :>=,
+                                'equal_to' => :==, 'less_than' => :<, 'less_than_or_equal_to' => :<=,
+                                'odd' => :odd?, 'even' => :even? }.freeze
 
     def validates_numericality_of(slotname, opts={})
-      validation_type = opts[:only_integer] ? 'integer' : 'numeric'
-      numeric_checks = opts.reject { |key, value| !NUMERIC_OPTIONS.include? key }
-      
-      (numeric_checks.keys - [:odd, :even]).each do |option|
-        raise ArgumentError, "#{option} must be a number" unless opts[option].is_a? Numeric
-      end
-      
-      register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
+      register_validation("numericality_of", slotname, opts, nil) do |opts|
+        numeric_checks = opts.reject { |key, val| !NUMERICALITY_CHECKS.include? key }
+
+        %w(odd even).each do |o|
+          raise ArgumentError, ":#{o} must be set to true if set at all" if opts.include?(o) && opts[o] != true
+        end
+
+        (numeric_checks.keys - %w(odd even)).each do |option|
+          raise ArgumentError, "#{option} must be a number" unless opts[option].is_a? Numeric
+        end
+ 
         {
-          :validation_type => validation_type.capitalize,
           :only_integer => opts['only_integer'],
-          :numeric_checks => numeric_checks
+          :numeric_checks => numeric_checks,
+          :allow_nil => !!opts['allow_nil']
         }
       end          
     end
@@ -385,6 +401,16 @@ module StrokeDB
       end
     end
 
+    NUMERICALITY_ERRORS = { 
+      'greater_than' => '#{slotname} must be greater than %d', 
+      'greater_than_or_equal_to' => '#{slotname} must be greater than or equal to %d',
+      'equal_to' => '#{slotname} must be equal to %d', 
+      'less_than' => '#{slotname} must be less than %d',
+      'less_than_or_equal_to' => '#{slotname} must be less than or equal to %d',
+      'odd' => '#{slotname} must be odd',
+      'even' => '#{slotname} must be even'
+    }.freeze unless defined? NUMERICALITY_ERRORS
+
     def initialize_validations
       install_validations_for(:validates_presence_of) do |doc, validation, slotname|
         doc.has_slot? slotname
@@ -395,68 +421,59 @@ module StrokeDB
       end
       
       install_validations_for(:validates_inclusion_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) || validation[:in].include?(doc[slotname])
+        validation[:in].include?(doc[slotname])
       end
       
       install_validations_for(:validates_exclusion_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) || !validation[:in].include?(doc[slotname])
+        !validation[:in].include?(doc[slotname])
       end
      
       install_validations_for(:validates_format_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) || doc[slotname] =~ validation[:with]
+        !(doc[slotname] !~ validation[:with])
       end
       
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
         meta = Kernel.const_get(doc.meta.name)
 
-        !doc.has_slot?(slotname) || 
         !(found = meta.find(slotname.to_sym => doc[slotname])) || 
         (found.size == 0) || 
         (found.first == doc) ||
         (found.first.version == doc.previous_version)
       end
+      
+      # using lambda here enables us to us return
+      numericality = lambda do |doc, validation, slotname|
+        value = doc[slotname]
 
-      install_validations_for(:validates_numericality_of) do |doc, validation, slotname|
-        valid = true
-        valid &&= !((doc[slotname].to_s =~ /\A[+-]?\d+\Z/).nil?) if validation[:only_integer]
-        valid &&= (Kernel.Float(doc[slotname]) rescue false) unless validation[:only_integer]
-        validation[:numeric_checks].each do |option, value|
-          case option
-          when "odd"
-            if (doc[slotname].to_s =~ /\A[+-]?\d+\Z/) && value == true
-              validation[:message] = 'Value is not odd' unless valid &&= doc[slotname].odd?
-            end
-          when "even"
-            if (doc[slotname].to_s =~ /\A[+-]?\d+\Z/) && value == true
-              validation[:message] = 'Value is not even' unless valid &&= doc[slotname].even?
-            end
-          when "greater_than"
-            next if valid &&= (doc[slotname] > value)
-            validation[:message] = 'Value is too small' unless (doc[slotname] > value)
-            validation[:message] = "Value must be greater than #{value}" if (doc[slotname] == value)
-          when "greater_than_or_equal_to"
-            next if valid &&= (doc[slotname] >= value)
-            validation[:message] = 'Value is too small'
-          when "equal_to"
-            next if valid &&= (doc[slotname] == value)
-            validation[:message] = (doc[slotname] < value) ? 'Value is too small' : 'Value is too big'
-          when "less_than_or_equal_to"
-            next if valid &&= (doc[slotname] <= value)
-            validation[:message] = 'Value is too big'
-          when "less_than"
-            next if valid &&= (doc[slotname] < value)
-            validation[:message] = 'Value is too big' unless (doc[slotname] < value)
-            validation[:message] = "Value must be less than #{value}" if (doc[slotname] == value)
+        if validation[:only_integer]
+          return (validation[:message] || "#{slotname} must be integer") unless value.to_s =~ /\A[+-]?\d+\Z/
+          value = value.to_i
+        else
+          value = Kernel.Float(value) rescue false
+          return (validation[:message] || "#{slotname} is not a number") unless value
+        end
+
+        errors = []
+
+        validation[:numeric_checks].each do |option, optvalue|
+          testresult = if %w(odd even).include? option
+            value.to_i.send(NUMERICALITY_CHECKS[option])
+          else
+            value.send(NUMERICALITY_CHECKS[option], optvalue)
+          end
+
+          unless testresult
+            errors << ((validation[:message] || NUMERICALITY_ERRORS[option]) % optvalue)
           end
         end
-        valid ||= !doc.has_slot?(slotname)
+
+        errors.empty? ? true : errors
       end
 
+      install_validations_for(:validates_numericality_of, &numericality) 
       install_validations_for(:validates_confirmation_of) do |doc, validation, slotname|
         confirm_slotname = slotname + "_confirmation"
-        !doc.has_slot?(slotname) ||
-        !doc.has_slot?(confirm_slotname) ||
-        doc[slotname] == doc[confirm_slotname]
+        !doc.has_slot?(confirm_slotname) || doc[slotname] == doc[confirm_slotname]
       end
       
       install_validations_for(:validates_acceptance_of) do |doc, validation, slotname|
@@ -467,28 +484,39 @@ module StrokeDB
     def install_validations_for(sym, &block)
       on_validation(sym) do |doc|
         grep_slots(doc, sym.to_s + "_") do |slotname_to_validate, meta_slotname|
-          if validation = doc.meta[meta_slotname] 
-            on = validation['on']
+          next unless validation = doc.meta[meta_slotname] 
+          
+          on = validation['on']
 
-            next unless (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
-            next if validation[:if]     && !evaluate_condition(validation[:if], doc)
-            next if validation[:unless] &&  evaluate_condition(validation[:unless], doc)
+          next unless (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
+          next if validation[:if]     && !evaluate_condition(validation[:if], doc)
+          next if validation[:unless] &&  evaluate_condition(validation[:unless], doc)
 
-            value = doc[slotname_to_validate]
-            
-            next if validation[:allow_nil] && value.nil?
-            next if validation[:allow_blank] && value.blank?
+          value = doc[slotname_to_validate]
+          
+          next if validation[:allow_nil] && value.nil?
+          next if validation[:allow_blank] && value.blank?
 
-            if !block.call(doc, validation, slotname_to_validate)
-              os = OpenStruct.new(validation)
-              os.document = doc
-              os.slotvalue = value
-
-              doc.errors.add(slotname_to_validate, os.instance_eval("\"#{validation['message']}\""))
-            end
+          case validation_result = block.call(doc, validation, slotname_to_validate)
+            when true then next
+            when false
+              add_error(doc, validation, slotname_to_validate, validation[:message])
+            when String
+              add_error(doc, validation, slotname_to_validate, validation_result)
+            when Array
+              validation_result.each { |message| add_error(doc, validation, slotname_to_validate, message) }
           end
         end
       end
     end
+
+    def add_error(doc, validation, slotname, message)
+      os = OpenStruct.new(validation)
+      os.document = doc
+      os.slotvalue = doc[slotname]
+
+      doc.errors.add(slotname, os.instance_eval("\"#{message}\""))
+    end
+    
   end  
 end
