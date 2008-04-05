@@ -8,10 +8,6 @@ module StrokeDB
       doc.make_immutable!
     end
     
-    after_save do |doc|
-      doc.make_immutable!
-    end
-    
     def undelete!
       deleted_version = versions.previous
       store.save_as_head!(deleted_version)
@@ -25,6 +21,7 @@ module StrokeDB
       raise DocumentDeletionError, "can't delete non-head document" unless head?
       metas << DeletedDocument
       save!
+      make_immutable!
     end
     
   end
