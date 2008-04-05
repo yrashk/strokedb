@@ -2,8 +2,6 @@ require 'ostruct'
 
 # TODO (taken from ActiveRecord):
 #   validates_length_of
-#   validates_inclusion_of
-#   validates_exclusion_of
 #   validates_associated
 #
 module StrokeDB
@@ -81,6 +79,47 @@ module StrokeDB
       register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists')
     end
     
+    # Validates whether the value of the specified attribute is available in a particular enumerable object.
+    #
+    #   Person = Meta.new do
+    #     validates_inclusion_of :gender, :in => %w( m f ), :message => "woah! what are you then!??!!"
+    #     validates_inclusion_of :age, :in => 0..99
+    #     validates_inclusion_of :format, :in => %w( jpg gif png ), :message => "extension %s is not included in the list"
+    #   end
+    #
+    # Configuration options:
+    # * <tt>in</tt> - An enumerable object of available items
+    # * <tt>message</tt> - Specifies a customer error message (default is: "is not included in the list")
+    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
+    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should occur
+    #   (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }). The method, proc or string
+    #   should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should not occur
+    #   (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }). The method, proc or string
+    #   should return or evaluate to a true or false value.
+    def validates_inclusion_of(slotname, opts={})
+      if opts[:in]
+        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to?("include?")
+        register_validation("inclusion_of", slotname, opts, "Value of #{slotname} is not included in the list") do |opts|
+          { :in => opts['in'] }
+        end
+      else
+        raise ArgumentError, "validates_inclusion_of requires :in => Enumerable"
+      end
+    end 
+    
+    def validates_exclusion_of(slotname, opts={})
+      if opts[:in]
+        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to?("include?")
+        register_validation("exclusion_of", slotname, opts, "Value of #{slotname} is included in the list") do |opts|
+          { :in => opts['in'] }
+        end
+      else
+        raise ArgumentError, "validates_exclusion_of requires :in => Enumerable"
+      end
+    end 
+      
     # Validates that the specified slot value is numeric
     #
     #   Item = Meta.new do
@@ -147,8 +186,7 @@ module StrokeDB
         { :with => opts['with'] }
       end
     end
-    
-    
+       
     # Encapsulates the pattern of wanting to validate a password or email
     # address field with a confirmation. Example:
     #
@@ -326,6 +364,14 @@ module StrokeDB
         !doc.has_slot?(slotname) || doc[slotname].is_a?(Kernel.const_get(validation[:validation_type]))
       end
       
+      install_validations_for(:validates_inclusion_of) do |doc, validation, slotname|
+        !doc.has_slot?(slotname) || validation[:in].include?(doc[slotname])
+      end
+      
+      install_validations_for(:validates_exclusion_of) do |doc, validation, slotname|
+        !doc.has_slot?(slotname) || !validation[:in].include?(doc[slotname])
+      end
+     
       install_validations_for(:validates_format_of) do |doc, validation, slotname|
         !doc.has_slot?(slotname) || doc[slotname] =~ validation[:with]
       end
