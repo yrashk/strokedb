@@ -8,6 +8,16 @@ def validations_setup
   Object.send!(:remove_const, 'User') if defined?(User)
   Object.send!(:remove_const, 'Email') if defined?(Email)
   Object.send!(:remove_const, 'Item') if defined?(Item)
+  Object.send!(:remove_const, 'OneMoreItem') if defined?(OneMoreItem)
+end
+
+def erroneous_stuff
+  Meta.new do
+    on_validation do |doc|
+      doc.errors.add(:something, "123")
+      doc.errors.add(:other,     "456")
+    end
+  end.new
 end
 
 describe "Document validation" do
@@ -36,15 +46,6 @@ describe "Document validation" do
 
   it "should not raise InvalidDocumentError on a save!(false) call" do
     lambda { erroneous_stuff.save!(false) }.should_not raise_error(InvalidDocumentError)
-  end
-
-  def erroneous_stuff
-    Meta.new do
-      on_validation do |doc|
-        doc.errors.add(:something, "123")
-        doc.errors.add(:other,     "456")
-      end
-    end.new
   end
 end
 
@@ -614,7 +615,90 @@ describe "validates_exclusion_of" do
 end
 
 describe "validates_associated" do
-  it "should be implemented"
+  before :each do
+    validations_setup
+
+    Foo = Meta.new { has_many :bars; validates_associated :bars }
+    Bar = Meta.new { has_many :items; validates_associated :items }
+    Item = Meta.new { validates_associated :associate }
+    OneMoreItem = Meta.new { validates_associated :associate; validates_presence_of :something }
+    User = Meta.new
+  end
+
+  it "should consider not existing association as valid" do
+    Foo.new.should be_valid
+  end
+
+  it "should consider valid when associated document is also valid" do
+    perfectly_valid = User.new
+    Item.new(:associate => perfectly_valid).should be_valid
+  end
+
+  it "should consider invalid when associated document is invalid" do
+    invalid = erroneous_stuff
+    invalid.should_not be_valid
+    item = Item.new(:associate => invalid)
+    item.should_not be_valid
+    item.errors.messages.should == [ "associate is invalid" ]
+  end
+
+  it "should work with has_many association" do
+    f = Foo.new
+    f.bars << Bar.new
+    f.should be_valid
+    f.bars << Bar.new
+    f.should be_valid
+
+    err = erroneous_stuff
+
+    # FIXME?
+    # in the below scenario, when you're trying to add an erroneous document to an association,
+    # adding it will fail; therefore it will not appear in f.bars and f will be considered valid.
+    # Q: is it fine with us?
+    lambda { f.bars << err }.should raise_error(InvalidDocumentError)
+    f.should be_valid
+  end
+
+  it "should work with a document chain" do
+    i3 = erroneous_stuff
+    i3.should_not be_valid
+
+    i2 = Item.new
+    i2.should be_valid
+    i2.associate = i3
+    i2.should_not be_valid
+
+    i1 = Item.new
+    i1.should be_valid
+    i1.associate = i2
+    i1.should_not be_valid
+
+    i1.associate = i3
+    i1.should_not be_valid
+    i1.associate = nil
+    i1.should be_valid
+  end
+  
+  it "should catch direct circular referenced validations" do
+    i = Item.new
+    i1 = Item.new(:associate => i)
+    i.associate = i1
+    lambda { i.valid? }.should_not raise_error(SystemStackError)
+    i.should be_valid
+    oi = OneMoreItem.new
+    oi1 = OneMoreItem.new(:associate => oi)
+    oi.associate = oi1
+    oi.should_not be_valid
+    oi1.should_not be_valid
+  end
+
+  it "should catch circular referenced validations through has_many association" do
+    b = Bar.new
+    b.items << (i = Item.new(:associate => b))
+    lambda { b.valid? }.should_not raise_error(SystemStackError)
+    lambda { i.valid? }.should_not raise_error(SystemStackError)
+  end
+
 end
 
 describe "validates_numericality_of" do
