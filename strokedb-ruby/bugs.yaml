@@ -98,7 +98,7 @@ issues:
     You can't add an invalid document as an associate.
     Also if serialized associate is valid, but in-memory document isn't valid, valid? returns true.
   type: :bugfix
-  component: General
+  component: Meta
   release: v0.0.2
   reporter: oleg dashevskii <be9@be9.ru>
   status: :unstarted
