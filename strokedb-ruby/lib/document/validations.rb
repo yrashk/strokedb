@@ -518,8 +518,8 @@ module StrokeDB
         :slotname => slotname, 
         :message => message, 
         :on => on,
-        :if => opts['if'],  
-        :unless => opts['unless']
+        :if => { :ruby => opts['if'] },  
+        :unless => { :ruby => opts['unless'] }
       }
 
       options_hash.merge!(yield(opts)) if block_given?
@@ -663,8 +663,9 @@ module StrokeDB
           on = validation['on']
 
           next unless (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
-          next if validation[:if]     && !evaluate_condition(validation[:if], doc)
-          next if validation[:unless] &&  evaluate_condition(validation[:unless], doc)
+          
+          next if validation[:if].is_a?(Hash) && validation[:if][:ruby] && !evaluate_condition(validation[:if][:ruby], doc)
+          next if validation[:unless].is_a?(Hash) && validation[:unless][:ruby] &&  evaluate_condition(validation[:unless][:ruby], doc)
 
           value = doc[slotname_to_validate]
           
