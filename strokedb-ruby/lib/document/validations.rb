@@ -1,11 +1,24 @@
 require 'ostruct'
 
 # TODO (taken from ActiveRecord):
-#   validates_length_of
 #   validates_associated
 #
 module StrokeDB
   module Validations
+    ERROR_MESSAGES = {
+      :should_be_present => '#{meta}\'s #{slotname} should be present on #{on}',
+      :invalid_type      => '#{meta}\'s #{slotname} should be of type #{validation_type}',
+      :already_exists    => 'A document with a #{slotname} of #{slotvalue} already exists',
+      :not_included      => 'Value of #{slotname} is not included in the list',
+      :not_excluded      => 'Value of #{slotname} is reserved',
+      :invalid_format    => 'Value of #{slotname} should match #{slotvalue}',
+      :not_confirmed     => '#{meta}\'s #{slotname} doesn\'t match confirmation',
+      :not_accepted      => '#{slotname} must be accepted',
+      :wrong_length      => '#{slotname} has the wrong length (should be %d characters)',
+      :too_short         => '#{slotname} is too short (minimum is %d characters)',
+      :too_long          => '#{slotname} is too long (maximum is %d characters)',
+    }.freeze unless defined? ERROR_MESSAGES
+
     # Validates that the specified slot exists in the document. Happens by default on save. Example:
     #
     #   Person = Meta.new do
@@ -24,7 +37,7 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_presence_of(slotname, opts={})
-      register_validation("presence_of", slotname, opts, '#{meta}\'s #{slotname} should be present on #{on}')
+      register_validation("presence_of", slotname, opts, :should_be_present)
     end 
    
     # Validates that the specified slot value has a specific type. Happens by default on save. Example:
@@ -48,10 +61,8 @@ module StrokeDB
     # === Warning
     # When the slot doesn't exist, validation gets skipped.
     def validates_type_of(slotname, opts={})
-      register_validation("type_of", slotname, opts, '#{meta}\'s #{slotname} should be of type #{validation_type}') do |opts|
-        unless type = opts['as']
-          raise ArgumentError, "validates_type_of requires :as => type"
-        end
+      register_validation("type_of", slotname, opts, :invalid_type) do |opts|
+        raise ArgumentError, "validates_type_of requires :as => type" unless type = opts['as']
 
         { 
           :validation_type => type.to_s.capitalize,
@@ -81,7 +92,7 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_uniqueness_of(slotname, opts={})
-      register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists') do |opts|
+      register_validation("uniqueness_of", slotname, opts, :already_exists) do |opts|
         { :allow_nil => !!opts['allow_nil'], :allow_blank => !!opts['allow_blank'] }
       end
     end
@@ -107,17 +118,15 @@ module StrokeDB
     #   (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }). The method, proc or string
     #   should return or evaluate to a true or false value.
     def validates_inclusion_of(slotname, opts={})
-      if opts[:in]
-        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to? :include?
-        register_validation("inclusion_of", slotname, opts, "Value of #{slotname} is not included in the list") do |opts|
-          { 
-            :in => opts['in'],
-            :allow_nil => !!opts['allow_nil'],
-            :allow_blank => !!opts['allow_blank'] 
-          }
-        end
-      else
-        raise ArgumentError, "validates_inclusion_of requires :in => Enumerable"
+      register_validation("inclusion_of", slotname, opts, :not_included) do |opts|
+        raise ArgumentError, "validates_inclusion_of requires :in set" unless opts['in']
+        raise ArgumentError, "object must respond to the method include?" unless opts['in'].respond_to? :include?
+        
+        { 
+          :in => opts['in'],
+          :allow_nil => !!opts['allow_nil'],
+          :allow_blank => !!opts['allow_blank'] 
+        }
       end
     end 
     
@@ -141,17 +150,15 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_exclusion_of(slotname, opts={})
-      if opts[:in]
-        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to? :include?
-        register_validation("exclusion_of", slotname, opts, "Value of #{slotname} is reserved") do |opts|
-          { 
-            :in => opts['in'],
-            :allow_nil => !!opts['allow_nil'],
-            :allow_blank => !!opts['allow_blank'] 
-          }
-        end
-      else
-        raise ArgumentError, "validates_exclusion_of requires :in => Enumerable"
+      register_validation("exclusion_of", slotname, opts, :not_excluded) do |opts|
+        raise ArgumentError, "validates_exclusion_of requires :in set" unless opts['in']
+        raise ArgumentError, "object must respond to the method include?" unless opts['in'].respond_to? :include?
+        
+        { 
+          :in => opts['in'],
+          :allow_nil => !!opts['allow_nil'],
+          :allow_blank => !!opts['allow_blank'] 
+        }
       end
     end 
       
@@ -228,7 +235,7 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     def validates_format_of(slotname, opts={})
-      register_validation("format_of", slotname, opts, 'Value of #{slotname} should match #{slotvalue}') do |opts|
+      register_validation("format_of", slotname, opts, :invalid_format) do |opts|
         unless regexp = opts['with'].is_a?(Regexp)
           raise ArgumentError, "validates_format_of requires :with => regexp"
         end
@@ -268,7 +275,7 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.      
     def validates_confirmation_of(slotname, opts = {})
-      register_validation("confirmation_of", slotname, opts, '#{meta}\'s #{slotname} doesn\'t match confirmation')
+      register_validation("confirmation_of", slotname, opts, :not_confirmed)
 
       virtualizes(slotname.to_s + "_confirmation")
     end
@@ -298,15 +305,99 @@ module StrokeDB
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.      
     def validates_acceptance_of(slotname, opts = {})
-      register_validation("acceptance_of", slotname, opts, '#{slotname} must be accepted') do |opts|
+      register_validation("acceptance_of", slotname, opts, :not_accepted) do |opts|
         allow_nil = opts['allow_nil'].nil? ? true : !!opts['allow_nil']
         accept = opts['accept'] || "1"
 
         { :allow_nil => allow_nil, :accept => accept }
       end
 
-      virtualizes(slotname.to_s)
+      virtualizes slotname.to_s
     end
+    
+    # Validates that the specified slot matches the length restrictions
+    # supplied. Only one option can be used at a time:
+    #
+    #   Person = Meta.new do
+    #     validates_length_of :first_name, :maximum=>30
+    #     validates_length_of :last_name, :maximum=>30, :message=>"less than %d if you don't mind"
+    #     validates_length_of :fax, :in => 7..32, :allow_nil => true
+    #     validates_length_of :phone, :in => 7..32, :allow_blank => true
+    #     validates_length_of :user_name, :within => 6..20, :too_long => "pick a shorter name", :too_short => "pick a longer name"
+    #     validates_length_of :fav_bra_size, :minimum=>1, :too_short=>"please enter at least %d character"
+    #     validates_length_of :smurf_leader, :is=>4, :message=>"papa is spelled with %d characters... don't play me."
+    #   end
+    #
+    # Configuration options:
+    # * <tt>minimum</tt> - The minimum size of the attribute
+    # * <tt>maximum</tt> - The maximum size of the attribute
+    # * <tt>is</tt> - The exact size of the attribute
+    # * <tt>within</tt> - A range specifying the minimum and maximum size of the attribute
+    # * <tt>in</tt> - A synonym(or alias) for :within
+    # * <tt>allow_nil</tt> - Attribute may be nil; skip validation.
+    # * <tt>allow_blank</tt> - Attribute may be blank; skip validation.
+    #
+    # * <tt>too_long</tt> - The error message if the attribute goes over the maximum (default is: "is too long (maximum is %d characters)")
+    # * <tt>too_short</tt> - The error message if the attribute goes under the minimum (default is: "is too short (min is %d characters)")
+    # * <tt>wrong_length</tt> - The error message if using the :is method and the attribute is the wrong size (default is: "is the wrong length (should be %d characters)")
+    # * <tt>message</tt> - The error message to use for a :minimum, :maximum, or :is violation.  An alias of the appropriate too_long/too_short/wrong_length message
+    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.      
+    RANGE_OPTIONS = %w(is within in minimum maximum).freeze unless defined? RANGE_OPTIONS
+    RANGE_VALIDATIONS = {
+      'is'      => [ :==, ERROR_MESSAGES[:wrong_length] ],
+      'minimum' => [ :>=, ERROR_MESSAGES[:too_short] ],
+      'maximum' => [ :<=, ERROR_MESSAGES[:too_long] ]
+    }.freeze unless defined? RANGE_VALIDATIONS
+
+    def validates_length_of(slotname, opts = {})
+      register_validation("length_of", slotname, opts, nil) do |opts|
+        range_options = opts.reject { |opt, val| !RANGE_OPTIONS.include? opt }
+
+        case range_options.size
+          when 0
+            raise ArgumentError, 'Range unspecified. Specify the :within, :maximum, :minimum, or :is option.'
+          when 1
+            # Valid number of options; do nothing.
+          else
+            raise ArgumentError, 'Too many range options specified. Choose only one.'
+        end
+
+        ropt = range_options.keys.first
+        ropt_value = range_options[ropt]
+
+        opthash = {
+          :allow_nil => !!opts['allow_nil'],
+          :allow_blank => !!opts['allow_blank'] 
+        }
+
+        case ropt
+          when 'within', 'in'
+            raise ArgumentError, ":#{ropt} must be a Range" unless ropt_value.is_a? Range
+
+            opthash[:too_short] = (opts['too_short'] || ERROR_MESSAGES[:too_short]) % ropt_value.begin
+            opthash[:too_long]  = (opts['too_long']  || ERROR_MESSAGES[:too_long])  % ropt_value.end
+            opthash[:range] = ropt_value
+          
+          when 'is', 'minimum', 'maximum'
+            raise ArgumentError, ":#{ropt} must be a nonnegative Integer" unless ropt_value.is_a?(Integer) and ropt_value >= 0
+
+            # Declare different validations per option.
+            opthash[:message]  = (opts['message'] || RANGE_VALIDATIONS[ropt][1]) % ropt_value
+            opthash[:method]   = RANGE_VALIDATIONS[ropt][0]
+            opthash[:argument] = ropt_value
+        end
+
+        opthash
+      end
+    end
+    
+    alias_method :validates_size_of, :validates_length_of
 
     # this module gets mixed into Document
     module InstanceMethods
@@ -382,8 +473,8 @@ module StrokeDB
       opts = opts.stringify_keys
       slotname = slotname.to_s
       on = (opts['on'] || 'save').to_s.downcase
-      message = opts['message'] || message
-    
+      message = opts['message'] || (message.is_a?(Symbol) ? ERROR_MESSAGES[message] : message)
+
       check_condition(opts['if']) if opts['if']
       check_condition(opts['unless']) if opts['unless']
 
@@ -481,6 +572,28 @@ module StrokeDB
       
       install_validations_for(:validates_acceptance_of) do |doc, validation, slotname|
         doc[slotname] == validation[:accept] 
+      end
+     
+      install_validations_for(:validates_length_of) do |doc, validation, slotname|
+        value = doc[slotname]
+        size = case value
+               when NilClass then 0
+               when String then value.split(//).size
+               else 
+                 value.size
+               end
+
+        if range = validation[:range]
+          if value.nil? or size < range.begin
+            validation[:too_short]
+          elsif size > range.end
+            validation[:too_long]
+          else
+            true
+          end
+        else
+          !value.nil? && size.send(validation[:method], validation[:argument])
+        end
       end
     end
 

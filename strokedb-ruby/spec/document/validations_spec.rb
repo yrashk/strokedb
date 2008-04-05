@@ -172,10 +172,6 @@ describe "Validation helpers" do
     end.should raise_error(ArgumentError)
   end
 
-  it "should get reimplemented without validates_presence_of use"
-  it "should respect :allow_nil"
-  it "should respect :allow_blank"
-
   def bang
     lambda { yield }.should raise_error(InvalidDocumentError)
   end
@@ -378,7 +374,172 @@ describe "validates_acceptance_of" do
 end
 
 describe "validates_length_of" do
-  it "should be implemented"
+  before :each do
+    validations_setup
+  end
+ 
+  describe "options handling" do
+    it "should raise ArgumentError when more than one range option is specified" do
+      arg_bang { Meta.new { validates_length_of :name, :is => 10, :maximum => 20 } }
+      arg_bang { Meta.new { validates_length_of :name, :is => 10, :within => 1..20 } }
+    end
+
+    it "should raise ArgumentError when no range option is specified" do
+      arg_bang { Meta.new { validates_length_of :name } }
+    end
+
+    it "should raise ArgumentError when not Range given to :in or :within" do
+      arg_bang { Meta.new { validates_length_of :name, :in => 10 } }
+      arg_bang { Meta.new { validates_length_of :name, :within => "somewhere between one and a million" } }
+    end
+
+    it "should raise ArgumentError when something other than nonnegative Integer is given to :is, :minimum, :maximum" do
+      %w(is minimum maximum).each do |arg|
+        arg_bang { Meta.new { validates_length_of :name, arg => "blah" } }
+        arg_bang { Meta.new { validates_length_of :name, arg => -1 } }
+      end
+    end
+    
+    def arg_bang
+      lambda { yield }.should raise_error(ArgumentError)
+    end
+  end
+  
+  %w(within in).each do |within|
+    describe ":#{within}" do
+      before :each do
+        Foo = Meta.new { validates_length_of :bar, within => 10..50 }
+      end
+
+      it "should consider valid when slot is within the range" do
+        Foo.new(:bar => "*"*30).should be_valid
+        Foo.new(:bar => [1]*30).should be_valid
+      end
+      
+      it "should consider invalid when slot is too small" do
+        f = Foo.new(:bar => "12345")
+        f.should_not be_valid
+        f.errors.messages.should == [ "bar is too short (minimum is 10 characters)" ]
+        Foo.new(:bar => [1]*5).should_not be_valid
+      end
+      
+      it "should consider invalid when slot is too big" do
+        f = Foo.new(:bar => "!"*100)
+        f.should_not be_valid
+        f.errors.messages.should == [ "bar is too long (maximum is 50 characters)" ]
+        Foo.new(:bar => [1]*100).should_not be_valid
+      end
+
+      it "should respect :too_short" do
+        Bar = Meta.new { validates_length_of :foo, within => 1..5, :too_short => "blah %d" }
+        b = Bar.new(:foo => "")
+        b.should_not be_valid
+        b.errors.messages.should == [ "blah 1" ]
+      end
+      
+      it "should respect :too_long" do
+        Bar = Meta.new { validates_length_of :foo, within => 1..5, :too_long => "blah %d" }
+        b = Bar.new(:foo => "123456")
+        b.should_not be_valid
+        b.errors.messages.should == [ "blah 5" ]
+      end
+    end
+  end
+
+  describe ":is" do
+    before :each do
+      Foo = Meta.new { validates_length_of :bar, :is => 4 }
+    end
+
+    it "should consider valid when slot value has the right length" do
+      Foo.new(:bar => "1234").should be_valid
+      Foo.new(:bar => %w(ein zwei drei Polizei)).should be_valid
+    end
+    
+    it "should consider invalid when slot value has invalid length" do
+      f = Foo.new(:bar => "12345")
+      f.should_not be_valid
+      f.errors.messages.should == [ "bar has the wrong length (should be 4 characters)" ]
+    
+      Foo.new(:bar => %w(ein zwei alles)).should_not be_valid
+    end
+
+    it "should respect :message" do
+      Bar = Meta.new { validates_length_of :foo, :is => 66, :message => "fkup %d" }
+      b = Bar.new(:foo => "123456")
+      b.should_not be_valid
+      b.errors.messages.should == [ "fkup 66" ]
+    end
+  end
+
+  describe ":minimum" do
+    before :each do
+      Foo = Meta.new { validates_length_of :bar, :minimum => 4 }
+    end
+
+    it "should consider valid when slot value has the right length" do
+      Foo.new(:bar => "1234").should be_valid
+      Foo.new(:bar => "12345").should be_valid
+      Foo.new(:bar => %w(ein zwei drei vier Polizei)).should be_valid
+    end
+    
+    it "should consider invalid when slot value has invalid length" do
+      f = Foo.new(:bar => "125")
+      f.should_not be_valid
+      f.errors.messages.should == [ "bar is too short (minimum is 4 characters)" ]
+    
+      Foo.new(:bar => %w(ein zwei alles)).should_not be_valid
+    end
+    
+    it "should respect :message" do
+      Bar = Meta.new { validates_length_of :foo, :minimum => 66, :message => "fkup %d" }
+      b = Bar.new(:foo => "123456")
+      b.should_not be_valid
+      b.errors.messages.should == [ "fkup 66" ]
+    end
+  end
+  
+  describe :maximum do
+    before :each do
+      Foo = Meta.new { validates_length_of :bar, :maximum => 4 }
+    end
+
+    it "should consider valid when slot value has the right length" do
+      Foo.new(:bar => "1234").should be_valid
+      Foo.new(:bar => "123").should be_valid
+      Foo.new(:bar => %w(ein zwei drei)).should be_valid
+    end
+    
+    it "should consider invalid when slot value has invalid length" do
+      f = Foo.new(:bar => "123456")
+      f.should_not be_valid
+      f.errors.messages.should == [ "bar is too long (maximum is 4 characters)" ]
+    
+      Foo.new(:bar => %w(ein zwei drei vier Polizei)).should_not be_valid
+    end
+    
+    it "should respect :message" do
+      Bar = Meta.new { validates_length_of :foo, :maximum => 66, :message => "fkup %d" }
+      b = Bar.new(:foo => "6"*67)
+      b.should_not be_valid
+      b.errors.messages.should == [ "fkup 66" ]
+    end
+  end
+
+  it "should respect :allow_nil" do
+    Meta.new { validates_length_of :bar, :is => 10, :allow_nil => false }.new.should_not be_valid
+    Meta.new { validates_length_of :bar, :is => 10, :allow_nil => true  }.new.should     be_valid
+  end
+
+  it "should respect :allow_blank" do
+    Foo = Meta.new { validates_length_of :bar, :is => 10, :allow_blank => false }
+    Foo.new.should_not be_valid
+    Foo.new(:bar => "   ").should_not be_valid
+    
+    Bar = Meta.new { validates_length_of :bar, :is => 10, :allow_blank => true }
+    Bar.new.should be_valid
+    Bar.new(:bar => "   ").should be_valid
+  end
 end
 
 describe "validates_inclusion_of" do
