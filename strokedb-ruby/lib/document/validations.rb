@@ -633,17 +633,25 @@ module StrokeDB
       end
 
       install_validations_for(:validates_associated) do |doc, validation, slotname|
-        if doc.has_slot?(slotname)
-          val = doc[slotname]
+        begin
+        result = false
+        Util.catch_circular_reference(doc,:validates_associated_reference_stack) do
+          if doc.has_slot?(slotname)
+            val = doc[slotname]
 
-          if val.respond_to? :inject
-            val.inject(true) { |prev, associate| prev && (associate.respond_to?(:valid?) ? associate.valid? : true) }
+            if val.respond_to? :inject
+              result = val.inject(true) { |prev, associate| prev && (associate.respond_to?(:valid?) ? associate.valid? : true) }
+            else
+              result = val.respond_to?(:valid?) ? val.valid? : true
+            end
           else
-            val.respond_to?(:valid?) ? val.valid? : true
+            result = true
           end
-        else
-          true
         end
+        rescue Util::CircularReferenceCondition
+          result = true
+        end
+        result
       end
     end
 
