@@ -109,7 +109,18 @@ module StrokeDB
       else
         raise ArgumentError, "validates_inclusion_of requires :in => Enumerable"
       end
-    end  
+    end 
+    
+    def validates_exclusion_of(slotname, opts={})
+      if opts[:in]
+        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to?("include?")
+        register_validation("exclusion_of", slotname, opts, "Value of #{slotname} is included in the list") do |opts|
+          { :in => opts['in'] }
+        end
+      else
+        raise ArgumentError, "validates_exclusion_of requires :in => Enumerable"
+      end
+    end 
       
     # Validates that the specified slot value is numeric
     #
@@ -177,8 +188,7 @@ module StrokeDB
         { :with => opts['with'] }
       end
     end
-    
-    
+       
     # Encapsulates the pattern of wanting to validate a password or email
     # address field with a confirmation. Example:
     #
@@ -360,6 +370,10 @@ module StrokeDB
         !doc.has_slot?(slotname) || validation[:in].include?(doc[slotname])
       end
       
+      install_validations_for(:validates_exclusion_of) do |doc, validation, slotname|
+        !doc.has_slot?(slotname) || !validation[:in].include?(doc[slotname])
+      end
+     
       install_validations_for(:validates_format_of) do |doc, validation, slotname|
         !doc.has_slot?(slotname) || doc[slotname] =~ validation[:with]
       end

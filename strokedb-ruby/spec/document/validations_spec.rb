@@ -395,8 +395,43 @@ describe "validates_inclusion_of" do
 end
 
 describe "validates_exclusion_of" do
-  it "should be implemented"
+  before :each do
+    validations_setup
+    Item = Meta.new do
+      validates_exclusion_of :gender, :in => %w( m f )
+      validates_exclusion_of :age, :in => 30..70
+    end
+  end
+  
+  it "should treat absent slot as valid" do
+    Item.new.should be_valid
+  end
+  
+  it "should raise ArgumentError unless option :in is suplied" do
+    lambda do
+      Meta.new { validates_exclusion_of :gender }
+    end.should raise_error(ArgumentError)
+  end
+  
+  it "should raise ArgumentError unless param is an enumerable" do
+    lambda do
+      Meta.new { validates_inclusion_of :gender, :in => 42 }
+    end.should raise_error(ArgumentError)
+  end
+    
+  it "should be valid" do
+    i = Item.new(:gender => 'x', :age => 25)
+    i.should be_valid
+    i.errors.messages.should == [ ]
+  end
+  
+  it "should not be valid" do
+    i = Item.new(:gender => 'm', :age => 42)
+    i.should_not be_valid
+    i.errors.messages.should == [ "Value of gender is included in the list", "Value of age is included in the list" ]
+  end
 end
+
 
 describe "validates_associated" do
   it "should be implemented"
