@@ -11,12 +11,12 @@ issues:
   reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
   status: :unstarted
   disposition: 
-  creation_time: 2008-04-05 20:01:45.647168 +03:00
+  creation_time: 2008-04-06 00:01:45.647168 +07:00
   references: []
 
   id: ca878c0e976abf30d8e3ad609103c150e5a3ceb7
   log_events: 
-  - - 2008-04-05 20:01:48.574865 +03:00
+  - - 2008-04-06 00:01:48.574865 +07:00
     - Yurii Rashkovskii <yrashk@issuesdone.com>
     - created
     - ""
@@ -29,12 +29,12 @@ issues:
   reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
   status: :unstarted
   disposition: 
-  creation_time: 2008-04-05 20:12:31.946334 +03:00
+  creation_time: 2008-04-06 00:12:31.946334 +07:00
   references: []
 
   id: e5131f94770d4004179b4512c30ec1a945ec4132
   log_events: 
-  - - 2008-04-05 20:12:38.306511 +03:00
+  - - 2008-04-06 00:12:38.306511 +07:00
     - Yurii Rashkovskii <yrashk@issuesdone.com>
     - created
     - ""
@@ -47,12 +47,12 @@ issues:
   reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
   status: :unstarted
   disposition: 
-  creation_time: 2008-04-05 20:13:44.248549 +03:00
+  creation_time: 2008-04-06 00:13:44.248549 +07:00
   references: []
 
   id: ef7c137f232ec062ad3a642824f00c6de482f5aa
   log_events: 
-  - - 2008-04-05 20:13:45.392236 +03:00
+  - - 2008-04-06 00:13:45.392236 +07:00
     - Yurii Rashkovskii <yrashk@issuesdone.com>
     - created
     - ""
@@ -65,13 +65,33 @@ issues:
   reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
   status: :unstarted
   disposition: 
-  creation_time: 2008-04-05 20:15:33.557341 +03:00
+  creation_time: 2008-04-06 00:15:33.557341 +07:00
   references: []
 
   id: 9e4fd4410c5cabe3491539df44408596291a8cee
   log_events: 
-  - - 2008-04-05 20:15:35.300920 +03:00
+  - - 2008-04-06 00:15:35.300920 +07:00
     - Yurii Rashkovskii <yrashk@issuesdone.com>
+    - created
+    - ""
+- !ditz.rubyforge.org,2008-03-06/issue 
+  title: validates_associated doesn't play well with has_many association
+  desc: |-
+    You can't add an invalid document as an associate.
+    Also if serialized associate is valid, but in-memory document isn't valid, valid? returns true.
+  type: :bugfix
+  component: General
+  release: 
+  reporter: oleg dashevskii <be9@be9.ru>
+  status: :unstarted
+  disposition: 
+  creation_time: 2008-04-06 00:25:33.316375 +07:00
+  references: []
+
+  id: 9943f5b13202f49908e2b5b11dc8aa167de2d20f
+  log_events: 
+  - - 2008-04-06 00:25:41.467544 +07:00
+    - oleg dashevskii <be9@be9.ru>
     - created
     - ""
 components: 
@@ -87,7 +107,7 @@ releases:
   status: :unreleased
   release_time: 
   log_events: 
-  - - 2008-04-05 19:57:44.086164 +03:00
+  - - 2008-04-05 23:57:44.086164 +07:00
     - Yurii Rashkovskii <yrashk@issuesdone.com>
     - created
     - ""
