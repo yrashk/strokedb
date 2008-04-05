@@ -2,8 +2,6 @@ require 'ostruct'
 
 # TODO (taken from ActiveRecord):
 #   validates_length_of
-#   validates_inclusion_of
-#   validates_exclusion_of
 #   validates_associated
 #
 module StrokeDB
