@@ -49,6 +49,7 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "document with value already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
@@ -63,7 +64,7 @@ module StrokeDB
         raise ArgumentError, "validates_type_of requires :as => type" unless type = opts['as']
 
         { 
-          :validation_type => type.to_s.capitalize,
+          :validation_type => type.to_s.camelize,
           :allow_nil => !!opts['allow_nil'] 
         }
       end
