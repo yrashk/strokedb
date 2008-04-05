@@ -38,7 +38,7 @@ module StrokeDB
     end
 
     def read(position)
-      raise InvalidRecordPositionError if available?(position)
+      raise InvalidRecordPositionError, "position #{position} is available" if available?(position)
       read_at_position(position)
     end
 
@@ -49,7 +49,7 @@ module StrokeDB
     end
 
     def delete!(position)
-      self.first_available_position = -1
+      @first_available_position = nil
       increment_available_capacity!(position)
     end
 
@@ -101,7 +101,7 @@ module StrokeDB
         initialize_file_map!
       else
         @bitmap_file = File.new(bitmap_path,'r+')
-        @first_available_position = -1
+        @first_available_position = nil
         read_file_header
         initialize_file_header!
       end
@@ -122,7 +122,7 @@ module StrokeDB
       end
       raise InvalidMapVolumeError unless header[0,4] = MAGIC_SIGNATURE
       @options['record_size'] = header[6,4].unpack("N").first
-      @first_available_position = (pos = header[10,4].unpack("N").first) == 4294967295 ? -1 : pos
+      # @first_available_position = (pos = header[10,4].unpack("N").first) == 4294967295 ? -1 : pos
     end
 
     def initialize_file_header!
@@ -130,15 +130,15 @@ module StrokeDB
       header[0,4] = MAGIC_SIGNATURE
       header[4,2] = VERSION
       header[6,4] = [record_size].pack("N")
-      header[10,4] = [first_available_position].pack("N")
+      # header[10,4] = [first_available_position].pack("N")
       @bitmap_file.seek(0)
       @bitmap_file.write(header)
     end
 
-    def update_file_header!
-      @bitmap_file.seek(10)
-      @bitmap_file.write([first_available_position].pack("N"))
-    end
+    # def update_file_header!
+    #   @bitmap_file.seek(10)
+    #   @bitmap_file.write([first_available_position].pack("N"))
+    # end
 
     def initialize_file_map!
       extend_map
@@ -152,7 +152,7 @@ module StrokeDB
     end
 
     def find_first_available_position
-      unless first_available_position == -1
+      if first_available_position
         first_available_position
       else
         byte_num = 0
@@ -190,27 +190,27 @@ module StrokeDB
       write_map_byte(position, byte | mask)
 
       if read_map_byte(position + 1) == 255
-        @first_available_position = -1
+        @first_available_position = nil
       else
         @first_available_position = position + 1
       end
 
-      update_file_header!
+      # update_file_header!
     end
 
     def decrement_available_chunk!(position,length)
       @bitmap_file.seek(HEADER_SIZE + (position % 8))
       update ="\xff" * (length+1)
       @bitmap_file.write(update)
-      @first_available_position = -1
+      @first_available_position = nil
       @bitmap[position%8,length+1] = update
-      update_file_header!
+      # update_file_header!
     end
 
 
     def increment_available_capacity!(position)
       update_map_byte!(position) {|byte| byte & (255 ^ (1 << (position % 8))) }
-      update_file_header!
+      # update_file_header!
     end
 
     def update_map_byte!(position)
@@ -220,7 +220,7 @@ module StrokeDB
 
     def read_map_byte(position)
       extend_map if map_size*8 <= position # TODO: spec it
-      read_map[position/8]
+      @bitmap[position/8]
       # @bitmap_file.seek(HEADER_SIZE + position/8)
       # @bitmap_file.read(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
     end
@@ -238,7 +238,8 @@ module StrokeDB
 
     def elastic_write_at_position!(position,record)
       @data_file.seek(position*record_size)
-      @data_file.write([record.size].pack('N') + record)
+      @data_file.write([record.size].pack('N'))
+      @data_file.write(record)
     end
 
     def read_at_position(position)
