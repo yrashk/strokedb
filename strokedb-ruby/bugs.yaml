@@ -74,6 +74,24 @@ issues:
     - Yurii Rashkovskii <yrashk@issuesdone.com>
     - created
     - ""
+- !ditz.rubyforge.org,2008-03-06/issue 
+  title: Bundle strokedb as a gem
+  desc: ""
+  type: :feature
+  component: General
+  release: v0.0.2
+  reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+  status: :unstarted
+  disposition: 
+  creation_time: 2008-04-05 20:28:22.341093 +03:00
+  references: []
+
+  id: 5eef3d46b99cec669d789474a9f48bda5af181b2
+  log_events: 
+  - - 2008-04-05 20:28:23.708580 +03:00
+    - Yurii Rashkovskii <yrashk@issuesdone.com>
+    - created
+    - ""
 components: 
 - !ditz.rubyforge.org,2008-03-06/component 
   name: Storage
