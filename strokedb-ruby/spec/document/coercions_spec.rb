@@ -77,6 +77,34 @@ describe "Document slot coercion" do
     foo = Foo.new(:some_slot => "bad1")
     foo.some_slot.should == "bad1"
   end
+  
+  it "should respect :if" do
+    Foo = Meta.new do
+      coerces :some_slot, :to => :number, :if => 'if_slot'
+    end
+    foo = Foo.new
+    foo.if_slot = true
+    foo.some_slot = "1"
+    foo.some_slot.should == 1
+    foo = Foo.new
+    foo.if_slot = false
+    foo.some_slot = "1"
+    foo.some_slot.should == "1"
+  end
+
+  it "should respect :unless" do
+    Foo = Meta.new do
+      coerces :some_slot, :to => :number, :unless => 'if_slot'
+    end
+    foo = Foo.new
+    foo.if_slot = true
+    foo.some_slot = "1"
+    foo.some_slot.should == "1"
+    foo = Foo.new
+    foo.if_slot = false
+    foo.some_slot = "1"
+    foo.some_slot.should == 1
+  end
 
 end
 
