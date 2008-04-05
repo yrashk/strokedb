@@ -79,19 +79,20 @@ module StrokeDB
       register_validation("uniqueness_of", slotname, opts, 'A document with a #{slotname} of #{slotvalue} already exists')
     end
     
-    # Validates whether the value of the specified attribute is available in a particular enumerable object.
+    # Validates whether the value of the specified slot is available in a particular enumerable object.
     #
     #   Person = Meta.new do
     #     validates_inclusion_of :gender, :in => %w( m f ), :message => "woah! what are you then!??!!"
     #     validates_inclusion_of :age, :in => 0..99
-    #     validates_inclusion_of :format, :in => %w( jpg gif png ), :message => "extension %s is not included in the list"
+    #     validates_inclusion_of :format, :in => %w( jpg gif png ), :message => 'extension #{slotvalue} is not included in the list'
     #   end
     #
     # Configuration options:
     # * <tt>in</tt> - An enumerable object of available items
-    # * <tt>message</tt> - Specifies a customer error message (default is: "is not included in the list")
-    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
-    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
+    # * <tt>message</tt> - Specifies a customer error message (default is: "is
+    #   not included in the list")
+    # * <tt>allow_nil</tt> - If set to true, skips this validation if the slot is null (default is: false)
+    # * <tt>allow_blank</tt> - If set to true, skips this validation if the slot is blank (default is: false)
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should occur
     #   (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }). The method, proc or string
     #   should return or evaluate to a true or false value.
@@ -100,7 +101,7 @@ module StrokeDB
     #   should return or evaluate to a true or false value.
     def validates_inclusion_of(slotname, opts={})
       if opts[:in]
-        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to?("include?")
+        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to? :include?
         register_validation("inclusion_of", slotname, opts, "Value of #{slotname} is not included in the list") do |opts|
           { :in => opts['in'] }
         end
@@ -109,10 +110,29 @@ module StrokeDB
       end
     end 
     
+    # Validates that the value of the specified slot is not in a particular enumerable object.
+    #
+    #   class Person < ActiveRecord::Base
+    #     validates_exclusion_of :username, :in => %w( admin superuser ), :message => "You don't belong here"
+    #     validates_exclusion_of :age, :in => 30..60, :message => "This site is only for under 30 and over 60"
+    #     validates_exclusion_of :format, :in => %w( mov avi ), :message => 'extension #{slotvalue} is not allowed'
+    #   end
+    #
+    # Configuration options:
+    # * <tt>in</tt> - An enumerable object of items that the value shouldn't be part of
+    # * <tt>message</tt> - Specifies a customer error message (default is: "is reserved")
+    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
+    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
+    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
+    #   method, proc or string should return or evaluate to a true or false value.
     def validates_exclusion_of(slotname, opts={})
       if opts[:in]
-        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to?("include?")
-        register_validation("exclusion_of", slotname, opts, "Value of #{slotname} is included in the list") do |opts|
+        raise ArgumentError, "object must respond to the method include?" unless opts[:in].respond_to? :include?
+        register_validation("exclusion_of", slotname, opts, "Value of #{slotname} is reserved") do |opts|
           { :in => opts['in'] }
         end
       else
@@ -120,30 +140,41 @@ module StrokeDB
       end
     end 
       
-    # Validates that the specified slot value is numeric
+    # Validates whether the value of the specified attribute is numeric by trying to convert it to
+    # a float with Kernel.Float (if <tt>only_integer</tt> is false) or applying it to the regular expression
+    # <tt>/\A[\+\-]?\d+\Z/</tt> (if <tt>only_integer</tt> is set to true).
     #
     #   Item = Meta.new do
     #     validates_numericality_of :price
     #   end
     #
-    # Configuration options:
-    # * <tt>only_integer</tt> - Specify integer
-    # * <tt>message</tt> - A custom error message (default is: "Value of ... must be numeric | integer")
-    # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>message</tt> - A custom error message (default is: "is not a number")
+    # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>only_integer</tt> Specifies whether the value has to be an integer, e.g. an integral value (default is false)
+    # * <tt>allow_nil</tt> Skip validation if attribute is nil (default is
+    #   false). Notice that for fixnum and float columns empty strings are converted to nil
+    # * <tt>greater_than</tt> Specifies the value must be greater than the supplied value
+    # * <tt>greater_than_or_equal_to</tt> Specifies the value must be greater than or equal the supplied value
+    # * <tt>equal_to</tt> Specifies the value must be equal to the supplied value
+    # * <tt>less_than</tt> Specifies the value must be less than the supplied value
+    # * <tt>less_than_or_equal_to</tt> Specifies the value must be less than or equal the supplied value
+    # * <tt>odd</tt> Specifies the value must be an odd number
+    # * <tt>even</tt> Specifies the value must be an even number
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
     # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
     #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
     #   method, proc or string should return or evaluate to a true or false value.
+    NUMERIC_OPTIONS = [ :odd, :even, :greater_than, :greater_than_or_equal_to, :equal_to,
+                        :less_than_or_equal_to, :less_than ].freeze
+
     def validates_numericality_of(slotname, opts={})
-      numeric_options = [ :odd, :even, :greater_than, :greater_than_or_equal_to, :equal_to,
-                              :less_than_or_equal_to, :less_than ]
       validation_type = opts[:only_integer] ? 'integer' : 'numeric'
-      numeric_checks = opts.reject {|key, value| !numeric_options.include?(key) }
+      numeric_checks = opts.reject { |key, value| !NUMERIC_OPTIONS.include? key }
       
       (numeric_checks.keys - [:odd, :even]).each do |option|
-        raise ArgumentError, "#{option} must be a number" unless opts[option].is_a?(Numeric)
+        raise ArgumentError, "#{option} must be a number" unless opts[option].is_a? Numeric
       end
       
       register_validation("numericality_of", slotname, opts, "Value of #{slotname} must be #{validation_type}") do |opts|
@@ -155,8 +186,8 @@ module StrokeDB
       end          
     end
     
-    # Validates whether the value of the specified attribute is of the correct form by matching it against the regular expression
-    # provided.
+    # Validates whether the value of the specified attribute is of the correct
+    # form by matching it against the regular expression provided.
     #
     #   Person = Meta.new do
     #     validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i, :on => :create
@@ -164,12 +195,11 @@ module StrokeDB
     #
     # Note: use \A and \Z to match the start and end of the string, ^ and $ match the start/end of a line.
     #
-    # A regular expression must be provided or else an exception will be raised.
+    # A regular expression must be provided or else an exception will be
+    # raised.
     #
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "is invalid")
-    # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
-    # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
     # * <tt>with</tt> - The regular expression used to validate the format with (note: must be supplied!)
     # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
     # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should

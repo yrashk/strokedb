@@ -291,6 +291,8 @@ describe "validates_uniqueness_of" do
   end
 
   it "should respect :case_sensitive"
+  it "should respect :allow_blank"
+  it "should respect :allow_nil"
 end
 
 describe "validates_confirmation_of" do
@@ -384,7 +386,7 @@ describe "validates_inclusion_of" do
   it "should be valid" do
     i = Item.new(:gender => 'm', :age => 42)
     i.should be_valid
-    i.errors.messages.should == [ ]
+    i.errors.messages.should be_empty
   end
   
   it "should not be valid" do
@@ -392,6 +394,9 @@ describe "validates_inclusion_of" do
     i.should_not be_valid
     i.errors.messages.should == [ "Value of gender is not included in the list", "Value of age is not included in the list" ]
   end
+  
+  it "should respect :allow_blank"
+  it "should respect :allow_nil"
 end
 
 describe "validates_exclusion_of" do
@@ -422,14 +427,17 @@ describe "validates_exclusion_of" do
   it "should be valid" do
     i = Item.new(:gender => 'x', :age => 25)
     i.should be_valid
-    i.errors.messages.should == [ ]
+    i.errors.messages.should be_empty
   end
   
   it "should not be valid" do
     i = Item.new(:gender => 'm', :age => 42)
     i.should_not be_valid
-    i.errors.messages.should == [ "Value of gender is included in the list", "Value of age is included in the list" ]
+    i.errors.messages.should == [ "Value of gender is reserved", "Value of age is reserved" ]
   end
+  
+  it "should respect :allow_blank"
+  it "should respect :allow_nil"
 end
 
 
@@ -440,56 +448,60 @@ end
 describe "validates_numericality_of" do
   before :each do
     validations_setup
-    Item = Meta.new do
-      validates_numericality_of :price
-      validates_numericality_of :quantity, :only_integer => true
-    end
-  end
-  
-  it "should treat absent slot as valid" do
-    Item.new.should be_valid
-  end
-  
-  it "should raise error on String value" do
-    i = Item.new(:price => "A")
-    i.should_not be_valid
-    i.errors.messages.should == [ "Value of price must be numeric" ]
-  end
-  
-  it "should treat integer as valid" do
-    i = Item.new(:price => 1)  
-    i.should be_valid
-  end
-  
-  it "should treat negative integer as valid" do
-    i = Item.new(:price => -1)  
-    i.should be_valid
-  end
-  
-  it "should treat float as valid" do
-    i = Item.new(:price => 2.5)
-    i.should be_valid
-  end
-  
-  it "should treat negative float as valid" do
-    i = Item.new(:price => -2.5)
-    i.should be_valid
-  end
-  
-  it "should treat float in exponential notation as valid" do
-    i = Item.new(:price => "1.23456E-3")
-    i.should be_valid
-  end
-  
-  it "should treat float as invalid when integer is specified" do
-    i = Item.new(:quantity => 1.5)
-    i.should_not be_valid
-    i.errors.messages.should == [ "Value of quantity must be integer" ]
   end
  
+  describe "general behaviour" do
+    before :each do
+      Item = Meta.new do
+        validates_numericality_of :price
+        validates_numericality_of :quantity, :only_integer => true
+      end
+    end
+    
+    it "should treat absent slot as valid" do
+      Item.new.should be_valid
+    end
+    
+    it "should raise error on String value" do
+      i = Item.new(:price => "A")
+      i.should_not be_valid
+      i.errors.messages.should == [ "Value of price must be numeric" ]
+    end
+    
+    it "should treat integer as valid" do
+      i = Item.new(:price => 1)  
+      i.should be_valid
+    end
+    
+    it "should treat negative integer as valid" do
+      i = Item.new(:price => -1)  
+      i.should be_valid
+    end
+    
+    it "should treat float as valid" do
+      i = Item.new(:price => 2.5)
+      i.should be_valid
+    end
+    
+    it "should treat negative float as valid" do
+      i = Item.new(:price => -2.5)
+      i.should be_valid
+    end
+    
+    it "should treat float in exponential notation as valid" do
+      i = Item.new(:price => "1.23456E-3")
+      i.should be_valid
+    end
+    
+    it "should treat float as invalid when integer is specified" do
+      i = Item.new(:quantity => 1.5)
+      i.should_not be_valid
+      i.errors.messages.should == [ "Value of quantity must be integer" ]
+    end
+  end
+
   describe "should respect :greater_than" do
     before :each do
-      validations_setup
       Item = Meta.new do
         validates_numericality_of :number, :greater_than => 42
       end
@@ -504,10 +516,10 @@ describe "validates_numericality_of" do
     it "should be valid if value > 42" do
       i = Item.new(:number => 44)
       i.should be_valid
-      i.errors.messages.should == [ ]
+      i.errors.messages.should be_empty
       i.number = 44.3
       i.should be_valid
-      i.errors.messages.should == [ ]  
+      i.errors.messages.should be_empty  
     end
     
     it "should not be valid if value < 42" do
@@ -525,7 +537,6 @@ describe "validates_numericality_of" do
   
   describe "should respect :greater_than_or_equal_to" do
     before :each do
-      validations_setup
       Item = Meta.new do
         validates_numericality_of :number, :greater_than_or_equal_to => 42
       end
@@ -540,16 +551,16 @@ describe "validates_numericality_of" do
     it "should be valid if value > 42" do
       i = Item.new(:number => 44)
       i.should be_valid
-      i.errors.messages.should == [ ]
+      i.errors.messages.should be_empty
       i.number = 44.3
       i.should be_valid
-      i.errors.messages.should == [ ]  
+      i.errors.messages.should be_empty  
     end
     
     it "should be valid if value == 42" do
       i = Item.new(:number => 42)
       i.should be_valid
-      i.errors.messages.should == [ ]
+      i.errors.messages.should be_empty
     end
     
     it "should not be valid if value < 42" do
@@ -561,7 +572,6 @@ describe "validates_numericality_of" do
   
   describe "should respect :equal_to" do
     before :each do
-      validations_setup
       Item = Meta.new do
         validates_numericality_of :number, :equal_to => 42
       end
@@ -576,7 +586,7 @@ describe "validates_numericality_of" do
     it "should be valid if value == 42" do
       i = Item.new(:number => 42)
       i.should be_valid
-      i.errors.messages.should == [ ]
+      i.errors.messages.should be_empty
     end
     
     it "should not be valid if value > 42" do
@@ -592,10 +602,8 @@ describe "validates_numericality_of" do
     end
   end
   
-  
   describe "should respect :less_than" do
     before :each do
-      validations_setup
       Item = Meta.new do
         validates_numericality_of :number, :less_than => 42
       end
@@ -610,10 +618,10 @@ describe "validates_numericality_of" do
     it "should be valid if value < 42" do
       i = Item.new(:number => 41)
       i.should be_valid
-      i.errors.messages.should == [ ]
+      i.errors.messages.should be_empty
       i.number = 41.3
       i.should be_valid
-      i.errors.messages.should == [ ]  
+      i.errors.messages.should be_empty  
     end
     
     it "should not be valid if value > 42" do
@@ -631,7 +639,6 @@ describe "validates_numericality_of" do
   
   describe "should respect :less_than_or_equal_to" do
     before :each do
-      validations_setup
       Item = Meta.new do
         validates_numericality_of :number, :less_than_or_equal_to => 42
       end
@@ -646,16 +653,16 @@ describe "validates_numericality_of" do
     it "should be valid if value < 42" do
       i = Item.new(:number => 41)
       i.should be_valid
-      i.errors.messages.should == [ ]
+      i.errors.messages.should be_empty
       i.number = 41.3
       i.should be_valid
-      i.errors.messages.should == [ ]  
+      i.errors.messages.should be_empty  
     end
     
     it "should be valid if value == 42" do
       i = Item.new(:number => 42)
       i.should be_valid
-      i.errors.messages.should == [ ]
+      i.errors.messages.should be_empty
     end
     
     it "should not be valid if value > 42" do
@@ -667,7 +674,6 @@ describe "validates_numericality_of" do
   
   describe "should respect :odd" do
     before :each do
-      validations_setup
       Item = Meta.new do
         validates_numericality_of :oddnumber, :odd => true
       end
@@ -676,7 +682,7 @@ describe "validates_numericality_of" do
     it "should be valid when value is odd" do
       i = Item.new(:oddnumber => 1)
       i.should be_valid
-      i.errors.messages.should == [ ]
+      i.errors.messages.should be_empty
     end
     
     it "should not be valid when value is even" do
@@ -688,7 +694,6 @@ describe "validates_numericality_of" do
   
   describe "should respect :even" do
     before :each do
-      validations_setup
       Item = Meta.new do
         validates_numericality_of :evennumber, :even => true
       end
@@ -701,7 +706,7 @@ describe "validates_numericality_of" do
     it "should be valid when value is even" do
       i = Item.new(:evennumber => 4)
       i.should be_valid
-      i.errors.messages.should == [ ]
+      i.errors.messages.should be_empty
     end
     
     it "should not be valid when value is odd" do
@@ -710,6 +715,8 @@ describe "validates_numericality_of" do
       i.errors.messages.should == [ "Value is not even" ]
     end
   end
+
+  it "should respect :allow_nil"
 end
 
 describe "Complex validations" do
