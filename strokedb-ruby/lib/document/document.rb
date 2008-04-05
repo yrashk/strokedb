@@ -68,6 +68,7 @@ module StrokeDB
       end
 
       def add_meta(meta, opts = {})
+        opts = opts.stringify_keys
         _module = nil
         case meta
         when Document
@@ -79,15 +80,15 @@ module StrokeDB
         else
           raise ArgumentError.new("Meta should be either document or meta module")
         end
+        @document[:meta] = self
         if _module
           @document.extend(_module)
           _module.send!(:setup_callbacks,@document) rescue nil
-          if opts.stringify_keys['call_initialization_callbacks'] 
+          if opts['call_initialization_callbacks'] 
             @document.send!(:execute_callbacks_for, _module, :on_initialization)
             @document.send!(:execute_callbacks_for, _module, :on_new_document) if @document.new?
           end
         end
-        @document[:meta] = self
       end
 
     end
@@ -272,7 +273,10 @@ module StrokeDB
           meta_module.send!(:setup_callbacks,doc) rescue nil
         end
       end
-      doc.send!(:execute_callbacks,:on_initialization) unless opts[:skip_callbacks]
+      unless opts[:skip_callbacks]
+        doc.send!(:execute_callbacks,:on_initialization) 
+        doc.send!(:execute_callbacks,:on_load) 
+      end
       doc
     end
 
@@ -613,6 +617,7 @@ module StrokeDB
     end
 
     def save!
+      self
     end
 
   end

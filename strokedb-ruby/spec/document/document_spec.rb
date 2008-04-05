@@ -413,6 +413,11 @@ describe "Deleted document" do
     @old_version = @document.version
     @document.delete!
   end
+
+  it "once reloaded shouldn't be mutable" do
+    @document = @document.reload
+    @document.should_not be_mutable
+  end
   
   it "should be undeletable" do
     @document = @document.undelete!
