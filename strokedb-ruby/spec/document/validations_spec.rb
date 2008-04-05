@@ -296,7 +296,6 @@ end
 describe "validates_confirmation_of" do
   before :each do
     validations_setup
-
     User = Meta.new { validates_confirmation_of :password }
   end
 
@@ -316,7 +315,6 @@ describe "validates_confirmation_of" do
 
   it "should not serialize confirmation slot" do
     u = User.create!(:password => "sekret", :password_confirmation => "sekret")
-
     User.find(u.uuid).has_slot?("password_confirmation").should_not be_true
   end
 end
@@ -350,7 +348,6 @@ describe "validates_acceptance_of" do
   it "should make a slot virtual" do
     Foo = Meta.new { validates_acceptance_of :eula, :accept => "yep" }
     f = Foo.create!(:eula => "yep")
-
     Foo.find(f.uuid).has_slot?("eula").should_not be_true
   end
 end
@@ -360,7 +357,41 @@ describe "validates_length_of" do
 end
 
 describe "validates_inclusion_of" do
-  it "should be implemented"
+  before :each do
+    validations_setup
+    Item = Meta.new do
+      validates_inclusion_of :gender, :in => %w( m f )
+      validates_inclusion_of :age, :in => 0..99
+    end
+  end
+  
+  it "should treat absent slot as valid" do
+    Item.new.should be_valid
+  end
+  
+  it "should raise ArgumentError unless option :in is suplied" do
+    lambda do
+      Meta.new { validates_inclusion_of :format }
+    end.should raise_error(ArgumentError)
+  end
+  
+  it "should raise ArgumentError unless param is an enumerable" do
+    lambda do
+      Meta.new { validates_inclusion_of :format, :in => 42 }
+    end.should raise_error(ArgumentError)
+  end
+    
+  it "should be valid" do
+    i = Item.new(:gender => 'm', :age => 42)
+    i.should be_valid
+    i.errors.messages.should == [ ]
+  end
+  
+  it "should not be valid" do
+    i = Item.new(:gender => 'x', :age => 'x')
+    i.should_not be_valid
+    i.errors.messages.should == [ "Value of gender is not included in the list", "Value of age is not included in the list" ]
+  end
 end
 
 describe "validates_exclusion_of" do
@@ -379,6 +410,7 @@ describe "validates_numericality_of" do
       validates_numericality_of :quantity, :only_integer => true
     end
   end
+  
   it "should treat absent slot as valid" do
     Item.new.should be_valid
   end
@@ -420,7 +452,6 @@ describe "validates_numericality_of" do
     i.errors.messages.should == [ "Value of quantity must be integer" ]
   end
  
-  # activerecord supports them, why shouldn't we? :)
   describe "should respect :greater_than" do
     before :each do
       validations_setup
