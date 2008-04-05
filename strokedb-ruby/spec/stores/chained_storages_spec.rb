@@ -5,7 +5,9 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
     before(:each) do
       @path = 'test/storages/file_chunk_storage_spec'
+      FileUtils.rm_rf @path
       @storage = storage.new(:path => @path)
+      @storage.clear!
       @store = mock("Store")
       @document = Document.new(@store, 'a' => 1, 'b' => 2)
       

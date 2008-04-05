@@ -110,6 +110,7 @@ module StrokeDB
       else
         @data_file = File.new(data_path,'r+')
       end
+      read_map
     end
 
     def read_file_header
@@ -145,8 +146,9 @@ module StrokeDB
 
 
     def read_map
+      return @bitmap if @bitmap
       @bitmap_file.seek(HEADER_SIZE)
-      @bitmap_file.read(map_size)
+      @bitmap = @bitmap_file.read(map_size)
     end
 
     def find_first_available_position
@@ -198,8 +200,10 @@ module StrokeDB
 
     def decrement_available_chunk!(position,length)
       @bitmap_file.seek(HEADER_SIZE + (position % 8))
-      @bitmap_file.write("\xff" * (length+1))
+      update ="\xff" * (length+1)
+      @bitmap_file.write(update)
       @first_available_position = -1
+      @bitmap[position%8,length+1] = update
       update_file_header!
     end
 
@@ -216,13 +220,15 @@ module StrokeDB
 
     def read_map_byte(position)
       extend_map if map_size*8 <= position # TODO: spec it
-      @bitmap_file.seek(HEADER_SIZE + position/8)
-      @bitmap_file.read(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
+      read_map[position/8]
+      # @bitmap_file.seek(HEADER_SIZE + position/8)
+      # @bitmap_file.read(1).unpack('C').first # in Ruby 1.8 we can also do [0] instead of unpack
     end
 
     def write_map_byte(position,byte)
       @bitmap_file.seek(HEADER_SIZE + position/8)
       @bitmap_file.write([byte].pack('C'))
+      @bitmap[position/8] = byte
     end
 
     def write_at_position!(position,record)
@@ -243,7 +249,8 @@ module StrokeDB
     def extend_map
       pos = @bitmap_file.pos
       @bitmap_file.truncate(pos + bitmap_extension_pace)
-      @bitmap_file.seek(pos)
+      # @bitmap_file.seek(pos)
+      @bitmap += "\x00"*bitmap_extension_pace if @bitmap
       @map_size = nil
     end
 
