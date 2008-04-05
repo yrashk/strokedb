@@ -65,7 +65,7 @@ module StrokeDB
         raise ArgumentError, "validates_type_of requires :as => type" unless type = opts['as']
 
         { 
-          :validation_type => type.to_s.capitalize,
+          :validation_type => type.to_s.camelize,
           :allow_nil => !!opts['allow_nil'] 
         }
       end
