@@ -424,7 +424,7 @@ module StrokeDB
     end
     
     def raw_uuid #:nodoc:
-      @raw_uuid = @uuid.to_raw_uuid
+      @raw_uuid ||= uuid.to_raw_uuid
     end
 
     #
