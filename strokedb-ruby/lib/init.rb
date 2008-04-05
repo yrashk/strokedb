@@ -3,6 +3,7 @@ module StrokeDB
   UUID_RE = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
   VERSION_RE = UUID_RE
   NIL_UUID = "00000000-0000-0000-0000-000000000000" # so called Nil UUID, should be used as special UUID for Meta meta
+  RAW_NIL_UUID = "\x00" * 16
   
   class <<self
     def default_store

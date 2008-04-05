@@ -85,6 +85,10 @@ module StrokeDB
       end
     end
     
+    def raw_uuid
+      @raw_uuid ||= uuid.to_raw_uuid
+    end
+    
     # VolumeClosedException is thrown when you call +read+ or +insert+
     # method on a closed or deleted volume.
     #

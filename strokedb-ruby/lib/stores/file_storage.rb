@@ -48,9 +48,9 @@ module StrokeDB
 
     def perform_save!(document, timestamp, options = {})
       position = @archive.insert(StrokeDB::serialize([document,timestamp.counter]))
-      ptr = DistributedPointer.pack(@archive.uuid,position)
-      uuid = document.uuid.to_raw_uuid
-      @uindex.insert(uuid + NIL_UUID.to_raw_uuid, ptr) if options[:head] || !document.is_a?(VersionedDocument)
+      ptr = DistributedPointer.pack(@archive.raw_uuid,position)
+      uuid = document.raw_uuid
+      @uindex.insert(uuid + RAW_NIL_UUID, ptr) if options[:head] || !document.is_a?(VersionedDocument)
       @uindex.insert(uuid + document.version.to_raw_uuid, ptr) unless options[:head]
     rescue ArchiveVolume::VolumeCapacityExceeded	 
       create_new_archive!

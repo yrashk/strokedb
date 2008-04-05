@@ -72,7 +72,7 @@ module StrokeDB
   	        node_insert_after!(newx, update[level], level)
           end
     	  end
-    	end
+      end
     	self
   	end
   	
