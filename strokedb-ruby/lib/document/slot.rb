@@ -151,10 +151,10 @@ module StrokeDB
 
     def decode_value(v)
       case v
-      when /@##{UUID_RE}.#{VERSION_RE}/
+      when /^@##{UUID_RE}.#{VERSION_RE}$/
         DocumentReferenceValue.new(v,doc)
       when /^@!Dump:/
-        Marshal.load(v[7,v.length-7])
+        StrokeDB::deserialize(v[7,v.length-7])
       when Array
         ArraySlotValue.new(v).map_with do |element| 
           decoded = decode_value(element)
