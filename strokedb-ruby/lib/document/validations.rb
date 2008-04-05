@@ -1,8 +1,5 @@
 require 'ostruct'
 
-# TODO (taken from ActiveRecord):
-#   validates_associated
-#
 module StrokeDB
   module Validations
     ERROR_MESSAGES = {
@@ -17,6 +14,7 @@ module StrokeDB
       :wrong_length      => '#{slotname} has the wrong length (should be %d characters)',
       :too_short         => '#{slotname} is too short (minimum is %d characters)',
       :too_long          => '#{slotname} is too long (maximum is %d characters)',
+      :invalid           => '#{slotname} is invalid',
     }.freeze unless defined? ERROR_MESSAGES
 
     # Validates that the specified slot exists in the document. Happens by default on save. Example:
@@ -398,6 +396,43 @@ module StrokeDB
     end
     
     alias_method :validates_size_of, :validates_length_of
+    
+    # Validates whether the associated object or objects are all valid
+    # themselves. Works with any kind of association.
+    #
+    #   Book = Meta.new
+    #     has_many :pages
+    #
+    #     validates_associated :pages, :library
+    #   end
+    #
+    # Warning: If, after the above definition, you then wrote:
+    #
+    #   Page = Meta.new
+    #     belongs_to :book
+    #
+    #     validates_associated :book
+    #   end
+    #
+    # ...this would specify a circular dependency and cause infinite recursion.
+    #
+    # NOTE: This validation will not fail if the association hasn't been
+    # assigned. If you want to ensure that the association is both present and
+    # guaranteed to be valid, you also need to use validates_presence_of (and,
+    # possibly, validates_type_of).
+    #
+    # Configuration options:
+    # * <tt>message</tt> - A custom error message (default is: "is invalid")
+    # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
+    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    def validates_associated(slotname, opts = {})
+      register_validation('associated', slotname, opts, :invalid)
+    end
 
     # this module gets mixed into Document
     module InstanceMethods
@@ -593,6 +628,20 @@ module StrokeDB
           end
         else
           !value.nil? && size.send(validation[:method], validation[:argument])
+        end
+      end
+
+      install_validations_for(:validates_associated) do |doc, validation, slotname|
+        if doc.has_slot?(slotname)
+          val = doc[slotname]
+
+          if val.respond_to? :inject
+            val.inject(true) { |prev, associate| prev && (associate.respond_to?(:valid?) ? associate.valid? : true) }
+          else
+            val.respond_to?(:valid?) ? val.valid? : true
+          end
+        else
+          true
         end
       end
     end

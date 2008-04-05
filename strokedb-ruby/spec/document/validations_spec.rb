@@ -10,6 +10,15 @@ def validations_setup
   Object.send!(:remove_const, 'Item') if defined?(Item)
 end
 
+def erroneous_stuff
+  Meta.new do
+    on_validation do |doc|
+      doc.errors.add(:something, "123")
+      doc.errors.add(:other,     "456")
+    end
+  end.new
+end
+
 describe "Document validation" do
   before :each do
     validations_setup
@@ -36,15 +45,6 @@ describe "Document validation" do
 
   it "should not raise InvalidDocumentError on a save!(false) call" do
     lambda { erroneous_stuff.save!(false) }.should_not raise_error(InvalidDocumentError)
-  end
-
-  def erroneous_stuff
-    Meta.new do
-      on_validation do |doc|
-        doc.errors.add(:something, "123")
-        doc.errors.add(:other,     "456")
-      end
-    end.new
   end
 end
 
@@ -614,7 +614,64 @@ describe "validates_exclusion_of" do
 end
 
 describe "validates_associated" do
-  it "should be implemented"
+  before :each do
+    validations_setup
+
+    Foo = Meta.new { has_many :bars; validates_associated :bars }
+    Bar = Meta.new { has_many :items; validates_associated :items }
+    Item = Meta.new { validates_associated :associate }
+    User = Meta.new
+  end
+
+  it "should consider not existing association as valid" do
+    Foo.new.should be_valid
+  end
+
+  it "should consider valid when associated document is also valid" do
+    perfectly_valid = User.new
+    Item.new(:associate => perfectly_valid).should be_valid
+  end
+
+  it "should consider invalid when associated document is invalid" do
+    invalid = erroneous_stuff
+    invalid.should_not be_valid
+    item = Item.new(:associate => invalid)
+    item.should_not be_valid
+    item.errors.messages.should == [ "associate is invalid" ]
+  end
+
+  it "should work with has_many association" do
+    f = Foo.new
+    f.bars << Bar.new
+    f.should be_valid
+    f.bars << Bar.new
+    f.should be_valid
+
+    err = erroneous_stuff
+
+    f.bars << err
+    f.should_not be_valid
+  end
+
+  it "should work with a document chain" do
+    i3 = erroneous_stuff
+    i3.should_not be_valid
+
+    i2 = Item.new
+    i2.should be_valid
+    i2.associate = i3
+    i2.should_not be_valid
+
+    i1 = Item.new
+    i1.should be_valid
+    i1.associate = i2
+    i1.should_not be_valid
+
+    i1.associate = i3
+    i1.should_not be_valid
+    i1.associate = nil
+    i1.should be_valid
+  end
 end
 
 describe "validates_numericality_of" do
