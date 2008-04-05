@@ -16,8 +16,8 @@ module StrokeDB
     def initialize_coercions
       on_set_slot(:coerces) do |doc, slotname, value|
         if coercion = doc.meta["coerces_#{slotname}"] 
-          should_call = (!coercion[:if]     || evaluate_condition(coercion[:if], doc)) &&
-          (!coercion[:unless] || !evaluate_condition(coercion[:unless], doc))
+          should_call = (!coercion[:if].is_a?(Hash) || !coercion[:if][:ruby] || evaluate_condition(coercion[:if][:ruby], doc)) &&
+          (!coercion[:unless].is_a?(Hash) || !coercion[:unless][:ruby] || !evaluate_condition(coercion[:unless][:ruby], doc))
           if should_call 
             case coercion[:to]
             when 'number'
@@ -40,9 +40,9 @@ module StrokeDB
 
       options_hash = { 
         :slotname => slotname, 
-        :if => opts['if'],  
+        :if => { :ruby => opts['if'] },  
+        :unless => { :ruby => opts['unless'] },
         :to => to,
-        :unless => opts['unless']
       }
 
       # options_hash.merge!(yield(opts)) if block_given?
