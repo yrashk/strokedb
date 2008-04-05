@@ -53,7 +53,10 @@ module StrokeDB
           raise ArgumentError, "validates_type_of requires :as => type"
         end
 
-        { :validation_type => type.to_s.capitalize }
+        { 
+          :validation_type => type.to_s.capitalize,
+          :allow_nil => !!opts['allow_nil'] 
+        }
       end
     end
 
@@ -417,11 +420,11 @@ module StrokeDB
       end
       
       install_validations_for(:validates_type_of) do |doc, validation, slotname|
-        !doc.has_slot?(slotname) || doc[slotname].is_a?(Kernel.const_get(validation[:validation_type]))
+        doc[slotname].is_a? Kernel.const_get(validation[:validation_type])
       end
       
       install_validations_for(:validates_inclusion_of) do |doc, validation, slotname|
-        validation[:in].include?(doc[slotname])
+        validation[:in].include? doc[slotname]
       end
       
       install_validations_for(:validates_exclusion_of) do |doc, validation, slotname|
@@ -441,7 +444,7 @@ module StrokeDB
         (found.first.version == doc.previous_version)
       end
       
-      # using lambda here enables us to us return
+      # using lambda here enables us to use return
       numericality = lambda do |doc, validation, slotname|
         value = doc[slotname]
 
@@ -517,6 +520,5 @@ module StrokeDB
 
       doc.errors.add(slotname, os.instance_eval("\"#{message}\""))
     end
-    
   end  
 end

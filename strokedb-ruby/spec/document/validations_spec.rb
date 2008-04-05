@@ -27,10 +27,7 @@ describe "Document validation" do
     s = erroneous_stuff
 
     s.should_not be_valid
-    s.errors.count.should == 2
-    %w(123 456).each do |msg|
-      s.errors.messages.include?(msg).should be_true
-    end
+    s.errors.messages.sort.should == %w(123 456)
   end
 
   it "should raise InvalidDocumentError on a save! call" do
@@ -189,15 +186,11 @@ describe "Validation helpers" do
 end
 
 describe "validates_type_of" do
-  before(:each) do
+  before :each do
     validations_setup
 
     Email = Meta.new
     User = Meta.new { validates_type_of :email, :as => :email }
-  end
-
-  it "should treat absent slot as valid" do
-    User.new.should be_valid
   end
 
   it "should actually check the type" do
@@ -215,6 +208,12 @@ describe "validates_type_of" do
     u.should_not be_valid
     u.errors.messages.should == [ "User's email should be of type Email" ]
   end
+  
+  it "should treat absent slot as valid with :allow_nil => true" do
+    Foo = Meta.new { validates_type_of :email, :as => :email, :allow_nil => true }
+    Foo.new.should be_valid
+  end
+
 end
 
 describe "validates_format_of" do
@@ -414,6 +413,10 @@ describe "validates_inclusion_of" do
     i.should_not be_valid
     i.errors.messages.should == [ "Value of gender is not included in the list", "Value of age is not included in the list" ]
   end
+  
+  it "should be invalid without gender and age set" do
+    Item.new.should_not be_valid
+  end
 end
 
 describe "validates_exclusion_of" do
@@ -423,10 +426,6 @@ describe "validates_exclusion_of" do
       validates_exclusion_of :gender, :in => %w( m f )
       validates_exclusion_of :age, :in => 30..70
     end
-  end
-  
-  it "should treat absent slot as valid" do
-    Item.new.should be_valid
   end
   
   it "should raise ArgumentError unless option :in is suplied" do
@@ -444,7 +443,6 @@ describe "validates_exclusion_of" do
   it "should be valid" do
     i = Item.new(:gender => 'x', :age => 25)
     i.should be_valid
-    i.errors.messages.should be_empty
   end
   
   it "should not be valid" do
@@ -453,7 +451,6 @@ describe "validates_exclusion_of" do
     i.errors.messages.should == [ "Value of gender is reserved", "Value of age is reserved" ]
   end
 end
-
 
 describe "validates_associated" do
   it "should be implemented"
@@ -754,6 +751,36 @@ describe "validates_numericality_of" do
 
   it "should respect :allow_nil" do
     Meta.new { validates_numericality_of :number, :allow_nil => true }.new.should be_valid
+  end
+
+  describe "should allow for option combinations" do
+    it ":less_than and :greater_than" do
+      Item = Meta.new do
+        validates_numericality_of :number, :less_than => 100, :greater_than => 50
+      end
+
+      Item.new(:number => 60).should be_valid
+      
+      i1 = Item.new(:number => 40)
+      i1.should_not be_valid
+      i1.errors.messages.should == [ "number must be greater than 50" ]
+
+      i2 = Item.new(:number => 150)
+      i2.should_not be_valid
+      i2.errors.messages.should == [ "number must be less than 100" ]
+    end
+
+    it ":even and :less_than_or_equal_to" do
+      Item = Meta.new do
+        validates_numericality_of :number, :less_than_or_equal_to => 100, :even => true
+      end
+      
+      Item.new(:number => 60).should be_valid
+      
+      i1 = Item.new(:number => 111)
+      i1.should_not be_valid
+      i1.errors.messages.sort.should == ["number must be less than or equal to 100", "number must be even"].sort
+    end
   end
 end
 
