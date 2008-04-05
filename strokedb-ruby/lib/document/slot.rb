@@ -121,7 +121,11 @@ module StrokeDB
       when Document
         skip_documents ? v : DocumentReferenceValue.new(v.__reference__,doc,v) 
       when Module
-        v.document(doc.store)
+        if v.respond_to?(:document)
+          v.document(doc.store) 
+        else
+          raise ArgumentError, "#{v.class} is not a valid slot value type"
+        end
       when Array
         LazyMappingArray.new(v).map_with do |element| 
           encode_value(element,skip_documents)
@@ -134,10 +138,14 @@ module StrokeDB
         end.unmap_with do |element|
           decode_value(element)
         end
+      when Range, Regexp
+        "@!Dump:#{StrokeDB::serialize(v)}"
       when Symbol
         v.to_s
-      else
+      when Time, String, Numeric, TrueClass, FalseClass, NilClass
         v
+      else
+        raise ArgumentError, "#{v.class} is not a valid slot value type"
       end
     end
 
@@ -145,6 +153,8 @@ module StrokeDB
       case v
       when /@##{UUID_RE}.#{VERSION_RE}/
         DocumentReferenceValue.new(v,doc)
+      when /^@!Dump:/
+        Marshal.load(v[7,v.length-7])
       when Array
         ArraySlotValue.new(v).map_with do |element| 
           decoded = decode_value(element)

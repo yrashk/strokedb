@@ -228,12 +228,12 @@ module StrokeDB
     # * <tt>message</tt> - A custom error message (default is: "is invalid")
     # * <tt>with</tt> - The regular expression used to validate the format with (note: must be supplied!)
     # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
+    #   method or string should return or evaluate to a true or false value.
     def validates_format_of(slotname, opts={})
       register_validation("format_of", slotname, opts, :invalid_format) do |opts|
         unless regexp = opts['with'].is_a?(Regexp)
@@ -268,12 +268,12 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "doesn't match confirmation")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.      
+    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
+    #   method or string should return or evaluate to a true or false value.
     def validates_confirmation_of(slotname, opts = {})
       register_validation("confirmation_of", slotname, opts, :not_confirmed)
 
@@ -298,12 +298,12 @@ module StrokeDB
     # * <tt>accept</tt> - Specifies value that is considered accepted.  The default value is a string "1", which
     #   makes it easy to relate to an HTML checkbox. This should be set to 'true' if you are validating a database
     #   column, since the attribute is typecast from "1" to <tt>true</tt> before validation.
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.      
+    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
+    #   method or string should return or evaluate to a true or false value.
     def validates_acceptance_of(slotname, opts = {})
       register_validation("acceptance_of", slotname, opts, :not_accepted) do |opts|
         allow_nil = opts['allow_nil'].nil? ? true : !!opts['allow_nil']
@@ -342,12 +342,12 @@ module StrokeDB
     # * <tt>wrong_length</tt> - The error message if using the :is method and the attribute is the wrong size (default is: "is the wrong length (should be %d characters)")
     # * <tt>message</tt> - The error message to use for a :minimum, :maximum, or :is violation.  An alias of the appropriate too_long/too_short/wrong_length message
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.      
+    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
+    #   method or string should return or evaluate to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
+    #   method or string should return or evaluate to a true or false value.
     RANGE_OPTIONS = %w(is within in minimum maximum).freeze unless defined? RANGE_OPTIONS
     RANGE_VALIDATIONS = {
       'is'      => [ :==, ERROR_MESSAGES[:wrong_length] ],

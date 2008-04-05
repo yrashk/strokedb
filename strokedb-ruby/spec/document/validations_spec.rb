@@ -114,23 +114,23 @@ describe "Validation helpers" do
   end
 
   it "should respect :if" do
-    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => proc { true } end
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => 'true' end
     bang { Foo.create! }
-    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => proc { false } end
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => 'false' end
     no_bang { Bar.create! }
   end
   
   it "should respect :unless" do
-    Foo = Meta.new do validates_presence_of :name, :on => :save, :unless => proc { false } end
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :unless => 'false' end
     bang { Foo.create! }
-    Bar = Meta.new do validates_presence_of :name, :on => :save, :unless => proc { true } end
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :unless => 'true' end
     no_bang { Bar.create! }
   end
   
   it "should respect both :if and :unless when given" do
-    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => proc { false }, :unless => proc { false } end
+    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => 'false', :unless => 'false' end
     no_bang { Foo.create! }
-    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => proc { true }, :unless => proc { false } end
+    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => 'true', :unless => 'false' end
     bang { Bar.create! }
   end
  
