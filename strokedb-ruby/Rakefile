@@ -1,5 +1,7 @@
 require 'rake'
 require 'rubygems'
+Gem::manage_gems
+require 'rake/gempackagetask'
 require 'spec/rake/spectask'
 
 require 'rake/rdoctask'
@@ -55,4 +57,33 @@ Rake::RDocTask.new do |rd|
    rd.main = "README"
    rd.rdoc_dir = "docs/html"
    rd.rdoc_files.include("README", "lib/**/*.rb")
+end
+
+gemspec = Gem::Specification.new do |s|
+    s.platform  =   Gem::Platform::RUBY
+    s.name      =   "strokedb"
+    s.version   =   "0.0.2"
+    s.author    =   "Yurii Rashkovskii, Oleg Andreev"
+    s.email     =   "yrashk@gmail.com"
+    s.summary   =   "an embeddable distributed document database written in Ruby"
+    s.description = <<-EOF
+        StrokeDB is an embeddable distributed document database written in Ruby.
+        It is schema-free, it scales infinitely, it even tracks revisions
+        and perfectly integrates with Ruby applications.
+      EOF
+    s.files     =   FileList['lib/**/*','strokedb.rb'].to_a
+    s.homepage  =   "http://strokedb.com"
+    s.has_rdoc      =   true
+    # TODO: add some dependencies here
+    # s.add_dependency DependenciesArray
+    s.require_path  =   "."
+    s.require_paths <<  'lib'
+end
+
+Rake::GemPackageTask.new(gemspec) do |pkg|
+    pkg.need_tar = true
+end
+
+task :gem => "pkg/#{gemspec.name}-#{gemspec.version}.gem" do
+    puts "latest version generated"
 end
