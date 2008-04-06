@@ -64,20 +64,23 @@ gemspec = Gem::Specification.new do |s|
     s.name      =   "strokedb"
     s.version   =   "0.0.2"
     s.author    =   "Yurii Rashkovskii, Oleg Andreev"
-    s.email     =   "yrashk@gmail.com"
+    s.email     =   "strokedb@googlegroups.com"
     s.summary   =   "an embeddable distributed document database written in Ruby"
     s.description = <<-EOF
         StrokeDB is an embeddable distributed document database written in Ruby.
         It is schema-free, it scales infinitely, it even tracks revisions
         and perfectly integrates with Ruby applications.
       EOF
-    s.files     =   FileList['lib/**/*','strokedb.rb'].to_a
+    s.files     =   FileList['bin/*','README','CONTRIBUTORS','CREDITS','script/*','lib/**/**','strokedb.rb'].to_a
     s.homepage  =   "http://strokedb.com"
     s.has_rdoc      =   true
-    # TODO: add some dependencies here
-    # s.add_dependency DependenciesArray
+    s.rubyforge_project = 'strokedb'
+    s.add_dependency 'diff-lcs', '>= 1.1.2'
+    s.add_dependency 'uuidtools', '>= 1.0.3'
+    s.add_dependency 'json', '>= 1.1.2'
     s.require_path  =   "."
     s.require_paths <<  'lib'
+    s.executables << 'sdbc'
 end
 
 Rake::GemPackageTask.new(gemspec) do |pkg|

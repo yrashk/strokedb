@@ -81,7 +81,7 @@ issues:
   component: General
   release: v0.0.2
   reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
-  status: :unstarted
+  status: :in_progress
   disposition: 
   creation_time: 2008-04-05 20:28:22.341093 +03:00
   references: []
@@ -91,6 +91,10 @@ issues:
   - - 2008-04-05 20:28:23.708580 +03:00
     - Yurii Rashkovskii <yrashk@issuesdone.com>
     - created
+    - ""
+  - - 2008-04-06 16:03:20.875189 +03:00
+    - Yurii Rashkovskii <yrashk@issuesdone.com>
+    - changed status from unstarted to in_progress
     - ""
 - !ditz.rubyforge.org,2008-03-06/issue 
   title: validates_associated doesn't play well with has_many association
