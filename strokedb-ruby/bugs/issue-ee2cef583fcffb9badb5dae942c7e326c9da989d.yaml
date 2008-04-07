@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: write an rdoc about how referenced document are loaded in head/non-head documents
+desc: |-
+  We have a bit complicated rules about how referenced document are loaded in head/non-head documents -- we need to document that and decide if there anything
+  we can improve. The same thing applies to referencing metas (we need to understand how exactly should it work) and to the certain extent to associations
+type: :feature
+component: General
+release: v0.0.2
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-07 20:05:49.049439 Z
+references: []
+
+id: ee2cef583fcffb9badb5dae942c7e326c9da989d
+log_events: 
+- - 2008-04-07 20:05:50.449550 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""
