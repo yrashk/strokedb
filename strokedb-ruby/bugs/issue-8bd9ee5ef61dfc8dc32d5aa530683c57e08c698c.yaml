@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Remove possibility to execute code in :if/:unless
+desc: |-
+  Only slotname (method name) could be specified in :if/:unless (and therefore there is no need in subkeys like :ruby).
+  The idea is that if you want to execute some code on if/unless, implement it as a slot or method.
+type: :bugfix
+component: Meta
+release: v0.0.2
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-07 21:11:21.132153 Z
+references: []
+
+id: 8bd9ee5ef61dfc8dc32d5aa530683c57e08c698c
+log_events: 
+- - 2008-04-07 21:11:22.611875 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""
