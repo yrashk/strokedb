@@ -18,3 +18,7 @@ log_events:
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - created
   - ""
+- - 2008-04-07 21:31:55.363903 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - commented
+  - Do the same for coercions
