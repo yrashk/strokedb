@@ -1,5 +1,4 @@
 require 'digest/sha2'
-require 'uuidtools'
 
 module StrokeDB
   module Util
@@ -24,12 +23,6 @@ module StrokeDB
       Digest::SHA256.hexdigest(str)
     end
 
-    def self.random_uuid
-      ::UUID.random_create.to_s
-    end
-    def self.random_uuid_raw
-      ::UUID.random_create.raw
-    end
 
     class CircularReferenceCondition < Exception ; end
     class << self
@@ -43,14 +36,4 @@ module StrokeDB
     end
   end
   
-  class ::String
-    # Convert to raw (16 bytes) string (self can be already raw or formatted).
-    def to_raw_uuid
-      size == 16 ? self.freeze : ::UUID.parse(self).raw
-    end
-    # Convert to formatted string (self can be raw or already formatted).
-    def to_formatted_uuid
-      size == 16 ? ::UUID.parse_raw(self).to_s : self.freeze
-    end
-  end
 end
