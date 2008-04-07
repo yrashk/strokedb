@@ -1,5 +1,3 @@
-require 'digest/sha2'
-
 module StrokeDB
   module Util
 
@@ -17,10 +15,6 @@ module StrokeDB
           self
         end
       end
-    end
-
-    def self.sha(str)
-      Digest::SHA256.hexdigest(str)
     end
 
     unless RUBY_PLATFORM =~ /java/
