@@ -7,8 +7,8 @@ type: :bugfix
 component: Meta
 release: v0.0.2
 reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2008-04-07 21:11:21.132153 Z
 references: []
 
@@ -22,3 +22,11 @@ log_events:
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - commented
   - Do the same for coercions
+- - 2008-04-08 14:16:38.009053 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2008-04-08 14:24:38.785564 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - closed issue with disposition fixed
+  - ""

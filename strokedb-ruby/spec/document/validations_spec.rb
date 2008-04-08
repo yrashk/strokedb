@@ -114,27 +114,6 @@ describe "Validation helpers" do
     s.errors.messages.should == [ "On save Meta Foo SlotName name" ]
   end
 
-  it "should respect :if" do
-    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => 'true' end
-    bang { Foo.create! }
-    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => 'false' end
-    no_bang { Bar.create! }
-  end
-  
-  it "should respect :unless" do
-    Foo = Meta.new do validates_presence_of :name, :on => :save, :unless => 'false' end
-    bang { Foo.create! }
-    Bar = Meta.new do validates_presence_of :name, :on => :save, :unless => 'true' end
-    no_bang { Bar.create! }
-  end
-  
-  it "should respect both :if and :unless when given" do
-    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => 'false', :unless => 'false' end
-    no_bang { Foo.create! }
-    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => 'true', :unless => 'false' end
-    bang { Bar.create! }
-  end
- 
   it "should allow to use document slot for :if and :unless evaluation" do
     Foo = Meta.new do validates_presence_of :name, :on => :save, :if => :slot end
     bang { Foo.create!(:slot => true) }
@@ -145,32 +124,23 @@ describe "Validation helpers" do
     bang { Bar.create!(:slot => false) }
   end
   
-  it "should allow to use a string for :if and :unless evaluation" do
-    Foo = Meta.new do 
-      validates_presence_of :name, :on => :save, :if => "!some_method"
-      def some_method; self.some_slot end
-    end
-    
-    no_bang { Foo.create!(:some_slot => true) }
-    bang { Foo.create!(:some_slot => false) }
-    
-    Bar = Meta.new do 
-      validates_presence_of :name, :on => :save, :unless => "!some_method"
-      def some_method; self.some_slot end
-    end
-    
-    bang { Bar.create!(:some_slot => true) }
-    no_bang { Bar.create!(:some_slot => false) }
-  end
-
   it "should raise an ArgumentError when given something not callable for :if and :unless" do
     lambda do
       Meta.new { validates_presence_of :name, :on => :save, :if => 123  }
     end.should raise_error(ArgumentError)
 
     lambda do
+      Meta.new { validates_presence_of :name, :on => :save, :if => lambda { }  }
+    end.should raise_error(ArgumentError)
+
+    lambda do
       Meta.new { validates_presence_of :name, :on => :save, :unless => 123  }
     end.should raise_error(ArgumentError)
+
+    lambda do
+      Meta.new { validates_presence_of :name, :on => :save, :unless => lambda { }  }
+    end.should raise_error(ArgumentError)
+
   end
 
   def bang
