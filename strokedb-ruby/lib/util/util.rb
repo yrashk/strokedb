@@ -1,6 +1,4 @@
-require 'digest/sha2'
 require 'uuidtools'
-
 module StrokeDB
   module Util
 
@@ -18,10 +16,6 @@ module StrokeDB
           self
         end
       end
-    end
-
-    def self.sha(str)
-      Digest::SHA256.hexdigest(str)
     end
 
     def self.random_uuid
