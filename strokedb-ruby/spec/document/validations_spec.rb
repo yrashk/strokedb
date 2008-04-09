@@ -249,15 +249,11 @@ describe "validates_uniqueness_of" do
 
     it "test 2" do
       Foo = Meta.new do
-        validates_uniqueness_of   :login
-        validates_confirmation_of :password, :on => :create
+        validates_uniqueness_of :login
+        virtualizes :blah
       end
 
-      foo = Foo.create!({ 
-        :login                  => "vasya",
-        :password               => "sekret",
-        :password_confirmation  => "sekret"
-      })
+      foo = Foo.create!(:login => "vasya")
 
       foo.somefield = 777
       foo.should be_valid
