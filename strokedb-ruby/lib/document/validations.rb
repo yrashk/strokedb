@@ -567,8 +567,7 @@ module StrokeDB
 
         !(found = meta.find(slotname.to_sym => doc[slotname])) || 
         (found.size == 0) || 
-        (found.first == doc) ||
-        (found.first.version == doc.previous_version)
+        (found.first.uuid == doc.uuid)
       end
       
       # using lambda here enables us to use return
