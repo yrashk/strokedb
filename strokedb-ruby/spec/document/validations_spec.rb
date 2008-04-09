@@ -227,23 +227,41 @@ describe "validates_uniqueness_of" do
     u2.should be_valid
   end
 
-  it "should allow to modify an existing document" do
-    u = User.create!(:email => "name@server.com", :status => :newbie)
-    u.status = :hacker
-    u.should be_valid
-    u.save!
-    u.status = :hax0r
-    u.should be_valid
-    u.save!
-    u.email = "hax0r@hax0r.com"
-    u.should be_valid
-    u.save!
-    u.email = "name@server.com"
-    u.status = :newbie_again
-    u.should be_valid
-    u.save!
-    u.email = "hax0r@hax0r.com"
-    u.should be_valid
+  describe "should allow to modify an existing document" do
+    it "test 1" do
+      u = User.create!(:email => "name@server.com", :status => :newbie)
+      u.status = :hacker
+      u.should be_valid
+      u.save!
+      u.status = :hax0r
+      u.should be_valid
+      u.save!
+      u.email = "hax0r@hax0r.com"
+      u.should be_valid
+      u.save!
+      u.email = "name@server.com"
+      u.status = :newbie_again
+      u.should be_valid
+      u.save!
+      u.email = "hax0r@hax0r.com"
+      u.should be_valid
+    end
+
+    it "test 2" do
+      Foo = Meta.new do
+        validates_uniqueness_of   :login
+        validates_confirmation_of :password, :on => :create
+      end
+
+      foo = Foo.create!({ 
+        :login                  => "vasya",
+        :password               => "sekret",
+        :password_confirmation  => "sekret"
+      })
+
+      foo.somefield = 777
+      foo.should be_valid
+    end
   end
 
   it "should respect :allow_nil set to false" do
