@@ -483,6 +483,15 @@ module StrokeDB
           @errors.values.inject(0) { |error_count, slot| error_count + slot.size }
         end
 
+        # Yields each attribute and associated message per error added
+        def each
+          @errors.each_key do |slot|
+            @errors[slot].each do |msg|
+              yield [ msg ]
+            end
+          end
+        end
+
         alias_method :count, :size
         alias_method :length, :size
       end
@@ -612,7 +621,7 @@ module StrokeDB
       install_validations_for(:validates_length_of) do |doc, validation, slotname|
         value = doc[slotname]
         size = case value
-               when NilClass then 0
+               when nil then 0
                when String then value.split(//).size
                else 
                  value.size

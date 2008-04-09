@@ -115,16 +115,50 @@ module StrokeDB
     def create!(*args,&block)
       new(*args,&block).save!
     end
-
+  
+    #
+    # Finds all documents matching given parameters. The simplest form of
+    # +find+ call is without any parameters. This returns all documents
+    # belonging to the meta in an array.
+    #
+    #   User = Meta.new
+    #   all_users = User.find
+    # 
+    # Another form is to find a document by its UUID:
+    #
+    #   specific_user = User.find("1e3d02cc-0769-4bd8-9113-e033b246b013")
+    #
+    # If the UUID is not found, nil is returned.
+    #
+    # Most prominent search allows to specify attribute values:
+    #
+    #   short_fat_joe = User.find(:name => "joe", :weight => 110, :height => 167)
+    # 
+    # All matching documents are returned in an array
+    #
     def find(*args)
-      args = args.unshift(StrokeDB.default_store) if args.empty? || args.first.is_a?(Hash) || args.first.is_a?(String)
-      return find(args.first,{:uuid => args[1]}).first if args[1].is_a?(String) && args[1].match(/#{UUID_RE}/)
-      args << {} unless args.last.is_a?(Hash)
+      if args.empty? || args.first.is_a?(Hash) || args.first.is_a?(String) 
+        raise NoDefaultStoreError unless StrokeDB.default_store
+        
+        args = args.unshift(StrokeDB.default_store) 
+      end
+      
       store = args.first
-      raise NoDefaultStoreError.new unless StrokeDB.default_store
-      store.search(args.last.merge(:meta => @metas.map {|m| m.document(store)}))
+      opt = { :meta => @metas.map {|m| m.document(store)} }
+
+      if args[1].is_a?(String) && args[1].match(/#{UUID_RE}/)
+        store.search(opt.merge({ :uuid => args[1] })).first
+      else
+        store.search(opt.merge(args.last.is_a?(Hash) ? args.last : {}))
+      end
     end
 
+    #
+    # Similar to +find+, but a creates document with appropriate slot values if
+    # not found.
+    #
+    # If found, returned is only the first result.
+    #
     def find_or_create(*args)
       result = find(*args)
       result.empty? ? create!(*args) : result.first
@@ -137,8 +171,8 @@ module StrokeDB
         pretty_print
       end
     end
-    alias :to_s :inspect
 
+    alias :to_s :inspect
 
     def document(store=nil)
       metadocs = @metas.map do |m|
