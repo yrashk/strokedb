@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Spec RemoteStore::DRb
+desc: ""
+type: :bugfix
+component: Storage
+release: v0.0.2
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-05 17:12:31.946334 Z
+references: []
+
+id: e5131f94770d4004179b4512c30ec1a945ec4132
+log_events: 
+- - 2008-04-05 17:12:38.306511 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""

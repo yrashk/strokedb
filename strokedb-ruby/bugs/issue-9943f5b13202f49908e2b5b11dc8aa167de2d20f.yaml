@@ -1,0 +1,24 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: validates_associated doesn't play well with has_many association
+desc: |-
+  You can't add an invalid document as an associate.
+  Also if serialized associate is valid, but in-memory document isn't valid, valid? returns true.
+type: :bugfix
+component: Meta
+release: v0.0.2
+reporter: oleg dashevskii <be9@be9.ru>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-05 17:25:33.316375 Z
+references: []
+
+id: 9943f5b13202f49908e2b5b11dc8aa167de2d20f
+log_events: 
+- - 2008-04-05 17:25:41.467544 Z
+  - oleg dashevskii <be9@be9.ru>
+  - created
+  - ""
+- - 2008-04-05 17:33:13.116133 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - assigned to release v0.0.2 from unassigned
+  - ""
