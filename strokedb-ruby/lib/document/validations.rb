@@ -131,7 +131,7 @@ module StrokeDB
     
     # Validates that the value of the specified slot is not in a particular enumerable object.
     #
-    #   class Person < ActiveRecord::Base
+    #   Person = Meta.new do
     #     validates_exclusion_of :username, :in => %w( admin superuser ), :message => "You don't belong here"
     #     validates_exclusion_of :age, :in => 30..60, :message => "This site is only for under 30 and over 60"
     #     validates_exclusion_of :format, :in => %w( mov avi ), :message => 'extension #{slotvalue} is not allowed'
@@ -246,7 +246,7 @@ module StrokeDB
     # address field with a confirmation. Example:
     #
     #   Model:
-    #     Person = Meta.new
+    #     Person = Meta.new do
     #       validates_confirmation_of :password
     #       validates_confirmation_of :email_address, :message => "should match confirmation"
     #     end
@@ -282,7 +282,7 @@ module StrokeDB
     # Encapsulates the pattern of wanting to validate the acceptance of a terms
     # of service check box (or similar agreement). Example:
     #
-    #   Person = Meta.new
+    #   Person = Meta.new do
     #     validates_acceptance_of :terms_of_service
     #     validates_acceptance_of :eula, :message => "must be abided"
     #   end
@@ -401,7 +401,7 @@ module StrokeDB
     # Validates whether the associated object or objects are all valid
     # themselves. Works with any kind of association.
     #
-    #   Book = Meta.new
+    #   Book = Meta.new do
     #     has_many :pages
     #
     #     validates_associated :pages, :library
@@ -409,7 +409,7 @@ module StrokeDB
     #
     # Warning: If, after the above definition, you then wrote:
     #
-    #   Page = Meta.new
+    #   Page = Meta.new do
     #     belongs_to :book
     #
     #     validates_associated :book
