@@ -1,8 +1,14 @@
 module StrokeDB
   VERSION = '0.0.2' + (RUBY_PLATFORM =~ /java/ ? '-java' : '')
+
+  # UUID regexp (like 1e3d02cc-0769-4bd8-9113-e033b246b013)
   UUID_RE = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
+
+  # document version regexp
   VERSION_RE = UUID_RE
-  NIL_UUID = "00000000-0000-0000-0000-000000000000" # so called Nil UUID, should be used as special UUID for Meta meta
+
+  # so called Nil UUID, should be used as special UUID for Meta meta
+  NIL_UUID = "00000000-0000-0000-0000-000000000000" 
   
   class <<self
     def default_store
@@ -25,5 +31,4 @@ module StrokeDB
   end
   
   class NoDefaultStoreError < Exception ; end
-  
 end

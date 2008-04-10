@@ -1,4 +1,9 @@
 module StrokeDB
+  # Slots which contain references to another documents are matched
+  # with these regexps.
+  DOCREF = /^@##{UUID_RE}$/
+  VERSIONREF = /^@##{UUID_RE}\.#{VERSION_RE}$/
+
   # Raised on unexisting document access.
   #
   # Example:
@@ -302,7 +307,7 @@ module StrokeDB
       raise NoDefaultStoreError.new unless store
       query = args.first
       case query
-      when /#{UUID_RE}/
+      when UUID_RE
         store.find(query)
       when Hash
         store.search(query)
@@ -565,9 +570,9 @@ module StrokeDB
     def self.collect_meta_modules(store,meta) #:nodoc:
       meta_names = []
       case meta
-      when /@##{UUID_RE}.#{VERSION_RE}/
+      when VERSIONREF
         if m = store.find($1,$2); meta_names << m[:name]; end
-      when /@##{UUID_RE}/
+      when DOCREF
         if m = store.find($1);    meta_names << m[:name]; end
       when Array
         meta_names = meta.map {|m| collect_meta_modules(store,m) }.flatten
