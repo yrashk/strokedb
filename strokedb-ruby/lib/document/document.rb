@@ -488,10 +488,11 @@ module StrokeDB
 
     def ==(doc) #:nodoc:
       case doc
-      when Document
-        doc.to_raw == to_raw
-      when DocumentReferenceValue
-        doc.load.to_raw == to_raw
+      when Document, DocumentReferenceValue
+        doc = doc.load if doc.kind_of? DocumentReferenceValue
+        
+        # we make a quick UUID check here to skip two heavy to_raw calls
+        doc.uuid == uuid && doc.to_raw == to_raw
       else
         false
       end
