@@ -20,11 +20,11 @@ module StrokeDB
   #
   # when model collection item is fetched, reference followed and turned into document
   # instance with mapping proc of lazy mapping array.
-  class LazyMappingArray < BlankSlate
+  class LazyMappingArray < BlankSlate(Array)
     def initialize(*args)
       @map_proc = proc {|v| v}
       @unmap_proc = proc {|v| v}
-      @array = Array.new(*args)
+      super(*args)
     end
 
     def map_with(&block)
@@ -36,27 +36,27 @@ module StrokeDB
       @unmap_proc = block
       self
     end
-    
+
     def class
       Array
     end
-    
-    def to_ary
-      @array
-    end
-    alias :to_a :to_ary
 
     def method_missing sym, *args, &blk
+      mname = "__#{::BlankSlate::MethodMapping[sym.to_s] || sym}"
+
       case sym
       when :push, :unshift, :<<, :[]=, :index, :-
         last = args.pop
         last = last.is_a?(Array) ? last.map{|v| @unmap_proc.call(v) } : @unmap_proc.call(last)
         args.push last
 
-        @array.__send__(sym, *args, &blk)
+        __send__(mname, *args, &blk)
+
+      when :[], :slice, :at, :map, :shift, :pop, :include?, :last, :first, :zip, :each, :inject, :each_with_index
+        __map{|v| @map_proc.call(v) }.__send__(sym, *args, &blk)
 
       else
-        @array.map{|v| @map_proc.call(v) }.__send__(sym, *args, &blk)
+        __send__(mname, *args, &blk)
       end
     end
   end
