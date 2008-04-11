@@ -36,7 +36,7 @@ module StrokeDB
     def sync_chained_storage!(storage)
       return unless @chained_storages.is_a?(Hash)
       (@chained_storages[storage]||[]).each do |saving|
-        storage.save!(saving,self)
+        storage.save!(saving, self)
       end
       @chained_storages[storage] = []
     end
@@ -45,9 +45,9 @@ module StrokeDB
       perform_save!(chunk)
     end
 
-    def save_with_chained_storages!(chunk,source=nil)
+    def save_with_chained_storages!(chunk, source=nil)
       perform_save!(chunk)
-      (@chained_storages||{}).each_pair do |storage,savings|
+      (@chained_storages||{}).each_pair do |storage, savings|
           savings << chunk unless  storage == source || savings.include?(chunk) # TODO: here we had a bug (storage == document), spec it
       end
     end

@@ -35,7 +35,7 @@ module StrokeDB
       config = new(opts['default'])
       storages = opts['storages'] || [:memory_chunk, :file_chunk]
 
-      base_path = opts['base_path'] ||'./'
+      base_path = opts['base_path'] || './'
 
       add_storage = lambda do |name| 
         config.add_storage(name, name, :path => File.join(base_path, name.to_s))
