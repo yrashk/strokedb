@@ -22,7 +22,7 @@ module StrokeDB
   module Meta
 
     class << self
-      def new(*args,&block)
+      def new(*args, &block)
         mod = Module.new
         args = args.unshift(nil) if args.empty? || args.first.is_a?(Hash)
         args << {} unless args.last.is_a?(Hash)
@@ -45,7 +45,7 @@ module StrokeDB
           initialize_virtualizations
         end
         if meta_name = extract_meta_name(*args)
-          Object.const_set(meta_name,mod)
+          Object.const_set(meta_name, mod)
         end
         mod
       end
@@ -53,7 +53,7 @@ module StrokeDB
       def document(store=nil)
         raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
         unless meta_doc = store.find(NIL_UUID)
-          meta_doc = Document.create!(store,:name => Meta.name, :uuid => NIL_UUID)
+          meta_doc = Document.create!(store, :name => Meta.name, :uuid => NIL_UUID)
         end
         meta_doc
       end
@@ -74,20 +74,20 @@ module StrokeDB
       if is_a?(Module) && meta.is_a?(Module)
         new_meta = Module.new
         instance_variables.each do |iv|
-          new_meta.instance_variable_set(iv,instance_variable_get(iv) ? instance_variable_get(iv).clone : nil)
+          new_meta.instance_variable_set(iv, instance_variable_get(iv) ? instance_variable_get(iv).clone : nil)
         end
-        new_meta.instance_variable_set(:@metas,@metas.clone)
+        new_meta.instance_variable_set(:@metas, @metas.clone)
         new_meta.instance_variable_get(:@metas) << meta
         new_meta.module_eval do
           extend Meta
         end
         new_meta_name = new_meta.instance_variable_get(:@metas).map{|m| m.name}.join('__')
-        Object.send(:remove_const,new_meta_name) rescue nil
+        Object.send(:remove_const, new_meta_name) rescue nil
         Object.const_set(new_meta_name, new_meta)
         new_meta
       elsif is_a?(Document) && meta.is_a?(Document)
-        (Document.new(store,self.to_raw.except('uuid','version','previous_version'),true) +
-        Document.new(store,meta.to_raw.except('uuid','version','previous_version'),true)).extend(Meta).make_immutable!
+        (Document.new(store, self.to_raw.except('uuid','version','previous_version'), true) +
+        Document.new(store, meta.to_raw.except('uuid','version','previous_version'), true)).extend(Meta).make_immutable!
       else
         raise "Can't + #{self.class} and #{meta.class}"
       end
@@ -98,22 +98,22 @@ module StrokeDB
 
     CALLBACKS.each do |callback_name|
       module_eval %{
-        def #{callback_name}(uid=nil,&block)
-          add_callback('#{callback_name}',uid,&block)
+        def #{callback_name}(uid=nil, &block)
+          add_callback('#{callback_name}', uid, &block)
         end
       }
     end
 
-    def new(*args,&block)
+    def new(*args, &block)
       args = args.clone
       args << {} unless args.last.is_a?(Hash)
       args.last[:meta] = @metas
-      doc = Document.new(*args,&block)
+      doc = Document.new(*args, &block)
       doc
     end
 
-    def create!(*args,&block)
-      new(*args,&block).save!
+    def create!(*args, &block)
+      new(*args, &block).save!
     end
  
     #
@@ -197,7 +197,7 @@ module StrokeDB
         @args = m.instance_variable_get(:@args)
         make_document(store)
       end
-      metadocs.size > 1 ? metadocs.inject { |a,b| a + b}.make_immutable! : metadocs.first
+      metadocs.size > 1 ? metadocs.inject { |a, b| a + b }.make_immutable! : metadocs.first
     end
     
     private
@@ -214,7 +214,7 @@ module StrokeDB
         values[:version] = meta_doc.version
         values[:uuid] = meta_doc.uuid
         args = [store, values]
-        meta_doc = updated_meta_doc(args) if changed?(meta_doc,args)
+        meta_doc = updated_meta_doc(args) if changed?(meta_doc, args)
       else
         args = [store, values]
         meta_doc = Document.new(*args)
@@ -232,20 +232,20 @@ module StrokeDB
       end
     end
 
-    def changed?(meta_doc,args)
+    def changed?(meta_doc, args)
       !(Document.new(*args).to_raw.except('previous_version') == meta_doc.to_raw.except('previous_version'))
     end
     
     def updated_meta_doc(args)
       new_doc = Document.new(*args)
-      new_doc.instance_variable_set(:@saved,true)
-      new_doc.send!(:update_version!,nil)
+      new_doc.instance_variable_set(:@saved, true)
+      new_doc.send!(:update_version!, nil)
       new_doc.save!
     end
 
-    def add_callback(name,uid=nil,&block)
+    def add_callback(name,uid=nil, &block)
       @callbacks ||= []
-      @callbacks << Callback.new(self,name,uid,&block)
+      @callbacks << Callback.new(self, name, uid, &block)
     end
 
     def setup_callbacks(doc)

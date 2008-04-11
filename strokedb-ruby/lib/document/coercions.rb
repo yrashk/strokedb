@@ -8,7 +8,7 @@ module StrokeDB
       check_condition(opts['unless']) if opts['unless']
       
       slotnames = [slotnames] unless slotnames.is_a?(Array)
-      slotnames.each {|slotname| register_coercion(slotname,opts)}
+      slotnames.each {|slotname| register_coercion(slotname, opts)}
     end
 
     private
@@ -42,7 +42,7 @@ module StrokeDB
         :slotname => slotname, 
         :if => opts['if'],  
         :unless => opts['unless'],
-        :to => to,
+        :to => to
       }
 
       # options_hash.merge!(yield(opts)) if block_given?

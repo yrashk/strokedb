@@ -16,9 +16,9 @@ module StrokeDB
   end
   
   class Store
-    def sync!(docs,_timestamp=nil)
+    def sync!(docs, _timestamp=nil)
       _timestamp_counter = timestamp.counter
-      report = SynchronizationReport.new(self,:store_document => document, :timestamp => _timestamp_counter)
+      report = SynchronizationReport.new(self, :store_document => document, :timestamp => _timestamp_counter)
       existing_chain = {}
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         doc = find(uuid)
@@ -26,21 +26,21 @@ module StrokeDB
       end
       case _timestamp
       when Numeric
-        @timestamp = LTS.new(_timestamp,timestamp.uuid) 
+        @timestamp = LTS.new(_timestamp, timestamp.uuid) 
       when LamportTimestamp
-        @timestamp = LTS.new(_timestamp.counter,timestamp.uuid)
+        @timestamp = LTS.new(_timestamp.counter, timestamp.uuid)
       else
       end
-      docs.each {|doc| save!(doc) unless exists?(doc.uuid,doc.version)}
+      docs.each {|doc| save!(doc) unless exists?(doc.uuid, doc.version)}
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
-        incoming_chain = find(uuid,versions.last.version).versions.all_versions
+        incoming_chain = find(uuid, versions.last.version).versions.all_versions
         if existing_chain[uuid].nil? or existing_chain[uuid].empty? # It is a new document
-          added_doc = find(uuid,versions.last.version)
+          added_doc = find(uuid, versions.last.version)
           save_as_head!(added_doc)
           report.added_documents << added_doc
         else
           begin
-            sync = sync_chains(incoming_chain.reverse,existing_chain[uuid].reverse)
+            sync = sync_chains(incoming_chain.reverse, existing_chain[uuid].reverse)
           rescue NonMatchingChains
             # raise NonMatchingDocumentCondition.new(uuid) # that will definitely leave garbage in the store (FIXME?)
             non_matching_doc = find(uuid)
@@ -52,9 +52,9 @@ module StrokeDB
           when :up_to_date
             # nothing to do
           when :merge
-            report.conflicts << SynchronizationConflict.create!(self,:document => find(uuid), :rev1 => sync[1], :rev2 => sync[2])
+            report.conflicts << SynchronizationConflict.create!(self, :document => find(uuid), :rev1 => sync[1], :rev2 => sync[2])
           when :fast_forward
-            fast_forwarded_doc = find(uuid,sync[1].last)
+            fast_forwarded_doc = find(uuid, sync[1].last)
             save_as_head!(fast_forwarded_doc)
             report.fast_forwarded_documents << fast_forwarded_doc
           else

@@ -11,7 +11,7 @@ module StrokeDB
       unless result = read(chunk_path(uuid)) 
         if authoritative_source
           result = authoritative_source.find(uuid) 
-          save!(result,authoritative_source) if result
+          save!(result, authoritative_source) if result
         end
       end
       result
