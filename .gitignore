@@ -5,4 +5,5 @@ strokedb-ruby/docs/html
 strokedb-ruby/TAGS
 *.swp
 strokedb-ruby/.*.strokedb
+strokedb-ruby/examples/.*.strokedb
 strokedb-ruby/pkg

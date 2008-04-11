@@ -16,6 +16,21 @@ module Enumerable
     each_with_index {|item, index| collected << yield(item, index) }
     collected
   end
+
   alias :collect_with_index :map_with_index
 
+  def each_consecutive_pair
+    first = true
+    prev = nil
+
+    each do |val|
+      unless first
+        yield prev, val
+      else
+        first = false
+      end
+
+      prev = val
+    end
+  end
 end

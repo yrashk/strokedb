@@ -115,11 +115,11 @@ module StrokeDB
     def create!(*args,&block)
       new(*args,&block).save!
     end
-  
+ 
     #
     # Finds all documents matching given parameters. The simplest form of
     # +find+ call is without any parameters. This returns all documents
-    # belonging to the meta in an array.
+    # belonging to the meta as an array.
     #
     #   User = Meta.new
     #   all_users = User.find
@@ -130,26 +130,44 @@ module StrokeDB
     #
     # If the UUID is not found, nil is returned.
     #
-    # Most prominent search allows to specify attribute values:
+    # Most prominent search uses slot values as criteria:
     #
-    #   short_fat_joe = User.find(:name => "joe", :weight => 110, :height => 167)
+    #   short_fat_joes = User.find(:name => "joe", :weight => 110, :height => 167)
     # 
-    # All matching documents are returned in an array
+    # All matching documents are returned as an array.
+    #
+    # In all described cases the default store is used. You may also specify
+    # another store as the first argument:
+    #
+    #   all_my_users = User.find(my_store)
+    #   all_my_joes  = User.find(my_store, :name => "joe")
+    #   oh_my        = User.find(my_store, "1e3d02cc-0769-4bd8-9113-e033b246b013")
     #
     def find(*args)
-      if args.empty? || args.first.is_a?(Hash) || args.first.is_a?(String) 
+      if args.empty? || !args.first.respond_to?(:search)
         raise NoDefaultStoreError unless StrokeDB.default_store
         
         args = args.unshift(StrokeDB.default_store) 
       end
-      
-      store = args.first
+
+      unless args.size == 1 || args.size == 2
+        raise ArgumentError, "Invalid arguments for find"
+      end
+
+      store = args[0]
       opt = { :meta => @metas.map {|m| m.document(store)} }
 
-      if args[1].is_a?(String) && args[1].match(/#{UUID_RE}/)
+      case args[1]
+      when String
+        raise ArgumentError, "Invalid UUID" unless args[1].match(UUID_RE)
+
         store.search(opt.merge({ :uuid => args[1] })).first
+      when Hash
+        store.search opt.merge(args[1])
+      when nil
+        store.search opt
       else
-        store.search(opt.merge(args.last.is_a?(Hash) ? args.last : {}))
+        raise ArgumentError, "Invalid search criteria for find"
       end
     end
 

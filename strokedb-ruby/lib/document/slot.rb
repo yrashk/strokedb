@@ -55,7 +55,7 @@ module StrokeDB
     end
     def load
       case self
-      when /@##{UUID_RE}.#{VERSION_RE}/
+      when VERSIONREF
         if doc.head?
           @cached_value || @cached_value = doc.store.find($1) || self
         else
@@ -151,7 +151,7 @@ module StrokeDB
 
     def decode_value(v)
       case v
-      when /^@##{UUID_RE}.#{VERSION_RE}$/
+      when VERSIONREF
         DocumentReferenceValue.new(v,doc)
       when /^@!Dump:/
         StrokeDB::deserialize(v[7,v.length-7])
