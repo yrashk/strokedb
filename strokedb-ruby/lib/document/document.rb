@@ -17,6 +17,10 @@ module StrokeDB
     def initialize(slotname)
       @slotname = slotname
     end
+
+    def inspect
+      "#<StrokeDB::SlotNotFoundError: #{slotname}>"
+    end
     
     def message
       "SlotNotFoundError: Can't find slot #{@slotname}"
