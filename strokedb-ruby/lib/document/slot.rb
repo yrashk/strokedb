@@ -48,7 +48,7 @@ module StrokeDB
   class DocumentReferenceValue < String
     attr_reader :str
     attr_accessor :doc
-    def initialize(str,doc,__cached_value = nil)
+    def initialize(str, doc, __cached_value = nil)
       @str, @doc = str, doc
       @cached_value = __cached_value
       super(str)
@@ -91,8 +91,8 @@ module StrokeDB
     end
 
     def value=(v)
-      v = doc.send!(:execute_callbacks,:on_set_slot, name, v)||v unless name == 'meta'
-      @value = decode_value(enforce_collections(encode_value(v,true),true))
+      v = doc.send!(:execute_callbacks, :on_set_slot, name, v) || v unless name == 'meta'
+      @value = decode_value(enforce_collections(encode_value(v, true), true))
     end
 
     def value
@@ -116,10 +116,10 @@ module StrokeDB
       enforce_collections(result)
     end
 
-    def encode_value(v,skip_documents=false)
+    def encode_value(v, skip_documents=false)
       case v
       when Document
-        skip_documents ? v : DocumentReferenceValue.new(v.__reference__,doc,v) 
+        skip_documents ? v : DocumentReferenceValue.new(v.__reference__, doc, v) 
       when Module
         if v.respond_to?(:document)
           v.document(doc.store) 
@@ -128,13 +128,13 @@ module StrokeDB
         end
       when Array
         LazyMappingArray.new(v).map_with do |element| 
-          encode_value(element,skip_documents)
+          encode_value(element, skip_documents)
         end.unmap_with do |element|
           decode_value(element)
         end
       when Hash
         LazyMappingHash.new(v).map_with do |element| 
-          encode_value(element,skip_documents)
+          encode_value(element, skip_documents)
         end.unmap_with do |element|
           decode_value(element)
         end
@@ -152,9 +152,9 @@ module StrokeDB
     def decode_value(v)
       case v
       when VERSIONREF
-        DocumentReferenceValue.new(v,doc)
+        DocumentReferenceValue.new(v, doc)
       when /^@!Dump:/
-        StrokeDB::deserialize(v[7,v.length-7])
+        StrokeDB::deserialize(v[7, v.length-7])
       when Array
         ArraySlotValue.new(v).map_with do |element| 
           decoded = decode_value(element)
@@ -162,7 +162,7 @@ module StrokeDB
         end.unmap_with do |element|
           encode_value(element)
         end.with_modification_callback do
-          doc.send!(:update_version!,nil)
+          doc.send!(:update_version!, nil)
         end
       when Hash
         HashSlotValue.new(v).map_with do |element|
@@ -171,7 +171,7 @@ module StrokeDB
         end.unmap_with do |element|
           encode_value(element)
         end.with_modification_callback do
-          doc.send!(:update_version!,nil)
+          doc.send!(:update_version!, nil)
         end
       when Symbol
         v.to_s
@@ -180,15 +180,15 @@ module StrokeDB
       end
     end
 
-    def enforce_collections(v,skip_documents = false)
+    def enforce_collections(v, skip_documents = false)
       return v unless v.is_a?(Array) || v.is_a?(Hash)
       case v
       when Array
-        v.map{|v| enforce_collections(encode_value(v,skip_documents))}
+        v.map{|v| enforce_collections(encode_value(v, skip_documents))}
       when Hash
         h = {}
-        v.each_pair do |k,v|
-          h[enforce_collections(encode_value(k,skip_documents))] = enforce_collections(encode_value(v,skip_documents))
+        v.each_pair do |k, v|
+          h[enforce_collections(encode_value(k, skip_documents))] = enforce_collections(encode_value(v, skip_documents))
         end
         h
       end

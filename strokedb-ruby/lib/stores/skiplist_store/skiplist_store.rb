@@ -25,7 +25,7 @@ module StrokeDB
 
       if raw_doc
         return raw_doc if opts[:no_instantiation]
-        doc = Document.from_raw(self,raw_doc.freeze)
+        doc = Document.from_raw(self, raw_doc.freeze)
         doc.extend(VersionedDocument) if version
         return doc
       end
@@ -37,12 +37,12 @@ module StrokeDB
       @index_store.find(*args)
     end
 
-    def exists?(uuid,version=nil)
-      !!find(uuid,version,:no_instantiation => true)
+    def exists?(uuid, version=nil)
+      !!find(uuid, version, :no_instantiation => true)
     end
 
     def head_version(uuid)
-      raw_doc = find(uuid,nil,:no_instantiation => true)
+      raw_doc = find(uuid, nil, :no_instantiation => true)
       return raw_doc['version'] if raw_doc
       nil
     end
@@ -54,13 +54,13 @@ module StrokeDB
       insert_with_cut(doc.uuid, doc, master_chunk) unless doc.is_a?(VersionedDocument)
       insert_with_cut("#{doc.uuid}.#{doc.version}", doc, master_chunk)
 
-      update_master_chunk!(doc,master_chunk)
+      update_master_chunk!(doc, master_chunk)
     end  
     
     def save_as_head!(doc)
       master_chunk = find_or_create_master_chunk
       insert_with_cut(doc.uuid, doc, master_chunk)
-      update_master_chunk!(doc,master_chunk)
+      update_master_chunk!(doc, master_chunk)
     end
     
 
@@ -155,7 +155,7 @@ module StrokeDB
       unless chunk_uuid && chunk = @chunk_storage.find(chunk_uuid)
         chunk = Chunk.new(@cut_level)
       end
-      a, b = chunk.insert(uuid, doc.to_raw,nil,timestamp.counter)
+      a, b = chunk.insert(uuid, doc.to_raw, nil, timestamp.counter)
       [a,b].compact.each do |chunk|
         chunk.store_uuid = self.uuid
         chunk.timestamp = timestamp.counter
@@ -195,14 +195,14 @@ module StrokeDB
     end
     
     
-    def update_master_chunk!(doc,master_chunk)
+    def update_master_chunk!(doc, master_chunk)
       @chunk_storage.save!(master_chunk)
 
       # Update index
       if @index_store
         if doc.previous_version
-          raw_pdoc = find(doc.uuid,doc.previous_version,:no_instantiation => true)
-          pdoc = Document.from_raw(self,raw_pdoc.freeze,:skip_callbacks => true)
+          raw_pdoc = find(doc.uuid, doc.previous_version, :no_instantiation => true)
+          pdoc = Document.from_raw(self, raw_pdoc.freeze, :skip_callbacks => true)
           pdoc.extend(VersionedDocument)
           @index_store.delete(pdoc)
         end
