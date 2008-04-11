@@ -17,13 +17,13 @@ module StrokeDB
     def initialize(slotname)
       @slotname = slotname
     end
-
-    def inspect
-      "#<#{self.class.name}: #{message}>"
-    end
     
     def message
       "Can't find slot #{@slotname}"
+    end
+    
+    def inspect
+      "#<#{self.class.name}: #{message}>"
     end
   end
   
@@ -40,6 +40,10 @@ module StrokeDB
 
     def message
       "Validation failed: #{@document.errors.messages.join(", ")}"
+    end
+    
+    def inspect
+      "#<#{self.class.name}: #{message}>"
     end
   end
 
