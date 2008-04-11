@@ -19,11 +19,11 @@ module StrokeDB
     end
 
     def inspect
-      "#<StrokeDB::SlotNotFoundError: #{slotname}>"
+      "#<#{self.class.name}: #{message}>"
     end
     
     def message
-      "SlotNotFoundError: Can't find slot #{@slotname}"
+      "Can't find slot #{@slotname}"
     end
   end
   
