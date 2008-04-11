@@ -14,10 +14,7 @@ describe "LazyMappingArray instance" do
   end
 end
 
-
-
 describe "LazyMappingArray instance with block specified" do
-
   before(:each) do
     @original = [1,2,3,[1],[2]]
     @mapper = proc {|arg| arg.to_s }
@@ -28,6 +25,12 @@ describe "LazyMappingArray instance with block specified" do
   it "should call unmapping proc on #[index]=" do
     @array[0]="10"
     Array.new(@array).first.should == 10
+  end
+
+  it "should work with #[index]=(array)" do
+    @array[1,0] = %w[ 1 2 3 ]
+    @original[1,0] = [1,2,3]
+    @array.to_a.should == @original
   end
 
   it "should call mapping proc on #[index]" do

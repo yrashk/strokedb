@@ -26,6 +26,7 @@ module StrokeDB
       self
     end
 
+    # Make it look like array for outer world
     def class
       Array
     end
