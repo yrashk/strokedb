@@ -1,6 +1,6 @@
 module StrokeDB
 
-  SynchronizationReport = Meta.new(:uuid => "8dbaf160-addd-401a-9c29-06b03f70df93") do
+  SynchronizationReport = Meta.new(:uuid => SYNCHRONIZATION_REPORT_UUID) do
     on_new_document do |report|
       report.conflicts = []
       report.added_documents = []
@@ -9,7 +9,7 @@ module StrokeDB
     end
   end
   
-  SynchronizationConflict = Meta.new(:uuid => "36fce59c-ee3d-4566-969b-7b152814a314") do
+  SynchronizationConflict = Meta.new(:uuid => SYNCHRONIZATION_CONFLICT_UUID) do
     def resolve!
       # by default, do nothing
     end
