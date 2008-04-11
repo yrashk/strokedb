@@ -1,7 +1,6 @@
 module StrokeDB
   module Meta
     module Util
-
       def grep_slots(doc, prefix)
         doc.meta.slotnames.each do |slotname|
           if slotname[0..(prefix.length - 1)] == prefix
@@ -23,7 +22,6 @@ module StrokeDB
         when String then doc.send(condition)
         end
       end
-
     end
   end
 end
