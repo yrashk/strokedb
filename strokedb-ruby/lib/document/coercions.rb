@@ -42,7 +42,7 @@ module StrokeDB
         :slotname => slotname, 
         :if => opts['if'],  
         :unless => opts['unless'],
-        :to => to,
+        :to => to
       }
 
       # options_hash.merge!(yield(opts)) if block_given?
