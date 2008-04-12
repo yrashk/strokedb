@@ -9,7 +9,7 @@ end
 class BlankSlate
   MethodMapping = {
     '[]' => 'squarebracket',
-    '[]=' => 'squarebracket=',
+    '[]=' => 'squarebracket_set',
     '<<' => 'leftarrow',
     '*' => 'star',
     '+' => 'plus',

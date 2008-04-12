@@ -42,6 +42,7 @@ module StrokeDB
     end
 
     def method_missing sym, *args, &blk
+      super if sym.to_s =~ /^__/
       mname = "__#{::BlankSlate::MethodMapping[sym.to_s] || sym}"
 
       case sym
