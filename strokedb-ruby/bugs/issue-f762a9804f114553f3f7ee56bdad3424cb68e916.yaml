@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Make FileStorage thread-safe
+desc: |-
+  FileStorage can become thread-safe if will create a separate archive for each thread.
+  For uindex, it still should be a mutex, I suppose (unfortunately). Though I am not completely sure yet
+type: :feature
+component: Storage
+release: 
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-12 02:30:12.928695 Z
+references: []
+
+id: f762a9804f114553f3f7ee56bdad3424cb68e916
+log_events: 
+- - 2008-04-12 02:30:14.584457 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""
