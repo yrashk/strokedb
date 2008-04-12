@@ -6,11 +6,44 @@ unless defined?(BlankSlate)
   end
 end
 
-class NewLazyMappingArray < BlankSlate
+class BlankSlate
+  MethodMapping = {
+    '[]' => 'squarebracket',
+    '[]=' => 'squarebracket=',
+    '<<' => 'leftarrow',
+    '*' => 'star',
+    '+' => 'plus',
+    '-' => 'minus',
+    '&' => 'bitwiseand',
+    '|' => 'bitwiseor',
+    '<=>' => 'spaceship',
+    '==' => 'equalequal',
+    '===' => 'tripleequal',
+    '=~' => 'regexmatch'
+  } unless defined? MethodMapping
+end
+
+def BlankSlate superclass = nil
+  if superclass
+    (@blank_slates ||= {})[superclass] ||= Class.new(superclass) do
+      instance_methods.sort.each { |m|
+        unless m =~ /^__/
+          mname = "__#{::BlankSlate::MethodMapping[m.to_s] || m}"
+          class_eval "alias #{mname} #{m}"
+          undef_method m
+        end
+      }
+    end
+  else
+    BlankSlate
+  end
+end
+
+class NewLazyMappingArray < BlankSlate(Array)
   def initialize(*args)
     @map_proc = proc {|v| v}
     @unmap_proc = proc {|v| v}
-    @array = Array.new(*args)
+    super(*args)
   end
 
   def map_with(&block)
@@ -22,27 +55,27 @@ class NewLazyMappingArray < BlankSlate
     @unmap_proc = block
     self
   end
-  
+
   def class
     Array
   end
-  
-  def to_ary
-    @array
-  end
-  alias :to_a :to_ary
 
   def method_missing sym, *args, &blk
+    mname = "__#{::BlankSlate::MethodMapping[sym.to_s] || sym}"
+
     case sym
     when :push, :unshift, :<<, :[]=, :index, :-
       last = args.pop
       last = last.is_a?(Array) ? last.map{|v| @unmap_proc.call(v) } : @unmap_proc.call(last)
       args.push last
 
-      @array.__send__(sym, *args, &blk)
+      __send__(mname, *args, &blk)
+
+    when :[], :slice, :at, :map, :shift, :pop, :include?, :last, :first, :zip, :each, :inject, :each_with_index
+      __map{|v| @map_proc.call(v) }.__send__(sym, *args, &blk)
 
     else
-      @array.map{|v| @map_proc.call(v) }.__send__(sym, *args, &blk)
+      __send__(mname, *args, &blk)
     end
   end
 end
@@ -162,12 +195,78 @@ class OldLazyMappingArray < Array
   end
 end
 
+class TestLazyMappingArray < Array
+
+  MethodMapping = {
+    '[]' => 'squarebracket',
+    '[]=' => 'squarebracket=',
+    '<<' => 'leftarrow',
+    '&' => 'bitwiseand',
+    '*' => 'star',
+    '+' => 'plus',
+    '-' => 'minus',
+    '|' => 'bitwiseor',
+    '<=>' => 'spaceship',
+    '==' => 'equalequal',
+    '===' => 'tripleequal',
+    '=~' => 'regexmatch'
+  }
+
+  instance_methods.sort.each { |m|
+    unless m =~ /^__/
+      mname = "__#{MethodMapping[m.to_s] || m}"
+      class_eval "alias #{mname} #{m}"
+      undef_method m
+    end
+  }
+
+  def initialize(*args)
+    @map_proc = proc {|v| v}
+    @unmap_proc = proc {|v| v}
+    super(*args)
+  end
+
+  def map_with(&block)
+    @map_proc = block
+    self
+  end
+
+  def unmap_with(&block)
+    @unmap_proc = block
+    self
+  end
+
+  def class
+    Array
+  end
+
+  def method_missing sym, *args, &blk
+    mname = "__#{MethodMapping[sym.to_s] || sym}"
+
+    case sym
+    when :push, :unshift, :<<, :[]=, :index, :-
+      last = args.pop
+      last = last.is_a?(Array) ? last.map{|v| @unmap_proc.call(v) } : @unmap_proc.call(last)
+      args.push last
+
+      __send__(mname, *args, &blk)
+
+    when :[], :slice, :at, :map, :shift, :pop, :include?, :last, :first, :zip, :each, :inject, :each_with_index
+      __map{|v| @map_proc.call(v) }.__send__(sym, *args, &blk)
+
+    else
+      __send__(mname, *args, &blk)
+    end
+  end
+end
+
+
 require 'benchmark'
 
 N = 100_000
 
 Benchmark.bmbm(30) do |x|
-  x.report('old') do
+  x.report('OldLazyMappingArray') do
     N.times do
       a = OldLazyMappingArray.new([1,2,3,[1],[2]]).map_with(&proc {|arg| arg.to_s }).unmap_with(&proc {|arg| arg.to_i })
       a.push "1"
@@ -176,7 +275,7 @@ Benchmark.bmbm(30) do |x|
     end
   end
   
-  x.report('new') do
+  x.report('NewLazyMappingArray') do
     a = NewLazyMappingArray.new([1,2,3,[1],[2]]).map_with(&proc {|arg| arg.to_s }).unmap_with(&proc {|arg| arg.to_i })
     a.push "1"
     a[2] = "11"
@@ -187,10 +286,10 @@ end
 __END__
 
 Rehearsal -----------------------------------------------------------------
-old                             4.080000   0.000000   4.080000 (  4.098574)
-new                             0.000000   0.000000   0.000000 (  0.000062)
--------------------------------------------------------- total: 4.080000sec
+OldLazyMappingArray             4.050000   0.040000   4.090000 (  4.096971)
+NewLazyMappingArray             0.000000   0.000000   0.000000 (  0.000089)
+-------------------------------------------------------- total: 4.090000sec
 
                                     user     system      total        real
-old                             4.090000   0.000000   4.090000 (  4.087785)
-new                             0.000000   0.000000   0.000000 (  0.000062)
+OldLazyMappingArray             4.050000   0.030000   4.080000 (  4.080435)
+NewLazyMappingArray             0.000000   0.000000   0.000000 (  0.000126)

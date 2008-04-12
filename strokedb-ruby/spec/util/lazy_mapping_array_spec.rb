@@ -12,6 +12,10 @@ describe "LazyMappingArray instance" do
   it "should be inherited from Array" do
     @array.class.ancestors.first.should == Array
   end
+
+  it "should work in case statements" do
+    (Array === @array).should == true
+  end
 end
 
 describe "LazyMappingArray instance with block specified" do
