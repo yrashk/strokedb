@@ -6,7 +6,7 @@ desc: |-
   (like User+Timestampable)
 type: :feature
 component: Meta
-release: v0.0.2
+release: 
 reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
 status: :unstarted
 disposition: 
@@ -18,4 +18,8 @@ log_events:
 - - 2008-04-08 14:35:30.740987 Z
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - created
+  - ""
+- - 2008-04-12 01:03:51.261083 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - unassigned from release v0.0.2
   - ""
