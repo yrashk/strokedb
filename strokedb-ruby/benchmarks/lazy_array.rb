@@ -200,19 +200,19 @@ end
 
 require 'benchmark'
 
-N = 100_000
+N = 20_000
 
 Benchmark.bmbm(30) do |x|
-  x.report('old') do
+  x.report('OldLazyArray') do
     N.times do
       a = OldLazyArray.new.load_with(&proc { [1,2,3] })
-      a.push 4
+      5.times{ a.push(4) }
     end
   end
   
-  x.report('new') do
+  x.report('NewLazyArray') do
     a = NewLazyArray.new.load_with(&proc { [1,2,3] })
-    a.push 4
+    5.times{ a.push(4) }
   end
 end
 
