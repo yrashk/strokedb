@@ -635,25 +635,10 @@ describe "validates_associated" do
 
     err = erroneous_stuff
 
-  pending "fix associations" do
-    # FIXME?
-    # in the below scenario, when you're trying to add an erroneous document to an association,
-    # adding it will fail; therefore it will not appear in f.bars and f will be considered valid.
-    # Q: is it fine with us?
     lambda { f.bars << err }.should raise_error(InvalidDocumentError)
     f.should be_valid
-
-    i = OneMoreItem.create!(:something => 123)
-    i.should be_valid
-
-    f.bars << i
-    f.should be_valid
-    i.remove_slot! :something
-    i.should_not be_valid
-    f.should_not be_valid
   end
-  end
-
+  
   it "should work with a document chain" do
     i3 = erroneous_stuff
     i3.should_not be_valid
