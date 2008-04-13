@@ -19,7 +19,8 @@ class BlankSlate
     '<=>' => 'spaceship',
     '==' => 'equalequal',
     '===' => 'tripleequal',
-    '=~' => 'regexmatch'
+    '=~' => 'regexmatch',
+    '`'  => 'backtick',
   } unless defined? MethodMapping
 end
 
@@ -29,7 +30,8 @@ def BlankSlate superclass = nil
       instance_methods.sort.each { |m|
         unless m =~ /^__/
           mname = "__#{::BlankSlate::MethodMapping[m.to_s] || m}"
-          class_eval "alias #{mname} #{m}"
+          class_eval "alias :#{mname} :'#{m}'" 
+          
           undef_method m
         end
       }
