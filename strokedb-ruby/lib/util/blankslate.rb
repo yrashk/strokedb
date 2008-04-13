@@ -29,7 +29,8 @@ def BlankSlate superclass = nil
       instance_methods.sort.each { |m|
         unless m =~ /^__/
           mname = "__#{::BlankSlate::MethodMapping[m.to_s] || m}"
-          class_eval "alias :#{mname} :#{m}" rescue nil
+          begin ; class_eval "alias :#{mname} :#{m}" ; rescue SyntaxError ; end # we need this rescue to survive aliasing weird 
+                                                                                # methods names like `
           undef_method m
         end
       }
