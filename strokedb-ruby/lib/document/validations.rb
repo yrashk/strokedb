@@ -81,7 +81,7 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "A document with a ... of ... already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>case_sensitive</tt> - Looks for an exact match.  Ignored by non-text columns (true by default).
+    # * <tt>case_sensitive</tt> - Looks for an exact match.  Ignored by non-text columns (true by default). NOT YET IMPLEMENTED
     # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
     # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
     # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
