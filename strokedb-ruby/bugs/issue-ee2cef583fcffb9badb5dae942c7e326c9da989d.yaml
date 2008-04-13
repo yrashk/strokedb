@@ -5,7 +5,7 @@ desc: |-
   we can improve. The same thing applies to referencing metas (we need to understand how exactly should it work) and to the certain extent to associations
 type: :feature
 component: General
-release: v0.0.2
+release: 
 reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2008-04-07 20:05:50.449550 Z
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - created
+  - ""
+- - 2008-04-13 08:17:55.230071 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - unassigned from release v0.0.2
   - ""
