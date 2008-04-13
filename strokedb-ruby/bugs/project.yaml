@@ -11,10 +11,14 @@ components:
 releases: 
 - !ditz.rubyforge.org,2008-03-06/release 
   name: v0.0.2
-  status: :unreleased
-  release_time: 
+  status: :released
+  release_time: 2008-04-13 12:58:45.248238 Z
   log_events: 
   - - 2008-04-05 16:57:44.086164 Z
     - Yurii Rashkovskii <yrashk@issuesdone.com>
     - created
+    - ""
+  - - 2008-04-13 12:58:45.248260 Z
+    - Yurii Rashkovskii <yrashk@issuesdone.com>
+    - released
     - ""
