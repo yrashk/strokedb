@@ -29,7 +29,7 @@ def BlankSlate superclass = nil
       instance_methods.sort.each { |m|
         unless m =~ /^__/
           mname = "__#{::BlankSlate::MethodMapping[m.to_s] || m}"
-          class_eval "alias #{mname} #{m}"
+          class_eval "alias :#{mname} :#{m}" rescue nil
           undef_method m
         end
       }
