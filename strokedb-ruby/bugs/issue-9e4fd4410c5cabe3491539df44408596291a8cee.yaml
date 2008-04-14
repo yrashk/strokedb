@@ -3,7 +3,7 @@ title: Refactor callbacks
 desc: Currently callbacks implementation and spec set are far from being perfect. Consider extracting them to a separate file and organizing them better.
 type: :bugfix
 component: Meta
-release: v0.0.2
+release: 
 reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2008-04-05 17:15:35.300920 Z
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - created
+  - ""
+- - 2008-04-13 08:17:31.945795 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - unassigned from release v0.0.2
   - ""
