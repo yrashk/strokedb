@@ -6,4 +6,5 @@ strokedb-ruby/TAGS
 *.swp
 strokedb-ruby/.*.strokedb
 strokedb-ruby/examples/.*.strokedb
+strokedb-ruby/examples/strokewiki/.*.strokedb
 strokedb-ruby/pkg
