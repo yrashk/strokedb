@@ -12,7 +12,7 @@ require File.dirname(__FILE__) + '/../../strokedb'
 # end
 
 StrokeDB.use_global_default_config!
-StrokeDB::Config.build :default => true, :base_path => '.wiki2.strokedb'
+StrokeDB::Config.build :default => true, :base_path => '.wiki.strokedb'
 # This will be the default homepage name
 HOME = 'Home'
 
