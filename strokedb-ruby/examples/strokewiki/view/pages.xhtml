@@ -1,0 +1,22 @@
+<html>
+<head>
+<title>strokewiki</title>
+</head>
+<body>
+
+<h1>StrokeWiki</h1>
+<a href="/">Home</a> |
+<a href="/pages">Pages</a>
+<hr/>
+		
+<h2>List pages</h2>
+<ul>
+<?r @pages.each do |page| ?>
+<li><a href="/show/#{page.name}">#{page.name}</a> - <a href="/edit/#{page.name}">edit</a> | <a href="/delete/#{page.name}">delete</a></li>
+<?r end ?>
+</ul>
+<hr/>
+<a href="/">Home</a> |
+<a href="/pages">Pages</a>
+</body>
+</html>
