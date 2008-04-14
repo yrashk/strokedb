@@ -27,7 +27,7 @@ module StrokeDB
       @counter.to_s(BASE).rjust(BASE_LENGTH, '0') + @uuid
     end 
     def marshal_load(dumped)
-      @counter = dumped[0,           BASE_LENGTH].to_i(BASE)
+      @counter = dumped[0, BASE_LENGTH].to_i(BASE)
       @uuid    = dumped[BASE_LENGTH, 36]
       self
     end

@@ -114,27 +114,6 @@ describe "Validation helpers" do
     s.errors.messages.should == [ "On save Meta Foo SlotName name" ]
   end
 
-  it "should respect :if" do
-    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => 'true' end
-    bang { Foo.create! }
-    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => 'false' end
-    no_bang { Bar.create! }
-  end
-  
-  it "should respect :unless" do
-    Foo = Meta.new do validates_presence_of :name, :on => :save, :unless => 'false' end
-    bang { Foo.create! }
-    Bar = Meta.new do validates_presence_of :name, :on => :save, :unless => 'true' end
-    no_bang { Bar.create! }
-  end
-  
-  it "should respect both :if and :unless when given" do
-    Foo = Meta.new do validates_presence_of :name, :on => :save, :if => 'false', :unless => 'false' end
-    no_bang { Foo.create! }
-    Bar = Meta.new do validates_presence_of :name, :on => :save, :if => 'true', :unless => 'false' end
-    bang { Bar.create! }
-  end
- 
   it "should allow to use document slot for :if and :unless evaluation" do
     Foo = Meta.new do validates_presence_of :name, :on => :save, :if => :slot end
     bang { Foo.create!(:slot => true) }
@@ -145,32 +124,23 @@ describe "Validation helpers" do
     bang { Bar.create!(:slot => false) }
   end
   
-  it "should allow to use a string for :if and :unless evaluation" do
-    Foo = Meta.new do 
-      validates_presence_of :name, :on => :save, :if => "!some_method"
-      def some_method; self.some_slot end
-    end
-    
-    no_bang { Foo.create!(:some_slot => true) }
-    bang { Foo.create!(:some_slot => false) }
-    
-    Bar = Meta.new do 
-      validates_presence_of :name, :on => :save, :unless => "!some_method"
-      def some_method; self.some_slot end
-    end
-    
-    bang { Bar.create!(:some_slot => true) }
-    no_bang { Bar.create!(:some_slot => false) }
-  end
-
   it "should raise an ArgumentError when given something not callable for :if and :unless" do
     lambda do
       Meta.new { validates_presence_of :name, :on => :save, :if => 123  }
     end.should raise_error(ArgumentError)
 
     lambda do
+      Meta.new { validates_presence_of :name, :on => :save, :if => lambda { }  }
+    end.should raise_error(ArgumentError)
+
+    lambda do
       Meta.new { validates_presence_of :name, :on => :save, :unless => 123  }
     end.should raise_error(ArgumentError)
+
+    lambda do
+      Meta.new { validates_presence_of :name, :on => :save, :unless => lambda { }  }
+    end.should raise_error(ArgumentError)
+
   end
 
   def bang
@@ -257,23 +227,37 @@ describe "validates_uniqueness_of" do
     u2.should be_valid
   end
 
-  it "should allow to modify an existing document" do
-    u = User.create!(:email => "name@server.com", :status => :newbie)
-    u.status = :hacker
-    u.should be_valid
-    u.save!
-    u.status = :hax0r
-    u.should be_valid
-    u.save!
-    u.email = "hax0r@hax0r.com"
-    u.should be_valid
-    u.save!
-    u.email = "name@server.com"
-    u.status = :newbie_again
-    u.should be_valid
-    u.save!
-    u.email = "hax0r@hax0r.com"
-    u.should be_valid
+  describe "should allow to modify an existing document" do
+    it "test 1" do
+      u = User.create!(:email => "name@server.com", :status => :newbie)
+      u.status = :hacker
+      u.should be_valid
+      u.save!
+      u.status = :hax0r
+      u.should be_valid
+      u.save!
+      u.email = "hax0r@hax0r.com"
+      u.should be_valid
+      u.save!
+      u.email = "name@server.com"
+      u.status = :newbie_again
+      u.should be_valid
+      u.save!
+      u.email = "hax0r@hax0r.com"
+      u.should be_valid
+    end
+
+    it "test 2" do
+      Foo = Meta.new do
+        validates_uniqueness_of :login
+        virtualizes :blah
+      end
+
+      foo = Foo.create!(:login => "vasya")
+
+      foo.somefield = 777
+      foo.should be_valid
+    end
   end
 
   it "should respect :allow_nil set to false" do
@@ -651,25 +635,10 @@ describe "validates_associated" do
 
     err = erroneous_stuff
 
-  pending "fix associations" do
-    # FIXME?
-    # in the below scenario, when you're trying to add an erroneous document to an association,
-    # adding it will fail; therefore it will not appear in f.bars and f will be considered valid.
-    # Q: is it fine with us?
     lambda { f.bars << err }.should raise_error(InvalidDocumentError)
     f.should be_valid
-
-    i = OneMoreItem.create!(:something => 123)
-    i.should be_valid
-
-    f.bars << i
-    f.should be_valid
-    i.remove_slot! :something
-    i.should_not be_valid
-    f.should_not be_valid
   end
-  end
-
+  
   it "should work with a document chain" do
     i3 = erroneous_stuff
     i3.should_not be_valid

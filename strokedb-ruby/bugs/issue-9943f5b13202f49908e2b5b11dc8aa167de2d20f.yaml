@@ -1,0 +1,36 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: validates_associated doesn't play well with has_many association
+desc: |-
+  You can't add an invalid document as an associate.
+  Also if serialized associate is valid, but in-memory document isn't valid, valid? returns true.
+type: :bugfix
+component: Meta
+release: v0.0.2
+reporter: oleg dashevskii <be9@be9.ru>
+status: :closed
+disposition: :wontfix
+creation_time: 2008-04-05 17:25:33.316375 Z
+references: []
+
+id: 9943f5b13202f49908e2b5b11dc8aa167de2d20f
+log_events: 
+- - 2008-04-05 17:25:41.467544 Z
+  - oleg dashevskii <be9@be9.ru>
+  - created
+  - ""
+- - 2008-04-05 17:33:13.116133 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - assigned to release v0.0.2 from unassigned
+  - ""
+- - 2008-04-13 12:44:59.361815 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - closed issue with disposition wontfix
+  - |-
+    I assume that behaviour we have experienced is quite valid. Here are two scenarios:
+    1) we push invalid document to has_many association
+    InvalidDocumentError will be raised right away, so there is nothing validates_associated can do
+    2) we push valid document to has_many association and then update it so it becomes invalid
+    again I think there is nothing validates_associated can do, since has_many deals with saved documents and that
+    invalid document is unsaved after all and only old valid version is available through has_many
+    
+    Dixi. Any objections?

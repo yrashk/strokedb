@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Spec SkiplistStore#autosync
+desc: Even though SkiplistStore is going to be replaced with Store when new-storages will be merged in, I believe that it makes sense to spec it now and port it to new-storages
+type: :bugfix
+component: Storage
+release: 
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-05 17:13:44.248549 Z
+references: []
+
+id: ef7c137f232ec062ad3a642824f00c6de482f5aa
+log_events: 
+- - 2008-04-05 17:13:45.392236 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""
+- - 2008-04-13 08:17:38.294667 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - unassigned from release v0.0.2
+  - ""

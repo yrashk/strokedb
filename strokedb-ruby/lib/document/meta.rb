@@ -22,7 +22,7 @@ module StrokeDB
   module Meta
 
     class << self
-      def new(*args,&block)
+      def new(*args, &block)
         mod = Module.new
         args = args.unshift(nil) if args.empty? || args.first.is_a?(Hash)
         args << {} unless args.last.is_a?(Hash)
@@ -45,7 +45,7 @@ module StrokeDB
           initialize_virtualizations
         end
         if meta_name = extract_meta_name(*args)
-          Object.const_set(meta_name,mod)
+          Object.const_set(meta_name, mod)
         end
         mod
       end
@@ -53,7 +53,7 @@ module StrokeDB
       def document(store=nil)
         raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
         unless meta_doc = store.find(NIL_UUID)
-          meta_doc = Document.create!(store,:name => Meta.name, :uuid => NIL_UUID)
+          meta_doc = Document.create!(store, :name => Meta.name, :uuid => NIL_UUID)
         end
         meta_doc
       end
@@ -74,20 +74,20 @@ module StrokeDB
       if is_a?(Module) && meta.is_a?(Module)
         new_meta = Module.new
         instance_variables.each do |iv|
-          new_meta.instance_variable_set(iv,instance_variable_get(iv) ? instance_variable_get(iv).clone : nil)
+          new_meta.instance_variable_set(iv, instance_variable_get(iv) ? instance_variable_get(iv).clone : nil)
         end
-        new_meta.instance_variable_set(:@metas,@metas.clone)
+        new_meta.instance_variable_set(:@metas, @metas.clone)
         new_meta.instance_variable_get(:@metas) << meta
         new_meta.module_eval do
           extend Meta
         end
         new_meta_name = new_meta.instance_variable_get(:@metas).map{|m| m.name}.join('__')
-        Object.send(:remove_const,new_meta_name) rescue nil
+        Object.send(:remove_const, new_meta_name) rescue nil
         Object.const_set(new_meta_name, new_meta)
         new_meta
       elsif is_a?(Document) && meta.is_a?(Document)
-        (Document.new(store,self.to_raw.except('uuid','version','previous_version'),true) +
-        Document.new(store,meta.to_raw.except('uuid','version','previous_version'),true)).extend(Meta).make_immutable!
+        (Document.new(store, self.to_raw.except('uuid','version','previous_version'), true) +
+        Document.new(store, meta.to_raw.except('uuid','version','previous_version'), true)).extend(Meta).make_immutable!
       else
         raise "Can't + #{self.class} and #{meta.class}"
       end
@@ -98,33 +98,85 @@ module StrokeDB
 
     CALLBACKS.each do |callback_name|
       module_eval %{
-        def #{callback_name}(uid=nil,&block)
-          add_callback('#{callback_name}',uid,&block)
+        def #{callback_name}(uid=nil, &block)
+          add_callback('#{callback_name}', uid, &block)
         end
       }
     end
 
-    def new(*args,&block)
+    def new(*args, &block)
       args = args.clone
       args << {} unless args.last.is_a?(Hash)
       args.last[:meta] = @metas
-      doc = Document.new(*args,&block)
+      doc = Document.new(*args, &block)
       doc
     end
 
-    def create!(*args,&block)
-      new(*args,&block).save!
+    def create!(*args, &block)
+      new(*args, &block).save!
     end
-
+ 
+    #
+    # Finds all documents matching given parameters. The simplest form of
+    # +find+ call is without any parameters. This returns all documents
+    # belonging to the meta as an array.
+    #
+    #   User = Meta.new
+    #   all_users = User.find
+    # 
+    # Another form is to find a document by its UUID:
+    #
+    #   specific_user = User.find("1e3d02cc-0769-4bd8-9113-e033b246b013")
+    #
+    # If the UUID is not found, nil is returned.
+    #
+    # Most prominent search uses slot values as criteria:
+    #
+    #   short_fat_joes = User.find(:name => "joe", :weight => 110, :height => 167)
+    # 
+    # All matching documents are returned as an array.
+    #
+    # In all described cases the default store is used. You may also specify
+    # another store as the first argument:
+    #
+    #   all_my_users = User.find(my_store)
+    #   all_my_joes  = User.find(my_store, :name => "joe")
+    #   oh_my        = User.find(my_store, "1e3d02cc-0769-4bd8-9113-e033b246b013")
+    #
     def find(*args)
-      args = args.unshift(StrokeDB.default_store) if args.empty? || args.first.is_a?(Hash) || args.first.is_a?(String)
-      return find(args.first,{:uuid => args[1]}).first if args[1].is_a?(String) && args[1].match(/#{UUID_RE}/)
-      args << {} unless args.last.is_a?(Hash)
-      store = args.first
-      raise NoDefaultStoreError.new unless StrokeDB.default_store
-      store.search(args.last.merge(:meta => @metas.map {|m| m.document(store)}))
+      if args.empty? || !args.first.respond_to?(:search)
+        raise NoDefaultStoreError unless StrokeDB.default_store
+        
+        args = args.unshift(StrokeDB.default_store) 
+      end
+
+      unless args.size == 1 || args.size == 2
+        raise ArgumentError, "Invalid arguments for find"
+      end
+
+      store = args[0]
+      opt = { :meta => @metas.map {|m| m.document(store)} }
+
+      case args[1]
+      when String
+        raise ArgumentError, "Invalid UUID" unless args[1].match(UUID_RE)
+
+        store.search(opt.merge({ :uuid => args[1] })).first
+      when Hash
+        store.search opt.merge(args[1])
+      when nil
+        store.search opt
+      else
+        raise ArgumentError, "Invalid search criteria for find"
+      end
     end
 
+    #
+    # Similar to +find+, but a creates document with appropriate slot values if
+    # not found.
+    #
+    # If found, returned is only the first result.
+    #
     def find_or_create(*args)
       result = find(*args)
       result.empty? ? create!(*args) : result.first
@@ -137,15 +189,15 @@ module StrokeDB
         pretty_print
       end
     end
-    alias :to_s :inspect
 
+    alias :to_s :inspect
 
     def document(store=nil)
       metadocs = @metas.map do |m|
         @args = m.instance_variable_get(:@args)
         make_document(store)
       end
-      metadocs.size > 1 ? metadocs.inject { |a,b| a + b}.make_immutable! : metadocs.first
+      metadocs.size > 1 ? metadocs.inject { |a, b| a + b }.make_immutable! : metadocs.first
     end
     
     private
@@ -162,7 +214,7 @@ module StrokeDB
         values[:version] = meta_doc.version
         values[:uuid] = meta_doc.uuid
         args = [store, values]
-        meta_doc = updated_meta_doc(args) if changed?(meta_doc,args)
+        meta_doc = updated_meta_doc(args) if changed?(meta_doc, args)
       else
         args = [store, values]
         meta_doc = Document.new(*args)
@@ -180,20 +232,20 @@ module StrokeDB
       end
     end
 
-    def changed?(meta_doc,args)
+    def changed?(meta_doc, args)
       !(Document.new(*args).to_raw.except('previous_version') == meta_doc.to_raw.except('previous_version'))
     end
     
     def updated_meta_doc(args)
       new_doc = Document.new(*args)
-      new_doc.instance_variable_set(:@saved,true)
-      new_doc.send!(:update_version!,nil)
+      new_doc.instance_variable_set(:@saved, true)
+      new_doc.send!(:update_version!, nil)
       new_doc.save!
     end
 
-    def add_callback(name,uid=nil,&block)
+    def add_callback(name,uid=nil, &block)
       @callbacks ||= []
-      @callbacks << Callback.new(self,name,uid,&block)
+      @callbacks << Callback.new(self, name, uid, &block)
     end
 
     def setup_callbacks(doc)

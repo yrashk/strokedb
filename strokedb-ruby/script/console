@@ -16,12 +16,12 @@ def save!
 end
 
 def build_config
-  StrokeDB::Config.build :default => true, :base_path => (File.dirname(__FILE__) + '/../test/storages/console')
+  StrokeDB::Config.build :default => true, :base_path => '.console.strokedb'
   true
 end
 
 def clear!
-  FileUtils.rm_rf File.dirname(__FILE__) + '/../test/storages/console'
+  FileUtils.rm_rf '.console.strokedb'
   build_config
   "Database has been wiped out."
 end

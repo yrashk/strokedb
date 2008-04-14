@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Check messages in validations
+desc: Make sure all default messages in validations make sense
+type: :bugfix
+component: Meta
+release: 
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-05 17:01:45.647168 Z
+references: []
+
+id: ca878c0e976abf30d8e3ad609103c150e5a3ceb7
+log_events: 
+- - 2008-04-05 17:01:48.574865 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""
+- - 2008-04-13 12:56:08.596659 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - unassigned from release v0.0.2
+  - Not that important for 0.0.2
