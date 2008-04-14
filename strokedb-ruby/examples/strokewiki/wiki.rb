@@ -1,7 +1,8 @@
 require 'rubygems'
 require 'ramaze'
 require 'redcloth'
-require 'strokedb'
+require File.dirname(__FILE__) + '/../../strokedb'
+
 
 # strokewiki will run in port 7000 and uses WEBRick by default
 # you can change it uncommenting these four lines below.
