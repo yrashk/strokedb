@@ -1,47 +1,7 @@
-unless defined?(BlankSlate)
-  class BlankSlate < BasicObject; end if defined?(BasicObject)
+require File.dirname(__FILE__) + '/../strokedb'
 
-  class BlankSlate
-    instance_methods.each { |m| undef_method m unless m =~ /^__/ }
-  end
-end
-
-class NewLazyArray < BlankSlate
-  def initialize(*args)
-    @load_with_proc = proc {|v| v}
-    @array = Array.new(*args)
-  end
-
-  # Proc to execute lazy loading
-  def load_with(&block)
-    @load_with_proc = block
-    self
-  end
-
-  def class
-    Array
-  end
-
-  def method_missing sym, *args, &blk
-    if @array.respond_to? sym
-      load!
-      @array.__send__ sym, *args, &blk
-    else
-      super
-    end
-  end
-
-  private
-
-  def load!
-    if @load_with_proc
-      @array.clear
-      @array.concat @load_with_proc.call(@array)
-      @load_with_proc = nil
-    end
-  end
-end
-
+NewLazyArray = StrokeDB::LazyArray
+  
 class OldLazyArray < Array
   def initialize(*args)
     @load_with_proc = proc {|v| v}
@@ -55,7 +15,7 @@ class OldLazyArray < Array
   end
 
   # MK: TODO: think about removing of duplication (lots of similar methods)
-  
+
   alias :_square_brackets :[]
   def [](*args)
     load!
@@ -209,10 +169,12 @@ Benchmark.bmbm(30) do |x|
       5.times{ a.push(4) }
     end
   end
-  
+
   x.report('NewLazyArray') do
-    a = NewLazyArray.new.load_with(&proc { [1,2,3] })
-    5.times{ a.push(4) }
+    N.times do
+      a = NewLazyArray.new.load_with(&proc { [1,2,3] })
+      5.times{ a.push(4) }
+    end
   end
 end
 
@@ -223,6 +185,6 @@ old                            10.490000   0.000000  10.490000 ( 10.571533)
 new                             0.000000   0.000000   0.000000 (  0.000027)
 ------------------------------------------------------- total: 10.490000sec
 
-                                    user     system      total        real
+user     system      total        real
 old                            10.790000   0.010000  10.800000 ( 10.800571)
 new                             0.000000   0.000000   0.000000 (  0.000028)
