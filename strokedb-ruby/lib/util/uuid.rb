@@ -1,4 +1,61 @@
 begin
+  module StrokeDB; end
+  class FastUUID
+    require 'rubygems'
+    require 'inline'
+
+    def self.dlpath
+      `locate libuuid.so`.split.concat(`locate libuuid.dylib`.split).first
+    end
+
+    inline(:C) do |builder|
+      builder.add_compile_flags '-I /opt/local/include'
+      builder.prefix %{
+        #include "dlfcn.h"
+        #include "ossp/uuid.h"
+
+        typedef uuid_rc_t (*uuid_create_t)(uuid_t**);
+        typedef uuid_rc_t (*uuid_make_t    )(uuid_t *, unsigned int);
+        typedef uuid_rc_t (*uuid_export_t  )(const uuid_t *, uuid_fmt_t, void *, size_t *);
+        typedef uuid_rc_t (*uuid_destroy_t )(uuid_t *);
+        typedef uuid_rc_t (*uuid_import_t  )(uuid_t *, uuid_fmt_t, const void *, size_t);
+
+        static uuid_create_t  uuid_create1;
+        static uuid_make_t    uuid_make1;
+        static uuid_export_t  uuid_export1;
+        static uuid_destroy_t uuid_destroy1;
+        static uuid_import_t  uuid_import1;
+      }
+      builder.add_to_init %{
+        VALUE i_dlpath = rb_intern("dlpath");
+        VALUE dlpath = rb_funcall(c, i_dlpath, 0);
+        void* handle = dlopen(StringValuePtr(dlpath), RTLD_NOW); 
+
+        uuid_create1  = dlsym(handle, "uuid_create");
+        uuid_make1    = dlsym(handle, "uuid_make");
+        uuid_export1  = dlsym(handle, "uuid_export");
+        uuid_destroy1 = dlsym(handle, "uuid_destroy");
+        uuid_import1  = dlsym(handle, "uuid_import");
+
+      }
+      builder.c %{
+        VALUE random_uuid() 
+        {
+          uuid_t *uuid;
+          char *str;
+          uuid_create1(&uuid);
+          uuid_make1(uuid, UUID_MAKE_V1);
+          str = NULL;
+          uuid_export1(uuid, UUID_FMT_STR, &str, NULL);
+          uuid_destroy1(uuid);
+          return rb_str_new2(str);
+        }
+      }
+
+    end
+  end
+    
+  
   require 'dl/import'
   module LibUUID
     extend DL::Importable
