@@ -1,12 +1,12 @@
 module StrokeDB
-  class LazyMappingHash < BlankSlate(Hash)
+  class LazyMappingHash < Hash
     def initialize(original = {}, decoder = nil, encoder = nil)
       @decoder = decoder || proc {|v| v}
       @encoder = encoder || proc {|v| v}
       super(default)
-      original.each {|k,v| self.__squarebracket_set(k,v) }
+      original.each {|k,v| self[k] = v } 
     end
-    
+
     def map_with(&block)
       @encoder = block
       self
@@ -17,30 +17,36 @@ module StrokeDB
       self
     end
 
-    def class
-      Hash
+    alias :_square_brackets :[]
+    def [](k)
+      @encoder.call(_square_brackets(@decoder.call(k)))
     end
 
-    def method_missing sym, *args, &blk
-      super if sym.to_s =~ /^__/
-      mname = "__#{::BlankSlate::MethodMapping[sym.to_s] || sym}"
+    alias :_square_brackets_set :[]=
+    def []=(k,v)
+      _square_brackets_set(@decoder.call(k),@decoder.call(v))
+    end
 
-      case sym
-      when :keys, :values
-        __send__(mname, *args, &blk).map{|v| @encoder.call(v) }
-
-      when :each
-        self.__each do |k,v|
-          yield @encoder.call(k), @encoder.call(v)
-        end
-
-      when :[], :[]=
-        args.map!{|v| @decoder.call(v) }
-        @encoder.call __send__(mname, *args, &blk)
-
-      else
-        __send__(mname, *args, &blk)
+    alias :_each :each
+    def each
+      e = @encoder
+      _each do |k, v|
+        yield(e.call(k), e.call(v))
       end
+    end
+
+    alias :_keys :keys
+    def keys
+      _keys.map {|k| @encoder.call(k)}
+    end
+
+    alias :_values :values
+    def values
+      _values.map {|v| @encoder.call(v)}
+    end
+
+    def class
+      Hash
     end
   end
 end
