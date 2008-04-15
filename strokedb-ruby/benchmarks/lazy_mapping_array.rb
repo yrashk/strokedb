@@ -263,23 +263,18 @@ end
 
 require 'benchmark'
 
-N = 100_000
+N = 50_000
 
 Benchmark.bmbm(30) do |x|
-  x.report('OldLazyMappingArray') do
-    N.times do
-      a = OldLazyMappingArray.new([1,2,3,[1],[2]]).map_with(&proc {|arg| arg.to_s }).unmap_with(&proc {|arg| arg.to_i })
-      a.push "1"
-      a[2] = "11"
-      a[1..2]
+  [OldLazyMappingArray, NewLazyMappingArray].each do |cls|
+    x.report(cls.name) do
+      N.times do
+        a = cls.new([1,2,3,[1],[2]]).map_with(&proc {|arg| arg.to_s }).unmap_with(&proc {|arg| arg.to_i })
+        a.push "1"
+        a[2] = "11"
+        a[1..2]
+      end
     end
-  end
-  
-  x.report('NewLazyMappingArray') do
-    a = NewLazyMappingArray.new([1,2,3,[1],[2]]).map_with(&proc {|arg| arg.to_s }).unmap_with(&proc {|arg| arg.to_i })
-    a.push "1"
-    a[2] = "11"
-    a[1..2]
   end
 end
 

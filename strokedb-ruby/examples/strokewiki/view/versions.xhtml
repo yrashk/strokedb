@@ -1,0 +1,25 @@
+<html>
+<head>
+<title>strokewiki</title>
+</head>
+<body>
+
+<h1>StrokeWiki</h1>
+<a href="/">Home</a> |
+<a href="/pages">Pages</a> |
+<a href="/edit/#{@page.name}">Edit</a>
+<hr/>
+		
+<h2>Versions of #{@page.name}</h2>
+
+<ul>
+<?r @page.versions.all.each do |page| ?>
+<li>#{@page.updated_at}: <a href="/show/#{page.name}/#{page.versions.current.version}">#{page.versions.current.version}</a></li>
+<?r end ?>
+</ul>
+<hr/>
+<a href="/">Home</a> |
+<a href="/pages">Pages</a> |
+<a href="/edit/#{@page.name}">Edit</a>
+</body>
+</html>

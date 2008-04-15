@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: LMA is not functioning properly
+desc: |-
+  Spec appears to be weak -- I experience problems with LMA on new-storages branch.
+  After looking into its implementation and comparing with original LMA it appears that they have different behaviour.
+  Also I should mention that implementation of things like [] isn't really lazy.
+type: :bugfix
+component: General
+release: 
+reporter: Yurii Rashkovskii <yrashk@idbns.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-14 20:58:27.595304 Z
+references: []
+
+id: 1c3219fe9ad6c9607eb34868a0e98a2caea0aefe
+log_events: 
+- - 2008-04-14 20:58:30.307270 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - created
+  - ""
