@@ -5,7 +5,9 @@ begin
     require 'inline'
 
     def self.dlpath
-      `locate libuuid.so`.split.concat(`locate libuuid.dylib`.split).first
+      dlpath = `locate libuuid.so`.split.concat(`locate libuuid.dylib`.split).first
+      raise NotImplementedError, "cannot find libuuid" unless dlpath
+      dlpath
     end
 
     inline(:C) do |builder|
@@ -48,86 +50,98 @@ begin
           str = NULL;
           uuid_export1(uuid, UUID_FMT_STR, &str, NULL);
           uuid_destroy1(uuid);
-          return rb_str_new2(str);
+          VALUE r = rb_str_new(str,36);
+          free(str);
+          return r;
+        }
+      }
+      builder.c %{
+        VALUE random_uuid_raw()
+        {
+          uuid_t *uuid;
+          char *str;
+          uuid_create1(&uuid);
+          uuid_make1(uuid, UUID_MAKE_V1);
+          str = NULL;
+          uuid_export1(uuid, UUID_FMT_BIN, &str, NULL);
+          uuid_destroy1(uuid);
+          VALUE r = rb_str_new(str,16);
+          free(str);
+          return r;
+        }
+      }
+      
+      builder.c %{
+        VALUE uuid_to_raw(VALUE r_uuid)
+        {
+          uuid_t *uuid;
+          char *str;
+          uuid_create1(&uuid);
+          uuid_import1(uuid, UUID_FMT_STR, STR2CSTR(r_uuid), 36);
+          str = NULL;
+          uuid_export1(uuid, UUID_FMT_BIN, &str, NULL);
+          uuid_destroy1(uuid);
+          VALUE r = rb_str_new(str,16);
+          free(str);
+          return r;
+        }
+      }
+
+      builder.c %{
+        VALUE uuid_to_formatted(VALUE r_uuid)
+        {
+          uuid_t *uuid;
+          char *str;
+          uuid_create1(&uuid);
+          uuid_import1(uuid, UUID_FMT_BIN, STR2CSTR(r_uuid), 36);
+          str = NULL;
+          uuid_export1(uuid, UUID_FMT_STR, &str, NULL);
+          uuid_destroy1(uuid);
+          VALUE r = rb_str_new(str,36);
+          free(str);
+          return r;
         }
       }
 
     end
   end
-    
   
-  require 'dl/import'
-  module LibUUID
-    extend DL::Importable
-    dlload `locate libuuid.so`.split.concat(`locate libuuid.dylib`.split).first
-    typealias("uuid_rc_t", "unsigned int")
-    typealias("uuid_fmt_t","unsigned int")
-    typealias("size_t","unsigned int")
-    typealias("uuid_t *","void *")
-    extern "uuid_rc_t uuid_create(uuid_t **)"
-    extern "uuid_rc_t uuid_make(uuid_t *, unsigned int)"
-    extern "uuid_rc_t uuid_export(const uuid_t *, uuid_fmt_t, void *, size_t *)"
-    extern "uuid_rc_t uuid_destroy(uuid_t *)"
-    extern "uuid_rc_t uuid_import(uuid_t *, uuid_fmt_t, const void *, size_t)"
-  end
-  module StrokeDB::Util
-    def self.random_uuid
-      ptr = DL::PtrData.new(0)
-      str = DL::PtrData.new(0)
-      str.free = DL::FREE
-      LibUUID.uuid_create(ptr.ref)
-      LibUUID.uuid_make(ptr,1)
-      LibUUID.uuid_export(ptr,1,str.ref,nil)
-      LibUUID.uuid_destroy(ptr)
-      str.to_s
-    end
+  FAST_UUID = FastUUID.new
 
+  class ::String
+    # Convert to raw (16 bytes) string (self can be already raw or formatted).
+    def to_raw_uuid
+      if size == 16 
+        self.freeze 
+      else
+        FAST_UUID.uuid_to_raw(self)
+      end 
+    end
+    # Convert to formatted string (self can be raw or already formatted).
+    def to_formatted_uuid
+      if size == 16 
+        FAST_UUID.uuid_to_formatted(self)
+      else
+        self.freeze 
+      end 
+    end
+  end
+  
+  module StrokeDB::Util
+
+    def self.random_uuid
+      ::FAST_UUID.random_uuid
+    end
     def self.random_uuid_raw
-      ptr = DL::PtrData.new(0)
-      str = DL::PtrData.new(0)
-      str.free = DL::FREE
-      LibUUID.uuid_create(ptr.ref)
-      LibUUID.uuid_make(ptr,1)
-      LibUUID.uuid_export(ptr,0,str.ref,nil)
-      LibUUID.uuid_destroy(ptr)
-      str[0,16].to_s
+      ::FAST_UUID.random_uuid_raw
     end
     
-    class ::String
-      # Convert to raw (16 bytes) string (self can be already raw or formatted).
-      def to_raw_uuid
-        if size == 16 
-          self.freeze 
-        else
-            ptr = DL::PtrData.new(0)
-            str = DL::PtrData.new(0)
-            str.free = DL::FREE
-            LibUUID.uuid_create(ptr.ref)
-            LibUUID.uuid_import(ptr,1,self,36)
-            LibUUID.uuid_export(ptr,0,str.ref,nil)
-            LibUUID.uuid_destroy(ptr)
-            str[0,16].to_s
-        end 
-      end
-      # Convert to formatted string (self can be raw or already formatted).
-      def to_formatted_uuid
-        if size == 16 
-          ptr = DL::PtrData.new(0)
-          str = DL::PtrData.new(0)
-          str.free = DL::FREE
-          LibUUID.uuid_create(ptr.ref)
-          LibUUID.uuid_import(ptr,0,self,16)
-          LibUUID.uuid_export(ptr,1,str.ref,nil)
-          LibUUID.uuid_destroy(ptr)
-          str.to_s
-        else
-            self.freeze 
-        end 
-      end
-    end
   end
-rescue RuntimeError
-  puts "Can't load libuuid, using uuidtools"
+
+
+
+rescue NotImplementedError
+  puts "# Error: #{$!.message}, loading uuidtools"
   require 'uuidtools'
   module StrokeDB::Util
 
