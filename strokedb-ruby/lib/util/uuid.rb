@@ -2,7 +2,7 @@ begin
   require 'dl/import'
   module LibUUID
     extend DL::Importable
-    dlload "/opt/local/lib/libuuid.dylib"
+    dlload `locate libuuid.so`.split.concat(`locate libuuid.dylib`.split).first
     typealias("uuid_rc_t", "unsigned int")
     typealias("uuid_fmt_t","unsigned int")
     typealias("size_t","unsigned int")
