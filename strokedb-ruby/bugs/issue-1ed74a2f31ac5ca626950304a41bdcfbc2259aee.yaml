@@ -1,0 +1,25 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Consider adding Meta#includes (or #implements)"
+desc: |-
+  The idea is you might want to create your own meta which includes behaviour of few others. So, for example,
+  you want to introduce User meta, which should include Timestampable meta behaviour, but you will have no need concatenating them all time
+  (like User+Timestampable)
+type: :feature
+component: Meta
+release: 
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-08 14:35:29.372607 Z
+references: []
+
+id: 1ed74a2f31ac5ca626950304a41bdcfbc2259aee
+log_events: 
+- - 2008-04-08 14:35:30.740987 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""
+- - 2008-04-12 01:03:51.261083 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - unassigned from release v0.0.2
+  - ""

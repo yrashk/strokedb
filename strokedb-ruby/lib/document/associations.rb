@@ -5,7 +5,7 @@ module StrokeDB
     module HasManyAssociation
       attr_reader :association_owner, :association_slotname
       def new(slots={})
-        association_meta.constantize.new(association_owner.store,slots.merge({association_reference_slotname => association_owner}))
+        association_meta.constantize.new(association_owner.store, slots.merge({association_reference_slotname => association_owner}))
       end
       alias :build :new
 
@@ -33,7 +33,7 @@ module StrokeDB
 
     end
 
-    def has_many(slotname,opts={},&block)
+    def has_many(slotname, opts={}, &block)
       opts = opts.stringify_keys
 
       reference_slotname = opts['foreign_reference']
@@ -49,7 +49,7 @@ module StrokeDB
         when Proc
           extend_with_proc = extend_with
           extend_with = "HasMany#{slotname.to_s.camelize}"
-          const_set(extend_with,Module.new(&extend_with_proc))
+          const_set(extend_with, Module.new(&extend_with_proc))
           extend_with = "#{self.name}::HasMany#{slotname.to_s.camelize}"
         when Module
           extend_with = extend_with.name
@@ -76,7 +76,7 @@ module StrokeDB
     private 
 
     def initialize_associations
-      define_method(:_has_many_association) do |slotname,additional_query|
+      define_method(:_has_many_association) do |slotname, additional_query|
         slot_has_many = meta["has_many_#{slotname}"]
         reference_slotname = slot_has_many[:reference_slotname]
         through = slot_has_many[:through]

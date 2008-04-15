@@ -2,13 +2,13 @@ require 'diff/lcs'
 module StrokeDB
 
   class SlotDiffStrategy 
-    def self.diff(from,to)
+    def self.diff(from, to)
       to
     end
   end
 
   class DefaultSlotDiff < SlotDiffStrategy
-    def self.diff(from,to)
+    def self.diff(from, to)
       unless from.class == to.class # if value types are not the same
         to # then return new value
       else
@@ -16,15 +16,15 @@ module StrokeDB
         when /@##{UUID_RE}/, /@##{UUID_RE}.#{VERSION_RE}/
           to
         when Array, String
-          ::Diff::LCS.diff(from,to).map do |d|
+          ::Diff::LCS.diff(from, to).map do |d|
             d.map do |change|  
               change.to_a 
             end
           end
         when Hash
-          ::Diff::LCS.diff(from.sort_by{|e| e.to_s},to.sort_by{|e| e.to_s}).map do |d|
+          ::Diff::LCS.diff(from.sort_by{|e| e.to_s}, to.sort_by{|e| e.to_s}).map do |d|
             d.map do |change|
-              [change.to_a.first,{change.to_a.last.first => change.to_a.last.last}]
+              [change.to_a.first, {change.to_a.last.first => change.to_a.last.last}]
             end
           end
         else
@@ -33,7 +33,7 @@ module StrokeDB
       end
     end
 
-    def self.patch(from,patch)
+    def self.patch(from, patch)
       case from
       when /@##{UUID_RE}/, /@##{UUID_RE}.#{VERSION_RE}/
         patch
@@ -43,14 +43,14 @@ module StrokeDB
             ::Diff::LCS::Change.from_a(change)
           end
         end
-        ::Diff::LCS.patch!(from,lcs_patch)
+        ::Diff::LCS.patch!(from, lcs_patch)
       when Hash
         lcs_patch = patch.map do |d|
-          d.map_with_index do |change,index|
-            ::Diff::LCS::Change.from_a([change.first,index,[change.last.keys.first,change.last.values.first]])
+          d.map_with_index do |change, index|
+            ::Diff::LCS::Change.from_a([change.first, index, [change.last.keys.first, change.last.values.first]])
           end
         end
-        diff = ::Diff::LCS.patch!(from.sort_by{|e| e.to_s},lcs_patch)
+        diff = ::Diff::LCS.patch!(from.sort_by{|e| e.to_s}, lcs_patch)
         hash = {}
         diff.each do |v|
           hash[v.first] = v.last
@@ -62,7 +62,7 @@ module StrokeDB
     end
   end
 
-  Diff = Meta.new(:uuid => "5704bd39-4a01-405e-bc72-3650ddd89ca4") do
+  Diff = Meta.new(:uuid => DIFF_UUID) do
 
     on_initialization do |diff|
       diff.added_slots = {} unless diff[:added_slots]
@@ -76,15 +76,15 @@ module StrokeDB
     end
 
     def patch!(document)
-      added_slots.each_pair do |addition,value|
+      added_slots.each_pair do |addition, value|
         document[addition] = value
       end
       removed_slots.keys.each do |removal|
         document.remove_slot!(removal)
       end
-      updated_slots.each_pair do |update,value|
+      updated_slots.each_pair do |update, value|
         if sk = strategy_class_for(update)
-          document[update] = sk.patch(document[update],value)
+          document[update] = sk.patch(document[update], value)
         else
           document[update] =value
         end
@@ -108,7 +108,7 @@ module StrokeDB
         unless sk = strategy_class_for(update)
           self.updated_slots[update] = to[update]
         else
-          self.updated_slots[update] = sk.diff(from[update],to[update]) 
+          self.updated_slots[update] = sk.diff(from[update], to[update]) 
         end
       end
     end

@@ -1,6 +1,6 @@
 module StrokeDB
   class Store
-    def remote_server(addr,protocol=:drb)
+    def remote_server(addr, protocol=:drb)
       case protocol
       when :drb
         RemoteStore::DRb::Server.new(self,"#{addr}")
@@ -26,15 +26,15 @@ module StrokeDB
         end
 
         def search(*args)
-          @server.search(*args).map{|e| safe_document_from_undumped(e) }
+          @server.search(*args).map{ |e| safe_document_from_undumped(e) }
         end
 
-        def exists?(uuid,version=nil)
-          @server.exists?(uuid,version)
+        def exists?(uuid, version=nil)
+          @server.exists?(uuid, version)
         end
 
         def head_version(uuid)
-          raw_doc = find(uuid,nil,:no_instantiation => true)
+          raw_doc = find(uuid,nil, :no_instantiation => true)
           return raw_doc['version'] if raw_doc
           nil
         end
@@ -85,7 +85,7 @@ module StrokeDB
         private 
 
         def safe_document_from_undumped(doc_without_store)
-          doc_without_store.instance_variable_set(:@store,self) if doc_without_store
+          doc_without_store.instance_variable_set(:@store, self) if doc_without_store
           doc_without_store
         end
 
@@ -93,8 +93,8 @@ module StrokeDB
 
       class Server
         attr_reader :store, :addr, :thread
-        def initialize(store,addr)
-          @store, @addr = store,addr
+        def initialize(store, addr)
+          @store, @addr = store, addr
           @mutex = Mutex.new
         end
 
@@ -116,13 +116,13 @@ module StrokeDB
         end
 
         def head_version(uuid)
-          raw_doc = @mutex.synchronize { find(uuid,nil,:no_instantiation => true) }
+          raw_doc = @mutex.synchronize { find(uuid, nil, :no_instantiation => true) }
           return raw_doc['version'] if raw_doc
           nil
         end
 
         def save!(document)
-          document.instance_variable_set(:@store,@store)
+          document.instance_variable_set(:@store, @store)
           @mutex.synchronize { @store.save!(document) }
         end
 

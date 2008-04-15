@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: validates_uniqueness_of should respect :case_sensitive
+desc: Implement it when we'll be able to query case-insensitively
+type: :bugfix
+component: Meta
+release: 
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-13 12:21:58.797592 Z
+references: []
+
+id: fc929bb6f381e00a64aee04768b50ae895303947
+log_events: 
+- - 2008-04-13 12:22:00.997656 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""

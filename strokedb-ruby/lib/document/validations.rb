@@ -28,12 +28,12 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "should be present on ...")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     def validates_presence_of(slotname, opts={})
       register_validation("presence_of", slotname, opts, :should_be_present)
     end 
@@ -50,12 +50,12 @@ module StrokeDB
     # * <tt>message</tt> - A custom error message (default is: "document with value already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
     # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     # 
     # === Warning
     # When the slot doesn't exist, validation gets skipped.
@@ -81,15 +81,15 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "A document with a ... of ... already exists")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>case_sensitive</tt> - Looks for an exact match.  Ignored by non-text columns (true by default).
+    # * <tt>case_sensitive</tt> - Looks for an exact match.  Ignored by non-text columns (true by default). NOT YET IMPLEMENTED
     # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
     # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     def validates_uniqueness_of(slotname, opts={})
       register_validation("uniqueness_of", slotname, opts, :already_exists) do |opts|
         { :allow_nil => !!opts['allow_nil'], :allow_blank => !!opts['allow_blank'] }
@@ -110,12 +110,12 @@ module StrokeDB
     #   not included in the list")
     # * <tt>allow_nil</tt> - If set to true, skips this validation if the slot is null (default is: false)
     # * <tt>allow_blank</tt> - If set to true, skips this validation if the slot is blank (default is: false)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should occur
-    #   (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }). The method, proc or string
-    #   should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should not occur
-    #   (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }). The method, proc or string
-    #   should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     def validates_inclusion_of(slotname, opts={})
       register_validation("inclusion_of", slotname, opts, :not_included) do |opts|
         raise ArgumentError, "validates_inclusion_of requires :in set" unless opts['in']
@@ -131,7 +131,7 @@ module StrokeDB
     
     # Validates that the value of the specified slot is not in a particular enumerable object.
     #
-    #   class Person < ActiveRecord::Base
+    #   Person = Meta.new do
     #     validates_exclusion_of :username, :in => %w( admin superuser ), :message => "You don't belong here"
     #     validates_exclusion_of :age, :in => 30..60, :message => "This site is only for under 30 and over 60"
     #     validates_exclusion_of :format, :in => %w( mov avi ), :message => 'extension #{slotvalue} is not allowed'
@@ -142,12 +142,12 @@ module StrokeDB
     # * <tt>message</tt> - Specifies a customer error message (default is: "is reserved")
     # * <tt>allow_nil</tt> - If set to true, skips this validation if the attribute is null (default is: false)
     # * <tt>allow_blank</tt> - If set to true, skips this validation if the attribute is blank (default is: false)
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     def validates_exclusion_of(slotname, opts={})
       register_validation("exclusion_of", slotname, opts, :not_excluded) do |opts|
         raise ArgumentError, "validates_exclusion_of requires :in set" unless opts['in']
@@ -181,12 +181,12 @@ module StrokeDB
     # * <tt>less_than_or_equal_to</tt> Specifies the value must be less than or equal the supplied value
     # * <tt>odd</tt> Specifies the value must be an odd number
     # * <tt>even</tt> Specifies the value must be an even number
-    # * <tt>if</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => Proc.new { |user| user.signup_step > 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method, proc or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => Proc.new { |user| user.signup_step <= 2 }).  The
-    #   method, proc or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     NUMERICALITY_CHECKS = { 'greater_than' => :>, 'greater_than_or_equal_to' => :>=,
                                 'equal_to' => :==, 'less_than' => :<, 'less_than_or_equal_to' => :<=,
                                 'odd' => :odd?, 'even' => :even? }.freeze
@@ -227,12 +227,12 @@ module StrokeDB
     # * <tt>message</tt> - A custom error message (default is: "is invalid")
     # * <tt>with</tt> - The regular expression used to validate the format with (note: must be supplied!)
     # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
-    #   method or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
-    #   method or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     def validates_format_of(slotname, opts={})
       register_validation("format_of", slotname, opts, :invalid_format) do |opts|
         unless regexp = opts['with'].is_a?(Regexp)
@@ -246,7 +246,7 @@ module StrokeDB
     # address field with a confirmation. Example:
     #
     #   Model:
-    #     Person = Meta.new
+    #     Person = Meta.new do
     #       validates_confirmation_of :password
     #       validates_confirmation_of :email_address, :message => "should match confirmation"
     #     end
@@ -267,12 +267,12 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "doesn't match confirmation")
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
-    #   method or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
-    #   method or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     def validates_confirmation_of(slotname, opts = {})
       register_validation("confirmation_of", slotname, opts, :not_confirmed)
 
@@ -282,7 +282,7 @@ module StrokeDB
     # Encapsulates the pattern of wanting to validate the acceptance of a terms
     # of service check box (or similar agreement). Example:
     #
-    #   Person = Meta.new
+    #   Person = Meta.new do
     #     validates_acceptance_of :terms_of_service
     #     validates_acceptance_of :eula, :message => "must be abided"
     #   end
@@ -297,12 +297,12 @@ module StrokeDB
     # * <tt>accept</tt> - Specifies value that is considered accepted.  The default value is a string "1", which
     #   makes it easy to relate to an HTML checkbox. This should be set to 'true' if you are validating a database
     #   column, since the attribute is typecast from "1" to <tt>true</tt> before validation.
-    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
-    #   method or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
-    #   method or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     def validates_acceptance_of(slotname, opts = {})
       register_validation("acceptance_of", slotname, opts, :not_accepted) do |opts|
         allow_nil = opts['allow_nil'].nil? ? true : !!opts['allow_nil']
@@ -341,12 +341,12 @@ module StrokeDB
     # * <tt>wrong_length</tt> - The error message if using the :is method and the attribute is the wrong size (default is: "is the wrong length (should be %d characters)")
     # * <tt>message</tt> - The error message to use for a :minimum, :maximum, or :is violation.  An alias of the appropriate too_long/too_short/wrong_length message
     # * <tt>on</tt> - Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
-    #   method or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
-    #   method or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     RANGE_OPTIONS = %w(is within in minimum maximum).freeze unless defined? RANGE_OPTIONS
     RANGE_VALIDATIONS = {
       'is'      => [ :==, ERROR_MESSAGES[:wrong_length] ],
@@ -401,7 +401,7 @@ module StrokeDB
     # Validates whether the associated object or objects are all valid
     # themselves. Works with any kind of association.
     #
-    #   Book = Meta.new
+    #   Book = Meta.new do
     #     has_many :pages
     #
     #     validates_associated :pages, :library
@@ -409,7 +409,7 @@ module StrokeDB
     #
     # Warning: If, after the above definition, you then wrote:
     #
-    #   Page = Meta.new
+    #   Page = Meta.new do
     #     belongs_to :book
     #
     #     validates_associated :book
@@ -425,12 +425,12 @@ module StrokeDB
     # Configuration options:
     # * <tt>message</tt> - A custom error message (default is: "is invalid")
     # * <tt>on</tt> Specifies when this validation is active (default is :save, other options :create, :update)
-    # * <tt>if</tt> - Specifies a method or string to call to determine if the validation should
-    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step > 2').  The
-    #   method or string should return or evaluate to a true or false value.
-    # * <tt>unless</tt> - Specifies a method or string to call to determine if the validation should
-    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step <= 2').  The
-    #   method or string should return or evaluate to a true or false value.
+    # * <tt>if</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   occur (e.g. :if => :allow_validation, or :if => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
+    # * <tt>unless</tt> - Specifies a method or slot name to call to determine if the validation should
+    #   not occur (e.g. :unless => :skip_validation, or :unless => 'signup_step_less_than_three').  The
+    #   method result or slot should be equal to a true or false value.
     def validates_associated(slotname, opts = {})
       register_validation('associated', slotname, opts, :invalid)
     end
@@ -483,6 +483,15 @@ module StrokeDB
           @errors.values.inject(0) { |error_count, slot| error_count + slot.size }
         end
 
+        # Yields each attribute and associated message per error added
+        def each
+          @errors.each_key do |slot|
+            @errors[slot].each do |msg|
+              yield [ msg ]
+            end
+          end
+        end
+
         alias_method :count, :size
         alias_method :length, :size
       end
@@ -518,8 +527,8 @@ module StrokeDB
         :slotname => slotname, 
         :message => message, 
         :on => on,
-        :if => { :ruby => opts['if'] },  
-        :unless => { :ruby => opts['unless'] }
+        :if => opts['if'],
+        :unless => opts['unless']
       }
 
       options_hash.merge!(yield(opts)) if block_given?
@@ -567,8 +576,7 @@ module StrokeDB
 
         !(found = meta.find(slotname.to_sym => doc[slotname])) || 
         (found.size == 0) || 
-        (found.first == doc) ||
-        (found.first.version == doc.previous_version)
+        (found.first.uuid == doc.uuid)
       end
       
       # using lambda here enables us to use return
@@ -613,7 +621,7 @@ module StrokeDB
       install_validations_for(:validates_length_of) do |doc, validation, slotname|
         value = doc[slotname]
         size = case value
-               when NilClass then 0
+               when nil then 0
                when String then value.split(//).size
                else 
                  value.size
@@ -664,8 +672,8 @@ module StrokeDB
 
           next unless (on == 'create' && doc.new?) || (on == 'update' && !doc.new?) || on == 'save'
           
-          next if validation[:if].is_a?(Hash) && validation[:if][:ruby] && !evaluate_condition(validation[:if][:ruby], doc)
-          next if validation[:unless].is_a?(Hash) && validation[:unless][:ruby] &&  evaluate_condition(validation[:unless][:ruby], doc)
+          next if validation[:if] && !evaluate_condition(validation[:if], doc)
+          next if validation[:unless] && evaluate_condition(validation[:unless], doc)
 
           value = doc[slotname_to_validate]
           

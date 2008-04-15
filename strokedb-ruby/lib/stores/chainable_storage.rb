@@ -36,7 +36,7 @@ module StrokeDB
     def sync_chained_storage!(storage)
       return unless @chained_storages.is_a?(Hash)
       ((@chained_storages[storage]||[]).last||[]).each do |saving|
-        storage.save!(saving[0],saving[1], saving[2], self)
+        storage.save!(saving[0], saving[1], saving[2], self)
       end
       @chained_storages[storage] = [{},[]]
     end

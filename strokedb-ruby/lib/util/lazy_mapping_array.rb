@@ -49,8 +49,14 @@ module StrokeDB
     alias :slice :[]
 
     alias :_square_brackets_set :[]=
-    def []=(index,value)
-      _square_brackets_set(index,@unmap_proc.call(value))
+    def []=(*args)
+      value = args.pop
+      if (args.first.is_a?(Range) || args.size == 2) && value.is_a?(Array)
+        args << value.map{|e| @unmap_proc.call(e) }
+        _square_brackets_set(*args)
+      else
+        _square_brackets_set(args[0], @unmap_proc.call(value))
+      end
     end
 
     alias :_at :at
@@ -125,11 +131,11 @@ module StrokeDB
     def include?(v)
       _include?(@unmap_proc.call(v))
     end
-    
+
     def to_a
        Array.new(map{|v| v})
     end
-    
+
     def class
       Array
     end

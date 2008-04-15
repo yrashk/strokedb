@@ -1,0 +1,30 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Bundle strokedb as a gem
+desc: ""
+type: :feature
+component: General
+release: v0.0.2
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :closed
+disposition: :fixed
+creation_time: 2008-04-05 17:28:22.341093 Z
+references: []
+
+id: 5eef3d46b99cec669d789474a9f48bda5af181b2
+log_events: 
+- - 2008-04-05 17:28:23.708580 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""
+- - 2008-04-06 13:03:20.875189 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2008-04-06 19:18:00.050652 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - changed status from in_progress to paused
+  - Done
+- - 2008-04-06 19:18:20.905887 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - closed issue with disposition fixed
+  - ""

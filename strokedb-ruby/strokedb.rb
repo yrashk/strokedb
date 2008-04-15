@@ -73,4 +73,3 @@ class SmartassLoader
 end
 
 SmartassLoader.new("lib/**/*").require!
-

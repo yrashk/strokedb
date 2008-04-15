@@ -74,7 +74,7 @@ module StrokeDB
     # TODO: lazify
   	def self.from_raw(raw)
   	  chunk = Chunk.new(raw['cut_level'])
-  	  chunk.uuid       = raw['uuid']
+  	  chunk.uuid = raw['uuid']
       chunk.next_chunk_uuid = raw['next_uuid']
       chunk.timestamp = raw['timestamp']
       chunk.store_uuid = raw['store_uuid']
@@ -87,7 +87,7 @@ module StrokeDB
  
   	def to_raw
   	  # enumerate nodes
-  	  skiplist.each_with_index do |node,i|
+  	  skiplist.each_with_index do |node, i|
      	  node._serialized_index = i
       end
       
@@ -107,7 +107,7 @@ module StrokeDB
         # TODO: may not be needed
         'next_uuid' => next_chunk ? next_chunk.uuid : nil,
         'timestamp' => @timestamp,
-        'store_uuid'        => @store_uuid
+        'store_uuid' => @store_uuid
       }
   	end
   	

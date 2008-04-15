@@ -18,7 +18,7 @@ module StrokeDB
       # Returns <tt>nil</tt> if there is no document with given version
       #
       def [](version)
-        @cache[version] ||= @document.store.find(document.uuid,version)
+        @cache[version] ||= @document.store.find(document.uuid, version)
       end
 
       #
@@ -60,7 +60,7 @@ module StrokeDB
       # Returns an Array of version numbers
       #
       def all_versions
-        [document.version,*all_preceding_versions]
+        [document.version, *all_preceding_versions]
       end
 
       #
