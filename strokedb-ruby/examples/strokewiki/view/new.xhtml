@@ -1,0 +1,26 @@
+<html>
+<head>
+<title>strokewiki</title>
+</head>
+<body>
+
+<h1>StrokeWiki</h1>
+<a href="/">Home</a> |
+<a href="/pages">Pages</a>
+<hr/>
+		
+<h2>Create: #{@page.name}</h2>
+<form method="POST" action="/create/#{@page.name}">
+<textarea name="body" rows="20" cols="80">
+#{@page.body}
+</textarea>
+<br />
+<input type="submit" />
+</form>
+<a href="/">Cancel</a>
+
+<hr/>
+<a href="/">Home</a> |
+<a href="/pages">Pages</a>
+</body>
+</html>

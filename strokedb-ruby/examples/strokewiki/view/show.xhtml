@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>strokewiki</title>
+</head>
+<body>
+
+<h1>StrokeWiki</h1>
+<a href="/">Home</a> |
+<a href="/pages">Pages</a> |
+<a href="/edit/#{@page.name}">Edit</a> |
+<a href="/versions/#{@page.name}">Versions</a>
+<?r unless @page.versions.empty? ?>
+<a href="/show/#{@page.name}/#{@page.versions.previous.version}">Previous</a>
+<?r end ?>
+<?r unless @page.versions.current == @page.versions.head ?>
+<a href="/show/#{@page.name}">Current</a>
+<a href="javascript:alert('This function is not implemented yet')">Restore</a>
+<?r end ?>
+<hr/>
+		
+<h2>#{@page.name}</h2>
+#{@page.display_body}
+
+
+<hr/>
+<a href="/">Home</a> |
+<a href="/pages">Pages</a> |
+<a href="/edit/#{@page.name}">Edit</a> |
+<a href="/versions/#{@page.name}">Versions</a>
+<?r unless @page.versions.empty? ?>
+<a href="/show/#{@page.name}/#{@page.versions.previous.version}">Previous</a>
+<?r end ?>
+<?r unless @page.versions.current == @page.versions.head ?>
+<a href="/show/#{@page.name}">Current</a>
+<a href="javascript:alert('This function is not implemented yet')">Restore</a>
+<?r end ?>
+<br/>
+<p>edited on #{@page.updated_at}</p>
+</body>
+</html>
