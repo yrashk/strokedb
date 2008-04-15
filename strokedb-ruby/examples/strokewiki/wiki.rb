@@ -24,7 +24,6 @@ Page = StrokeDB::Meta.new do
   end
   
   before_save do |doc|
-    doc[:filtered_body] = RedCloth.new(doc[:body], []).to_html
     doc[:updated_at] = Time.now
   end
   
@@ -37,7 +36,7 @@ Page = StrokeDB::Meta.new do
   # linked to page does not already exist
   def display_body    
     # mostly taken from JunebugWiki, regexps this beautiful should be shared
-    self.filtered_body.gsub(/\[\[([\w0-9A-Za-z -]+)[|]?([^\]]*)\]\]/) do
+    content = self.body.gsub(/\[\[([\w0-9A-Za-z -]+)[|]?([^\]]*)\]\]/) do
       page = title = $1.strip
       title = $2 unless $2.empty?
       page_url = page.gsub(/ /, '_')
@@ -48,6 +47,7 @@ Page = StrokeDB::Meta.new do
         %Q{<span>#{title}<a href="/new/#{page_url}">?</a></span>}
       end
     end
+    RedCloth.new(content, []).to_html
   end
 end
  
