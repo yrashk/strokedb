@@ -138,7 +138,7 @@ end
 
 require 'benchmark'
 
-N = 100_000
+N = 50_000
 
 Benchmark.bmbm(30) do |x|
   x.report('OldLazyMappingHash') do
@@ -151,20 +151,22 @@ Benchmark.bmbm(30) do |x|
   end
   
   x.report('NewLazyMappingHash') do
-    a = NewLazyMappingHash.new(Hash[1,2,3,4,5,6]).map_with(&proc {|k| {:struct => k}  }).unmap_with(&proc {|k| k.is_a?(Hash) && k[:struct] || k })
-    a[1] = { :struct => :x }
-    a[{:struct => :x}] = 1
-    a.map
+    N.times do
+      a = NewLazyMappingHash.new(Hash[1,2,3,4,5,6]).map_with(&proc {|k| {:struct => k}  }).unmap_with(&proc {|k| k.is_a?(Hash) && k[:struct] || k })
+      a[1] = { :struct => :x }
+      a[{:struct => :x}] = 1
+      a.map
+    end
   end
 end
 
 __END__
 
 Rehearsal -----------------------------------------------------------------
-OldLazyMappingHash              6.640000   0.020000   6.660000 (  6.697121)
-NewLazyMappingHash              0.000000   0.000000   0.000000 (  0.000111)
--------------------------------------------------------- total: 6.660000sec
+OldLazyMappingHash              3.020000   0.010000   3.030000 (  3.166527)
+NewLazyMappingHash              4.500000   0.010000   4.510000 (  4.762848)
+-------------------------------------------------------- total: 7.540000sec
 
                                     user     system      total        real
-OldLazyMappingHash              6.790000   0.020000   6.810000 (  6.832861)
-NewLazyMappingHash              0.000000   0.000000   0.000000 (  0.000117)
+OldLazyMappingHash              3.030000   0.020000   3.050000 (  3.230127)
+NewLazyMappingHash              4.510000   0.030000   4.540000 (  4.817493)
