@@ -20,7 +20,7 @@ module StrokeDB
   #
   # when model collection item is fetched, reference followed and turned into document
   # instance with mapping proc of lazy mapping array.
-  class LazyMappingArray < BlankSlate(Array)
+  class LazyMappingArray < Array
     def initialize(*args)
       @map_proc = proc {|v| v}
       @unmap_proc = proc {|v| v}
@@ -37,28 +37,107 @@ module StrokeDB
       self
     end
 
-    def class
-      Array
+    alias :_square_brackets :[]
+    def [](*args)
+      r = _square_brackets(*args)
+      if (args.first.is_a?(Range) || args.size == 2) && r.is_a?(Array)
+        LazyMappingArray.new(r).map_with(&@map_proc).unmap_with(&@unmap_proc)
+      else
+        @map_proc.call(r)
+      end
+    end
+    alias :slice :[]
+
+    alias :_square_brackets_set :[]=
+    def []=(*args)
+      value = args.pop
+      if (args.first.is_a?(Range) || args.size == 2) && value.is_a?(Array)
+        args << value.map{|e| @unmap_proc.call(e) }
+        _square_brackets_set(*args)
+      else
+        _square_brackets_set(args[0], @unmap_proc.call(value))
+      end
     end
 
-    def method_missing sym, *args, &blk
-      super if sym.to_s =~ /^__/
-      mname = "__#{::BlankSlate::MethodMapping[sym.to_s] || sym}"
+    alias :_at :at
+    def at(index)
+      @map_proc.call(_at(index))
+    end
 
-      case sym
-      when :push, :unshift, :<<, :[]=, :index, :-
-        last = args.pop
-        last = last.is_a?(Array) ? last.map{|v| @unmap_proc.call(v) } : @unmap_proc.call(last)
-        args.push last
+    def first
+      at(0)
+    end
 
-        __send__(mname, *args, &blk)
+    def last
+      at(size-1)
+    end
 
-      when :[], :slice, :at, :map, :shift, :pop, :include?, :last, :first, :zip, :each, :inject, :each_with_index
-        __map{|v| @map_proc.call(v) }.__send__(sym, *args, &blk)
-
-      else
-        __send__(mname, *args, &blk)
+    alias :_each :each
+    def each
+      _each do |val|
+        yield @map_proc.call(val)
       end
+    end
+
+    alias :_map :map
+    def map
+      _map do |val|
+        yield @map_proc.call(val)
+      end
+    end
+
+    alias :_zip :zip
+    def zip(*args)
+      map{|v|v}.zip(*args)
+    end
+
+    alias :_push :push
+    def push(value)
+      _push(@unmap_proc.call(value))
+    end
+    alias :<< :push
+
+    alias :_unshift :unshift
+    def unshift(value)
+      _unshift(@unmap_proc.call(value))
+    end
+
+    alias :_pop :pop
+    def pop
+      @map_proc.call(_pop)
+    end
+
+    alias :_shift :shift
+    def shift
+      @map_proc.call(_shift)
+    end
+
+    alias :_find :find
+    def find
+      _find {|value| yield(@map_proc.call(value))}
+    end
+
+    alias :_index :index
+    def index(v)
+      _index(@unmap_proc.call(v))
+    end
+
+    alias :_substract :-
+    def -(a)
+      _substract(a.map {|v| @unmap_proc.call(v) })
+    end
+
+    alias :_include? :include?
+    def include?(v)
+      _include?(@unmap_proc.call(v))
+    end
+
+    def to_a
+       Array.new(map{|v| v})
+    end
+
+    def class
+      Array
     end
   end
 end

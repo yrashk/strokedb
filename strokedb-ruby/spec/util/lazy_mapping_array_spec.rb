@@ -34,7 +34,12 @@ describe "LazyMappingArray instance with block specified" do
   it "should work with #[index]=(array)" do
     @array[1,0] = %w[ 1 2 3 ]
     @original[1,0] = [1,2,3]
-    @array.to_a.should == @original
+    # TODO: huge bug inside!
+    # p @array
+    # p @array.to_a
+    # p @original
+    # p @original.map(&@mapper)
+    @array.to_a.should == @original.map(&@mapper)
   end
 
   it "should call mapping proc on #[index]" do
