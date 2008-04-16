@@ -20,7 +20,8 @@ or
 
 === Installing rubygem
 
-There is no gem for StrokeDB (yet). As soon as we'll release 0.1, it will become available this way, too.
+
+	$ sudo gem install strokedb
 	
 === <i>(Optional) Running test suite</i>
 
