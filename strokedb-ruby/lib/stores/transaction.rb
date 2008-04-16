@@ -2,8 +2,11 @@ module StrokeDB
   
   class Transaction
     
+    attr_reader :uuid
+    
     def initialize(options = {})
       @options = options.stringify_keys
+      @uuid = Util.random_uuid
       storage.add_chained_storage!(store.storage)
     end
     
@@ -24,6 +27,7 @@ module StrokeDB
     end
     
     def save!(doc)
+      @timestamp = @timestamp.next
       storage.save!(doc,@timestamp)
     end
     
@@ -33,15 +37,12 @@ module StrokeDB
       Thread.current[:strokedb_transactions] ||= []
       Thread.current[:strokedb_transactions].push self
       
-      @timestamp = store.timestamp
+      @timestamp = LTS.new(store.timestamp.counter,uuid)
       
       result = yield(self)
       
       Thread.current[:strokedb_transactions].pop
       
-      ObjectSpace.each_object(Document) do |doc|
-        doc.instance_variable_set(:@store, store) if doc.store == self || doc.store.nil?
-      end
       result
     end
     

@@ -2,6 +2,10 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe 'Transaction', :shared => true do
 
+  it "should have UUID" do
+    @txn.uuid.should match(/#{UUID_RE}/)
+  end
+  
   it "should act as a store for documents initialized within transaction scope" do
     @txn.execute do
       @doc = Document.new
