@@ -46,7 +46,7 @@ begin
           uuid_t *uuid;
           char *str;
           uuid_create1(&uuid);
-          uuid_make1(uuid, UUID_MAKE_V1);
+          uuid_make1(uuid, UUID_MAKE_V4);
           str = NULL;
           uuid_export1(uuid, UUID_FMT_STR, &str, NULL);
           uuid_destroy1(uuid);
@@ -61,7 +61,7 @@ begin
           uuid_t *uuid;
           char *str;
           uuid_create1(&uuid);
-          uuid_make1(uuid, UUID_MAKE_V1);
+          uuid_make1(uuid, UUID_MAKE_V4);
           str = NULL;
           uuid_export1(uuid, UUID_FMT_BIN, &str, NULL);
           uuid_destroy1(uuid);
@@ -146,10 +146,10 @@ rescue NotImplementedError
   module StrokeDB::Util
 
     def self.random_uuid
-      ::UUID.timestamp_create.to_s
+      ::UUID.random_create.to_s
     end
     def self.random_uuid_raw
-      ::UUID.timestamp_create.raw
+      ::UUID.random_create.raw
     end
 
     class ::String
