@@ -8,7 +8,7 @@ module StrokeDB
     end
     
     def storage
-      @options['storage'] ||= MemoryStorage.new
+      @options['storage'] ||= setup_storage
     end
     
     def store
@@ -50,7 +50,15 @@ module StrokeDB
     end
     
     def rollback!
-      @options['storage'] = MemoryStorage.new
+      @options['storage'] = setup_storage
+    end
+    
+    private
+    
+    def setup_storage
+      storage = MemoryStorage.new
+      storage.authoritative_source = store.storage
+      storage
     end
     
   end

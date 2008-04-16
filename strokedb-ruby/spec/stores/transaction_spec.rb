@@ -28,6 +28,13 @@ describe 'Transaction', :shared => true do
       :some_result
     end.should == :some_result
   end
+
+  it "should be able to find already existing document within transaction scope" do
+    @doc = Document.create!
+    @txn.execute do
+      Document.find(@doc.uuid).should == @doc
+    end
+  end
   
   it "should be able to save new documents within block execution without exposing them to original storage" do
     @txn.execute do
@@ -62,6 +69,7 @@ describe "New", Transaction do
   before(:each) do
     StrokeDB::Config.build :default => true, :storages => [:memory], :base_path => File.dirname(__FILE__) + '/../../test/storages/spec/txn'
     @txn = Transaction.new(:store => StrokeDB.default_store)
+    Thread.current[:strokedb_transactions] = nil
   end
   
   it_should_behave_like 'Transaction'
