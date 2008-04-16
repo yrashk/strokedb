@@ -146,10 +146,10 @@ rescue NotImplementedError
   module StrokeDB::Util
 
     def self.random_uuid
-      ::UUID.random_create.to_s
+      ::UUID.timestamp_create.to_s
     end
     def self.random_uuid_raw
-      ::UUID.random_create.raw
+      ::UUID.timestamp_create.raw
     end
 
     class ::String
