@@ -48,10 +48,12 @@ module StrokeDB
     
     def commit!
       storage.sync_chained_storage!(store.storage)
+      true
     end
     
     def rollback!
       @options['storage'] = setup_storage
+      true
     end
     
     private
