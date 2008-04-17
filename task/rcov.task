@@ -25,7 +25,7 @@ namespace :rcov do
   end
   
   RCov::VerifyTask.new(:verify) do |t|
-    t.threshold = 87.5
+    t.threshold = 87.6
     t.index_html = :meta / :coverage / 'index.html'
   end
 
