@@ -54,7 +54,12 @@ describe "Meta module", :shared => true do
 
     SomeName.find(:slot1 => 1, :slot2 =>2).sort_by {|d| d.uuid}.should == [a,b].sort_by {|d| d.uuid}
   end
-
+  
+  it "should raise ArgumentError unless args size is 1 or 2" do
+    a = SomeName.create!(:slot1 => 1, :slot2 => 2)
+    lambda { SomeName.find("foo","bar","foobar") }.should raise_error(ArgumentError)
+  end
+  
   it "should find first document for specified slots with meta reference merged in on #find_or_create" do
     a = SomeName.create!(:slot1 => 1, :slot2 => 2)
     b = SomeName.create!(:slot1 => 1, :slot2 => 2)
@@ -282,4 +287,10 @@ describe "Combined meta module" do
     (User+Buyer+Seller).document.should be_a_kind_of(ImmutableDocument)
   end
   
+  # FIXME: better description for this
+  it "should raise error" do
+    user = User.create!
+    lambda { baddoc = (Buyer+user).create! }.should raise_error(RuntimeError)
+  end
+    
 end

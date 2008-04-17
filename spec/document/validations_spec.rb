@@ -49,6 +49,24 @@ describe "Document validation" do
   end
 end
 
+describe "Document with errors" do
+  before :each do
+    validations_setup
+    @erroneous_doc = erroneous_stuff
+  end
+
+  it "should return the number of errors" do
+    @erroneous_doc.should_not be_valid
+    @erroneous_doc.errors.size.should == 2
+  end
+  
+  it "should yield each attribute and associated message per error added" do
+    @erroneous_doc.should_not be_valid
+    @erroneous_doc.errors.each { }.should == {"something"=>["123"], "other"=>["456"]}
+  end
+  
+end
+
 describe "validates_presence_of" do
   before :each do
     validations_setup 
