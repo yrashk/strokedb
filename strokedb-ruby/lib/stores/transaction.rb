@@ -19,7 +19,7 @@ module StrokeDB
     end
     
     def inspect
-      "#<Transaction #{object_id}>"
+      "#<Transaction #{@uuid}>"
     end
     
     def find(uuid, version=nil, opts = {})
