@@ -837,69 +837,69 @@ describe "Saved document with validations" do
   end
   
   it "should be deletable with validates_presence_of" do
-    Foo = Meta.new { validates_presence_of :name }
-    doc = Foo.create! :name => 'foo'
+    Foo1 = Meta.new { validates_presence_of :name }
+    doc = Foo1.create! :name => 'foo'
     doc.delete!
   end
   
   it "should be deletable with validates_type_of" do
-    Foo = Meta.new { validates_type_of :name, :as => 'String' }
-    doc = Foo.create! :name => 'foo'
+    Foo2 = Meta.new { validates_type_of :name, :as => 'String' }
+    doc = Foo2.create! :name => 'foo'
     doc.delete!
   end
   
   it "should be deletable with validates_uniqueness_of" do
-    Foo = Meta.new { validates_uniqueness_of :name }
-    doc = Foo.create! :name => 'foo'
+    Foo3 = Meta.new { validates_uniqueness_of :name }
+    doc = Foo3.create! :name => 'foo'
     doc.delete!
   end
   
   it "should be deletable with validates_inclusion_of" do
-    Foo = Meta.new { validates_inclusion_of :name, :in => ['foo','bar'] }
-    doc = Foo.create! :name => 'foo'
+    Foo4 = Meta.new { validates_inclusion_of :name, :in => ['foo','bar'] }
+    doc = Foo4.create! :name => 'foo'
     doc.delete!
   end
   
   it "should be deletable with validates_exclusion_of" do
-    Foo = Meta.new { validates_exclusion_of :name, :in => ['foo','bar'] }
-    doc = Foo.create! :name => 'ueep'
+    Foo5 = Meta.new { validates_exclusion_of :name, :in => ['foo','bar'] }
+    doc = Foo5.create! :name => 'ueep'
     doc.delete!
   end
   
   it "should be deletable with validates_numericality_of" do
-    Foo = Meta.new { validates_numericality_of :number }
-    doc = Foo.create! :number => '1'
+    Foo6 = Meta.new { validates_numericality_of :number }
+    doc = Foo6.create! :number => '1'
     doc.delete!
   end
   
   it "should be deletable with validates_format_of" do
-    Foo = Meta.new { validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i }
-    doc = Foo.create! :email => 'foo@bar.org'
+    Foo7 = Meta.new { validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i }
+    doc = Foo7.create! :email => 'foo@bar.org'
     doc.delete!
   end
   
   it "should be deletable with validates_confirmation_of" do
-    Foo = Meta.new { validates_confirmation_of :password }
-    doc = Foo.create! :password => "sekret", :password_confirmation => "sekret"
+    Foo8 = Meta.new { validates_confirmation_of :password }
+    doc = Foo8.create! :password => "sekret", :password_confirmation => "sekret"
     doc.delete!
   end
   
   it "should be deletable with validates_acceptance_of" do
-    Foo = Meta.new { validates_acceptance_of :eula, :accept => "yep" }
-    doc = Foo.create! :eula => "yep"
+    Foo9 = Meta.new { validates_acceptance_of :eula, :accept => "yep" }
+    doc = Foo9.create! :eula => "yep"
     doc.delete!
   end
   
   it "should be deletable with validates_length_of" do
-    Foo = Meta.new { validates_length_of :name, :within => 10..50 }
-    doc = Foo.create! :name => "supercalifragilistico"
+    Foo10 = Meta.new { validates_length_of :name, :within => 10..50 }
+    doc = Foo10.create! :name => "supercalifragilistico"
     doc.delete!
   end
   
   it "should be deletable with validates_associated" do
-    Foo = Meta.new { has_many :bars; validates_associated :bars }
+    Foo11 = Meta.new { has_many :bars; validates_associated :bars }
     Bar = Meta.new
-    doc = Foo.create!
+    doc = Foo11.create!
     doc.delete!
   end
   
