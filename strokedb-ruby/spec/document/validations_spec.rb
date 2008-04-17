@@ -226,7 +226,32 @@ describe "validates_uniqueness_of" do
     u2 = User.new(:otherfield => "name@server.com")
     u2.should be_valid
   end
-
+  
+  describe "document with multiple metas" do
+    before :each do
+      validations_setup
+      User = Meta.new { validates_uniqueness_of :email }
+      Admin = Meta.new
+    end
+    
+    it "should be valid" do
+      pending('bug') do
+        u = (User+Admin).create!(:email => 'foo@bar.org')
+      end
+      u.should be_valid
+    end
+    
+    it "should be valid" do
+      u = User.create!(:email => 'foo@bar.org')
+      u.should be_valid
+      u.metas << Admin
+      pending('bug')
+        u.should be_valid
+      end
+    end
+  end
+  
+  
   describe "should allow to modify an existing document" do
     it "test 1" do
       u = User.create!(:email => "name@server.com", :status => :newbie)
