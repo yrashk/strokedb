@@ -238,9 +238,7 @@ describe "validates_uniqueness_of" do
     end
     
     it "should be valid" do
-      pending('bug') do
-        u = (User+Admin).create!(:email => 'foo@bar.org')
-      end
+      u = (User+Admin).create!(:email => 'foo@bar.org')
       u.should be_valid
     end
     
@@ -248,12 +246,20 @@ describe "validates_uniqueness_of" do
       u = User.create!(:email => 'foo@bar.org')
       u.should be_valid
       u.metas << Admin
-      pending('bug') do
-        u.should be_valid
-      end
+      u.should be_valid
+    end
+
+    it "should not be valid" do
+      u = User.create!(:email => 'foo@bar.org')
+      u.should be_valid
+      a = Admin.create!(:email => 'foo@bar.org')
+      a.should be_valid
+
+      u.metas << Admin
+      a.should be_valid
+      u.should_not be_valid
     end
   end
-  
   
   describe "should allow to modify an existing document" do
     it "test 1" do

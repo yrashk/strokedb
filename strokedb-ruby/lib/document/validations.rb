@@ -572,13 +572,13 @@ module StrokeDB
       end
       
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
-        meta = Kernel.const_get(doc.meta.name)
-
-        !(found = meta.find(slotname.to_sym => doc[slotname])) || 
-        (found.size == 0) || 
-        (found.first.uuid == doc.uuid)
+        not doc.metas.detect do |meta|
+          found = Kernel.const_get(meta.name).find(slotname.to_sym => doc[slotname])
+          
+          found && found.detect { |item| item.uuid != doc.uuid }
+        end
       end
-      
+
       # using lambda here enables us to use return
       numericality = lambda do |doc, validation, slotname|
         value = doc[slotname]

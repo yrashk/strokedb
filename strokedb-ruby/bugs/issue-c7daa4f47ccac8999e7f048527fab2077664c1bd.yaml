@@ -7,8 +7,8 @@ type: :bugfix
 component: General
 release: 
 reporter: Claudio <crossblaim@gmail.com>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2008-04-17 13:25:07.301987 Z
 references: []
 
@@ -18,3 +18,7 @@ log_events:
   - Claudio <crossblaim@gmail.com>
   - created
   - ""
+- - 2008-04-17 16:30:40.976428 Z
+  - oleg dashevskii <be9@be9.ru>
+  - closed issue with disposition fixed
+  - All metas are checked now
