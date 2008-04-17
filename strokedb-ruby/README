@@ -1,3 +1,4 @@
+
 StrokeDB is a distributed document-oriented database engine. 
 Main features are complete decentralization, JSON object format, 
 metadocuments, integration with runtime (it is just a ruby library). 

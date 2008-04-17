@@ -140,8 +140,13 @@ begin
 
 
 
-rescue NotImplementedError
-  puts "# Error: #{$!.message}, loading uuidtools"
+rescue NotImplementedError, CompilationError
+  if $!.is_a?(CompilationError)
+    puts "# Can't compile C code, make sure you have ossp-uuid installed"
+  else
+    puts "# Error: #{$!.message}"
+  end
+  puts "# Falling back touuidtools gem"
   require 'uuidtools'
   module StrokeDB::Util
 
