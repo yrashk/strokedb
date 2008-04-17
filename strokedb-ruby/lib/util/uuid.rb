@@ -12,7 +12,7 @@ begin
       builder.add_link_flags LD_FLAGS
       builder.prefix %{
         #include "dlfcn.h"
-        #include "ossp/uuid.h"
+        #include "uuid.h"
       }
       builder.c %{
         VALUE random_uuid() 
