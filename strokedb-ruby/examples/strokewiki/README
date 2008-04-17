@@ -1,0 +1,8 @@
+Run with: ruby wiki.rb
+
+then open your browser and try: http://localhost:7000
+
+WARNING
+-------
+storages have changed, make sure you start with a fresh database
+delete .wiki.strokedb folder in current directory

@@ -18,7 +18,11 @@ HOME = 'Home'
 
 
 Page = StrokeDB::Meta.new do
-  validates_uniqueness_of :name
+  # There is a bug in validates_uniqueness_of
+  # ditz show general-4 for the details
+  # leave this commented for now
+  #
+  # validates_uniqueness_of :name
   on_new_document do |doc|
     doc[:body] ||= "I'm a boring page, please edit me!"
   end
@@ -72,6 +76,9 @@ class MainController < Ramaze::Controller
   end
   
   def new name
+    # until validates_uniqueness_of get fixed
+    redirect("/") if Page.find(:name => name).first
+    
     @page = Page.new(:name => name)
   end
 
