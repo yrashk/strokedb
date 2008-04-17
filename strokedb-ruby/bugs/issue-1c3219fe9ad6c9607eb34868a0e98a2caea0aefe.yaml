@@ -8,8 +8,8 @@ type: :bugfix
 component: General
 release: 
 reporter: Yurii Rashkovskii <yrashk@idbns.com>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2008-04-14 20:58:27.595304 Z
 references: []
 
@@ -19,3 +19,7 @@ log_events:
   - Yurii Rashkovskii <yrashk@idbns.com>
   - created
   - ""
+- - 2008-04-17 05:41:08.201528 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - closed issue with disposition fixed
+  - oleganza reverted LMA (and LMH) to yrashk's implementation
