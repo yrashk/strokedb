@@ -17,23 +17,23 @@ module StrokeDB
     def initialize(slotname)
       @slotname = slotname
     end
-    
+
     def message
       "Can't find slot #{@slotname}"
     end
-    
+
     def inspect
       "#<#{self.class.name}: #{message}>"
     end
   end
-  
+
   #
   # Raised when Document#save! is called on an invalid document 
   # (for which doc.valid? returns false)
   #
   class InvalidDocumentError < StandardError #:nodoc:
     attr_reader :document
-    
+
     def initialize(document)
       @document = document
     end
@@ -41,7 +41,7 @@ module StrokeDB
     def message
       "Validation failed: #{@document.errors.messages.join(", ")}"
     end
-    
+
     def inspect
       "#<#{self.class.name}: #{message}>"
     end
@@ -64,7 +64,15 @@ module StrokeDB
   class Document
     include Validations::InstanceMethods
 
-    attr_reader :store, :callbacks  #:nodoc:
+    attr_reader :callbacks  #:nodoc:
+
+    def store
+      if (txns = Thread.current[:strokedb_transactions]) && !txns.nil? && !txns.empty?
+        txns.last
+      else
+        @store
+      end
+    end
 
     def marshal_dump #:nodoc:
       (@new ? '1' : '0') + (@saved ? '1' : '0') + to_raw.to_json
@@ -110,9 +118,9 @@ module StrokeDB
 
         if _module
           @document.extend(_module)
-          
+
           _module.send!(:setup_callbacks, @document) rescue nil
-          
+
           if opts['call_initialization_callbacks'] 
             @document.send!(:execute_callbacks_for, _module, :on_initialization)
             @document.send!(:execute_callbacks_for, _module, :on_new_document) if @document.new?
@@ -181,7 +189,7 @@ module StrokeDB
 
       (@slots[slotname] ||= Slot.new(self, slotname)).value = value
       update_version!(slotname)
-      
+
       value
     end
 
@@ -206,7 +214,7 @@ module StrokeDB
     #
     def remove_slot!(slotname)
       slotname = slotname.to_s
-      
+
       @slots.delete slotname
       update_version! slotname
 
@@ -233,9 +241,9 @@ module StrokeDB
 
     def pretty_print #:nodoc:
       slots = to_raw.except('meta')
-      
+
       s = is_a?(ImmutableDocument) ? "#<(imm)" : "#<"
-      
+
       Util.catch_circular_reference(self) do
         if self[:meta] && name = meta[:name]
           s << "#{name} "
@@ -255,7 +263,7 @@ module StrokeDB
         s.chomp!(' ')
         s << ">"
       end
-      
+
       s
     rescue Util::CircularReferenceCondition
       "#(#{(self[:meta] ? "#{meta}" : "Doc")} #{('@#'+uuid)[0,5]}...)"
@@ -287,7 +295,7 @@ module StrokeDB
       @slots.each_pair do |k,v|
         raw_slots[k.to_s] = v.to_raw
       end
-      
+
       raw_slots
     end
 
@@ -330,10 +338,14 @@ module StrokeDB
     # If first argument is Store, that particular store will be used; otherwise default store will be assumed.
     def self.find(*args)
       store = nil
-      if args.empty? || args.first.is_a?(String) || args.first.is_a?(Hash)
-        store = StrokeDB.default_store
+      if (txns = Thread.current[:strokedb_transactions]) && !txns.nil? && !txns.empty?
+        store = txns.last
       else
-        store = args.shift
+        if args.empty? || args.first.is_a?(String) || args.first.is_a?(Hash)
+          store = StrokeDB.default_store
+        else
+          store = args.shift
+        end
       end
       raise NoDefaultStoreError.new unless store
       query = args.first
@@ -386,9 +398,9 @@ module StrokeDB
       store.save!(self)
       @new = false
       @saved = true
-     
+
       execute_callbacks :after_save
-      
+
       self
     end
 
@@ -399,7 +411,7 @@ module StrokeDB
       hash.each do |k, v|
         self[k] = v
       end
-      
+
       self
     end
 
@@ -419,14 +431,14 @@ module StrokeDB
         # simple case
         return m || Document.new(@store)
       end
-      
+
       return m.first if m.size == 1
 
       mm = m.clone
       collected_meta = mm.shift.clone
 
       names = collected_meta[:name].split(',') rescue []
-      
+
       mm.each do |next_meta|
         next_meta = next_meta.clone
         collected_meta += next_meta
@@ -471,7 +483,7 @@ module StrokeDB
     def uuid
       @uuid ||= self[:uuid]
     end
-    
+
     def raw_uuid #:nodoc:
       @raw_uuid ||= uuid.to_raw_uuid
     end
@@ -502,7 +514,7 @@ module StrokeDB
       case doc
       when Document, DocumentReferenceValue
         doc = doc.load if doc.kind_of? DocumentReferenceValue
-        
+
         # we make a quick UUID check here to skip two heavy to_raw calls
         doc.uuid == uuid && doc.to_raw == to_raw
       else
@@ -530,16 +542,16 @@ module StrokeDB
 
     def method_missing(sym, *args) #:nodoc:
       sym = sym.to_s
-      
+
       return send(:[]=, sym.chomp('='), *args) if sym.ends_with? '='
       return self[sym]                         if slotnames.include? sym
       return !!send(sym.chomp('?'), *args)     if sym.ends_with? '?'
-            
+
       raise SlotNotFoundError.new(sym) if (callbacks['when_slot_not_found'] || []).empty?
 
       r = execute_callbacks(:when_slot_not_found, sym)
       raise r if r.is_a? SlotNotFoundError # TODO: spec this behavior
- 
+
       r
     end
 
@@ -601,14 +613,14 @@ module StrokeDB
         meta = [meta] unless meta.is_a?(Array)
         meta.each {|m| metas.add_meta(m) }
       end
-     
+
       slots.except('meta').each {|name,value| self[name] = value }
 
       # now, when we have all slots initialized, we can run initialization callbacks
       execute_callbacks :on_initialization
       execute_callbacks :on_new_document
     end
-    
+
     # initialize slots from a raw representation
     def initialize_raw_slots(slots) #:nodoc:
       @slots = {}
@@ -653,7 +665,7 @@ module StrokeDB
         self[:previous_version] = version unless version.nil?
 
         generate_new_version!
-        
+
         @saved = nil
       end
     end
