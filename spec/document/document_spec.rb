@@ -252,7 +252,17 @@ describe "New Document" do
     @document.versions.first.should == @document
     @document.versions.head.should == @document
   end
-
+  
+  it "should return string with Document's JSON representation" do
+    @document.to_json.should == "{\"uuid\":\"#{@document.uuid}\",\"version\":\"#{@document.version}\"}"
+  end
+  
+  it "should return string with Document's XML representation" do
+    pending('bug') do
+      @document.to_xml.should == "FIXME"
+    end
+  end
+  
   it_should_behave_like "Document"
 
 end
