@@ -146,7 +146,7 @@ rescue NotImplementedError, CompilationError
   else
     puts "# Error: #{$!.message}"
   end
-  puts "# Falling back touuidtools gem"
+  puts "# Falling back to uuidtools gem"
   require 'uuidtools'
   module StrokeDB::Util
 
