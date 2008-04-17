@@ -92,11 +92,11 @@ class MainController < Ramaze::Controller
     redirect("/show/#{@page.name}")
   end
 
-  #def delete name
-  #  @page = Page.find(:name => name).first
-  #  @page.delete!
-  #  redirect Rs()
-  #end
+  def delete name
+    @page = Page.find(:name => name).first
+    @page.delete!
+    redirect("/")
+  end
   
 end
  
