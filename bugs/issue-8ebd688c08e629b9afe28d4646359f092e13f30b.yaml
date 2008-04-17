@@ -5,7 +5,7 @@ desc: |-
   12bf4aa3d31b9e9ea454461a65c2656330c8d72d caused this problem
 type: :bugfix
 component: Storage
-release: 
+release: v0.0.3
 reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2008-04-08 15:18:05.241811 Z
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - created
+  - ""
+- - 2008-04-17 17:22:47.288003 Z
+  - elliottcable <git@elliottcable.name>
+  - assigned to release v0.0.3 from unassigned
   - ""

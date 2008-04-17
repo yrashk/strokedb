@@ -5,7 +5,7 @@ desc: |-
   Then uses this with Kernel.const_get('Foo,Bar') and fails..
 type: :bugfix
 component: General
-release: 
+release: v0.0.3
 reporter: Claudio <crossblaim@gmail.com>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2008-04-17 13:25:12.718595 Z
   - Claudio <crossblaim@gmail.com>
   - created
+  - ""
+- - 2008-04-17 17:23:16.785146 Z
+  - elliottcable <git@elliottcable.name>
+  - assigned to release v0.0.3 from unassigned
   - ""

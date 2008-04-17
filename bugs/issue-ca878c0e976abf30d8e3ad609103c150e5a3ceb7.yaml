@@ -3,7 +3,7 @@ title: Check messages in validations
 desc: Make sure all default messages in validations make sense
 type: :bugfix
 component: Meta
-release: 
+release: v0.0.3
 reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
 status: :unstarted
 disposition: 
@@ -20,3 +20,7 @@ log_events:
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - unassigned from release v0.0.2
   - Not that important for 0.0.2
+- - 2008-04-17 17:21:09.694114 Z
+  - elliottcable <git@elliottcable.name>
+  - assigned to release v0.0.3 from unassigned
+  - ""

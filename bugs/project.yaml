@@ -22,3 +22,12 @@ releases:
     - Yurii Rashkovskii <yrashk@issuesdone.com>
     - released
     - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v0.0.3
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2008-04-17 17:20:31.994490 Z
+    - elliottcable <git@elliottcable.name>
+    - created
+    - Adding a release, because for some reason there's a bunch of unassigned tasks

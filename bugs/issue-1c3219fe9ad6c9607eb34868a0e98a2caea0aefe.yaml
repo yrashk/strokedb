@@ -6,7 +6,7 @@ desc: |-
   Also I should mention that implementation of things like [] isn't really lazy.
 type: :bugfix
 component: General
-release: 
+release: v0.0.3
 reporter: Yurii Rashkovskii <yrashk@idbns.com>
 status: :closed
 disposition: :fixed
@@ -23,3 +23,7 @@ log_events:
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - closed issue with disposition fixed
   - oleganza reverted LMA (and LMH) to yrashk's implementation
+- - 2008-04-17 17:23:13.152044 Z
+  - elliottcable <git@elliottcable.name>
+  - assigned to release v0.0.3 from unassigned
+  - ""

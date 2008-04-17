@@ -3,7 +3,7 @@ title: Spec RemoteStore::DRb
 desc: ""
 type: :bugfix
 component: Storage
-release: 
+release: v0.0.3
 reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2008-04-13 08:17:36.622614 Z
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - unassigned from release v0.0.2
+  - ""
+- - 2008-04-17 17:22:32.021313 Z
+  - elliottcable <git@elliottcable.name>
+  - assigned to release v0.0.3 from unassigned
   - ""

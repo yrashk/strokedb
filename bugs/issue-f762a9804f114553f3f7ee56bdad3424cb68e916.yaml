@@ -5,7 +5,7 @@ desc: |-
   For uindex, it still should be a mutex, I suppose (unfortunately). Though I am not completely sure yet
 type: :feature
 component: Storage
-release: 
+release: v0.0.3
 reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2008-04-12 02:30:14.584457 Z
   - Yurii Rashkovskii <yrashk@issuesdone.com>
   - created
+  - ""
+- - 2008-04-17 17:22:51.484173 Z
+  - elliottcable <git@elliottcable.name>
+  - assigned to release v0.0.3 from unassigned
   - ""
