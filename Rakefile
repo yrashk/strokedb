@@ -37,14 +37,15 @@ Echoe.taskify do
     task :magic => [:clean, :manifest, :install]
   end
   
-  # Developers: Run this before commiting, or 
+  # Developers: Run this before commiting!
   desc 'Check everything over before commiting!'
   task :aok => [:'rcov:run', :'rcov:verify', :'rcov:open',
+                :'rdoc:html', :'rdoc:open',
                 :'ditz:stage', :'ditz:html', :'ditz:todo', :'ditz:status', :'ditz:html:open']
 end
 
 # desc 'Run by CruiseControl.rb during continuous integration'
-task :cruise => [:'rcov:run', :'rcov:verify', :'ditz:html']
+task :cruise => [:'rcov:run', :'rcov:verify', :'ditz:html', :'rdoc:html']
 
 # By default, we just list the tasks.
 task :default => :list
