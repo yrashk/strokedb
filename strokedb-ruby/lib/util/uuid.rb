@@ -18,30 +18,26 @@ begin
         VALUE random_uuid() 
         {
           uuid_t *uuid;
-          char *str;
+          char str[40], *strptr = str;
+          size_t len = sizeof(str);
           uuid_create(&uuid);
           uuid_make(uuid, UUID_MAKE_V4);
-          str = NULL;
-          uuid_export(uuid, UUID_FMT_STR, &str, NULL);
+          uuid_export(uuid, UUID_FMT_STR, &strptr, &len);
           uuid_destroy(uuid);
-          VALUE r = rb_str_new(str,36);
-          free(str);
-          return r;
+          return rb_str_new(str,36);
         }
       }
       builder.c %{
         VALUE random_uuid_raw()
         {
           uuid_t *uuid;
-          char *str;
+          char str[20], *strptr = str;
+          size_t len = sizeof(str);
           uuid_create(&uuid);
           uuid_make(uuid, UUID_MAKE_V4);
-          str = NULL;
-          uuid_export(uuid, UUID_FMT_BIN, &str, NULL);
+          uuid_export(uuid, UUID_FMT_BIN, &strptr, &len);
           uuid_destroy(uuid);
-          VALUE r = rb_str_new(str,16);
-          free(str);
-          return r;
+          return rb_str_new(str,16);
         }
       }
       
@@ -49,15 +45,13 @@ begin
         VALUE uuid_to_raw(VALUE r_uuid)
         {
           uuid_t *uuid;
-          char *str;
+          char str[20], *strptr = str;
+          size_t len = sizeof(str);
           uuid_create(&uuid);
           uuid_import(uuid, UUID_FMT_STR, StringValuePtr(r_uuid), 36);
-          str = NULL;
-          uuid_export(uuid, UUID_FMT_BIN, &str, NULL);
+          uuid_export(uuid, UUID_FMT_BIN, &strptr, &len);
           uuid_destroy(uuid);
-          VALUE r = rb_str_new(str,16);
-          free(str);
-          return r;
+          return rb_str_new(str,16);
         }
       }
 
@@ -65,15 +59,13 @@ begin
         VALUE uuid_to_formatted(VALUE r_uuid)
         {
           uuid_t *uuid;
-          char *str;
+          char str[40], *strptr = str;
+          size_t len = sizeof(str);
           uuid_create(&uuid);
           uuid_import(uuid, UUID_FMT_BIN, StringValuePtr(r_uuid), 36);
-          str = NULL;
-          uuid_export(uuid, UUID_FMT_STR, &str, NULL);
+          uuid_export(uuid, UUID_FMT_STR, &strptr, &len);
           uuid_destroy(uuid);
-          VALUE r = rb_str_new(str,36);
-          free(str);
-          return r;
+          return rb_str_new(str,36);
         }
       }
 
