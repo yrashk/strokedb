@@ -287,8 +287,7 @@ describe "Combined meta module" do
     (User+Buyer+Seller).document.should be_a_kind_of(ImmutableDocument)
   end
   
-  # FIXME: better description for this
-  it "should raise error" do
+  it "should raise error if trying to Meta + Document" do
     user = User.create!
     lambda { baddoc = (Buyer+user).create! }.should raise_error(RuntimeError)
   end
