@@ -1,8 +1,14 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
+describe "LamportTimestamp" do
+  it "#zero_string" do
+    LamportTimestamp.zero_string.should == '000000000000000000000000-0000-0000-0000-000000000000'
+  end
+end
+
 describe "Initial LamportTimestamp" do
   before(:each) do
-    @t0   = LamportTimestamp.new
+    @t0 = LamportTimestamp.new
   end
 
   it "should have counter == 0" do
@@ -15,6 +21,10 @@ describe "Initial LamportTimestamp" do
 
   it "should pass generated uuid on #next" do
     @t0.next.uuid.should == @t0.uuid
+  end
+  
+  it "shoul return marshal_dump as json" do
+    @t0.to_json.should == '"0000000000000000'+@t0.uuid+'"'
   end
 end
 
