@@ -1,0 +1,49 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Sometimes store_sync_spec fails (not every time)
+desc: |-
+  1)
+  NoMethodError in 'Store that syncs documents in should fast-forward document if applicable'
+  undefined method `[]' for nil:NilClass
+  /Users/yrashk/Development/strokedb/lib/volumes/skiplist_volume.rb:95:in `read_node'
+  /Users/yrashk/Development/strokedb/lib/volumes/skiplist_volume.rb:39:in `node_next'
+  /Users/yrashk/Development/strokedb/lib/data_structures/simple_skiplist.rb:98:in `find_nearest_node'
+  /Users/yrashk/Development/strokedb/lib/data_structures/simple_skiplist.rb:202:in `find'
+  /Users/yrashk/Development/strokedb/lib/stores/file_storage.rb:16:in `find'
+  /Users/yrashk/Development/strokedb/lib/stores/memory_storage.rb:16:in `find'
+  /Users/yrashk/Development/strokedb/lib/stores/store.rb:20:in `find'
+  /Users/yrashk/Development/strokedb/lib/document/meta.rb:229:in `find_meta_doc'
+  /Users/yrashk/Development/strokedb/lib/document/meta.rb:213:in `make_document'
+  /Users/yrashk/Development/strokedb/lib/document/meta.rb:198:in `document'
+  /Users/yrashk/Development/strokedb/lib/document/meta.rb:196:in `map'
+  /Users/yrashk/Development/strokedb/lib/document/meta.rb:196:in `document'
+  /Users/yrashk/Development/strokedb/lib/document/document.rb:110:in `add_meta'
+  /Users/yrashk/Development/strokedb/lib/document/document.rb:614:in `initialize_slots'
+  /Users/yrashk/Development/strokedb/lib/document/document.rb:614:in `each'
+  /Users/yrashk/Development/strokedb/lib/document/document.rb:614:in `initialize_slots'
+  /Users/yrashk/Development/strokedb/lib/document/document.rb:598:in `do_initialize'
+  /Users/yrashk/Development/strokedb/lib/document/document.rb:167:in `initialize'
+  /Users/yrashk/Development/strokedb/lib/document/meta.rb:111:in `new'
+  /Users/yrashk/Development/strokedb/lib/document/meta.rb:111:in `new'
+  /Users/yrashk/Development/strokedb/lib/document/meta.rb:116:in `create!'
+  /Users/yrashk/Development/strokedb/lib/stores/store.rb:76:in `document'
+  /Users/yrashk/Development/strokedb/lib/sync/store_sync.rb:21:in `sync!'
+  ./spec/sync/store_sync_spec.rb:44:
+type: :bugfix
+component: Storage
+release: v0.0.3
+reporter: Yurii Rashkovskii <yrashk@idbns.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-17 21:28:49.887863 Z
+references: []
+
+id: fa64e74e54d1dd7a895939fb8bd41a899fe746ce
+log_events: 
+- - 2008-04-17 21:29:02.115958 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - created
+  - ""
+- - 2008-04-17 21:31:49.569914 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - commented
+  - The main problem is that it fails randomly (not each time you run specs)
