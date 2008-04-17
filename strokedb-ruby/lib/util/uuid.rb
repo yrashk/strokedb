@@ -5,7 +5,7 @@ begin
     require 'inline'
 
     def self.dlpath
-      dlpath = `locate libuuid.so`.split.concat(`locate libuuid.dylib`.split).first
+      dlpath = ['/opt/local/lib/libuuid.dylib',*(`locate libuuid.so`.split.concat(`locate libuuid.dylib`.split))].select{|f| File.exists?(f)}.uniq.first
       raise NotImplementedError, "cannot find libuuid" unless dlpath
       dlpath
     end
