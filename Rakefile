@@ -39,7 +39,7 @@ Echoe.taskify do
   
   # Developers: Run this before commiting!
   desc 'Check everything over before commiting!'
-  task :aok => [:'rcov:run', :'rcov:verify', :'rcov:open',
+  task :aok => [:'rcov:verbose', :'rcov:verify_verbose', :'rcov:open',
                 :'rdoc:html', :'rdoc:open',
                 :'ditz:stage', :'ditz:html', :'ditz:todo', :'ditz:status', :'ditz:html:open']
 end
