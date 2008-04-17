@@ -1,0 +1,14 @@
+namespace :stats do
+  STATS_DIRECTORIES = [
+    %w(Code        lib),
+    %w(Specs       spec)
+  ].collect { |name, dir| [ name, "#{File.dirname(__FILE__)}/../#{dir}" ] }.select { |name, dir| File.directory?(dir) }
+  
+  desc "Report code statistics (KLOCs, etc) from the application"
+  task :summary do
+    require 'code_statistics'
+    CodeStatistics.send(:remove_const, :TEST_TYPES)
+    CodeStatistics.const_set(:TEST_TYPES,%w(Specs))
+    CodeStatistics.new(*STATS_DIRECTORIES).to_s
+  end
+end

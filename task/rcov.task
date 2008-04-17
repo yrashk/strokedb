@@ -1,0 +1,35 @@
+namespace :rcov do
+  Spec::Rake::SpecTask.new(:run) do |t|
+    t.spec_files = Dir['spec/**/*_spec.rb'].sort
+    t.libs = ['lib', 'server/lib' ]
+    t.rcov = true
+    t.rcov_opts = ['--exclude-only', '".*"', '--include-file', '^app,^lib']
+    t.rcov_dir = :meta / :coverage
+  end
+  
+  Spec::Rake::SpecTask.new(:verbose) do |t|
+    t.spec_opts = ["--format", "specdoc"]
+    t.spec_files = Dir['spec/**/*_spec.rb'].sort
+    t.libs = ['lib', 'server/lib' ]
+    t.rcov = true
+    t.rcov_opts = ['--exclude-only', '".*"', '--include-file', '^app,^lib']
+    t.rcov_dir = :meta / :coverage
+  end
+
+  Spec::Rake::SpecTask.new(:very_verbose) do |t|
+    t.spec_opts = ["--format", "specdoc", "--colour"]
+    t.spec_files = Dir['spec/**/*_spec.rb'].sort
+    t.libs = ['lib', 'server/lib' ]
+    t.rcov = true
+    t.rcov_dir = :meta / :coverage
+  end
+  
+  RCov::VerifyTask.new(:verify) do |t|
+    t.threshold = 87.5
+    t.index_html = :meta / :coverage / 'index.html'
+  end
+
+  task :open do
+    system 'open ' + :meta / :coverage / 'index.html' if PLATFORM['darwin']
+  end
+end

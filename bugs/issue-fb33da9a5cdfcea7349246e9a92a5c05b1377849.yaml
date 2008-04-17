@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Re-organize, making this repository the ruby-specific project.
+desc: Move the strokedb-ruby stuff into root, so this repository is, in effect, strokedb-ruby only.
+type: :bugfix
+component: General
+release: v0.0.3
+reporter: elliottcable <git@elliottcable.name>
+status: :closed
+disposition: :fixed
+creation_time: 2008-04-17 17:26:11.127299 Z
+references: []
+
+id: fb33da9a5cdfcea7349246e9a92a5c05b1377849
+log_events: 
+- - 2008-04-17 17:26:37.620146 Z
+  - elliottcable <git@elliottcable.name>
+  - created
+  - Later, when we go multi-lang, we can proffer other repositories for other language implementations.
+- - 2008-04-17 17:27:22.271960 Z
+  - elliottcable <git@elliottcable.name>
+  - closed issue with disposition fixed
+  - All moved to root, and anything that broke, is fixed!

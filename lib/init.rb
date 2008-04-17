@@ -1,5 +1,11 @@
 module StrokeDB
-  VERSION = '0.0.2.1' + (RUBY_PLATFORM =~ /java/ ? '-java' : '')
+  # Version:
+       MAJOR = 0
+       MINOR = 0
+  PATCHLEVEL = 2.1
+  
+  VERSION = [MAJOR.to_s, MINOR.to_s, PATCHLEVEL.to_s].join('.')
+  VERSION_STRING = VERSION + (RUBY_PLATFORM =~ /java/ ? '-java' : '')
 
   # UUID regexp (like 1e3d02cc-0769-4bd8-9113-e033b246b013)
   UUID_RE = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
