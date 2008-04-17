@@ -1,0 +1,9 @@
+namespace :benchmarks do
+  task :run do
+    paths = Dir['benchmarks/**/*.rb']
+    paths.each do |path| 
+      ruby path
+      puts ("-"*80)+"\n "
+    end
+  end
+end

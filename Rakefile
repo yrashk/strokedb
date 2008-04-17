@@ -1,92 +1,53 @@
-require 'rake'
-require 'rubygems'
-Gem::manage_gems
-require 'rake/gempackagetask'
-require 'spec/rake/spectask'
+require 'rake'; require 'rubygems'
+$:.unshift(File.dirname(__FILE__)); require 'strokedb'
+require 'task/echoe'
 
-require 'rake/rdoctask'
-
-task :default => [:ci, :jci, :bench]
-
-task :bench => [:benchmarks]
-task :benchmarks do
-  paths = Dir['benchmarks/**/*.rb']
-  paths.each do |path| 
-    ruby path
-    puts ("-"*80)+"\n "
+Echoe.taskify do
+  Dir['task/**/*.task'].each {|t| load t}
+  
+  namespace :echoe do
+    Echoe.new('StrokeDB', StrokeDB::VERSION) do |g|
+      g.author         = ['Yurii Rashkovskii', 'Oleg Andreev']
+      g.email          = ['strokedb@googlegroups.com']
+      g.summary        = 'embeddable, distributed, document-based database'
+      g.url            = 'http://strokedb.com'
+      g.description = <<-EOF
+  StrokeDB is an embeddable, distributed, document-based database written in Ruby.
+  It is schema-free (allowing you to define any attribute on any object at any
+  time), it scales infinitely, it even allows free versioning and integrates
+  perfectly with Ruby applications.
+  EOF
+    
+      g.platform       = Gem::Platform::RUBY
+      g.dependencies   = ['diff-lcs >= 1.1.2', 'uuidtools >= 1.0.3', 'json >= 1.1.2']
+    
+      g.manifest_name  = 'MANIFEST'
+      g.ignore_pattern = /(^\.git|^.DS_Store$|^meta|^test\/storages|^examples\/(.*).strokedb|^bugs)/
+    end
+    
+    desc 'tests packaged files to ensure they are all present'
+    task :verify => :package do
+      # An error message will be displayed if files are missing
+      if system %(ruby -e "require 'rubygems'; require 'pkg/strokedb-#{StrokeDB::VERSION}/strokedb'")
+        puts "\nThe library files are present"
+      end
+    end
+    
+    desc 'Clean tree, update manifest, and install gem'
+    task :magic => [:clean, :manifest, :install]
   end
+  
+  # Developers: Run this before commiting, or 
+  desc 'Check everything over before commiting!'
+  task :aok => [:'rcov:run', :'rcov:verify', :'rcov:open',
+                :'ditz:stage', :'ditz:html', :'ditz:todo', :'ditz:status', :'ditz:html:open']
 end
 
-task :ci do
-  sh 'spec spec'
-end
+# desc 'Run by CruiseControl.rb during continuous integration'
+task :cruise => [:'rcov:run', :'rcov:verify', :'ditz:html']
 
-task :ci_indefinitely do
-   i=0;loop{i+=1;puts i ; t=`spec spec`;if t =~ /[\.F]F|F[\.F]/ ; puts t ; break ; end }
-end
-
-task :jci do
-  unless (which_jruby = `which jruby`).empty?
-    jruby_bin_dir = File.dirname(which_jruby)
-    sh "#{jruby_bin_dir}/spec spec"
-  else
-    puts "jruby was not found in PATH (`which jruby` gives nothing)"
-  end
-end
-
-desc "Run all examples with RCov"
-Spec::Rake::SpecTask.new('spec_rcov') do |t|
-  t.spec_files = FileList['spec/**/*.rb']
-  t.rcov = true
-  t.rcov_opts = ['--exclude', 'spec,strokedb.rb','--sort','coverage','--xrefs']
-end
-
-STATS_DIRECTORIES = [
-  %w(Code        lib),
-  %w(Specs       spec)
-].collect { |name, dir| [ name, "#{File.dirname(__FILE__)}/#{dir}" ] }.select { |name, dir| File.directory?(dir) }
-
-desc "Report code statistics (KLOCs, etc) from the application"
-task :stats do
-  require 'code_statistics'
-  CodeStatistics.const_set(:TEST_TYPES,%w(Specs))
-  CodeStatistics.new(*STATS_DIRECTORIES).to_s
-end
-
-Rake::RDocTask.new do |rd|
-   rd.main = "README"
-   rd.rdoc_dir = "docs/html"
-   rd.rdoc_files.include("README", "lib/**/*.rb")
-end
-
-gemspec = Gem::Specification.new do |s|
-    s.platform  =   Gem::Platform::RUBY
-    s.name      =   "strokedb"
-    s.version   =   "0.0.2.1"
-    s.author    =   "Yurii Rashkovskii, Oleg Andreev"
-    s.email     =   "strokedb@googlegroups.com"
-    s.summary   =   "an embeddable distributed document database written in Ruby"
-    s.description = <<-EOF
-        StrokeDB is an embeddable distributed document database written in Ruby.
-        It is schema-free, it scales infinitely, it even tracks revisions
-        and perfectly integrates with Ruby applications.
-      EOF
-    s.files     =   FileList['bin/*','README','CONTRIBUTORS','CREDITS','script/*','lib/**/**','strokedb.rb'].to_a
-    s.homepage  =   "http://strokedb.com"
-    s.has_rdoc      =   true
-    s.rubyforge_project = 'strokedb'
-    s.add_dependency 'diff-lcs', '>= 1.1.2'
-    s.add_dependency 'uuidtools', '>= 1.0.3'
-    s.add_dependency 'json', '>= 1.1.2'
-    s.require_path  =   "."
-    s.require_paths <<  'lib'
-    s.executables << 'sdbc'
-end
-
-Rake::GemPackageTask.new(gemspec) do |pkg|
-    pkg.need_tar = true
-end
-
-task :gem => "pkg/#{gemspec.name}-#{gemspec.version}.gem" do
-    puts "latest version generated"
+# By default, we just list the tasks.
+task :default => :list
+task :list do
+  system 'rake -T'
 end

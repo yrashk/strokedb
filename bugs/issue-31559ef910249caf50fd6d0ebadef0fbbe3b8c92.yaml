@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Fix rakefile and tasks
+desc: The rakefile's pretty much a mess, clean it up and prepare for continuous integration with CruiseControl.rb
+type: :bugfix
+component: General
+release: v0.0.3
+reporter: elliottcable <git@elliottcable.name>
+status: :closed
+disposition: :fixed
+creation_time: 2008-04-17 17:28:04.268868 Z
+references: []
+
+id: 31559ef910249caf50fd6d0ebadef0fbbe3b8c92
+log_events: 
+- - 2008-04-17 17:28:06.338807 Z
+  - elliottcable <git@elliottcable.name>
+  - created
+  - ""
+- - 2008-04-17 17:28:26.779729 Z
+  - elliottcable <git@elliottcable.name>
+  - closed issue with disposition fixed
+  - Mmmmm tasty rakefile is now TASTY!
