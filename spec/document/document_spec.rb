@@ -19,6 +19,11 @@ describe "Document class" do
     Document.find(@store, :uuid => @document.uuid).should == [@document]
   end
 
+  it "should raise TypeError when find with wrong argument" do
+    @document = Document.create!
+    lambda { Document.find([]) }.should raise_error(TypeError)
+  end
+  
 end
 
 
