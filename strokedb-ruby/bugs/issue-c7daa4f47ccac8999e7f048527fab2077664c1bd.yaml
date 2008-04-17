@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: bug in validates_uniqueness_of
+desc: |-
+  validates_uniqueness_of uses doc.meta.name to find the meta of the doc, the problem is what a doc may have multiple metas, and doc.meta.name returns all meta names combined in a string (like 'Foo,Bar').
+  Then uses this with Kernel.const_get('Foo,Bar') and fails..
+type: :bugfix
+component: General
+release: 
+reporter: Claudio <crossblaim@gmail.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-17 13:25:07.301987 Z
+references: []
+
+id: c7daa4f47ccac8999e7f048527fab2077664c1bd
+log_events: 
+- - 2008-04-17 13:25:12.718595 Z
+  - Claudio <crossblaim@gmail.com>
+  - created
+  - ""
