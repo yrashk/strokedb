@@ -25,9 +25,10 @@ module StrokeDB
       @index_store.find(*args)
     end
 
-    def exists?(uuid,version=nil)
-      @storage.exists?(uuid,version)
+    def include?(uuid,version=nil)
+      @storage.include?(uuid,version)
     end
+    alias_method :contains?, :include?
 
     def head_version(uuid)
       @storage.head_version(uuid,{ :store => self })

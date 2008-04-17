@@ -76,19 +76,19 @@ describe "Non-empty store" do
 
 
   it "should report existing document as such" do
-    @store.exists?(@documents.first.uuid).should == true
+    @store.include?(@documents.first.uuid).should == true
   end
 
   it "should report existing versioned document as such" do
-    @store.exists?(@documents.first.uuid,@documents.first.version).should == true
+    @store.include?(@documents.first.uuid,@documents.first.version).should == true
   end
 
   it "should report versioned document that does not exist as such" do
-    @store.exists?(@documents.first.uuid,'ouch, there is no way such version could be generated').should == false
+    @store.include?(@documents.first.uuid,'ouch, there is no way such version could be generated').should == false
   end
 
   it "should report document that does not exist as such" do
-    @store.exists?('ouch, there is no way such UUID could be generated').should == false
+    @store.include?('ouch, there is no way such UUID could be generated').should == false
   end
 
   it "should find a document" do
