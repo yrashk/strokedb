@@ -51,7 +51,7 @@ begin
           uuid_t *uuid;
           char *str;
           uuid_create(&uuid);
-          uuid_import(uuid, UUID_FMT_STR, STR2CSTR(r_uuid), 36);
+          uuid_import(uuid, UUID_FMT_STR, StringValuePtr(r_uuid), 36);
           str = NULL;
           uuid_export(uuid, UUID_FMT_BIN, &str, NULL);
           uuid_destroy(uuid);
@@ -67,7 +67,7 @@ begin
           uuid_t *uuid;
           char *str;
           uuid_create(&uuid);
-          uuid_import(uuid, UUID_FMT_BIN, STR2CSTR(r_uuid), 36);
+          uuid_import(uuid, UUID_FMT_BIN, StringValuePtr(r_uuid), 36);
           str = NULL;
           uuid_export(uuid, UUID_FMT_STR, &str, NULL);
           uuid_destroy(uuid);
