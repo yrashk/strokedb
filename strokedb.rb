@@ -1,4 +1,4 @@
-ruby_debug_path     = File.dirname(__FILE__) + '/../dependencies/ruby-debug-0.10.0/cli/'
+ruby_debug_path     = File.dirname(__FILE__) + '/vendor/ruby-debug-0.10.0/cli/'
 
 if ENV["DEBUGGER"]
   if File.exist?(ruby_debug_path)

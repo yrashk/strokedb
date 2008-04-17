@@ -25,10 +25,11 @@ module StrokeDB
       end
     end
     
-    def exists?(uuid,version=nil)
+    def include?(uuid,version=nil)
       uuid_version = uuid + (version ? ".#{version}" : "")
       !@container.find(uuid_version).nil?
     end
+    alias_method :contains?, :include?
 
     def head_version(uuid, opts = {})
       if doc = find(uuid,nil, opts)

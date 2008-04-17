@@ -31,7 +31,7 @@ module StrokeDB
         @timestamp = LTS.new(_timestamp.counter, timestamp.uuid)
       else
       end
-      docs.each {|doc| save!(doc) unless exists?(doc.uuid, doc.version)}
+      docs.each {|doc| save!(doc) unless include?(doc.uuid, doc.version)}
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         incoming_chain = find(uuid, versions.last.version).versions.all_versions
         if existing_chain[uuid].nil? or existing_chain[uuid].empty? # It is a new document

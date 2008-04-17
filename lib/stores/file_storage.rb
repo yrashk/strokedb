@@ -25,9 +25,11 @@ module StrokeDB
       end
     end
 
-    def exists?(uuid,version=nil)
+    def include?(uuid,version=nil)
       !!find(uuid,version,:no_instantiation => true)
     end
+    # using #include? to match with Array, but #contains sounds much nicer
+    alias_method :contains?, :include?
 
     def head_version(uuid, opts = {})
       if doc = find(uuid,nil,opts.merge({ :no_instantiation => true }))
