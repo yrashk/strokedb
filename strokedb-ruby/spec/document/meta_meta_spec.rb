@@ -2,8 +2,9 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "Meta meta" do
   before(:each) do
-    @mem_storage = StrokeDB::MemoryChunkStorage.new
-    StrokeDB.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(:storage => @mem_storage))
+    setup_default_store
+    # @mem_storage = StrokeDB::MemoryStorage.new
+    # StrokeDB.stub!(:default_store).and_return(StrokeDB::Store.new(:storage => @mem_storage))
   end
   
   it "should have document with nil uuid" do
@@ -16,8 +17,9 @@ end
 describe "Meta meta instantiation" do
 
   before(:each) do
-    @store = mock("store")
-    StrokeDB.stub!(:default_store).and_return(@store)
+    # @store = mock("store")
+    # StrokeDB.stub!(:default_store).and_return(@store)
+    setup_default_store
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     @meta = Meta.new(:name => "SomeName")
   end
@@ -32,9 +34,10 @@ end
 describe "Meta meta instantiation with block specified" do
   
   before(:each) do
-    @mem_storage = StrokeDB::MemoryChunkStorage.new
-    StrokeDB.stub!(:default_store).and_return(StrokeDB::SkiplistStore.new(:storage => @mem_storage))
+    # @mem_storage = StrokeDB::MemoryStorage.new
+    # StrokeDB.stub!(:default_store).and_return(StrokeDB::Store.new(:storage => @mem_storage))
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    setup_default_store
     @meta = Meta.new(:name => "SomeName") { def result_of_evaluation ; end  } 
   end
   

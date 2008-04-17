@@ -33,7 +33,7 @@ module StrokeDB
       opts = opts.stringify_keys
       
       config = new(opts['default'])
-      storages = opts['storages'] || [:memory_chunk, :file_chunk]
+      storages = opts['storages'] || [:memory, :file]
 
       base_path = opts['base_path'] || './'
 
@@ -58,8 +58,8 @@ module StrokeDB
 
       config.add_index(:default, opts['index'] || :inverted_list, index_storages.first)
 
-      config.add_store(:default, opts['store'] || :skiplist, 
-                       { :storage => storages.first }.merge(opts['store_options'] || {}))
+      config.add_store(:default, opts['store'], # FIXME: nil here is a Bad Thing (tm) 
+                       { :storage => storages.first, :path => base_path }.merge(opts['store_options'] || {}))
 
       ### save config ###
 
@@ -106,13 +106,14 @@ module StrokeDB
     end
     
     def add_store(key, type, options = {})
+      
       options[:storage] = @storages[options[:storage] || :default]
       raise "Missing storage for store #{key}" unless options[:storage]
-
+      
       options[:index] ||= @indexes[options[:index] || :default]
-
+      
       store_instance = constantize(:store, type).new(options)
-
+      
       if options[:index]
         options[:index].document_store = store_instance
       end
@@ -134,9 +135,9 @@ module StrokeDB
     end
   end
   
-  class <<self
+  class << self
     def use_perthread_default_config!
-      class <<self
+      class << self
         def default_config
           Thread.current['StrokeDB.default_config']
         end
@@ -146,7 +147,7 @@ module StrokeDB
       end
     end
     def use_global_default_config!
-      class <<self
+      class << self
         def default_config
           $strokedb_default_config
         end

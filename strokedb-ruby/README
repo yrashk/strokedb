@@ -6,9 +6,15 @@ metadocuments, integration with runtime (it is just a ruby library).
 
 === Requirements
 
+Install ossp-uuid library:
+
+	$ sudo port install ossp-uuid # (MacOSX)
+
 You need to install few gems in order to run StrokeDB:
 
-	$ sudo gem install diff-lcs uuidtools json
+	$ sudo gem install diff-lcs json RubyInline
+	
+If you can't install ossp-uuid for some reason, then install uuidtools gem as well.
 
 *Note*: There is no need in <tt>uuidtools</tt> if you use JRuby
 

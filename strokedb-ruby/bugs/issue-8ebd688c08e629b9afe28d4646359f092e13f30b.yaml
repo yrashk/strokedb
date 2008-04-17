@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: 12bf4aa3d31b9e9ea454461a65c2656330c8d72d breaks work with reopened volumes (AFAIU)
+desc: |-
+  Reopened volumes seems to have some previously allocated positions as available; haven't checked yet, but AFAIR
+  12bf4aa3d31b9e9ea454461a65c2656330c8d72d caused this problem
+type: :bugfix
+component: Storage
+release: 
+reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-08 15:18:03.850493 Z
+references: []
+
+id: 8ebd688c08e629b9afe28d4646359f092e13f30b
+log_events: 
+- - 2008-04-08 15:18:05.241811 Z
+  - Yurii Rashkovskii <yrashk@issuesdone.com>
+  - created
+  - ""

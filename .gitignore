@@ -2,6 +2,9 @@
 strokedb-ruby/test/storages/*
 strokedb-ruby/coverage
 strokedb-ruby/docs/html
+strokedb-ruby/docs/software
+strokedb-ruby/docs/*/*.key
+strokedb-ruby/.*strokedb
 strokedb-ruby/TAGS
 *.swp
 strokedb-ruby/.*.strokedb

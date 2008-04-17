@@ -17,13 +17,6 @@ module StrokeDB
       end
     end
 
-    unless RUBY_PLATFORM =~ /java/
-      require 'uuidtools'
-      def self.random_uuid
-        ::UUID.random_create.to_s
-      end
-    end
-
     class CircularReferenceCondition < Exception ; end
     class << self
       def catch_circular_reference(value,name = 'StrokeDB.reference_stack')
@@ -35,4 +28,5 @@ module StrokeDB
       end
     end
   end
+  
 end

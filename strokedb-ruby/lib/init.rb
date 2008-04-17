@@ -10,7 +10,8 @@ module StrokeDB
   # following are special UUIDs used by StrokeDB
 
   # so called Nil UUID, should be used as special UUID for Meta meta
-  NIL_UUID = "00000000-0000-0000-0000-000000000000" 
+  NIL_UUID = "00000000-0000-0000-0000-000000000000"
+  RAW_NIL_UUID = "\x00" * 16
 
   # UUID used for DeletedDocument meta
   DELETED_DOCUMENT_UUID = 'e5e0ef20-e10f-4269-bff3-3040a90e194e'
@@ -43,7 +44,7 @@ module StrokeDB
       StrokeDB.default_config = cfg
     end
   end
-  
+
   if ENV['DEBUG'] || $DEBUG
     def DEBUG
       yield
@@ -52,6 +53,10 @@ module StrokeDB
     def DEBUG
     end
   end
-  
+
+  OPTIMIZATIONS = []
+  OPTIMIZATIONS << :C    unless RUBY_PLATFORM =~ /java/
+  OPTIMIZATIONS << :Java if     RUBY_PLATFORM =~ /java/
+
   class NoDefaultStoreError < Exception ; end
 end

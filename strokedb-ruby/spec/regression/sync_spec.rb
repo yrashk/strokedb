@@ -4,8 +4,8 @@ describe "Database sync" do
   
   before(:all) do
     @path = File.dirname(__FILE__) + '/../../test/storages/regression/database-sync'
-    build_config!
     FileUtils.rm_rf @path
+    build_config!
   end
   
   it "empty save test" do
@@ -30,7 +30,7 @@ describe "Database sync" do
   end
   
   def save!
-    StrokeDB.default_store.chunk_storage.sync_chained_storages!
+    StrokeDB.default_store.storage.sync_chained_storages!
   end
   
 end

@@ -471,6 +471,10 @@ module StrokeDB
     def uuid
       @uuid ||= self[:uuid]
     end
+    
+    def raw_uuid #:nodoc:
+      @raw_uuid ||= uuid.to_raw_uuid
+    end
 
     #
     # Returns document's previous version (which is stored in <tt>previous_version</tt> slot)
