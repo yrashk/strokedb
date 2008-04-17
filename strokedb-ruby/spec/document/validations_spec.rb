@@ -230,6 +230,9 @@ describe "validates_uniqueness_of" do
   describe "document with multiple metas" do
     before :each do
       validations_setup
+      Object.send!(:remove_const,'User') if defined?(User)
+      Object.send!(:remove_const,'Admin') if defined?(Admin)
+      
       User = Meta.new { validates_uniqueness_of :email }
       Admin = Meta.new
     end
@@ -245,7 +248,7 @@ describe "validates_uniqueness_of" do
       u = User.create!(:email => 'foo@bar.org')
       u.should be_valid
       u.metas << Admin
-      pending('bug')
+      pending('bug') do
         u.should be_valid
       end
     end
