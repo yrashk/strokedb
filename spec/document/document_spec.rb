@@ -867,9 +867,7 @@ describe "Saved document with validations" do
   it "should be deletable with validates_uniqueness_of" do
     Foo = Meta.new { validates_uniqueness_of :name }
     doc = Foo.create! :name => 'foo'
-    pending("bug") do
-      doc.delete!
-    end
+    doc.delete!
   end
   
   it "should be deletable with validates_inclusion_of" do
