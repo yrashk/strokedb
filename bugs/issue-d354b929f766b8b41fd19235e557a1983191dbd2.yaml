@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Convert the philosophy docs to something more semantic
+desc: The textual documents in meta/philosophy aren't really appropriate for their type and/or location.
+type: :bugfix
+component: General
+release: 
+reporter: elliottcable <git@elliottcable.name>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-18 04:54:00.438292 Z
+references: []
+
+id: d354b929f766b8b41fd19235e557a1983191dbd2
+log_events: 
+- - 2008-04-18 04:54:05.276303 Z
+  - elliottcable <git@elliottcable.name>
+  - created
+  - Perhaps convert them to RDoc and embed them in various places around the codebase... or convert them to HTML and have them on the website?
