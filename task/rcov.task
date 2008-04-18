@@ -1,24 +1,27 @@
 namespace :rcov do
+  # Runs specs, runs rcov and textual summary
+  Spec::Rake::SpecTask.new(:bw) do |t|
+    t.spec_files = Dir['spec/**/*_spec.rb'].sort
+    t.libs = ['lib', 'server/lib' ]
+    t.rcov = true
+    # t.rcov_opts = ['--exclude-only', '".*"', '--include-file', '^app,^lib']
+    t.rcov_opts = ['--text-summary', '--exclude-only', '"spec\/,^\/"']
+    t.rcov_dir = :meta / :coverage
+  end
+  
+  # Runs specs, runs rcov, with color and textual summary
   Spec::Rake::SpecTask.new(:run) do |t|
+    t.spec_opts = ["--colour"]
     t.spec_files = Dir['spec/**/*_spec.rb'].sort
     t.libs = ['lib', 'server/lib' ]
     t.rcov = true
     # t.rcov_opts = ['--exclude-only', '".*"', '--include-file', '^app,^lib']
-    t.rcov_opts = ['--exclude-only', '"spec\/,^\/"']
+    t.rcov_opts = ['--text-summary', '--exclude-only', '"spec\/,^\/"']
     t.rcov_dir = :meta / :coverage
   end
   
+  # Runs verbose specs, runs rcov, with color and textual summary
   Spec::Rake::SpecTask.new(:verbose) do |t|
-    t.spec_opts = ["--format", "specdoc", "--colour"]
-    t.spec_files = Dir['spec/**/*_spec.rb'].sort
-    t.libs = ['lib', 'server/lib' ]
-    t.rcov = true
-    # t.rcov_opts = ['--exclude-only', '".*"', '--include-file', '^app,^lib']
-    t.rcov_opts = ['--exclude-only', '"spec\/,^\/"']
-    t.rcov_dir = :meta / :coverage
-  end
-  
-  Spec::Rake::SpecTask.new(:summary) do |t|
     t.spec_opts = ["--format", "specdoc", "--colour"]
     t.spec_files = Dir['spec/**/*_spec.rb'].sort
     t.libs = ['lib', 'server/lib' ]
@@ -28,13 +31,15 @@ namespace :rcov do
     t.rcov_dir = :meta / :coverage
   end
   
+  # Verify coverage
   RCov::VerifyTask.new(:verify) do |t|
     t.threshold = StrokeDB::COVERAGE
     t.index_html = :meta / :coverage / 'index.html'
     t.require_exact_threshold = false
   end
   
-  RCov::VerifyTask.new(:verify_verbose) do |t|
+  # Verify coverage, strictly
+  RCov::VerifyTask.new(:strict) do |t|
     t.threshold = StrokeDB::COVERAGE
     t.index_html = :meta / :coverage / 'index.html'
   end
