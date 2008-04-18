@@ -18,7 +18,7 @@ module StrokeDB
               ::StrokeDB::Config.build :default => true, :base_path => @@loc
             end
           else
-            @@loc = 'temp.strokedb'
+            @@loc = '.console.strokedb'
             ::StrokeDB::Config.build :default => true, :base_path => @@loc
           end
           @@store = ::StrokeDB::default_store
