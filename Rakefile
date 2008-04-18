@@ -41,17 +41,17 @@ Echoe.taskify do
   end
   
   desc 'Check what\'s up in this mug'
-  task :sup => [:'rcov:summary']
+  task :sup => [:'rcov:run', :'rcov:verify']
   
   # Developers: Run this before commiting!
   desc 'Check everything over before commiting!'
-  task :aok => [:'rcov:verbose', :'rcov:verify_verbose', :'rcov:open',
+  task :aok => [:'rcov:verbose', :'rcov:strict', :'rcov:open',
                 :'rdoc:html', :'rdoc:open',
                 :'ditz:stage', :'ditz:html', :'ditz:todo', :'ditz:status', :'ditz:html:open']
 end
 
 # desc 'Run by CruiseControl.rb during continuous integration'
-task :cruise => [:'rcov:run', :'rcov:verify', :'ditz:html', :'rdoc:html']
+task :cruise => [:'ditz:html', :'rdoc:html', :'rcov:bw', :'rcov:verify']
 
 # By default, we just list the tasks.
 task :default => :list
