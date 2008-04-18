@@ -41,7 +41,7 @@ Echoe.taskify do
   end
   
   desc 'Check what\'s up in this mug'
-  task :sup => [:'rcov:verbose', :'rcov:open']
+  task :sup => [:'rcov:summary']
   
   # Developers: Run this before commiting!
   desc 'Check everything over before commiting!'

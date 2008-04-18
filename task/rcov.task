@@ -18,6 +18,16 @@ namespace :rcov do
     t.rcov_dir = :meta / :coverage
   end
   
+  Spec::Rake::SpecTask.new(:summary) do |t|
+    t.spec_opts = ["--format", "specdoc", "--colour"]
+    t.spec_files = Dir['spec/**/*_spec.rb'].sort
+    t.libs = ['lib', 'server/lib' ]
+    t.rcov = true
+    # t.rcov_opts = ['--exclude-only', '".*"', '--include-file', '^app,^lib']
+    t.rcov_opts = ['--text-summary', '--exclude-only', '"spec\/,^\/"']
+    t.rcov_dir = :meta / :coverage
+  end
+  
   RCov::VerifyTask.new(:verify) do |t|
     t.threshold = StrokeDB::COVERAGE
     t.index_html = :meta / :coverage / 'index.html'
