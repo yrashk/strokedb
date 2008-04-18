@@ -13,67 +13,53 @@ begin
       builder.prefix %{
         #include "dlfcn.h"
         #include "uuid.h"
+
+        #define PROLOG(size)               \\
+          uuid_t *uuid;                    \\
+          char str[size], *strptr = str;   \\
+          size_t len = sizeof(str);        \\
+          uuid_create(&uuid)
+
+        #define EPILOG(format, size)                 \\
+          uuid_export(uuid, format, &strptr, &len),  \\
+          uuid_destroy(uuid),                        \\
+          rb_str_new(str,size)
+
+        #define CHARS  EPILOG(UUID_FMT_STR, 36)
+        #define BINARY EPILOG(UUID_FMT_BIN, 16)
       }
       builder.c %{
         VALUE random_uuid() 
         {
-          uuid_t *uuid;
-          char *str;
-          uuid_create(&uuid);
+          PROLOG(40);
           uuid_make(uuid, UUID_MAKE_V4);
-          str = NULL;
-          uuid_export(uuid, UUID_FMT_STR, &str, NULL);
-          uuid_destroy(uuid);
-          VALUE r = rb_str_new(str,36);
-          free(str);
-          return r;
+          return CHARS;
         }
       }
       builder.c %{
         VALUE random_uuid_raw()
         {
-          uuid_t *uuid;
-          char *str;
-          uuid_create(&uuid);
+          PROLOG(20);
           uuid_make(uuid, UUID_MAKE_V4);
-          str = NULL;
-          uuid_export(uuid, UUID_FMT_BIN, &str, NULL);
-          uuid_destroy(uuid);
-          VALUE r = rb_str_new(str,16);
-          free(str);
-          return r;
+          return BINARY;
         }
       }
       
       builder.c %{
         VALUE uuid_to_raw(VALUE r_uuid)
         {
-          uuid_t *uuid;
-          char *str;
-          uuid_create(&uuid);
+          PROLOG(20);
           uuid_import(uuid, UUID_FMT_STR, StringValuePtr(r_uuid), 36);
-          str = NULL;
-          uuid_export(uuid, UUID_FMT_BIN, &str, NULL);
-          uuid_destroy(uuid);
-          VALUE r = rb_str_new(str,16);
-          free(str);
-          return r;
+          return BINARY;
         }
       }
 
       builder.c %{
         VALUE uuid_to_formatted(VALUE r_uuid)
         {
-          uuid_t *uuid;
-          char *str;
-          uuid_create(&uuid);
+          PROLOG(40);
           uuid_import(uuid, UUID_FMT_BIN, StringValuePtr(r_uuid), 36);
-          str = NULL;
-          uuid_export(uuid, UUID_FMT_STR, &str, NULL);
-          uuid_destroy(uuid);
-          VALUE r = rb_str_new(str,36);
-          free(str);
-          return r;
+          return CHARS;
         }
       }
 
