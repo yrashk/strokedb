@@ -11,7 +11,7 @@ Echoe.taskify do
       g.email          = ['strokedb@googlegroups.com']
       g.summary        = 'embeddable, distributed, document-based database'
       g.url            = 'http://strokedb.com'
-      g.description = <<-EOF
+      g.description    = <<-EOF
   StrokeDB is an embeddable, distributed, document-based database written in Ruby.
   It is schema-free (allowing you to define any attribute on any object at any
   time), it scales infinitely, it even allows free versioning and integrates
@@ -23,6 +23,7 @@ Echoe.taskify do
     
       g.manifest_name  = 'MANIFEST'
       g.ignore_pattern = /(^\.git|^.DS_Store$|^meta|^test\/storages|^examples\/(.*).strokedb|^bugs)/
+      g.executable_pattern = 'bin/stroke'
     end
     
     desc 'tests packaged files to ensure they are all present'

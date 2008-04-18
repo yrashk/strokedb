@@ -10,4 +10,8 @@ class String
   def /(o)
     File.join(self, o.to_s)
   end
+  
+  def unindent!
+    self.gsub!(/^\n/, '').gsub!(/^#{self.match(/^\s*/)[0]}/, '')
+  end
 end
