@@ -15,6 +15,8 @@ module StrokeDB
       :too_short         => '#{slotname} is too short (minimum is %d characters)',
       :too_long          => '#{slotname} is too long (maximum is %d characters)',
       :invalid           => '#{slotname} is invalid',
+      :must_be_integer   => '#{slotname} must be integer',
+      :not_a_number      => '#{slotname} is not a number',
     }.freeze unless defined? ERROR_MESSAGES
 
     # Validates that the specified slot exists in the document. Happens by default on save. Example:
@@ -541,13 +543,13 @@ module StrokeDB
     end
 
     NUMERICALITY_ERRORS = { 
-      'greater_than' => '#{slotname} must be greater than %d', 
+      'greater_than'             => '#{slotname} must be greater than %d', 
       'greater_than_or_equal_to' => '#{slotname} must be greater than or equal to %d',
-      'equal_to' => '#{slotname} must be equal to %d', 
-      'less_than' => '#{slotname} must be less than %d',
-      'less_than_or_equal_to' => '#{slotname} must be less than or equal to %d',
-      'odd' => '#{slotname} must be odd',
-      'even' => '#{slotname} must be even'
+      'equal_to'                 => '#{slotname} must be equal to %d', 
+      'less_than'                => '#{slotname} must be less than %d',
+      'less_than_or_equal_to'    => '#{slotname} must be less than or equal to %d',
+      'odd'                      => '#{slotname} must be odd',
+      'even'                     => '#{slotname} must be even',
     }.freeze unless defined? NUMERICALITY_ERRORS
 
     def initialize_validations
@@ -572,23 +574,23 @@ module StrokeDB
       end
       
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
-        meta = Kernel.const_get(doc.meta.name)
-
-        !(found = meta.find(slotname.to_sym => doc[slotname])) || 
-        (found.size == 0) || 
-        (found.first.uuid == doc.uuid)
+        not doc.metas.detect do |meta|
+          found = Kernel.const_get(meta.name).find(slotname.to_sym => doc[slotname])
+          
+          found && found.detect { |item| item.uuid != doc.uuid }
+        end
       end
-      
+
       # using lambda here enables us to use return
       numericality = lambda do |doc, validation, slotname|
         value = doc[slotname]
 
         if validation[:only_integer]
-          return (validation[:message] || "#{slotname} must be integer") unless value.to_s =~ /\A[+-]?\d+\Z/
+          return (validation[:message] || :must_be_integer) unless value.to_s =~ /\A[+-]?\d+\Z/
           value = value.to_i
         else
           value = Kernel.Float(value) rescue false
-          return (validation[:message] || "#{slotname} is not a number") unless value
+          return (validation[:message] || :not_a_number) unless value
         end
 
         errors = []
@@ -680,15 +682,18 @@ module StrokeDB
           next if validation[:allow_nil] && value.nil?
           next if validation[:allow_blank] && value.blank?
 
+          msg = nil
+
           case validation_result = block.call(doc, validation, slotname_to_validate)
-            when true then next
-            when false
-              add_error(doc, validation, slotname_to_validate, validation[:message])
-            when String
-              add_error(doc, validation, slotname_to_validate, validation_result)
-            when Array
+            when true   then next
+            when false  then msg = validation[:message] 
+            when Symbol then msg = ERROR_MESSAGES[validation_result]
+            when String then msg = validation_result
+            when Enumerable
               validation_result.each { |message| add_error(doc, validation, slotname_to_validate, message) }
           end
+          
+          add_error(doc, validation, slotname_to_validate, msg) if msg
         end
       end
     end

@@ -467,7 +467,7 @@ module StrokeDB
     # Please not that it accept both meta modules and their documents, there is no difference
     #
     def metas
-      Metas.new(self)
+      @metas ||= Metas.new(self)
     end
 
     #

@@ -49,6 +49,24 @@ describe "Document validation" do
   end
 end
 
+describe "Document with errors" do
+  before :each do
+    validations_setup
+    @erroneous_doc = erroneous_stuff
+  end
+
+  it "should return the number of errors" do
+    @erroneous_doc.should_not be_valid
+    @erroneous_doc.errors.size.should == 2
+  end
+  
+  it "should yield each attribute and associated message per error added" do
+    @erroneous_doc.should_not be_valid
+    @erroneous_doc.errors.each { }.should == {"something"=>["123"], "other"=>["456"]}
+  end
+  
+end
+
 describe "validates_presence_of" do
   before :each do
     validations_setup 
@@ -238,9 +256,7 @@ describe "validates_uniqueness_of" do
     end
     
     it "should be valid" do
-      pending('bug') do
-        u = (User+Admin).create!(:email => 'foo@bar.org')
-      end
+      u = (User+Admin).create!(:email => 'foo@bar.org')
       u.should be_valid
     end
     
@@ -248,12 +264,20 @@ describe "validates_uniqueness_of" do
       u = User.create!(:email => 'foo@bar.org')
       u.should be_valid
       u.metas << Admin
-      pending('bug') do
-        u.should be_valid
-      end
+      u.should be_valid
+    end
+
+    it "should not be valid" do
+      u = User.create!(:email => 'foo@bar.org')
+      u.should be_valid
+      a = Admin.create!(:email => 'foo@bar.org')
+      a.should be_valid
+
+      u.metas << Admin
+      a.should be_valid
+      u.should_not be_valid
     end
   end
-  
   
   describe "should allow to modify an existing document" do
     it "test 1" do

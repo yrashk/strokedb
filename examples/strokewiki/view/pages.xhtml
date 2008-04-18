@@ -12,7 +12,7 @@
 <h2>List pages</h2>
 <ul>
 <?r @pages.each do |page| ?>
-<li><a href="/show/#{page.name}">#{page.name}</a> - <a href="/edit/#{page.name}">edit</a> | <a href="javascript:alert('This function is not implemented yet')">delete</a></li>
+<li><a href="/show/#{page.name}">#{page.name}</a> - <a href="/edit/#{page.name}">edit</a> | <a href="/delete/#{page.name}">delete</a></li>
 <?r end ?>
 </ul>
 <hr/>

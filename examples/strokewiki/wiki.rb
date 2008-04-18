@@ -18,7 +18,9 @@ HOME = 'Home'
 
 
 Page = StrokeDB::Meta.new do
+  
   validates_uniqueness_of :name
+  
   on_new_document do |doc|
     doc[:body] ||= "I'm a boring page, please edit me!"
   end
@@ -49,6 +51,7 @@ Page = StrokeDB::Meta.new do
     end
     RedCloth.new(content, []).to_html
   end
+  
 end
  
 class MainController < Ramaze::Controller
@@ -92,11 +95,11 @@ class MainController < Ramaze::Controller
     redirect("/show/#{@page.name}")
   end
 
-  #def delete name
-  #  @page = Page.find(:name => name).first
-  #  @page.delete!
-  #  redirect Rs()
-  #end
+  def delete name
+    @page = Page.find(:name => name).first
+    @page.delete!
+    redirect("/")
+  end
   
 end
  
