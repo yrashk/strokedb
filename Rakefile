@@ -23,7 +23,7 @@ Echoe.taskify do
       g.platform       = Gem::Platform::RUBY
       g.dependencies   = ['diff-lcs >= 1.1.2', 'uuidtools >= 1.0.3', 'json >= 1.1.2']
     
-      g.manifest_name  = 'MANIFEST'
+      g.manifest_name  = 'meta/MANIFEST'
       g.ignore_pattern = /(^\.git|^.DS_Store$|^meta|^test\/storages|^examples\/(.*).strokedb|^bugs)/
       g.executable_pattern = 'bin/stroke'
     end
