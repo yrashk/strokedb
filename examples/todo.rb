@@ -1,5 +1,5 @@
 #! /usr/bin/env ruby
-$:.unshift File.dirname(__FILE__) + "/.."
+$:.unshift File.dirname(__FILE__) + "/../lib"
 require "strokedb"
 
 StrokeDB::Config.build :default => true, :base_path => '.todo.strokedb'
