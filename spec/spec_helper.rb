@@ -1,5 +1,10 @@
-require File.expand_path(File.dirname(__FILE__) + '/../strokedb')
+$LOAD_PATH.unshift( File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib')) ).uniq!
+require 'strokedb'
 include StrokeDB
+
+SPEC_ROOT = File.expand_path(File.dirname(__FILE__))
+TEMP_DIR = SPEC_ROOT + '/temp'
+TEMP_STORAGES = TEMP_DIR + '/storages'
 
 def setup_default_store(store=nil)
   if store
@@ -7,7 +12,7 @@ def setup_default_store(store=nil)
     return store
   end
   @mem_storage = StrokeDB::MemoryStorage.new
-  @path = File.join(File.dirname(__FILE__), '/../test/storages/spec')
+  @path = TEMP_STORAGES
   FileUtils.rm_rf @path
   StrokeDB.stub!(:default_store).and_return(StrokeDB::Store.new(:storage => @mem_storage,:index => @index, 
                                                                 :path => @path))
@@ -23,7 +28,7 @@ end
 
 def setup_index(store=nil)
   store ||= StrokeDB.default_store
-  index_storage = StrokeDB::InvertedListFileStorage.new(:path => 'test/storages/inverted_list_storage')
+  index_storage = StrokeDB::InvertedListFileStorage.new(:path => TEMP_STORAGES + '/inverted_list_storage')
   index_storage.clear!
   @index = StrokeDB::InvertedListIndex.new(index_storage)
   @index.document_store = store

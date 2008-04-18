@@ -1,9 +1,9 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.dirname(__FILE__) + '/spec_helper'
 
 describe "Database sync" do
   
   before(:all) do
-    @path = File.dirname(__FILE__) + '/../../test/storages/regression/database-sync'
+    @path = TEMP_STORAGES + '/database-sync'
     FileUtils.rm_rf @path
     build_config!
   end

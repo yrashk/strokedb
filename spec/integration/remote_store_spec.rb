@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.dirname(__FILE__) + '/spec_helper'
 =begin
 class RemoteStoreContext
   def initialize(store)
@@ -21,7 +21,7 @@ end
 
 class ServerScenario < RemoteStoreContext 
   def initialize
-    StrokeDB::Config.build :default => true, :base_path => '../test/storages/drb_store'
+    StrokeDB::Config.build :default => true, :base_path => '../temp/storages/drb_store'
     StrokeDB.default_store.remote_server("0.0.0.0", 4540).start
     super(StrokeDB.default_store)
   end

@@ -1,0 +1,8 @@
+require 'core_ext/kernel'
+require 'core_ext/object'
+require 'core_ext/string'
+require 'core_ext/symbol'
+require 'core_ext/enumerable'
+require 'core_ext/hash'
+require 'core_ext/fixnum'
+require 'core_ext/blank'

@@ -1,0 +1,44 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Re-arrange files
+desc: StrokeDB isn't laid out like a normal ruby gem project. Re-arrange files and interdependencies until it works as a normal gem.
+type: :bugfix
+component: General
+release: 
+reporter: elliottcable <git@elliottcable.name>
+status: :in_progress
+disposition: 
+creation_time: 2008-04-18 08:33:28.721795 Z
+references: []
+
+id: 659b42312bc9199da159fa7a4d8802725aa44432
+log_events: 
+- - 2008-04-18 08:38:55.685509 Z
+  - elliottcable <git@elliottcable.name>
+  - created
+  - |-
+    Many tools allow placing of gems into vendor/, but automatically add vendor/*/lib to the load_path.
+    This means you need your main file <gemname>.rb in lib/, and any extraneous files/folders of files to be required in lib/<gemname>/
+- - 2008-04-18 08:39:22.799558 Z
+  - elliottcable <git@elliottcable.name>
+  - changed status from unstarted to in_progress
+  - I'm working on a complete re-ordering of the code now
+- - 2008-04-18 16:34:52.494239 Z
+  - elliottcable <git@elliottcable.name>
+  - changed status from in_progress to paused
+  - Taking my first break in... 8 hours? maybe? I've been up for 30 hours working on this, I need said break. Will start work again soon.
+- - 2008-04-18 17:10:22.646931 Z
+  - elliottcable <git@elliottcable.name>
+  - changed status from paused to in_progress
+  - Here we go again! *sighs*
+- - 2008-04-18 19:12:57.252039 Z
+  - elliottcable <git@elliottcable.name>
+  - changed status from in_progress to paused
+  - Need another break. The specs are driving me crazy. Shower time!
+- - 2008-04-18 19:39:52.582864 Z
+  - elliottcable <git@elliottcable.name>
+  - changed status from paused to in_progress
+  - "*yawn* getting pretty tired. Oh well. here I go again."
+- - 2008-04-18 20:09:57.654817 Z
+  - elliottcable <git@elliottcable.name>
+  - commented
+  - Nearly done! The main thrust of the re-arrangement is done, and specs pass on it. Time to finally check some of this mess in, m methinks!

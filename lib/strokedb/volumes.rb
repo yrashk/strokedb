@@ -1,0 +1,5 @@
+require 'volumes/archive_volume'
+require 'volumes/block_volume'
+require 'volumes/distributed_pointer'
+require 'volumes/map_volume'
+require 'volumes/skiplist_volume'

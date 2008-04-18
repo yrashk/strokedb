@@ -1,9 +1,9 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.dirname(__FILE__) + '/spec_helper'
 
 describe 'DocRef' do
 
   before(:each) do
-    @path = File.join(File.dirname(__FILE__), '../../test/storages/docref_reg/test.strokedb')
+    @path = TEMP_STORAGES + '/docref_reg'
     FileUtils.rm_rf @path
     StrokeDB::Config.build :default => true, :base_path => @path
     Object.send!(:remove_const,'T') if defined?(T)

@@ -1,6 +1,14 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib', 'console'))
-require 'lib/console'
+# begin require 'strokedb/core_ext/kernel'
+#   rescue LoadError => e; raise e, "You need to install StrokeDB as a gem before you can use this" end
+
+development_lib = File.join(File.dirname(__FILE__), '..', 'lib')
+if File.exists? development_lib + '/strokedb.rb'
+  $LOAD_PATH.unshift(development_lib).uniq!
+end
+
+require 'strokedb'
+require 'strokedb/console'
 
 include StrokeDB::Console
 IRB.start

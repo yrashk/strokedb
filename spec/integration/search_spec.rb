@@ -1,9 +1,9 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.dirname(__FILE__) + '/spec_helper'
 
 describe "Database search" do
   
   before(:all) do
-    @path = File.dirname(__FILE__) + "/../../test/storages/database_search"
+    @path = File.dirname(__FILE__) + "/../temp/storages/database_search"
     FileUtils.rm_rf @path
     @f_storage = FileStorage.new(:path => @path + "/storage")
     @f_storage.clear!
