@@ -1,7 +1,9 @@
 require 'rake'; require 'rubygems'
-$:.unshift(File.dirname(__FILE__)); require 'strokedb'
-require 'task/echoe'
 
+$:.unshift(File.dirname(__FILE__) + '/lib')
+require 'strokedb'; require 'core_ext'
+
+require 'task/echoe'
 Echoe.taskify do
   Dir['task/**/*.task'].each {|t| load t}
   

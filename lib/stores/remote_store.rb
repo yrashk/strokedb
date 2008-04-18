@@ -1,3 +1,7 @@
+require 'drb'
+require 'drb/acl'
+require 'drb/unix'
+
 module StrokeDB
   class Store
     def remote_server(addr, protocol=:drb)
