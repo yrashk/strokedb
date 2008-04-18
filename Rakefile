@@ -25,7 +25,7 @@ Echoe.taskify do
     
       g.manifest_name  = 'meta/MANIFEST'
       g.ignore_pattern = /(^\.git|^.DS_Store$|^meta|^test\/storages|^examples\/(.*).strokedb|^bugs)/
-      g.executable_pattern = 'bin/stroke'
+      g.executable_pattern = 'bin/strokedb'
     end
     
     desc 'tests packaged files to ensure they are all present'
