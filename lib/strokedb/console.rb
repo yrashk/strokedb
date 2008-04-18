@@ -9,28 +9,20 @@ module StrokeDB
       klass.module_eval do
         
         def setup
-          print "Preparing console... "
-          @@sandbox = false
           if ARGV.last.is_a? String
             if (@@loc = ARGV.pop) == 'RAM'
-              puts '- Using RAM database'
+              puts 'Using in-memory storage.'
               ::StrokeDB::Config.build :default => true, :storages => [:memory]
             else
-              if File.directory?(@@loc)
-                print "(using #{@@loc})"
-                ::StrokeDB::Config.build :default => true, :base_path => @@loc
-              else
-                raise "#{@@loc} is not a valid strokedb database!"
-              end
+              puts "Using #{@@loc} storage."
+              ::StrokeDB::Config.build :default => true, :base_path => @@loc
             end
           else
             @@loc = 'temp.strokedb'
             ::StrokeDB::Config.build :default => true, :base_path => @@loc
-            @@sandbox = true
           end
           @@store = ::StrokeDB::default_store
           @@saved = false
-          puts "done!"
         end
         
         def save!
@@ -72,7 +64,7 @@ module StrokeDB
             - save!           Save the console's store (by default, a file in your current directory named console.strokedb)
             - clear!          Drop the console's store (destructive, and launches you out of the session)
             - find <uuid>     Find document by UUID in the console's store (example: find 'a4430ff1-6cb4-4428-a292-7ab8b77de467')
-            - doc             Alias for Document
+            - Doc             Alias for Document
             - store           Alias for the console's store's object
             ".unindent!)
         end
@@ -81,9 +73,8 @@ module StrokeDB
       klass.send(:include, StrokeDB)
       klass.send(:setup)
       
-      puts "StrokeDB (v#{::StrokeDB::VERSION}): Interactive console (`help!`)"
-      at_exit do klass.clear! if klass.sandbox? && !klass.saved? end
+      puts "StrokeDB #{::StrokeDB::VERSION} (help! for more info)"
     end # self.included
   end # Console
-  
+  Doc = Document
 end # StrokeDB
