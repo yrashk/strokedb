@@ -4,7 +4,7 @@ include StrokeDB
 require 'benchmark'
 include Benchmark
 
-@path = File.dirname(__FILE__) + "/../spec/temp/storages/map_volume"
+@path = File.dirname(__FILE__) + "/../../spec/temp/storages/map_volume"
 
 
 [2**10,2**12,2**16].each do |n|

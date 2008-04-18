@@ -4,7 +4,7 @@ include StrokeDB
 require 'benchmark'
 include Benchmark
 
-@path = File.dirname(__FILE__) + "/../spec/temp/storages/archive_volume"
+@path = File.dirname(__FILE__) + "/../../spec/temp/storages/archive_volume"
 
 SimpleSkiplist.optimize!(:C)
 
