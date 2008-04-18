@@ -19,7 +19,7 @@ module StrokeDB
   
   # Coverage threshold - bump this float anytime your changes increase the spec coverage
   # DO NOT LOWER THIS NUMBER. EVER.
-  COVERAGE = 87.9
+  COVERAGE = 88.1
 
   # UUID regexp (like 1e3d02cc-0769-4bd8-9113-e033b246b013)
   UUID_RE = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/

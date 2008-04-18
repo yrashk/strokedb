@@ -5,8 +5,8 @@ type: :bugfix
 component: General
 release: 
 reporter: elliottcable <git@elliottcable.name>
-status: :in_progress
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2008-04-18 08:33:28.721795 Z
 references: []
 
@@ -42,3 +42,7 @@ log_events:
   - elliottcable <git@elliottcable.name>
   - commented
   - Nearly done! The main thrust of the re-arrangement is done, and specs pass on it. Time to finally check some of this mess in, m methinks!
+- - 2008-04-18 21:03:15.870935 Z
+  - elliottcable <git@elliottcable.name>
+  - closed issue with disposition fixed
+  - ... finally. Done.

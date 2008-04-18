@@ -575,7 +575,7 @@ module StrokeDB
       
       install_validations_for(:validates_uniqueness_of) do |doc, validation, slotname|
         not doc.metas.detect do |meta|
-          found = Kernel.const_get(meta.name).find(slotname.to_sym => doc[slotname])
+          found = Kernel.const_get(meta.name).find(slotname.to_sym => doc[slotname]) unless meta.name == 'StrokeDB::DeletedDocument'
           
           found && found.detect { |item| item.uuid != doc.uuid }
         end

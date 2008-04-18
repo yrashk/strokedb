@@ -529,8 +529,10 @@ describe "Document with previous version" do
   before(:each) do
     @store = setup_default_store
     @document = Document.create!
+    @first_version = Document.find(@document.uuid)
     @document.new_slot = 1
     @document.save!
+    @second_version = Document.find(@document.uuid)
   end
 
   it "should have versions" do
@@ -547,7 +549,17 @@ describe "Document with previous version" do
   it "should be able to access first version" do
     @document.versions.first.should == @document.versions.previous
   end
-
+  
+  it "should return all previous versions of document" do
+    @document.new_slot2 = 'foo'
+    @document.save!
+    @document.versions.all_preceding.length.should == 2
+    @document.versions.all_preceding.class.should == Array
+    @document.versions.all_preceding.should include(@first_version)
+    @document.versions.all_preceding.should include(@second_version)
+    @document.versions.all_preceding.should_not include(@document)
+  end
+  
 end
 
 describe "Non-head version of document" do
@@ -867,9 +879,7 @@ describe "Saved document with validations" do
   it "should be deletable with validates_uniqueness_of" do
     Foo = Meta.new { validates_uniqueness_of :name }
     doc = Foo.create! :name => 'foo'
-    pending("bug") do
-      doc.delete!
-    end
+    doc.delete!
   end
   
   it "should be deletable with validates_inclusion_of" do

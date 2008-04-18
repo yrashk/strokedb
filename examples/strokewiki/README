@@ -1,8 +1,27 @@
-Run with: ruby wiki.rb
-
-then open your browser and try: http://localhost:7000
-
+------------------------------------------------------------------------------
 WARNING
--------
-storages have changed, make sure you start with a fresh database
-delete .wiki.strokedb folder in current directory
+
+Storages have changed, make sure you start with a fresh database.
+Delete .wiki.strokedb folder in current directory
+------------------------------------------------------------------------------
+
+StrokeWiki is a Ramaze [1] app, you should have Ramaze installed in order to
+run this program. The simplest way to get Ramaze is to use the rubygems [2]
+package manager:
+
+$ gem install ramaze
+
+You also need RedCloth [3]. You can install it with rubygems:
+
+$ gem install RedCloth
+
+You can run StrokeWiki with:
+
+$ ruby wiki.rb
+
+Then open your browser and try: http://localhost:7000
+
+
+[1] http://ramaze.net/
+[2] http://www.rubygems.org/
+[3] http://whytheluckystiff.net/ruby/redcloth/
