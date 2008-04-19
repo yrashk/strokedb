@@ -352,7 +352,7 @@ module StrokeDB
       if (txns = Thread.current[:strokedb_transactions]) && !txns.nil? && !txns.empty?
         store = txns.last
       else
-        if args.empty? || args.first.is_a?(String) || args.first.is_a?(Hash)
+        if args.empty? || args.first.is_a?(String) || args.first.is_a?(Hash) || args.first.nil?
           store = StrokeDB.default_store
         else
           store = args.shift
@@ -366,7 +366,7 @@ module StrokeDB
       when Hash
         store.search(query)
       else
-        raise TypeError
+        raise ArgumentError, "use UUID or query to find document(s)"
       end
     end
 
