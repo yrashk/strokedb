@@ -28,11 +28,11 @@ module StrokeDB
   # document version regexp
   VERSION_RE = UUID_RE
 
-  RAW_NIL_UUID                  = "\x00" * 16
   # following are special UUIDs used by StrokeDB
 
   # so called Nil UUID, should be used as special UUID for Meta meta
   NIL_UUID                      = "00000000-0000-0000-0000-000000000000"
+  RAW_NIL_UUID                  = "\x00" * 16
 
   # UUID used for DeletedDocument meta
   DELETED_DOCUMENT_UUID         = 'e5e0ef20-e10f-4269-bff3-3040a90e194e'
