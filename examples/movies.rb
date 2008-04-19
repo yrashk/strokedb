@@ -1,9 +1,4 @@
-development_lib = File.join(File.dirname(__FILE__), '..', 'lib')
-if File.exists? development_lib + '/strokedb.rb'
-  $LOAD_PATH.unshift(development_lib).uniq!
-end
-require 'strokedb'
-
+require File.dirname(__FILE__) + '/../lib/strokedb'
 $KCODE = 'u'
 
 
