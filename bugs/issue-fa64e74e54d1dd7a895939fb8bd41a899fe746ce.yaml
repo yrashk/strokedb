@@ -47,3 +47,7 @@ log_events:
   - Yurii Rashkovskii <yrashk@idbns.com>
   - commented
   - The main problem is that it fails randomly (not each time you run specs)
+- - 2008-04-19 10:49:12.179365 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - commented
+  - Spec is located at spec/lib/strokedb/sync/store_sync_spec.rb now
