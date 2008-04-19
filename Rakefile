@@ -8,7 +8,7 @@ Echoe.taskify do
   Dir['task/**/*.task'].each {|t| load t}
   
   namespace :echoe do
-    Echoe.new('StrokeDB', StrokeDB::VERSION) do |g|
+    Echoe.new('strokedb', StrokeDB::VERSION) do |g|
       g.author         = ['Yurii Rashkovskii', 'Oleg Andreev']
       g.email          = ['strokedb@googlegroups.com']
       g.summary        = 'embeddable, distributed, document-based database'

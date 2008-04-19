@@ -11,3 +11,4 @@ TAGS
 examples/.*.strokedb
 examples/strokewiki/.*.strokedb
 pkg
+strokedb.gemspec
