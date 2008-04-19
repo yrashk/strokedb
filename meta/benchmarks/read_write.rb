@@ -1,3 +1,5 @@
+$:.unshift File.dirname(__FILE__) + "/../../lib"
+
 require 'strokedb'
 include StrokeDB
 

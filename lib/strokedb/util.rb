@@ -38,7 +38,6 @@ require 'util/lazy_array'
 require 'util/lazy_mapping_array'
 require 'util/lazy_mapping_hash'
 require 'util/serialization'
-require 'util/trigger_partition'
 require 'util/uuid'
 require 'util/xml'
 require 'util/java_util' if RUBY_PLATFORM =~ /java/
