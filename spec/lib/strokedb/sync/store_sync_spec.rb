@@ -12,6 +12,8 @@ describe "Store that syncs documents in" do
   end
 
   after(:each) do
+    @store.stop_autosync!
+    @another_store.stop_autosync!
     FileUtils.rm_rf TEMP_STORAGES + '/store_sync'
     FileUtils.rm_rf TEMP_STORAGES + '/store_sync_another'
   end

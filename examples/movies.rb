@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../strokedb'
+require File.dirname(__FILE__) + '/../lib/strokedb'
 $KCODE = 'u'
 
 

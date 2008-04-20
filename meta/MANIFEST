@@ -1,4 +1,4 @@
-bin/stroke
+bin/strokedb
 examples/movies.rb
 examples/movies2.rb
 examples/strokewiki/README
@@ -40,7 +40,6 @@ lib/strokedb/document.rb
 lib/strokedb/index.rb
 lib/strokedb/store.rb
 lib/strokedb/stores/chainable_storage.rb
-lib/strokedb/stores/chunk.rb
 lib/strokedb/stores/file_storage.rb
 lib/strokedb/stores/inverted_list_file_storage.rb
 lib/strokedb/stores/memory_storage.rb
@@ -64,7 +63,6 @@ lib/strokedb/util/lazy_array.rb
 lib/strokedb/util/lazy_mapping_array.rb
 lib/strokedb/util/lazy_mapping_hash.rb
 lib/strokedb/util/serialization.rb
-lib/strokedb/util/trigger_partition.rb
 lib/strokedb/util/uuid.rb
 lib/strokedb/util/xml.rb
 lib/strokedb/util.rb
@@ -76,13 +74,14 @@ lib/strokedb/volumes/map_volume.rb
 lib/strokedb/volumes/skiplist_volume.rb
 lib/strokedb/volumes.rb
 lib/strokedb.rb
-MANIFEST
 README
+script/console
 spec/integration/remote_store_spec.rb
 spec/integration/search_spec.rb
 spec/integration/spec_helper.rb
 spec/lib/spec_helper.rb
 spec/lib/strokedb/config_spec.rb
+spec/lib/strokedb/core_ext/blank_spec.rb
 spec/lib/strokedb/core_ext/spec_helper.rb
 spec/lib/strokedb/core_ext/string_spec.rb
 spec/lib/strokedb/core_ext/symbol_spec.rb
@@ -117,6 +116,7 @@ spec/lib/strokedb/sync/stroke_diff/hash_spec.rb
 spec/lib/strokedb/sync/stroke_diff/scalar_spec.rb
 spec/lib/strokedb/sync/stroke_diff/spec_helper.rb
 spec/lib/strokedb/sync/stroke_diff/string_spec.rb
+spec/lib/strokedb/util/inflect_spec.rb
 spec/lib/strokedb/util/lazy_array_spec.rb
 spec/lib/strokedb/util/lazy_mapping_array_spec.rb
 spec/lib/strokedb/util/lazy_mapping_hash_spec.rb
@@ -142,3 +142,4 @@ task/rcov.task
 task/rdoc.task
 task/rspec.task
 vendor/java_inline.rb
+meta/MANIFEST

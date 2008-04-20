@@ -8,7 +8,7 @@ Echoe.taskify do
   Dir['task/**/*.task'].each {|t| load t}
   
   namespace :echoe do
-    Echoe.new('StrokeDB', StrokeDB::VERSION) do |g|
+    Echoe.new('strokedb', StrokeDB::VERSION) do |g|
       g.author         = ['Yurii Rashkovskii', 'Oleg Andreev']
       g.email          = ['strokedb@googlegroups.com']
       g.summary        = 'embeddable, distributed, document-based database'
@@ -25,7 +25,7 @@ Echoe.taskify do
     
       g.manifest_name  = 'meta/MANIFEST'
       g.ignore_pattern = /(^\.git|^.DS_Store$|^meta|^test\/storages|^examples\/(.*).strokedb|^bugs)/
-      g.executable_pattern = 'bin/stroke'
+      g.executable_pattern = 'bin/strokedb'
     end
     
     desc 'tests packaged files to ensure they are all present'
@@ -40,15 +40,18 @@ Echoe.taskify do
     task :magic => [:clean, :manifest, :install]
   end
   
+  desc 'Check what\'s up in this mug'
+  task :sup => [:'rcov:run', :'rcov:verify']
+  
   # Developers: Run this before commiting!
   desc 'Check everything over before commiting!'
-  task :aok => [:'rcov:verbose', :'rcov:verify_verbose', :'rcov:open',
+  task :aok => [:'rcov:verbose', :'rcov:strict', :'rcov:open',
                 :'rdoc:html', :'rdoc:open',
                 :'ditz:stage', :'ditz:html', :'ditz:todo', :'ditz:status', :'ditz:html:open']
 end
 
 # desc 'Run by CruiseControl.rb during continuous integration'
-task :cruise => [:'rcov:run', :'rcov:verify', :'ditz:html', :'rdoc:html']
+task :cruise => [:'ditz:html', :'rdoc:html', :'rcov:bw', :'rcov:verify']
 
 # By default, we just list the tasks.
 task :default => :list

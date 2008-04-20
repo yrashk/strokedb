@@ -1,4 +1,5 @@
 require 'rubygems'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__))
 $LOAD_PATH.unshift( File.expand_path(File.join(File.dirname(__FILE__), 'strokedb')) ).uniq!
 require 'strokedb/core_ext'
 
@@ -19,7 +20,7 @@ module StrokeDB
   
   # Coverage threshold - bump this float anytime your changes increase the spec coverage
   # DO NOT LOWER THIS NUMBER. EVER.
-  COVERAGE = 88.1
+  COVERAGE = 91.9
 
   # UUID regexp (like 1e3d02cc-0769-4bd8-9113-e033b246b013)
   UUID_RE = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/
@@ -27,11 +28,11 @@ module StrokeDB
   # document version regexp
   VERSION_RE = UUID_RE
 
-  RAW_NIL_UUID                  = "\x00" * 16
   # following are special UUIDs used by StrokeDB
 
   # so called Nil UUID, should be used as special UUID for Meta meta
   NIL_UUID                      = "00000000-0000-0000-0000-000000000000"
+  RAW_NIL_UUID                  = "\x00" * 16
 
   # UUID used for DeletedDocument meta
   DELETED_DOCUMENT_UUID         = 'e5e0ef20-e10f-4269-bff3-3040a90e194e'

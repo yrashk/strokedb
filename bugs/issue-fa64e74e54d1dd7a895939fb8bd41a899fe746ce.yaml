@@ -32,8 +32,8 @@ type: :bugfix
 component: Storage
 release: v0.0.3
 reporter: Yurii Rashkovskii <yrashk@idbns.com>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2008-04-17 21:28:49.887863 Z
 references: []
 
@@ -47,3 +47,11 @@ log_events:
   - Yurii Rashkovskii <yrashk@idbns.com>
   - commented
   - The main problem is that it fails randomly (not each time you run specs)
+- - 2008-04-19 10:49:12.179365 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - commented
+  - Spec is located at spec/lib/strokedb/sync/store_sync_spec.rb now
+- - 2008-04-20 13:10:54.668785 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - closed issue with disposition fixed
+  - That appears to be a spec bug (store was not synced, and autosync was trying to sync everything on files already engaged in the next subsequent example)

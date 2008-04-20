@@ -1,4 +1,6 @@
-require File.dirname(__FILE__) + '/../strokedb'
+$:.unshift File.dirname(__FILE__) + "/../../lib"
+
+require 'strokedb'
 
 NewLazyArray = StrokeDB::LazyArray
   

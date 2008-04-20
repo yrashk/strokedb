@@ -1,7 +1,12 @@
-
 StrokeDB is a distributed document-oriented database engine. 
 Main features are complete decentralization, JSON object format, 
 metadocuments, integration with runtime (it is just a ruby library). 
+
+
+= Starting points
+
+One of the most important concepts of StrokeDB is a StrokeDB::Document.
+
 
 = Installing StrokeDB
 
@@ -32,21 +37,9 @@ or
 	
 === <i>(Optional) Running test suite</i>
 
-	$ cd strokedb/strokedb-ruby
-	$ rake ci
-	$ rake jci # for jruby, jruby should be in PATH
+	$ rake sup
 	
-
-= Starting points
-
-One of the most important concepts of StrokeDB is a StrokeDB::Document.
-
-
-= Some benchmarks
-
-	$ rake bench
-
 =AUTHORS
 
-* Yurii Rashkovskii <yrashk@issuesdone.com>
-* Oleg Andreev <oleganza@gmail.com>
+* Yurii Rashkovskii <yrashk@idbns.com>
+* Oleg Andreev <oleganza@idbns.com>
