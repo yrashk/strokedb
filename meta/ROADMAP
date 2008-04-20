@@ -1,49 +1,21 @@
-TODO aka ROADMAP
+ROADMAP
+=======
 
-0.1 (April-May 2008)
-~~~~~~~~~~~~~~~~~~
-[.] Implement new storages
- [X] Drop capacity from MapVolume (by splitting to two files, bitmap and data)
- [.] Add multirecords to MapVolume (elastic MapVolume)
- [.] Implement 160-bit data pointers
- [ ] ...
-[ ] Implement transactions
- [?] Memory-based storage with permanent log
-[ ] Implement complex queries  
- [ ] Improve inverted list index
-  [ ] Improve PointQuery (I really don't like it). Or drop it
-  [ ] Optimize prefixes
-  [ ] Range/set query support
-  [ ] Faster intersection
-  [ ] Custom boolean operation on results
-  [ ] Assoc's indexing
-  [ ] Sub-attributes indexing
-  [ ] Create efficient implementation
- [ ] Consider using Ambition API
- [?] Add sorting primitives for search functionality
-[ ] Improve spec coverage
- [ ] Spec SS#autosync
- [.] Spec RemoteStore::DRb
-[ ] Refactor some document-related code
- [.] Refactor Document#meta
- [ ] Refactor Meta#document, fix bugs
- [.] Refactor callback stuff in Document
- [.] Refactor associations
-[.] Improve validations
- [X] collect errors and add #valid? and #errors, #errors_on methods (seems to be quite important)
- [ ] add more options to validates_presence_of
- [X] add validates_type_of
- [X] add validates_uniqueness_of
-[ ] add created_at to Document by default? (in addition to lamport ;) (Timestampable meta?)
+Please note that more specific issues for each release are managed by ditz, consider running
 
-Later
-~~~~~
+	$ ditz todo v<release> # like v0.0.3
 
-[ ] Improve performance
- [ ] It seems that b895a99034f6a1d36d4300f97b705fc4d1df5899 caused a slow down
- [ ] New uuid-based versions caused some slow down, too
-[ ] Improve Diff
- [ ] Get diff strategy from either 'to' or 'from' (as per discussion with oleganza)
-[ ] Investigate performance issues
- [ ] Read/Write benchmarks showing dependency of data size
- [?] Pool new UUIDs
+Next Minor Release (0.0.3)
+==========================
+
+* More stable/mature storages
+* More complete transactions implementation
+* Better spec coverage
+* More documentation
+* Finish reorganizing project's file structure
+
+Next Major Release (0.1)
+========================
+
+* New improved extensible search subsystem
+* Faster storages
