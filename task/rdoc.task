@@ -1,10 +1,10 @@
 namespace :rdoc do
   Rake::RDocTask.new :html do |rd|
      rd.main = "README"
-     rd.rdoc_dir = :meta / :documentation
+     rd.rdoc_dir = :meta / :rdoc
      rd.rdoc_files.include("README", "lib/**/*.rb")
   end
   task :open do
-    system 'open ' + :meta / :documentation / 'index.html' if PLATFORM['darwin']
+    system 'open ' + :meta / :rdoc / 'index.html' if PLATFORM['darwin']
   end
 end
