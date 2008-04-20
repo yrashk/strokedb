@@ -76,8 +76,27 @@ For instance, for the Article meta and Comment association, view can be named
 If view is more generic, than particular "meta1" + "meta2" pair, 
 you may define it explicitely with a :view option.
 
-Keys are ordered just like in CouchDB 
-(see http://wiki.apache.org/couchdb/ViewCollation)
+Key ordering is done respective to data types.
+
+1) Numbers
+2) Strings
+3) Arrays
+4) Hashes
+5) Document references
+
+Implementation note:
+  Every key is encoded to a string. By default, arbitrary JSON data 
+  is supported using prefix encoding:
+  
+  Number    -> "A<number>"
+  String    -> "B<string>"
+  Array     -> "C<element1>\x00<element2>\x00<element3>"
+  Hash      -> "D<key1>\x01<value1>\x01<k2>\x01<v2>"
+  Document  -> "@<UUID.VERSION>"
+  
+  Hash keys order is undefined, so you'd better not use hashes here at all :-)
+  If user defines view.encode_key, its output is used instead of default 
+  JSON encoder. 
 
 
 PERSISTANCE & UPDATES
@@ -143,8 +162,8 @@ In practice, you may ignore this facility and do encoding stuff in view.map
 block and appropriate View#find options.
 
 3) Also, when the large set of data is stored in a distributed environment,
-view list can be splitted. To optimize locality (i.e. store relative data
-in the same storage), you may specify split hinting:
+view list can be splitted. To optimize locality (i.e. store related data
+in the same storage), you may specify a split hinting:
 
     View.new do |view|
       view.split_by do |key|
@@ -152,8 +171,8 @@ in the same storage), you may specify split hinting:
       end
     end
 
-This will act as advice to split data by the key prefix.
-Underlying storage system may either ignore it, or take in account.
+This will act as an advice to split data by the key prefix.
+Underlying storage system may either ignore it, or take it in account.
 
 
 FURTHER DISCUSSION
