@@ -1,0 +1,207 @@
+Oleg Andreev
+Disclaimer: this is entirely experimental description of
+            how views should be implemented.
+            It may differ from the current implementation.
+            
+
+View is a way of structured data retrieval. It is a "map" part of the 
+Map-Reduce process.
+
+
+API OVERVIEW
+
+View is a function which is applied to every document in a whole dataspace
+and returns key-value pair(s) for each document.
+
+    LatestComments = View.new(:name => "latest_comments") do |view|
+      view.map do |doc|
+        if (doc.is_a?(Comment))
+          # Key prefix is an association (to be filtered by)
+          # Key suffix is an ordering part ("sort by date, please")
+          key = [doc["association"], doc.created_at]
+      
+          # We return single key-value pair
+          [ [ key, doc ] ]
+         else
+          # Return no pairs for all the other docs (nil is okay too).
+          [ ]
+        end
+      end
+    end
+    
+View finder parameters:
+
+:startkey   => JSON
+:endkey     => JSON
+:count      => nil (Numeric)
+:descending => false (true)
+:skip       => 0
+:key        => (equivalent to set startkey and endkey to the same value)
+
+You may ask view for a set of documents in such a way:
+
+    LatestComments.find(:startkey => [article], :descending => true, :count => 20) #=> [...]
+
+You may find a view by name:
+
+    View("latest_comments") == LatestComments # => true
+
+You may define additional methods for a view inside View.new do ... end block:
+      
+    LatestComments = View.new(:name => "latest_comments") do |view|
+      
+      # view.map definition skipped (see above) ...
+      
+      # this is used by has_many when #[] is called
+      # *args are passed into doc.associations[*args]
+      def has_many(doc, args)
+        skip, count = args  # I'm too lazy to accept Range (for now)
+        find(:startkey => [doc], :descending => true, :count => count, :skip => skip)
+      end
+    end
+
+    Article = Meta.new
+      has_many :comments, 
+               :view => LatestComments # also "latest_comments" is available
+
+    end
+
+    a = Article.find(...)
+    a.comments[0, 10] == LatestComments.has_many(a, [0, 10])
+
+has_many may define some conventions to eliminate need in :view => ... setup.
+For instance, for the Article meta and Comment association, view can be named 
+"article_comments" (singular + "_" + plural).
+
+If view is more generic, than particular "meta1" + "meta2" pair, 
+you may define it explicitely with a :view option.
+
+Keys are ordered just like in CouchDB 
+(see http://wiki.apache.org/couchdb/ViewCollation)
+
+
+PERSISTANCE & UPDATES
+
+In theory, every view invocation must involve the whole dataspace processing.
+In real world we need to optimize this by building persisted indexes
+for quicker data read/update.
+
+If the index does not exist (or it is broken/missing) the whole database 
+can be traversed.
+
+To support incremental index updates, strokedb must support "update views".
+Each database instance contains a simple list of the update views.
+Update view is a regular view returning a document-view pairs.
+It is used to determine which views should be updated for the particular 
+document.
+
+    ArticleRelatedUV = View.new :name => "article_related" do |view|
+      view.map do |doc|
+        if doc.is_a? Article
+          [ doc, View.all.grep{|v| v.name =~ /article/ } ]
+        elsif doc.is_a? Comment
+          [ doc, View.all.grep{|v| v.name =~ /comment/ } ] 
+        end
+      end
+    end
+
+Key is a document to be processed by a view, value is a view or a list
+of views to be updated with respect to this document.
+
+If some document-view pair is duplicated, duplicates are ignored.
+
+Database can define several update views lists. For instance:
+1) database.immediate_uvs = [ HasManyStuff ]
+2) database.nightly_uvs = [ SomeLazyFulltextIndex ]
+
+
+DATA STRUCTURES
+
+Views are persisted using lists of data ordered by some key.
+The list is stored in a skiplist with a variable- or constant-length keys.
+By default, variable-length keys are used. 
+Value in a skiplist is a pointer to an actual JSON data.
+
+Several optimizations are available for specific needs:
+
+1) You may declare a fixed-length key (with a size in bytes):
+  
+    View.new(:name => "some_view", :fixed_length_key => 64) do ... end
+
+If the encoded key is shorter or longer, WrongKeyLengthException is thrown.
+
+2) You may define specific key encoder:
+
+    View.new do |view|
+      view.encode_key do |key|
+        crazy_binary_pack(key)
+      end
+    end
+
+Note: this is a convenient way to separate key encoding and business logic.
+In practice, you may ignore this facility and do encoding stuff in view.map
+block and appropriate View#find options.
+
+3) Also, when the large set of data is stored in a distributed environment,
+view list can be splitted. To optimize locality (i.e. store relative data
+in the same storage), you may specify split hinting:
+
+    View.new do |view|
+      view.split_by do |key|
+        key[0]
+      end
+    end
+
+This will act as advice to split data by the key prefix.
+Underlying storage system may either ignore it, or take in account.
+
+
+FURTHER DISCUSSION
+
+1) Fulltext search indexes.
+
+If you define key in some interesting way (along with finder helpers),
+you may build an interesting fulltext search index.
+
+Simple word search index:
+
+    WordSearch = View.new :name => "word_search" do |view|
+      view.map do |doc|
+        words = doc["body"].split(/\W/)
+        words.map do |word|
+          [word, doc]
+        end
+      end
+    end 
+
+WordSearch.find(:key => "strokedb") #=> [doc1, doc2, ...]
+
+
+2) Map-Reduce. 
+
+View is a Map phase of the Map-Reduce algorithm.
+Wikipedia describes core components:
+* an input reader
+* a Map function
+* a partition function
+* a compare function
+* a Reduce function
+* an output writer
+
+ (http://en.wikipedia.org/wiki/MapReduce )
+
+Reader and writer are storage-specific.
+Partition and comparison functions depend on a particular setup.
+
+Reduce API might look like this:
+
+    counter = Reducer.new do |r|
+      r.reduce do |key, items|
+        [key, items.length]
+      end
+    end
+
+
+
+
+
