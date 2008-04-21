@@ -88,7 +88,7 @@ Implementation note:
   Every key is encoded to a string. By default, arbitrary JSON data 
   is supported using prefix encoding:
   
-  Number    -> "A<number>"
+  Number    -> "A<sign><number bitlength (4 bytes)><integer>[.<decimal>]"
   String    -> "B<string>"
   Array     -> "C<element1>\x00<element2>\x00<element3>"
   Hash      -> "D<key1>\x01<value1>\x01<k2>\x01<v2>"
@@ -97,7 +97,15 @@ Implementation note:
   Hash keys order is undefined, so you'd better not use hashes here at all :-)
   If user defines view.encode_key, its output is used instead of default 
   JSON encoder. 
-
+  
+  4-byte bitlength prefix helps to solve natural order problem
+  (when "10" comes before the "2"). Default JSON encoder guarantees that
+  numbers are treated differently from strings, and sorted in a natural order.
+  
+  Default key encoder may be too heavy for some views, so it is highly
+  recommended to be familiar with "encode_key" method (see below).
+  
+  
 
 PERSISTANCE & UPDATES
 
