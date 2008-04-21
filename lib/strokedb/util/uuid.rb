@@ -44,6 +44,21 @@ begin
           return BINARY;
         }
       }
+      builder.c %{
+        VALUE sha1_uuid(VALUE oid)
+        {
+          uuid_t *uuid_ns;
+          PROLOG(40);
+          
+          uuid_create(&uuid_ns);
+          uuid_load(uuid_ns, "ns:OID");
+          uuid_make(uuid, UUID_MAKE_V5, uuid_ns, StringValuePtr(oid));
+
+          uuid_destroy(uuid_ns);
+          
+          return CHARS;
+        }
+      }
       
       builder.c %{
         VALUE uuid_to_raw(VALUE r_uuid)
@@ -95,6 +110,9 @@ begin
     def self.random_uuid_raw
       ::FAST_UUID.random_uuid_raw
     end
+    def self.sha1_uuid(oid)
+      ::FAST_UUID.sha1_uuid(oid)
+    end
     
   end
 
@@ -115,6 +133,9 @@ rescue NotImplementedError, CompilationError
     end
     def self.random_uuid_raw
       ::UUID.random_create.raw
+    end
+    def self.sha1_uuid(oid)
+      ::UUID.sha1_create(UUID_OID_NAMESPACE, oid)
     end
 
     class ::String
