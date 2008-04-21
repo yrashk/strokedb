@@ -36,6 +36,7 @@ module StrokeDB
 
         def clear!
           FileUtils.rm_rf @@loc
+          setup
           "Database has been wiped out."
         end
 
