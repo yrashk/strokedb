@@ -37,6 +37,7 @@ View finder parameters:
 :descending => false (true)
 :skip       => 0
 :key        => (equivalent to set startkey and endkey to the same value)
+:with_keys  => false (true)  (returns [key, value] pairs instead of just values)
 
 You may ask a view for a set of documents in such a way:
 
@@ -82,7 +83,7 @@ Key ordering is done respective to the data types.
 2) Strings
 3) Arrays
 4) Hashes
-5) Document references
+5) Document
 
 Implementation note:
   Every key is encoded to a string. By default, arbitrary JSON data 
@@ -169,7 +170,15 @@ Note: this is a convenient way to separate key encoding and business logic.
 In practice, you may ignore this facility and do encoding stuff in view.map
 block and appropriate View#find options.
 
-3) Also, when the large set of data is stored in a distributed environment,
+3) You may want to decode key to use with View#find(:with_keys => true)
+
+    View.new do |view|
+      view.decode_key do |key|
+        crazy_binary_unpack(key)
+      end
+    end
+
+4) Also, when the large set of data is stored in a distributed environment,
 view list can be splitted. To optimize locality (i.e. store related data
 in the same storage), you may specify a split hinting:
 
