@@ -14,15 +14,21 @@ module StrokeDB
       # "D<sign><number length (4 bytes)><hex>"
       def default_key_encode
         hex = self.abs.to_s(16)
-        "D" + (self > 0 ? "1" : "0") + [hex.size].pack("N") + hex
+        if self >= 0
+          "D1" + [ hex.size ].pack("N") + hex
+        else
+          s = hex.size
+          "D0" + [ 2**32 - s ].pack("N") + (16**s + self).to_s(16)
+        end
       end
     end
     class ::Float
       # Encodes integer part and appends ratio part
       # "D<sign><number length (4 bytes)><hex>.<dec>"
       def default_key_encode
-        i = self.to_i
-        i.default_key_encode + (self - i).abs.to_s[1, 666]
+        i = self.floor
+        r = self - i
+        i.default_key_encode + r.to_s[1, 666]
       end
     end
     class ::String
@@ -37,13 +43,13 @@ module StrokeDB
     end
     class ::Array
       def default_key_encode
-        "F" + map{|e| e.default_key_encode }.inspect
+        "F" + map{|e| e.default_key_encode }.join("\x00")
       end
     end
     class ::Hash
       # Keys order is undefined, so just don't use this method.
       def default_key_encode
-        "G" + map{|kv| kv.default_key_encode }.inspect
+        "G" + map{|kv| kv.default_key_encode }.join("\x01")
       end
     end
   end
@@ -88,11 +94,20 @@ module StrokeDB
         true
       when D
         int, rat = string[6, 666].split(".")
-        rat ? int.to_i(16) + rat.to_f : int.to_i(16)
+        sign = string[1, 1] == "1" ? 1 : -1
+        size = string[2, 4].unpack("N").first
+        int = int.to_i(16)
+        if sign == -1
+          size = 2**32 - size
+          int  = 16**size - int
+        end
+        rat ? sign*int + ("0."+rat).to_f : sign*int
+      when E
+        string[1..-1]
       when F
-        eval(string[1..-1]).map{|e| decode(e) }
+        raise "Arrays decoding is not supported!"
       when G
-        eval(string[1..-1]).inject({}){|c, kv| kv = decode(kv); h[kv[0]] = kv[1]; h }
+        raise "Hashes decoding is not supported!"
       when X
         raise "Document dereferencing in key decode is not supported!"
       end
