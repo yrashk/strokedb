@@ -2,6 +2,18 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe "Meta module", :shared => true do
 
+  it "should use Meta.default_nsurl if nsurl is not specified" do
+    Meta.default_nsurl = "http://some/"
+    SomeName.document.nsurl.should == "http://some/"
+  end
+
+  it "should not use Meta.default_nsurl if nsurl is specified" do
+    Meta.default_nsurl = "http://some/"
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new(:nsurl => "http://another/")
+    SomeName.document.nsurl.should == "http://another/"
+  end
+  
   it "should be able to instantiate new Document which is also SomeName" do
     obj = SomeName.new
     obj.should be_a_kind_of(Document)

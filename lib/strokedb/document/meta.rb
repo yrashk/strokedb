@@ -22,6 +22,15 @@ module StrokeDB
   module Meta
 
     class << self
+      
+      def default_nsurl
+        @default_nsurl ||= ""
+      end
+      
+      def default_nsurl=(nsurl)
+        @default_nsurl = nsurl
+      end
+      
       def new(*args, &block)
         mod = Module.new
         args = args.unshift(nil) if args.empty? || args.first.is_a?(Hash)
@@ -53,7 +62,7 @@ module StrokeDB
       def document(store=nil)
         raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
         unless meta_doc = store.find(NIL_UUID)
-          meta_doc = Document.create!(store, :name => Meta.name, :uuid => NIL_UUID)
+          meta_doc = Document.create!(store, :name => Meta.name, :uuid => NIL_UUID, :nsurl => "http://strokedb.com/")
         end
         meta_doc
       end
@@ -209,6 +218,7 @@ module StrokeDB
       values = @args.clone.select{|a| Hash === a}.first
       values[:meta] = Meta.document(store)
       values[:name] ||= name
+      values[:nsurl] ||= Meta.default_nsurl
       
       if meta_doc = find_meta_doc(values, store)
         values[:version] = meta_doc.version
