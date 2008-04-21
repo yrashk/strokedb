@@ -62,7 +62,7 @@ module StrokeDB
       def document(store=nil)
         raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
         unless meta_doc = store.find(NIL_UUID)
-          meta_doc = Document.create!(store, :name => Meta.name, :uuid => NIL_UUID, :nsurl => "http://strokedb.com/")
+          meta_doc = Document.create!(store, :name => Meta.name, :uuid => NIL_UUID, :nsurl => STROKEDB_NSURL)
         end
         meta_doc
       end

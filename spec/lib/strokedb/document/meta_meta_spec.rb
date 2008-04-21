@@ -6,6 +6,10 @@ describe "Meta meta" do
     # @mem_storage = StrokeDB::MemoryStorage.new
     # StrokeDB.stub!(:default_store).and_return(StrokeDB::Store.new(:storage => @mem_storage))
   end
+
+  it "should have nsurl http://strokedb.com/" do
+    Meta.document.nsurl.should == STROKEDB_NSURL
+  end
   
   it "should have document with nil uuid" do
     Meta.document.should_not be_nil
@@ -15,11 +19,6 @@ describe "Meta meta" do
   it "should have blank default nsurl by default" do
     Meta.default_nsurl.should be_blank
   end
-
-  it "should have nsurl http://strokedb.com/" do
-    Meta.document.nsurl.should == "http://strokedb.com/"
-  end
-
 
   it "should be able to configure new default nsurl" do
     Meta.default_nsurl = "http://mycoolapp.com"

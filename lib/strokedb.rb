@@ -28,6 +28,10 @@ module StrokeDB
   # document version regexp
   VERSION_RE = UUID_RE
 
+
+  # STROKEDB NSURL
+  STROKEDB_NSURL = "http://strokedb.com/"
+  
   # following are special UUIDs used by StrokeDB
 
   # so called Nil UUID, should be used as special UUID for Meta meta
