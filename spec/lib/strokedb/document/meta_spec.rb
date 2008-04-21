@@ -100,7 +100,20 @@ describe "Meta module with name" do
     setup_index
 
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    @meta = Meta.new(:name => "SomeName")  
+    SomeName = Meta.new
+  end
+  
+  it "should have document's UUID v5 based on nsurl and name" do
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new(:nsurl => "http://some/")
+    SomeName.document.uuid.should == Util.sha1_uuid('http://some/#SomeName')
+  end
+
+  it "should have specified UUID if it was specified" do
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    uuid = Util.random_uuid
+    SomeName = Meta.new(:nsurl => "http://some/", :uuid => uuid)
+    SomeName.document.uuid.should == uuid
   end
 
   it_should_behave_like "Meta module"
@@ -114,15 +127,12 @@ describe "Meta module without name" do
     setup_index
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    SomeName = Meta.new
+    @some_meta = Meta.new(:nsurl => "http://some/")
   end
   
-  it_should_behave_like "Meta module"
-  
-  it "should have name defined in the document" do
-    SomeName.document.name.should == 'SomeName'
+  it "should not have document's UUID v5 based on nsurl and name" do
+    @some_meta.document.uuid.should_not == Util.sha1_uuid('http://some/#SomeName')
   end
-  
 end
 
 describe "Meta module with on_initialization callback" do

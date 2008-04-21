@@ -219,6 +219,7 @@ module StrokeDB
       values[:meta] = Meta.document(store)
       values[:name] ||= name
       values[:nsurl] ||= Meta.default_nsurl
+      values[:uuid] ||= ::Util.sha1_uuid("#{values[:nsurl]}##{values[:name]}") if values[:name]
       
       if meta_doc = find_meta_doc(values, store)
         values[:version] = meta_doc.version

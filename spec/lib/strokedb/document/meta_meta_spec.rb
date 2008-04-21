@@ -23,6 +23,7 @@ describe "Meta meta" do
   it "should be able to configure new default nsurl" do
     Meta.default_nsurl = "http://mycoolapp.com"
     Meta.default_nsurl.should == "http://mycoolapp.com"
+    Meta.default_nsurl = ""
   end
 
 end
