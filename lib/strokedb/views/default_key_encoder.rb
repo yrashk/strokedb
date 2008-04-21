@@ -22,7 +22,7 @@ module StrokeDB
       # "D<sign><number length (4 bytes)><hex>.<dec>"
       def default_key_encode
         i = self.to_i
-        i.default_key_encode + (self - i).to_s[1, 666]
+        i.default_key_encode + (self - i).abs.to_s[1, 666]
       end
     end
     class ::String
@@ -43,7 +43,7 @@ module StrokeDB
     class ::Hash
       # Keys order is undefined, so just don't use this method.
       def default_key_encode
-        "G" + map{|k, v| [k.default_key_encode, v.default_key_encode] }.inspect
+        "G" + map{|kv| kv.default_key_encode }.inspect
       end
     end
   end
@@ -79,9 +79,7 @@ module StrokeDB
     X = "@".freeze
     
     def self.decode(string)
-      prefix = string[0]
-    
-      case prefix
+      case string[0,1]
       when A
         nil
       when B
@@ -92,11 +90,11 @@ module StrokeDB
         int, rat = string[6, 666].split(".")
         rat ? int.to_i(16) + rat.to_f : int.to_i(16)
       when F
-        
+        eval(string[1..-1]).map{|e| decode(e) }
       when G
-        
+        eval(string[1..-1]).inject({}){|c, kv| kv = decode(kv); h[kv[0]] = kv[1]; h }
       when X
-          
+        raise "Document dereferencing in key decode is not supported!"
       end
     end
   end
