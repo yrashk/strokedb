@@ -1,2 +1,2 @@
 require 'views/view'
-require 'views/key_encoder'
+require 'views/default_key_encoder'
