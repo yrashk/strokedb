@@ -5,11 +5,16 @@ describe View do
   before(:each) do
     setup_default_store
     
-    post_comments = View.new do |view|
+    @post_comments = View.new(:name => "post_comments") do |view|
       def view.map(doc)
-       [ [doc, doc] ]
+        [ [doc, doc] ]
       end
     end
+    
+  end
+  
+  it "should have map method" do
+    @post_comments.map(123).should == [ [  123, 123 ] ] 
   end
   
 end
