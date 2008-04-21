@@ -171,6 +171,8 @@ In practice, you may ignore this facility and do encoding stuff in view.map
 block and appropriate View#find options.
 
 3) You may want to decode key to use with View#find(:with_keys => true)
+Note: encode_key is not required to be a reversible operation, so
+decode_key should just return something reasonable for your application.
 
     View.new do |view|
       view.decode_key do |key|
@@ -178,7 +180,7 @@ block and appropriate View#find options.
       end
     end
 
-4) Also, when the large set of data is stored in a distributed environment,
+4) Also, when a large set of data is stored in a distributed environment,
 view list can be splitted. To optimize locality (i.e. store related data
 in the same storage), you may specify a split hinting:
 
@@ -190,6 +192,50 @@ in the same storage), you may specify a split hinting:
 
 This will act as an advice to split data by the key prefix.
 Underlying storage system may either ignore it, or take it in account.
+In any case, it is guaranteed, that splitting does not affect view results.
+
+
+
+VIEW SERIALIZATION
+
+View is connected with a "view document" (viewdoc). This document is 
+build up from the contents of the View.new() options (slots :name, 
+:fixed_length_key etc.)
+When you change these slots, new version of viewdoc is created.
+Persistant index is named after the both viewdoc UUID and viewdoc version.
+
+Say, when you change :fixed_length_key, old index is completely discarded
+and new must be built.
+Sometimes we need to do a soft migration of the current index,
+or keep it as-is, or do a controlled migration to a completely new version.
+Migration issues are subject to discuss.
+
+You may specify descriptive data for view.*{ } blocks to make them 
+"serializable". Like:
+
+    View.new do |v|
+      v.encode_key("downcase") do |key|
+        key.downcase
+      end
+    end
+
+When encode_key behavior changes, you should change its description:
+
+    View.new do |v|
+      v.encode_key("upcase") do |key|
+        key.upcase
+      end
+    end
+
+This will lead to using another index file.
+In a viewdoc, such info is accessed as a regular slot:
+
+    viewdoc["encode_key"] == "upcase"
+
+This is applied to "map", "encode_key", "decode_key" and "split_by".
+
+
+
 
 
 FURTHER DISCUSSION
