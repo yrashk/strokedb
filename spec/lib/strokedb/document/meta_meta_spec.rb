@@ -11,11 +11,6 @@ describe "Meta meta" do
     Meta.document.nsurl.should == STROKEDB_NSURL
   end
   
-  it "should have document with nil uuid" do
-    Meta.document.should_not be_nil
-    Meta.document.uuid.should == NIL_UUID
-  end
-  
   it "should have blank default nsurl by default" do
     Meta.default_nsurl.should be_blank
   end

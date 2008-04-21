@@ -32,9 +32,7 @@ module StrokeDB
   # STROKEDB NSURL
   STROKEDB_NSURL = "http://strokedb.com/"
   
-  # following are special UUIDs used by StrokeDB
-
-  # so called Nil UUID, should be used as special UUID for Meta meta
+  # so called Nil UUID
   NIL_UUID                      = "00000000-0000-0000-0000-000000000000"
   RAW_NIL_UUID                  = "\x00" * 16
 

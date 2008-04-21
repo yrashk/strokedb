@@ -61,13 +61,18 @@ module StrokeDB
 
       def document(store=nil)
         raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
-        unless meta_doc = store.find(NIL_UUID)
-          meta_doc = Document.create!(store, :name => Meta.name, :uuid => NIL_UUID, :nsurl => STROKEDB_NSURL)
+        unless meta_doc = store.find(uuid)
+          meta_doc = Document.create!(store, :name => Meta.name, :uuid => uuid, :nsurl => STROKEDB_NSURL)
         end
         meta_doc
       end
+      
 
       private
+
+      def uuid
+        @uuid ||= ::Util.sha1_uuid("#{STROKEDB_NSURL}##{Meta.name}")
+      end
 
       def extract_meta_name(*args)
         if args.first.is_a?(Hash)
@@ -238,8 +243,6 @@ module StrokeDB
     def find_meta_doc(values, store)
       if uuid = values[:uuid]
         store.find(uuid)
-      else
-        store.search({ :name => values[:name], :meta => Meta.document(store) }).first
       end
     end
 
