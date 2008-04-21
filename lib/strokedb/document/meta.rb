@@ -191,9 +191,9 @@ module StrokeDB
     #
     # If found, returned is only the first result.
     #
-    def find_or_create(*args)
+    def find_or_create(*args, &block)
       result = find(*args)
-      result.empty? ? create!(*args) : result.first
+      result.empty? ? create!(*args, &block) : result.first
     end
 
     def inspect
