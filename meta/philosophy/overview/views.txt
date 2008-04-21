@@ -38,7 +38,7 @@ View finder parameters:
 :skip       => 0
 :key        => (equivalent to set startkey and endkey to the same value)
 
-You may ask view for a set of documents in such a way:
+You may ask a view for a set of documents in such a way:
 
     LatestComments.find(:startkey => [article], :descending => true, :count => 20) #=> [...]
 
@@ -73,10 +73,10 @@ has_many may define some conventions to eliminate need in :view => ... setup.
 For instance, for the Article meta and Comment association, view can be named 
 "article_comments" (singular + "_" + plural).
 
-If view is more generic, than particular "meta1" + "meta2" pair, 
+If the view is more generic than particular "meta1" + "meta2" pair, 
 you may define it explicitely with a :view option.
 
-Key ordering is done respective to data types.
+Key ordering is done respective to the data types.
 
 1) Numbers
 2) Strings
@@ -116,7 +116,7 @@ for quicker data read/update.
 If the index does not exist (or it is broken/missing) the whole database 
 can be traversed.
 
-To support incremental index updates, strokedb must support "update views".
+To support incremental index updates, StrokeDB must support "update views".
 Each database instance contains a simple list of the update views.
 Update view is a regular view returning a document-view pairs.
 It is used to determine which views should be updated for the particular 
@@ -229,6 +229,55 @@ Reduce API might look like this:
     end
 
 
+
+
+EXAMPLES
+
+1) has_many :comments with optimizations
+
+    View.new(:name => "has_many_comments", 
+             :fixed_key_length => (128 + 128 + 32)) do |v|
+        v.map do |doc|
+          doc.is_a? Comment ? [[[doc.comment_container, doc.created_at], doc]] : nil 
+        end
+        v.encode_key do |key|
+          key[0].raw_uuid_version + [doc.created_at.to_i].pack("N")
+        end
+        v.split_by do |key|
+          key[0].raw_uuid_version
+        end
+    end
+
+2) has_and_belongs_to_many :tags (inlined tags)
+
+    doc.tags = %w[paris love sun]
+    
+    View.new(:name => "docs_by_tag") do |v|
+      v.map do |doc|
+        if doc['tags']
+          time = doc.created_at
+          doc['tags'].map do |tag|
+              [[tag, time], doc]
+          end
+        end
+      end
+    end 
+
+3) has_many :friends
+
+    Friendship.new(:friends => [oleg, yurik], :status => "collegues")
+
+    View.new(:name => "users_friends") do |v|
+      v.map do |doc|
+        if doc.is_a? Friendship
+          # Filtered by status & ordered by name
+          [
+            [[doc.friends[0], doc.status, doc.friends[1].name], doc.friends[1]],
+            [[doc.friends[1], doc.status, doc.friends[0].name], doc.friends[0]]
+          ]
+        end
+      end
+    end
 
 
 
