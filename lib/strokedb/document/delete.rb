@@ -3,7 +3,7 @@ module StrokeDB
   class DocumentDeletionError < StandardError
   end
   
-  DeletedDocument = Meta.new(:uuid => DELETED_DOCUMENT_UUID) do
+  DeletedDocument = Meta.new(:nsurl => STROKEDB_NSURL) do
     on_load do |doc|
       doc.make_immutable!
     end
