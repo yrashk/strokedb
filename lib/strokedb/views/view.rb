@@ -1,6 +1,10 @@
 module StrokeDB
   View = Meta.new do 
     on_initialization do |viewdoc|
+      unless viewdoc["name"]
+        raise ArgumentError, "View name must be specified!"
+      end
+      
       # pass viewdoc into initialization block:
       # my_view = View.new(){ |view| ... }
       viewdoc.instance_variable_get(:@initialization_block).call(viewdoc)
@@ -29,7 +33,15 @@ module StrokeDB
     def find(options)
       options = DEFAULT_FIND_OPTIONS.merge(options)
       
-      # TODO: traverse the whole database and build the index
+      if k = options[:key]
+        options[:startkey] = k
+        options[:endkey]   = k
+      end
+      
+      # Mode 1. startkey, count (skip)
+      # Mode 2. startkey..endkey
+      
+      
       
     end
     
@@ -50,11 +62,11 @@ module StrokeDB
     end
     
     def encode_key(json_key)
-      # TODO: default JSON key encoder
+      DefaultKeyEncoder.encode(json_key)
     end
     
-    def decode_key(json_key)
-      # TODO: default JSON key decoder
+    def decode_key(string_key)
+      DefaultKeyEncoder.decode(string_key)
     end
     
     # By default, there's no split hinting 
