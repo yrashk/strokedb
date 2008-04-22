@@ -650,17 +650,38 @@ describe "Document with multiple metas" do
     @document.metas.should be_a_kind_of(Array)
   end
 
-  it "should be able add meta by pushing its document to metas" do
+  it "should be able to add meta by pushing its document to metas" do
     @document.metas << SomeMeta.document
     @document.hello.should == 'world'
     @document.metas.should include(SomeMeta.document)
+    @document.should be_a_kind_of(SomeMeta)
   end
 
-  it "should be able add meta by pushing its module to metas" do
+  it "should be able to add meta by pushing its module to metas" do
     @document.metas << SomeMeta
     @document.hello.should == 'world'
     @document.metas.should include(SomeMeta.document)
+    @document.should be_a_kind_of(SomeMeta)
   end
+  
+  it "should be able to remove meta by removing its document from metas" do
+    @document.metas << SomeMeta.document
+    @document.metas.delete SomeMeta.document
+    @document.metas.should_not include(SomeMeta.document)
+    pending do
+      @document.should_not be_a_kind_of(SomeMeta)
+    end
+  end
+
+  it "should be able to remove meta by removing its module from metas" do
+    @document.metas << SomeMeta
+    @document.metas.delete SomeMeta
+    pending do
+      @document.metas.should_not include(SomeMeta.document)
+      @document.should_not be_a_kind_of(SomeMeta)
+    end
+  end
+  
 
   it "should raise ArgumentError when pushing neither document nor module" do
     lambda { @document.metas << 1 }.should raise_error(ArgumentError)

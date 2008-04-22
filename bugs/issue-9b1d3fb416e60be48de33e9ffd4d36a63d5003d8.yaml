@@ -7,7 +7,7 @@ type: :bugfix
 component: Meta
 release: 
 reporter: Yurii Rashkovskii <yrashk@idbns.com>
-status: :unstarted
+status: :in_progress
 disposition: 
 creation_time: 2008-04-22 15:34:42.944691 Z
 references: []
@@ -18,3 +18,7 @@ log_events:
   - Yurii Rashkovskii <yrashk@idbns.com>
   - created
   - ""
+- - 2008-04-22 16:08:39.957299 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - changed status from unstarted to in_progress
+  - added some specs about deleting metas
