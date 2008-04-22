@@ -41,7 +41,7 @@ module StrokeDB
       # Mode 1. startkey, count (skip)
       # Mode 2. startkey..endkey
       
-      
+      #storage = 
       
     end
     
