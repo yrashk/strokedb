@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Allow substracting metas
+desc: |-
+  We need to be able to exclude metas by Document#metas.- and alike and Document#meta[s] = [...]
+  I am not sure we can exclude modules for that Document instance though, but we need to check this
+type: :bugfix
+component: Meta
+release: 
+reporter: Yurii Rashkovskii <yrashk@idbns.com>
+status: :unstarted
+disposition: 
+creation_time: 2008-04-22 15:34:42.944691 Z
+references: []
+
+id: 9b1d3fb416e60be48de33e9ffd4d36a63d5003d8
+log_events: 
+- - 2008-04-22 15:34:45.833141 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - created
+  - ""
