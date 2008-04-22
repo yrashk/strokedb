@@ -193,7 +193,7 @@ module StrokeDB
     #
     def find_or_create(*args, &block)
       result = find(*args)
-      result.empty? ? create!(*args, &block) : (r = result.first; block_given? ? yield(r) : nil; r)
+      result.empty? ? create!(*args, &block) : result.first
     end
 
     def inspect
