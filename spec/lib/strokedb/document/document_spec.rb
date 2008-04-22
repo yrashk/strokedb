@@ -668,18 +668,14 @@ describe "Document with multiple metas" do
     @document.metas << SomeMeta.document
     @document.metas.delete SomeMeta.document
     @document.metas.should_not include(SomeMeta.document)
-    pending do
-      @document.should_not be_a_kind_of(SomeMeta)
-    end
+    @document.should_not be_a_kind_of(SomeMeta)
   end
 
   it "should be able to remove meta by removing its module from metas" do
     @document.metas << SomeMeta
     @document.metas.delete SomeMeta
-    pending do
-      @document.metas.should_not include(SomeMeta.document)
-      @document.should_not be_a_kind_of(SomeMeta)
-    end
+    @document.metas.should_not include(SomeMeta.document)
+    @document.should_not be_a_kind_of(SomeMeta)
   end
   
 

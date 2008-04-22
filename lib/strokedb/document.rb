@@ -107,6 +107,25 @@ module StrokeDB
       def <<(meta)
         add_meta(meta, :call_initialization_callbacks => true)
       end
+      
+      alias :_delete :delete
+      def delete(meta)
+        case meta
+        when Document
+          _delete meta
+          _module = StrokeDB::Document.collect_meta_modules(@document.store, meta).first
+        when Meta
+          _delete meta.document(@document.store)
+          _module = meta
+        else
+          raise ArgumentError, "Meta should be either document or meta module"
+        end
+        
+        if _module
+          @document.exclude(_module)
+        end
+        
+      end
 
       def add_meta(meta, opts = {})
         opts = opts.stringify_keys
