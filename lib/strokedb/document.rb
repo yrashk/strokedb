@@ -121,6 +121,8 @@ module StrokeDB
           raise ArgumentError, "Meta should be either document or meta module"
         end
         
+        @document[:meta] = self
+        
         if _module
           @document.exclude(_module)
         end
