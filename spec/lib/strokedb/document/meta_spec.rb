@@ -84,11 +84,28 @@ describe "Meta module", :shared => true do
     SomeName.first.should == SomeName.find.first
   end
 
-  it "correctly handles finding via UUID on call to Meta#first" do
+  it "correctly handles finding via UUID on call to #first" do
     a = SomeName.create!(:slot1 => 5)
     SomeName.first(a.uuid).should == a
   end
   
+  it "should return last found document matching given criteria on call to #last" do
+    a = SomeName.create!(:slot1 => 1)
+    b = SomeName.create!(:slot1 => 1)
+    SomeName.last(:slot1 => 1).should == SomeName.find(:slot1 => 1).last
+  end
+  
+  it "should return last document if no args are passed to #last" do
+    a = SomeName.create!(:slot1 => 1)
+    b = SomeName.create!(:slot1 => 2)
+    SomeName.last.should == SomeName.find.last
+  end
+
+  it "correctly handles finding via UUID on call to #last" do
+    a = SomeName.create!(:slot1 => 5)
+    SomeName.last(a.uuid).should == a
+  end
+
   it "should raise ArgumentError unless args size is 1 or 2" do
     a = SomeName.create!(:slot1 => 1, :slot2 => 2)
     lambda { SomeName.find("foo","bar","foobar") }.should raise_error(ArgumentError)

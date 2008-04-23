@@ -199,6 +199,14 @@ module StrokeDB
     end
 
     #
+    # Finds the last document matching the given criteria.
+    #
+    def last(args = {})
+      result = find(args)
+      result.respond_to?(:last) ? result.last : result
+    end
+
+    #
     # Similar to +find+, but a creates document with appropriate slot values if
     # not found.
     #
