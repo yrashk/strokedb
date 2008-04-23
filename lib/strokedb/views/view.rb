@@ -16,7 +16,7 @@ module StrokeDB
       :count      => nil,
       :descending => false,
       :skip       => nil,
-      :key        => nil,   # equivalent to set startkey and endkey to the same value
+      :key        => nil,   # prefix search
       :with_keys  => false  # returns [key, value] pairs instead of just values
     }.freeze
     
@@ -33,13 +33,9 @@ module StrokeDB
     def find(options)
       options = DEFAULT_FIND_OPTIONS.merge(options)
       
-      if k = options[:key]
-        options[:startkey] = k
-        options[:endkey]   = k
-      end
-      
       # Mode 1. startkey, count (skip)
       # Mode 2. startkey..endkey
+      # Mode 3. key, count (skip) - prefix search
       
       #storage = 
       
