@@ -186,6 +186,19 @@ module StrokeDB
     end
 
     #
+    # Conveniance alias for Meta#find.
+    #
+    alias :all :find
+
+    #
+    # Finds the first document matching the given criteria.
+    #
+    def first(args)
+      result = find(args)
+      result.respond_to?(:first) ? result.first : result
+    end
+
+    #
     # Similar to +find+, but a creates document with appropriate slot values if
     # not found.
     #

@@ -16,23 +16,25 @@ class Object
 
   inline(:C) do |builder|
     builder.c %{
-      VALUE exclude(VALUE mod) 
+      VALUE unextend(VALUE mod) 
       {
         VALUE p, prev;
         Check_Type(mod, T_MODULE);
-
+        if (mod == rb_mKernel) 
+          rb_raise(rb_eArgError, "unextending Kernel is prohibited");
+      	
         p = (TYPE(self) == T_CLASS) ? self : rb_singleton_class(self);
-
+        
         while (p) {
-          if (p == mod || RCLASS(p)->m_tbl == RCLASS(mod)->m_tbl) {
-            RCLASS(prev)->super = RCLASS(p)->super;
-            rb_clear_cache();
-            return Qtrue;
-          }
-          prev = p;
-          p = RCLASS(p)->super;
+            if (p == mod || RCLASS(p)->m_tbl == RCLASS(mod)->m_tbl) {
+                RCLASS(prev)->super = RCLASS(p)->super;
+                rb_clear_cache();
+                return self;
+            }
+            prev = p;
+            p = RCLASS(p)->super;
         }
-        return Qfalse;
+        return self;
       }
     }
   end

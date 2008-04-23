@@ -67,6 +67,22 @@ describe "Meta module", :shared => true do
     SomeName.find(:slot1 => 1, :slot2 =>2).sort_by {|d| d.uuid}.should == [a,b].sort_by {|d| d.uuid}
   end
   
+  it "aliases Meta#all to Meta#find" do
+    a = SomeName.create!(:slot1 => 3)
+    SomeName.all(:slot1 => 3).should == SomeName.find(:slot1 => 3)
+  end
+
+  it "should return first found document matching given criteria on call to #first" do
+    a = SomeName.create!(:slot1 => 1)
+    b = SomeName.create!(:slot1 => 2)
+    SomeName.first(:slot1 => 1).should == a
+  end
+  
+  it "correctly handles finding via UUID on call to Meta#first" do
+    a = SomeName.create!(:slot1 => 5)
+    SomeName.first(a.uuid).should == a
+  end
+  
   it "should raise ArgumentError unless args size is 1 or 2" do
     a = SomeName.create!(:slot1 => 1, :slot2 => 2)
     lambda { SomeName.find("foo","bar","foobar") }.should raise_error(ArgumentError)

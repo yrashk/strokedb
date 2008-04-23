@@ -1,8 +1,15 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-describe "TrueClass" do
+
+describe "fasle" do
+  it "should be blank" do
+    false.should be_blank
+  end
+end
+
+describe "true" do
   it "should not be blank" do
-    TrueClass.should_not be_blank
+    true.should_not be_blank
   end
 end
 

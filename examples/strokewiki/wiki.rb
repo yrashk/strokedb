@@ -42,7 +42,7 @@ Page = StrokeDB::Meta.new do
       title = $2 unless $2.empty?
       page_url = page.gsub(/ /, '_')
  
-      if Page.find(:name => page_url).first
+      if Page.first(:name => page_url)
         %Q{<a href="/show/#{page_url}">#{title}</a>}
       else
         %Q{<span>#{title}<a href="/new/#{page_url}">?</a></span>}
@@ -59,17 +59,17 @@ class MainController < Ramaze::Controller
   end
   
   def pages
-    @pages = Page.find
+    @pages = Page.all
   end
   
   def show name,version=nil
-    @page = Page.find(:name => name).first
+    @page = Page.first(:name => name)
     @page = @page.versions[version] if version
     redirect("/new/#{name}") unless @page
   end
   
   def versions name
-    @page = Page.find(:name => name).first
+    @page = Page.first(:name => name)
     redirect("/new/#{name}") unless @page
   end
   
@@ -84,18 +84,18 @@ class MainController < Ramaze::Controller
   end
 
   def edit name
-    @page = Page.find(:name => name).first
+    @page = Page.first(:name => name)
   end
 
   def update name
-    @page = Page.find(:name => name).first
+    @page = Page.first(:name => name)
     @page.body = request['body']
     @page.save!
     redirect("/show/#{@page.name}")
   end
 
   def delete name
-    @page = Page.find(:name => name).first
+    @page = Page.first(:name => name)
     @page.delete!
     redirect("/")
   end
