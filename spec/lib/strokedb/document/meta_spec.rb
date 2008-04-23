@@ -78,6 +78,12 @@ describe "Meta module", :shared => true do
     SomeName.first(:slot1 => 1).should == a
   end
   
+  it "should return first document if no args are passed to #first" do
+    a = SomeName.create!(:slot1 => 1)
+    b = SomeName.create!(:slot1 => 2)
+    SomeName.first.should == SomeName.find.first
+  end
+
   it "correctly handles finding via UUID on call to Meta#first" do
     a = SomeName.create!(:slot1 => 5)
     SomeName.first(a.uuid).should == a
