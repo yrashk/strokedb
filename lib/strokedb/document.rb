@@ -124,7 +124,7 @@ module StrokeDB
         @document[:meta] = self
         
         if _module
-          @document.exclude(_module)
+          @document.unextend(_module)
         end
         
       end
