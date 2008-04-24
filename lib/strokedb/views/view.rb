@@ -2,10 +2,24 @@ module StrokeDB
   View = Meta.new do 
     
     DEFAULT_VIEW_OPTIONS = {
+      # Declare the size for a key to use optimizedindex file
+      # (size in bytes).
       "fixed_size_key"   => nil,
-      "heads"            => true,  # ???
-      "inline"           => false,
+      
+      # By default, view index stores dpointers to the actual data
+      # if you want need to store some actual data you may set this to
+      # true or a particular size (in bytes).
+      # Note: optimized storage is used when both keys and values 
+      # have the fixed length. I.e. "inline" is false or an integer and 
+      # "fixed_size_key" is an integer.
+      "inline"           => false,  # Integer 
+      
+      # strategy determines whether to index HEADs or particular versions
+      # When :heads is used, previous versions are removed from the index.
       "strategy"         => :heads, # :versions
+      
+      # what to do when the key is duplicated: add to list (append/prepend),
+      # overwrite or don't do anything (:skip).
       "on_duplicate_key" => :append # :prepend, :skip, :overwrite
     }
     
@@ -72,6 +86,19 @@ module StrokeDB
     
     def decode_key(string_key)
       DefaultKeyEncoder.decode(string_key)
+    end
+    
+    def encode_value(value)
+      # TODO:
+      # Calculate a dpointer if this is a document.
+      # Or find/create a blob and emit pointer to it.
+    end
+    
+    def decode_value(evalue)
+      # TODO: 
+      # evalue is a dpointer, retrieve the stuff
+      # out of it. If it contains a document prefix,
+      # instantiate a document.
     end
     
     # By default, there's no split hinting 
