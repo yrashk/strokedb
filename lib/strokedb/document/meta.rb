@@ -193,9 +193,17 @@ module StrokeDB
     #
     # Finds the first document matching the given criteria.
     #
-    def first(args)
+    def first(args = {})
       result = find(args)
       result.respond_to?(:first) ? result.first : result
+    end
+
+    #
+    # Finds the last document matching the given criteria.
+    #
+    def last(args = {})
+      result = find(args)
+      result.respond_to?(:last) ? result.last : result
     end
 
     #
