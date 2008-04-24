@@ -186,7 +186,7 @@ module StrokeDB
     end
 
     #
-    # Conveniance alias for Meta#find.
+    # Convenient alias for Meta#find.
     #
     alias :all :find
 
@@ -199,8 +199,8 @@ module StrokeDB
     end
 
     #
-    # Similar to +find+, but a creates document with appropriate slot values if
-    # not found.
+    # Similar to +find+, but creates a document with an appropriate 
+    # slot values if document was not found.
     #
     # If found, returned is only the first result.
     #
