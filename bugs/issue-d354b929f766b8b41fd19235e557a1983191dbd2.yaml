@@ -5,8 +5,8 @@ type: :bugfix
 component: General
 release: 
 reporter: elliottcable <git@elliottcable.name>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2008-04-18 04:54:00.438292 Z
 references: []
 
@@ -16,3 +16,7 @@ log_events:
   - elliottcable <git@elliottcable.name>
   - created
   - Perhaps convert them to RDoc and embed them in various places around the codebase... or convert them to HTML and have them on the website?
+- - 2008-04-24 20:51:06.682191 Z
+  - Oleg Andreev <oleganza@gmail.com>
+  - closed issue with disposition fixed
+  - renamed to meta/papers. We need a place for storing some drafts. Not to be confused with rdoc or official information (e.g. for website)
