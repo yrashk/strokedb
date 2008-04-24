@@ -5,13 +5,13 @@ module StrokeDB
   # but uses Array as a default.
   class InstantQueue < AbstractQueue
     
-    def initialize(params)
+    def initialize(params = {})
       @storage = params[:storage]
       unless @storage
         @storage = Queue.new
         class << self
           def pop
-            @storage.pop(true) # non-blocking Queue#pop
+            @storage.pop(true) rescue nil # non-blocking Queue#pop
           end
         end
       end

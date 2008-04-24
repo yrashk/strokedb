@@ -12,7 +12,7 @@ module StrokeDB
     
     # on_receive callback is called when the queue decides do pop
     # out an object. If there is no on_receive, it waits for the #pop call.
-    def on_recieve(&block)
+    def on_receive(&block)
       self.on_receive = block if block
       @on_receive
     end
