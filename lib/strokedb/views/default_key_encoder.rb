@@ -49,7 +49,8 @@ module StrokeDB
     class ::Hash
       # Keys order is undefined, so just don't use this method.
       def default_key_encode
-        "G" + map{|kv| kv.default_key_encode }.join("\x01")
+        raise("Hash cannot be used as a key! Please set up custom " +
+              "#encode_key method if you really need to.")
       end
     end
   end
@@ -68,7 +69,6 @@ module StrokeDB
     # Number    -> "D<sign><number bitlength (4 bytes)><integer>[.<decimal>]"
     # String    -> "E<string>"
     # Array     -> "F<array.inspect>"
-    # Hash      -> "G<hash.inspect>"
     # Document  -> "@<UUID.VERSION>"
     # 
     def self.encode(json)
@@ -81,7 +81,6 @@ module StrokeDB
     D = "D".freeze
     E = "E".freeze
     F = "F".freeze
-    G = "G".freeze
     X = "@".freeze
     
     def self.decode(string)
@@ -106,8 +105,6 @@ module StrokeDB
         string[1..-1]
       when F
         raise "Arrays decoding is not supported!"
-      when G
-        raise "Hashes decoding is not supported!"
       when X
         raise "Document dereferencing in key decode is not supported!"
       end

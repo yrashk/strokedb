@@ -82,6 +82,14 @@ describe DefaultKeyEncoder do
       end
     end
   end
+  
+  it "should decode arrays" do
+    pending "not implemented (look for Zed Show's prefix encoder)"
+    
+    arr = ["a", "b"]
+    arr2 = DefaultKeyEncoder.decode(DefaultKeyEncoder.encode(arr))
+    arr2.should == arr
+  end
 end
 
 
