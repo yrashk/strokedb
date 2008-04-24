@@ -2,7 +2,7 @@ module StrokeDB
   View = Meta.new do 
     
     DEFAULT_VIEW_OPTIONS = {
-      # Declare the size for a key to use optimizedindex file
+      # Declare the size for a key to use optimized index file
       # (size in bytes).
       "fixed_size_key"   => nil,
       
