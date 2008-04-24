@@ -143,6 +143,53 @@ Database can define several update views lists. For instance:
 2) database.nightly_uvs = [ SomeLazyFulltextIndex ]
 
 
+
+VERSIONING
+
+Every document has a number of previous versions which must be 
+covered with views as well, as HEAD versions ("latest").
+
+Scenarios:
+
+1) Simple view "article has_many comments" with head versions:
+   1. New document: pass through the View, save key-value pairs.
+   2. Document update: pass the previous version through the View,
+                       wipe out resulting tuples from the index,
+                       insert head version as usual.
+                       If doc is marked as "deleted", just don't insert it.
+
+2) View for indexing all the documents' versions by date.
+   If there're several versions per day, the latest one will be stored. 
+      
+   docs_by_date = View.find_or_create(:name => "docs_by_date", 
+                             :on_duplicate_key => :overwrite) do |view|
+     def view.map(doc)
+        [ [ doc.created_at.to_date, doc.uuid, doc.version ], doc ]
+     end
+   end
+   
+   # Find this document as it was 2 days ago.
+   docs_by_date.find(:key => [2.days.ago, uuid])
+
+   # Find all the updates done 2 days ago
+   docs_by_date.find(:key => [2 days ago])
+   
+   When this index is updated, only particular versions are supplied
+   and nothing is removed from the list.
+  
+   :on_duplicate_key => :overwrite tells, that only one revision
+   is stored per day. And this will be the latest revision, so you 
+   can see what the document looked like at the end of the day.
+   
+To support both scenarios, we may introduce a simple switch 
+as a slot in the viewdoc:
+
+   :strategy => :heads | :versions
+   
+This will tell the view which scenario is to be used.
+
+
+
 DATA STRUCTURES
 
 Views are persisted using lists of data ordered by some key.

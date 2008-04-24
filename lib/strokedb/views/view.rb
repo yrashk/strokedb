@@ -2,10 +2,11 @@ module StrokeDB
   View = Meta.new do 
     
     DEFAULT_VIEW_OPTIONS = {
-      "fixed_size_key" => nil,
-      "heads"          => true,  # ???
-      "inline"         => false,
-      "on_duplicate_key" => :append  # :skip, :update
+      "fixed_size_key"   => nil,
+      "heads"            => true,  # ???
+      "inline"           => false,
+      "strategy"         => :heads, # :versions
+      "on_duplicate_key" => :append # :prepend, :skip, :overwrite
     }
     
     on_initialization do |viewdoc|
