@@ -13,8 +13,8 @@ API OVERVIEW
 View is a function which is applied to every document in a whole dataspace
 and returns key-value pair(s) for each document.
 
-    LatestComments = View.new(:name => "latest_comments") do |view|
-      view.map do |doc|
+    LatestComments = View.find_or_create(:name => "latest_comments") do |view|
+      def view.map(doc)
         if (doc.is_a?(Comment))
           # Key prefix is an association (to be filtered by)
           # Key suffix is an ordering part ("sort by date, please")
@@ -49,7 +49,7 @@ You may find a view by name:
 
 You may define additional methods for a view inside View.new do ... end block:
       
-    LatestComments = View.new(:name => "latest_comments") do |view|
+    LatestComments = View.find_or_create(:name => "latest_comments") do |view|
       
       # view.map definition skipped (see above) ...
       
@@ -123,8 +123,8 @@ Update view is a regular view returning a document-view pairs.
 It is used to determine which views should be updated for the particular 
 document.
 
-    ArticleRelatedUV = View.new :name => "article_related" do |view|
-      view.map do |doc|
+    ArticleRelatedUV = View.find_or_create :name => "article_related" do |view|
+      def view.map(doc)
         if doc.is_a? Article
           [ doc, View.all.grep{|v| v.name =~ /article/ } ]
         elsif doc.is_a? Comment
@@ -161,7 +161,7 @@ If the encoded key is shorter or longer, WrongKeyLengthException is thrown.
 2) You may define specific key encoder:
 
     View.new do |view|
-      view.encode_key do |key|
+      def view.encode_key(key)
         crazy_binary_pack(key)
       end
     end
@@ -175,7 +175,7 @@ Note: encode_key is not required to be a reversible operation, so
 decode_key should just return something reasonable for your application.
 
     View.new do |view|
-      view.decode_key do |key|
+      def view.decode_key(key)
         crazy_binary_unpack(key)
       end
     end
@@ -185,7 +185,7 @@ view list can be splitted. To optimize locality (i.e. store related data
 in the same storage), you may specify a split hinting:
 
     View.new do |view|
-      view.split_by do |key|
+      def view.split_by(key)
         key[0]
       end
     end
@@ -210,33 +210,6 @@ Sometimes we need to do a soft migration of the current index,
 or keep it as-is, or do a controlled migration to a completely new version.
 Migration issues are subject to discuss.
 
-You may specify descriptive data for view.*{ } blocks to make them 
-"serializable". Like:
-
-    View.new do |v|
-      v.encode_key("downcase") do |key|
-        key.downcase
-      end
-    end
-
-When encode_key behavior changes, you should change its description:
-
-    View.new do |v|
-      v.encode_key("upcase") do |key|
-        key.upcase
-      end
-    end
-
-This will lead to using another index file.
-In a viewdoc, such info is accessed as a regular slot:
-
-    viewdoc["encode_key"] == "upcase"
-
-This is applied to "map", "encode_key", "decode_key" and "split_by".
-
-
-
-
 
 FURTHER DISCUSSION
 
@@ -247,8 +220,8 @@ you may build an interesting fulltext search index.
 
 Simple word search index:
 
-    WordSearch = View.new :name => "word_search" do |view|
-      view.map do |doc|
+    WordSearch = View.find_or_create :name => "word_search" do |view|
+      def view.map(doc)
         words = doc["body"].split(/\W/)
         words.map do |word|
           [word, doc]
@@ -275,14 +248,13 @@ Wikipedia describes core components:
 Reader and writer are storage-specific.
 Partition and comparison functions depend on a particular setup.
 
-Reduce API might look like this:
+Reduce API might look exactly like View API:
 
-    counter = Reducer.new do |r|
-      r.reduce do |key, items|
-        [key, items.length]
+    reducer = View.new(...) do |v|
+      def v.map(key, values)
+        [ [key, values.size] ]
       end
     end
-
 
 
 
@@ -290,40 +262,51 @@ EXAMPLES
 
 1) has_many :comments with optimizations
 
-    View.new(:name => "has_many_comments", 
+    View.find_or_create(:name => "has_many_comments", 
              :fixed_key_length => (128 + 128 + 32)) do |v|
-        v.map do |doc|
+        def v.map(doc)
           doc.is_a? Comment ? [[[doc.comment_container, doc.created_at], doc]] : nil 
         end
-        v.encode_key do |key|
-          key[0].raw_uuid_version + [doc.created_at.to_i].pack("N")
+        def v.encode_key(key)
+          return key.raw_uuid_version if key.is_a?(Document) # for prefix search
+          key[0].raw_uuid_version + [key[1].to_i].pack("N")
         end
-        v.split_by do |key|
+        def v.split_by(key)
           key[0].raw_uuid_version
         end
     end
+    
+    # Find first 10 comments for a given post
+    Views["has_many_comments"].find(:key => some_post, :count => 10)
 
 2) has_and_belongs_to_many :tags (inlined tags)
 
     doc.tags = %w[paris love sun]
     
-    View.new(:name => "docs_by_tag") do |v|
-      v.map do |doc|
+    View.find_or_create(:name => "docs_by_tag") do |v|
+      def v.map(doc)
         if doc['tags']
           time = doc.created_at
           doc['tags'].map do |tag|
-              [[tag, time], doc]
+            [[tag, time], doc]
           end
         end
       end
     end 
+    
+    # Find latest 20 documents for a given tag
+    # Note: "paris" will have another prefix, 
+    #       so ["paris", :blah] will not match. Thus we use ["paris"]
+
+    Views["docs_by_tag"].find(:key => ["paris"], :count => 20, :descending => true)
+    
 
 3) has_many :friends
 
     Friendship.new(:friends => [oleg, yurik], :status => "collegues")
 
-    View.new(:name => "users_friends") do |v|
-      v.map do |doc|
+    View.find_or_create(:name => "users_friends") do |v|
+      def v.map(doc)
         if doc.is_a? Friendship
           # Filtered by status & ordered by name
           [
@@ -334,5 +317,6 @@ EXAMPLES
       end
     end
 
-
+    # Find all Oleg's collegues sorted by name
+    Views["users_friends"].find(:key => [oleg, "collegues"])
 

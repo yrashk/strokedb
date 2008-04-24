@@ -1,5 +1,13 @@
 module StrokeDB
   View = Meta.new do 
+    
+    DEFAULT_VIEW_OPTIONS = {
+      "fixed_size_key" => nil,
+      "heads"          => true,  # ???
+      "inline"         => false,
+      "on_duplicate_key" => :append  # :skip, :update
+    }
+    
     on_initialization do |viewdoc|
       unless viewdoc["name"]
         raise ArgumentError, "View name must be specified!"
@@ -13,9 +21,9 @@ module StrokeDB
     DEFAULT_FIND_OPTIONS = {
       :startkey   => nil,
       :endkey     => nil,
-      :count      => nil,
+      :count      => nil,  :limit => nil,   # aliases
       :descending => false,
-      :skip       => nil,
+      :skip       => nil,  :offset => nil,  # aliases
       :key        => nil,   # prefix search
       :with_keys  => false  # returns [key, value] pairs instead of just values
     }.freeze
@@ -70,6 +78,15 @@ module StrokeDB
       json_key
     end
   end
+  
+  Views = View
+  
+  class << View
+    def [](name)
+      # find viewdoc by name
+    end
+  end
+  
 end
 
 
