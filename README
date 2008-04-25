@@ -27,11 +27,8 @@ If you can't install ossp-uuid for some reason, then install uuidtools gem as we
 === Getting source code
 
 	$ git clone git://gitorious.org/strokedb/mainline.git strokedb
-or
-	$ git clone http://git.gitorious.org/strokedb/mainline.git strokedb
 
 === Installing rubygem
-
 
 	$ sudo gem install strokedb
 	
