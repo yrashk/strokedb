@@ -211,7 +211,6 @@ docs_by_date.find(:key => [doc.uuid, 2.days.ago], :key_search => [:strict, :befo
 
 
 
-
 DATA STRUCTURES
 
 Views are persisted using lists of data ordered by some key.
@@ -278,6 +277,40 @@ and new must be built.
 Sometimes we need to do a soft migration of the current index,
 or keep it as-is, or do a controlled migration to a completely new version.
 Migration issues are subject to discuss.
+
+
+
+
+VIEW STORAGE API
+
+View is stored in two kind of storages: skiplists & ArchiveVolumes.
+
+Skiplist is processed in memory and being saved as a whole thing.
+ArchiveVolume allows incremental updates without storing much
+data in memory.
+
+View update process:
+
+1) Take a document (or something else) as an input,
+2) Pass to map method
+3) For each key-value pair:
+4) Encode key and value
+5) Store value in an ArchiveVolume or in a skiplist
+6) Store a key-dpointer pair in a skiplist (there might be an actual
+   data instead of dpointer in case of inlining)
+
+Note: if value is a document, then dpointer points to document's contents.
+In the other case, the value is stored in an ArchiveVolume.
+
+View search process:
+
+1) Encode input keys (startkey, endkey, key) 
+2) Load skiplist into memory
+3) Walk the skiplist using search rules (see views.rb for info)
+4) Select requested dpointers
+5) Retrieve data for the given dpointers
+
+
 
 
 FURTHER DISCUSSION
