@@ -30,7 +30,9 @@ module StrokeDB
       
       # pass viewdoc into initialization block:
       # my_view = View.new(){ |view| ... }
-      viewdoc.instance_variable_get(:@initialization_block).call(viewdoc)
+      if initialization_block = viewdoc.instance_variable_get(:@initialization_block)
+        initialization_block.call(viewdoc)
+      end
     end
     
     DEFAULT_FIND_OPTIONS = {
@@ -77,7 +79,7 @@ module StrokeDB
     # These are defaults (to by overriden in View.new{|v| ... })
     
     def map(doc)
-      raise "#map method is not defined for a view #{self['name']}!"
+      raise InvalidViewError, "#map method is not defined for a view #{self['name']}!"
     end
     
     def encode_key(json_key)
@@ -114,6 +116,8 @@ module StrokeDB
       # find viewdoc by name
     end
   end
+
+  class InvalidViewError < StandardError ; end
   
 end
 
