@@ -135,7 +135,7 @@ rescue NotImplementedError, CompilationError
       ::UUID.random_create.raw
     end
     def self.sha1_uuid(oid)
-      ::UUID.sha1_create(UUID_OID_NAMESPACE, oid)
+      ::UUID.sha1_create(UUID_OID_NAMESPACE, oid).to_s
     end
 
     class ::String
