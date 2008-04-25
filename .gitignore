@@ -1,9 +1,8 @@
 .DS_Store
 test/storages/*
 coverage
-docs/html
-docs/software
-docs/*/*.key
+meta/rdoc/*
+identity/*
 .*strokedb
 TAGS
 *.swp
