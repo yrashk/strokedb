@@ -14,7 +14,7 @@ describe "LazyMappingArray instance" do
   end
 
   it "should work in case statements" do
-    (Array === @array).should == true
+    @array.should be_a_kind_of(Array)
   end
 end
 

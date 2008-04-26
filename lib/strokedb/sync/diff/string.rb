@@ -1,7 +1,7 @@
 module StrokeDB
   class ::String
     def stroke_diff(to)
-      return super(to) unless String === to
+      return super(to) unless to.is_a?(String)
       return nil if self == to
       
       _f = self[0,2]
