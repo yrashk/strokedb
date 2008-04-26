@@ -436,22 +436,33 @@ module StrokeDB
       self
     end
 
-    #
-    # Updates slots with specified <tt>hash</tt> and returns itself.
-    #
+    # Updates slots with a specified <tt>hash</tt> and returns itself.
     def update_slots(hash)
       hash.each do |k, v|
         self[k] = v
       end
-
       self
     end
 
-    #
     # Same as update_slots, but also saves the document.
-    #
     def update_slots!(hash)
       update_slots(hash).save!
+    end
+    
+    # Updates nil/false slots with a specified <tt>hash</tt> and returns itself.
+    # Already set slots are not modified (<tt>||=</tt> is used).
+    # Acts like <tt>hash1.reverse_merge(hash2)</tt> (<tt>hash2.merge(hash1)</tt>).
+    #
+    def reverse_update_slots(hash)
+      hash.each do |k, v|
+        self[k] ||= v
+      end
+      self
+    end
+
+    # Same as reverse_update_slots, but also saves the document.
+    def reverse_update_slots!(hash)
+      reverse_update_slots(hash).save!
     end
 
     #
