@@ -36,12 +36,12 @@ module StrokeDB
     end
     
     DEFAULT_FIND_OPTIONS = {
-      :startkey   => nil,
-      :endkey     => nil,
-      :count      => nil,  :limit => nil,   # aliases
-      :descending => false,
-      :skip       => nil,  :offset => nil,  # aliases
-      :key        => nil,   # prefix search
+      :start_key  => nil,   # start search with a given prefix
+      :end_key    => nil,   # stop search with a given prefix
+      :limit      => nil,   # retrieve at most <N> entries
+      :offset     => nil,   # skip a given number of entries
+      :reverse    => false, # reverse search direction and meaning of start_key & end_key 
+      :key        => nil,   # prefix search (start_key == end_key)
       :with_keys  => false  # returns [key, value] pairs instead of just values
     }.freeze
     
@@ -58,35 +58,35 @@ module StrokeDB
     def find(options)
       options = DEFAULT_FIND_OPTIONS.merge(options)
       
-      startkey   = options[:startkey]
-      endkey     = options[:endkey]
+      start_key  = options[:start_key]
+      end_key    = options[:end_key]
       key        = options[:key]
-      count      = options[:count]   || options[:limit]
-      skip       = options[:skip]    || options[:offset]
-      reverse    = options[:reverse] || options[:descending]
+      limit      = options[:limit]
+      offset     = options[:offset]
+      reverse    = options[:reverse]
       with_keys  = options[:with_keys]
       
-      ugly_find(startkey, endkey, key, count, skip, reverse, with_keys)
+      ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
     end
     
     # Ugly find accepts fixed set of arguments and works a bit faster, 
     # than a regular #find(options = {}).
     # Some arguments can be nils.
     # 
-    def ugly_find(startkey, endkey, key, count, skip, reverse, with_keys)
+    def ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
       
       # Mode 1. startkey, count (skip)
       # Mode 2. startkey..endkey
       # Mode 3. key, count (skip) - prefix search
       
       if key 
-        endkey = startkey = key
+        end_key = start_key = key
       end
       
-      array = storage.find(encode_key(startkey), 
-                           endkey && encode_key(endkey), 
-                           count, 
-                           skip, 
+      array = storage.find(encode_key(start_key), 
+                           end_key && encode_key(end_key), 
+                           limit, 
+                           offset, 
                            reverse, 
                            with_keys)
       
