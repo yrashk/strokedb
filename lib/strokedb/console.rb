@@ -38,7 +38,11 @@ module StrokeDB
         end
 
         def clear!
-          FileUtils.rm_rf @@loc
+          if @@loc == 'RAM'
+            FileUtils.rm_rf RAM_BASE_PATH
+          else
+            FileUtils.rm_rf @@loc
+          end
           setup
           "Database has been wiped out."
         end
