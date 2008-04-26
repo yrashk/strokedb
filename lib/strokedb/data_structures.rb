@@ -1,3 +1,4 @@
+require 'data_structures/search_skiplist'
 require 'data_structures/simple_skiplist'
 require 'data_structures/skiplist'
 require 'data_structures/chunked_skiplist'
