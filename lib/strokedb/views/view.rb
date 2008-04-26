@@ -111,7 +111,7 @@ module StrokeDB
     #
     # See meta/papers/views.txt for more info.
     #
-    def update(doc) #:nodoc:
+    def update(doc)
       # Strategy is a constant for a particular document version,
       # so we just redefine an #update method for faster dispatching.
       if self["strategy"] == "heads"
@@ -128,18 +128,23 @@ module StrokeDB
       update(doc)
     end
     
-        
+    # Remove a previous version, add a new one,
+    # pass UUID as a key to #map        
+    #
     def update_head(doc) #:nodoc
-      # TODO: remove previous version, add new one,
-      #       pass UUID as a key to #map
-      
+      prev = doc.versions.previous
+      old_pairs = map_with_encoding(prev.uuid, prev)
+      new_pairs = map_with_encoding(doc.uuid,  doc)
+      storage.replace(old_pairs, new_pairs)
     end
     private :update_head
     
+    # Add a new version to the index,
+    # pass [UUID, VERSION] as a key to #map
+    #
     def update_version(doc) #:nodoc
-      # TODO: add new version to the index
-      #       pass UUID.VERSION as a key to #map
-      
+      new_pairs = map_with_encoding([doc.uuid, doc.version],  doc)
+      storage.insert(new_pairs)
     end
     private :update_version
         
@@ -168,7 +173,7 @@ module StrokeDB
     def encode_value(value)
       # TODO:
       # Calculate a dpointer if this is a document.
-      # Or find/create a blob and emit pointer to it.
+      # Or find/create a blob and emit a dpointer to it.
     end
     
     def decode_value(evalue)
