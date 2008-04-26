@@ -3,7 +3,7 @@ title: validates_uniqueness_of should respect :case_sensitive
 desc: Implement it when we'll be able to query case-insensitively
 type: :bugfix
 component: Meta
-release: v0.0.3
+release: 
 reporter: Yurii Rashkovskii <yrashk@issuesdone.com>
 status: :unstarted
 disposition: 
@@ -20,3 +20,7 @@ log_events:
   - elliottcable <git@elliottcable.name>
   - assigned to release v0.0.3 from unassigned
   - ""
+- - 2008-04-26 21:45:09.093154 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - unassigned from release v0.0.3
+  - Do it after new-views merged into master
