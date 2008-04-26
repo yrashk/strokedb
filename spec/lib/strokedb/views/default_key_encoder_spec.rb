@@ -7,8 +7,8 @@ describe DefaultKeyEncoder do
       nil,
       false,
       true,
-      -0x66666,
-      -0x66666 + 0.1,
+      -66666,
+      -66666 + 0.1,
       -0.0000000001,
       0,
       0.000000001,
@@ -27,23 +27,19 @@ describe DefaultKeyEncoder do
       "10",
       "2",
       "a",
+      ["a", :b],
       :ab,
       :abb,
       "b",
+      ["b", "b"],  
       :bb
     ]
     
-    @arrays = [
-      ["a"],
-      [:a, :b],
-      [:b],
-      ["b", "b"]  
-    ]
   end
   
   it "should correctly collate JSON types" do
-    (@items + @arrays).each_with_index do |a, index|
-      (@items + @arrays)[index + 1, @items.size].each do |b|
+    @items.each_with_index do |a, index|
+      @items[index + 1, @items.size].each do |b|
         String.should === DefaultKeyEncoder.encode(a)
         String.should === DefaultKeyEncoder.encode(b)
         ae = DefaultKeyEncoder.encode(a)

@@ -11,14 +11,14 @@ module StrokeDB
     end
     class ::Integer
       # This helps with natural sort order
-      # "D<sign><number length (4 bytes)><hex>"
+      # "D<sign><number length (8 hex bytes)><hex>"
       def default_key_encode
         hex = self.abs.to_s(16)
         if self >= 0
-          "D1" + [ hex.size ].pack("N") + hex
+          "D1" + [ hex.size ].pack("N").unpack("H*")[0] + hex
         else
           s = hex.size
-          "D0" + [ 2**32 - s ].pack("N") + (16**s + self).to_s(16)
+          "D0" + [ 2**32 - s ].pack("N").unpack("H*")[0] + (16**s + self).to_s(16)
         end
       end
     end
@@ -43,21 +43,22 @@ module StrokeDB
     end
     class ::Array
       def default_key_encode
-        "F" + map{|e| e.default_key_encode }.join("\x00")
+        flatten.map{|e| e.default_key_encode }.join(" ")
       end
     end
     class ::Hash
       # Keys order is undefined, so just don't use this method.
       def default_key_encode
-        raise("Hash cannot be used as a key! Please set up custom " +
-              "#encode_key method if you really need to.")
+        raise(StandardError, "Hash cannot be used as a key! Please set up custom " +
+                             "#encode_key method if you really need to.")
       end
     end
   end
   
   class Document
+    AT_SIGN = "@".freeze
     def default_key_encode
-      __reference__
+      AT_SIGN + uuid.to_raw_uuid
     end
   end
   
@@ -66,10 +67,10 @@ module StrokeDB
     # nil       -> "A"  
     # false     -> "B"
     # true      -> "C"
-    # Number    -> "D<sign><number bitlength (4 bytes)><integer>[.<decimal>]"
+    # Number    -> "D<sign><number bitlength (8 hex bytes)><integer>[.<decimal>]"
     # String    -> "E<string>"
-    # Array     -> "F<array.inspect>"
-    # Document  -> "@<UUID.VERSION>"
+    # Array     -> "<elem1 elem2 ...>"
+    # Document  -> "<UUID>"
     # 
     def self.encode(json)
       json.default_key_encode
@@ -82,32 +83,35 @@ module StrokeDB
     E = "E".freeze
     F = "F".freeze
     X = "@".freeze
+    S_= " ".freeze
     
     def self.decode(string)
-      case string[0,1]
-      when A
-        nil
-      when B
-        false
-      when C
-        true
-      when D
-        int, rat = string[6, 666].split(".")
-        sign = string[1, 1] == "1" ? 1 : -1
-        size = string[2, 4].unpack("N").first
-        int = int.to_i(16)
-        if sign == -1
-          size = 2**32 - size
-          int  = 16**size - int
+      values = string.split(S_).map do |token|
+        pfx = token[0,1]
+        case pfx
+        when A
+          nil
+        when B
+          false
+        when C
+          true
+        when D
+          int, rat = string[10, 666].split(".")
+          sign = string[1, 1] == "1" ? 1 : -1
+          size = string[2, 8].to_i(16)
+          int = int.to_i(16)
+          if sign == -1
+            size = 2**32 - size
+            int  = 16**size - int
+          end
+          rat ? sign*int + ("0."+rat).to_f : sign*int
+        when E
+          string[1..-1]
+        when X
+          raise StandardError, "Document dereferencing in key decode is not supported yet!"
         end
-        rat ? sign*int + ("0."+rat).to_f : sign*int
-      when E
-        string[1..-1]
-      when F
-        raise "Arrays decoding is not supported!"
-      when X
-        raise "Document dereferencing in key decode is not supported!"
       end
+      values.size > 1 ? values : values[0]
     end
   end
 end
