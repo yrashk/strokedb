@@ -63,15 +63,17 @@ module StrokeDB
       key        = options[:key]
       count      = options[:count] || options[:limit]
       skip       = options[:skip] || options[:offset]
-      descending = options[:descending]
+      reverse    = options[:reverse] || options[:descending]
       with_keys  = options[:with_keys]
       
-      old_school_find(startkey, endkey, key, count, skip, descending, with_keys)
+      ugly_find(startkey, endkey, key, count, skip, reverse, with_keys)
     end
     
-    # Old-school find is a faster interface to find
+    # Ugly find accepts fixed set of arguments and works a bit faster, 
+    # than a regular #find(options = {}).
+    # Some arguments can be nils.
     # 
-    def old_school_find(startkey, endkey, key, count, skip, descending, with_keys)
+    def ugly_find(startkey, endkey, key, count, skip, reverse, with_keys)
       
       # Mode 1. startkey, count (skip)
       # Mode 2. startkey..endkey
@@ -81,7 +83,12 @@ module StrokeDB
         endkey = startkey = key
       end
       
-      array = storage.find(startkey, endkey, count, skip, descending, with_keys)
+      array = storage.find(encode_key(startkey), 
+                           endkey && encode_key(endkey), 
+                           count, 
+                           skip, 
+                           descending, 
+                           with_keys)
       
       if with_keys
         array.map do |ekey, evalue|
@@ -101,6 +108,8 @@ module StrokeDB
       pairs = map(doc)
       
       # TODO: insert pairs into the storage
+      
+      
       
     end
     
