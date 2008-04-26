@@ -58,13 +58,42 @@ module StrokeDB
     def find(options)
       options = DEFAULT_FIND_OPTIONS.merge(options)
       
+      startkey   = options[:startkey]
+      endkey     = options[:endkey]
+      key        = options[:key]
+      count      = options[:count] || options[:limit]
+      skip       = options[:skip] || options[:offset]
+      descending = options[:descending]
+      with_keys  = options[:with_keys]
+      
+      old_school_find(startkey, endkey, key, count, skip, descending, with_keys)
+    end
+    
+    # Old-school find is a faster interface to find
+    # 
+    def old_school_find(startkey, endkey, key, count, skip, descending, with_keys)
+      
       # Mode 1. startkey, count (skip)
       # Mode 2. startkey..endkey
       # Mode 3. key, count (skip) - prefix search
       
-      #storage = 
+      if key 
+        endkey = startkey = key
+      end
       
+      array = storage.find(startkey, endkey, count, skip, descending, with_keys)
+      
+      if with_keys
+        array.map do |ekey, evalue|
+          [ decode_key(ekey), decode_value(evalue) ]
+        end
+      else
+        array.map do |evalue|
+          decode_value(evalue)
+        end
+      end
     end
+    
     
     # This is used by the storage to update index
     # with a new version of document
