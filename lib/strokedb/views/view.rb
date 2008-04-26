@@ -92,13 +92,13 @@ module StrokeDB
     def find(options)
       options = DEFAULT_FIND_OPTIONS.merge(options).stringify_keys
       
-      start_key  = options[:start_key]
-      end_key    = options[:end_key]
-      key        = options[:key]
-      limit      = options[:limit]
-      offset     = options[:offset]
-      reverse    = options[:reverse]
-      with_keys  = options[:with_keys]
+      start_key  = options['start_key']
+      end_key    = options['end_key']
+      key        = options['key']
+      limit      = options['limit']
+      offset     = options['offset']
+      reverse    = options['reverse']
+      with_keys  = options['with_keys']
       
       ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
     end
