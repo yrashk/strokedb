@@ -1,6 +1,21 @@
 ROADMAP
 =======
 
-1. merge new-views to master
-2. ??????
-3. PROFIT!
+Please note that more specific issues for each release are managed by ditz, consider running
+
+	$ ditz todo v<release> # like v0.0.3
+
+Next Minor Release (0.0.3)
+==========================
+
+* More stable/mature storages
+* More complete transactions implementation
+* Better spec coverage
+* More documentation
+* Finish reorganizing project's file structure
+
+Next Major Release (0.1)
+========================
+
+* New improved extensible search subsystem
+* Faster storages
