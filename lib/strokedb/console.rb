@@ -5,6 +5,8 @@ require 'core_ext/string'
 module StrokeDB
   
   module Console
+    RAM_BASE_PATH = '.console-ram.strokedb'
+    
     def self.included(klass)
       klass.module_eval do
         
@@ -12,7 +14,8 @@ module StrokeDB
           if ARGV.last.is_a? String
             if (@@loc = ARGV.pop) == 'RAM'
               puts 'Using in-memory storage.'
-              ::StrokeDB::Config.build :default => true, :storages => [:memory]
+              FileUtils.rm_rf RAM_BASE_PATH
+              ::StrokeDB::Config.build :default => true, :storages => [:memory], :base_path => RAM_BASE_PATH
             else
               puts "Using #{@@loc} storage."
               ::StrokeDB::Config.build :default => true, :base_path => @@loc
