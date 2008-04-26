@@ -7,8 +7,8 @@ type: :bugfix
 component: Meta
 release: 
 reporter: Yurii Rashkovskii <yrashk@idbns.com>
-status: :in_progress
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2008-04-22 15:34:42.944691 Z
 references: []
 
@@ -22,3 +22,7 @@ log_events:
   - Yurii Rashkovskii <yrashk@idbns.com>
   - changed status from unstarted to in_progress
   - added some specs about deleting metas
+- - 2008-04-26 21:43:17.925665 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - closed issue with disposition fixed
+  - seems to work
