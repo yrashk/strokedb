@@ -32,13 +32,19 @@ module StrokeDB
       end
     end
     class ::String
+      STROKEDB_SPACE_CHAR = " ".freeze
+      STROKEDB_E_CHAR     = "E".freeze
       def default_key_encode
-        "E" + self
+        if self[STROKEDB_SPACE_CHAR]
+          split(STROKEDB_SPACE_CHAR).default_key_encode
+        else
+          STROKEDB_E_CHAR + self
+        end
       end
     end
     class ::Symbol
       def default_key_encode
-        "E" + self.to_s
+        to_s.default_key_encode
       end
     end
     class ::Array
@@ -96,9 +102,9 @@ module StrokeDB
         when C
           true
         when D
-          int, rat = string[10, 666].split(".")
-          sign = string[1, 1] == "1" ? 1 : -1
-          size = string[2, 8].to_i(16)
+          int, rat = token[10, 666].split(".")
+          sign = token[1, 1] == "1" ? 1 : -1
+          size = token[2, 8].to_i(16)
           int = int.to_i(16)
           if sign == -1
             size = 2**32 - size
@@ -106,9 +112,11 @@ module StrokeDB
           end
           rat ? sign*int + ("0."+rat).to_f : sign*int
         when E
-          string[1..-1]
+          token[1..-1]
         when X
           raise StandardError, "Document dereferencing in key decode is not supported yet!"
+        else
+          token  # unknown stuff is decoded as a string
         end
       end
       values.size > 1 ? values : values[0]

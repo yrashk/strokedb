@@ -27,7 +27,7 @@ describe DefaultKeyEncoder do
       "10",
       "2",
       "a",
-      ["a", :b],
+      ["a", "b"],
       :ab,
       :abb,
       "b",
@@ -80,12 +80,17 @@ describe DefaultKeyEncoder do
   end
   
   it "should decode arrays" do
-    pending "not implemented (look for Zed Show's prefix encoder)"
-    
     arr = ["a", "b"]
     arr2 = DefaultKeyEncoder.decode(DefaultKeyEncoder.encode(arr))
     arr2.should == arr
   end
+  
+  it "should encode/decode string with spaces gracefully" do
+    DefaultKeyEncoder.decode(DefaultKeyEncoder.encode("a b")).should == ["a", "b"]
+    DefaultKeyEncoder.decode(DefaultKeyEncoder.encode(["1", "a b"])).should == ["1", "a", "b"]
+    DefaultKeyEncoder.decode(DefaultKeyEncoder.encode([1,"a D"])).should == [1, "a", "D"]
+  end
+  
 end
 
 
