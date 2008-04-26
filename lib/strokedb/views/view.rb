@@ -41,24 +41,56 @@ module StrokeDB
       :start_key  => nil,   # start search with a given prefix
       :end_key    => nil,   # stop search with a given prefix
       :limit      => nil,   # retrieve at most <N> entries
-      :offset     => nil,   # skip a given number of entries
+      :offset     => 0,     # skip a given number of entries
       :reverse    => false, # reverse search direction and meaning of start_key & end_key 
       :key        => nil,   # prefix search (start_key == end_key)
       :with_keys  => false  # returns [key, value] pairs instead of just values
     }.freeze
     
-    # TODO
     # Returns true if the index file is valid and will be used
     # by #find method.
     #
     def index_exists?
-      # TODO: check the existance of the index
+      storage.exists?
     end
     
-    # Finds 
+    # Clear the index file (#index_exists? will give <tt>false</tt> then)
+    #
+    def clear!
+      storage.clear!
+    end
+    
+    # Finds a set of values stored in the view filtered with the options used.
+    # 
+    # * <tt>:start_key</tt>: Prefix to start a search with.
+    # * <tt>:end_key</tt>: Prefix to end a search with.
+    # * <tt>:key</tt>: Setting :key option is equivalent to set both <tt>:start_key</tt>
+    #                  and <tt>:end_key</tt> to the same value.
+    # By default, both keys are <tt>nil</tt> (and these are valid values). 
+    #
+    # * <tt>:limit</tt>: Maximum number of items to be returned. Default is <tt>nil</tt> (no limit).
+    # * <tt>:offset</tt>: Skip a given number of items starting with <tt>:start_key</tt>.
+    #                     Default is <tt>0</tt> (skip nothing).
+    # * <tt>:reverse</tt>: Reverse the search direction. Search starts from the end of the 
+    #                      index, goes to <tt>:start_key</tt> prefix and finishes before
+    #                      the <tt>:end_key</tt> value. This works like 
+    #                      an <tt>ORDER BY ... DESC</tt> SQL statement.
+    #                      Default is <tt>false</tt> (i.e. direct search order).
+    # * <tt>:with_keys</tt>: Return a key-value pairs instead of just values.
+    #                        Default is <tt>false</tt>.
+    #
+    # Examples:
+    #   view.find                             # returns all the items in a view
+    #   view.find(:limit => 1)                # returns the first document in a view
+    #   view.find(:offset => 10, :limit => 1) # returns 11-th document in a view
+    #   view.find(:key => doc)                # returns all items with a doc.uuid prefix 
+    #   
+    #   # returns the latest 10 comments for a given document
+    #   # (assuming the key defined as [comment.document, comment.created_at])
+    #   has_many_comments.find(:key => doc, :limit => 10, :reverse => true)  
     #
     def find(options)
-      options = DEFAULT_FIND_OPTIONS.merge(options)
+      options = DEFAULT_FIND_OPTIONS.merge(options).stringify_keys
       
       start_key  = options[:start_key]
       end_key    = options[:end_key]
@@ -106,8 +138,8 @@ module StrokeDB
     # This is used by the storage to update index with a new version of document.
     # Viewdoc contains a "strategy" slot, defining a strategy for index updates.
     #
-    # * "heads" strategy removes previous version from the index.
-    # * "versions" strategy just adds new version to the index.
+    # * "heads" strategy removes a previous version from the index.
+    # * "versions" strategy just adds a new version to the index.
     #
     # See meta/papers/views.txt for more info.
     #
