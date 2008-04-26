@@ -201,16 +201,12 @@ module StrokeDB
     end
     
     def encode_value(value)
-      # TODO:
-      # Calculate a dpointer if this is a document.
-      # Or find/create a blob and emit a dpointer to it.
+      (value.is_a?(Document) ? value : RawData(value).save!).raw_uuid
     end
     
     def decode_value(evalue)
-      # TODO: 
-      # evalue is a dpointer, retrieve the stuff
-      # out of it. If it contains a document prefix,
-      # instantiate a document.
+      doc = self.store.find(evalue)
+      doc.is_a?(RawData) ? doc['data'] : doc
     end
     
     # By default, there's no split hinting 
