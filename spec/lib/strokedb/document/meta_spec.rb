@@ -145,7 +145,7 @@ describe "Meta module with name" do
   it "should have document's UUID v5 based on nsurl and name" do
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new(:nsurl => "http://some/")
-    SomeName.document.uuid.should == Util.sha1_uuid('http://some/#SomeName')
+    SomeName.document.uuid.should == Util.sha1_uuid('meta:http://some/#SomeName')
   end
 
   it "should have specified UUID if it was specified" do
