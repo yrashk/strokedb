@@ -139,7 +139,7 @@ rescue NotImplementedError, CompilationError
     end
     
     RAW_UUID_SIZE       = random_uuid_raw.size
-    FORMATTED_UUID_SIZE = self.random_uuid.size
+    FORMATTED_UUID_SIZE = random_uuid.size
 
     class ::String
       # Convert to raw (16 bytes) string (self can be already raw or formatted).
