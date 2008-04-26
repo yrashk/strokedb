@@ -16,7 +16,7 @@ describe View, "with #map method defined" do
   before(:each) do
     setup_default_store
     @post_comments = View.find_or_create(:name => "post_comments") do |view|
-      def view.map(doc)
+      def view.map(uuid, doc)
         [ [doc, doc] ]
       end
     end

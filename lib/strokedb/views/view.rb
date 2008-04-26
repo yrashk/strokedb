@@ -16,11 +16,11 @@ module StrokeDB
       
       # strategy determines whether to index HEADs or particular versions
       # When :heads is used, previous versions are removed from the index.
-      "strategy"         => :heads, # :versions
+      "strategy"         => "heads", # heads|versions
       
-      # what to do when the key is duplicated: add to list (append/prepend),
-      # overwrite or don't do anything (:skip).
-      "on_duplicate_key" => :append # :prepend, :skip, :overwrite
+      # what to do when the key is duplicated: add to list (append|prepend),
+      # overwrite or don't do anything ("skip").
+      "on_duplicate_key" => "append" # append|prepend|skip|overwrite
     }
     
     on_initialization do |viewdoc|
@@ -28,6 +28,8 @@ module StrokeDB
         raise ArgumentError, "View name must be specified!"
       end
       
+      viewdoc.reverse_update_slots(DEFAULT_VIEW_OPTIONS)
+    
       # pass viewdoc into initialization block:
       # my_view = View.new(){ |view| ... }
       if initialization_block = viewdoc.instance_variable_get(:@initialization_block)
@@ -53,7 +55,7 @@ module StrokeDB
       # TODO: check the existance of the index
     end
     
-    # 
+    # Finds 
     #
     def find(options)
       options = DEFAULT_FIND_OPTIONS.merge(options)
@@ -100,23 +102,58 @@ module StrokeDB
         end
       end
     end
-    
-    
-    # This is used by the storage to update index
-    # with a new version of document
-    def insert(doc) #:nodoc:
-      pairs = map(doc)
       
-      # TODO: insert pairs into the storage
-      
-      
-      
+    # This is used by the storage to update index with a new version of document.
+    # Viewdoc contains a "strategy" slot, defining a strategy for index updates.
+    #
+    # * "heads" strategy removes previous version from the index.
+    # * "versions" strategy just adds new version to the index.
+    #
+    # See meta/papers/views.txt for more info.
+    #
+    def update(doc) #:nodoc:
+      # Strategy is a constant for a particular document version,
+      # so we just redefine an #update method for faster dispatching.
+      if self["strategy"] == "heads"
+        class << self
+          alias_method :update, :update_head
+          public :update
+        end
+      else
+        class << self
+          alias_method :update, :update_version
+          public :update
+        end
+      end
+      update(doc)
     end
     
+        
+    def update_head(doc) #:nodoc
+      # TODO: remove previous version, add new one
+      #       pass UUID as a key to #map
+      
+    end
+    private :update_head
     
+    def update_version(doc) #:nodoc
+      # TODO: add new version to the index
+      #       pass UUID.VERSION as a key to #map
+      
+    end
+    private :update_version
+        
+    def map_with_encoding(key, value)
+      (map(key, value) || []).map do |k, v|
+        [encode_key(k), encode_value(v)]
+      end
+    end
+    private :map_with_encoding
+    
+
     # These are defaults (to by overriden in View.new{|v| ... })
     
-    def map(doc)
+    def map(key, value)
       raise InvalidViewError, "#map method is not defined for a view #{self['name']}!"
     end
     
