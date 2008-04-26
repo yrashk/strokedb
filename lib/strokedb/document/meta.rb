@@ -241,7 +241,7 @@ module StrokeDB
       raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
       @meta_initialization_procs.each {|proc| proc.call }.clear
 
-      values = @args.clone.select{|a| Hash === a}.first
+      values = @args.clone.select{|a| a.is_a?(Hash) }.first
       values[:meta] = Meta.document(store)
       values[:name] ||= name
       values[:nsurl] ||= Meta.default_nsurl

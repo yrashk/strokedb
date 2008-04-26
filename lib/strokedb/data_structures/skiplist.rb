@@ -160,7 +160,7 @@ module StrokeDB
 
  	  def each
   	  n = @head.forward[0]
-  	  until TailNode === n
+  	  until n.is_a?(TailNode)
   	    yield n
   	    n = n.forward[0]
       end

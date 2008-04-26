@@ -1,7 +1,7 @@
 module StrokeDB
   class ::Hash
     def stroke_diff(to)
-      return super(to) unless Hash === to
+      return super(to) unless to.is_a?(Hash)
       return nil if self == to
       
       all_keys = self.keys | to.keys

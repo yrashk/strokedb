@@ -15,7 +15,7 @@ describe "LazyMappingHash instance" do
   end
   
   it "should match case expressions" do
-    (Hash === @lash).should == true
+    @lash.should be_a_kind_of(Hash)
   end
 end
 

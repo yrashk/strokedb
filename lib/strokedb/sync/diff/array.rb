@@ -6,7 +6,7 @@ module StrokeDB
       '!' => PATCH_DIFF
     }.freeze
     def stroke_diff(to)
-      return super(to) unless Array === to
+      return super(to) unless to.is_a?(Array)
       return nil if self == to
       
       # sdiff:  +   -   !   = 
