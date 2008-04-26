@@ -4,15 +4,16 @@ module StrokeDB
     DEFAULT_VIEW_OPTIONS = {
       # Declare the size for a key to use optimized index file
       # (size in bytes).
-      "fixed_size_key"   => nil,
+      "key_size" => nil,
       
-      # By default, view index stores dpointers to the actual data value.
-      # If you need to store some value in the index file, you may set this to
-      # true or a particular size (in bytes, for fixed-length data).
-      # Note: optimized storage is used when both keys and values 
-      # are the fixed length. I.e. "inline" is false or an integer and 
-      # "fixed_size_key" is an integer.
-      "inline"           => false,  # Integer 
+      # By default, view index stores raw document's uuid as a value.
+      # If you need to store immediate value in the index file, you may 
+      # override view.encode_value method.
+      # Set this option to a particular size (in bytes, for fixed-length data)
+      # or to <tt>false</tt> if the size is not fixed.
+      # Note: optimized storage is used when both keys and values  are the fixed length. 
+      # I.e. both "value_size" and "key_size" are set.
+      "value_size" => StrokeDB::Util::RAW_UUID_SIZE,
       
       # strategy determines whether to index HEADs or particular versions
       # When :heads is used, previous versions are removed from the index.
@@ -29,7 +30,7 @@ module StrokeDB
       end
       
       viewdoc.reverse_update_slots(DEFAULT_VIEW_OPTIONS)
-    
+      
       # pass viewdoc into initialization block:
       # my_view = View.new(){ |view| ... }
       if initialization_block = viewdoc.instance_variable_get(:@initialization_block)
@@ -146,6 +147,11 @@ module StrokeDB
     def update(doc)
       # Strategy is a constant for a particular document version,
       # so we just redefine an #update method for faster dispatching.
+      
+      storage.set_options(:key_size         => key_size, 
+                          :value_size       => value_size, 
+                          :on_duplicate_key => on_duplicate_key)
+      
       if self["strategy"] == "heads"
         class << self
           alias_method :update, :update_head
@@ -185,6 +191,10 @@ module StrokeDB
     end
     private :map_with_encoding
     
+    def storage
+      @storage ||= store.view_storages[self.uuid]
+    end
+    private :storage
 
     # These are defaults (to by overriden in View.new{|v| ... })
     
@@ -215,11 +225,12 @@ module StrokeDB
     end
   end
   
+  # Syntactic sugar for Views["view_name"]
   Views = View
   
   class << View
     def [](name)
-      # find viewdoc by name
+      # TODO: find viewdoc by name
     end
   end
 
