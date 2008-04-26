@@ -70,7 +70,7 @@ module StrokeDB
     end
     
     # Ugly find accepts fixed set of arguments and works a bit faster, 
-    # than a regular #find(options = {}).
+    # than a regular #find(options = {}) [probably insignificantly faster, TODO: check this]
     # Some arguments can be nils.
     # 
     def ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
