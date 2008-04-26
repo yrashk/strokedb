@@ -38,14 +38,14 @@ module StrokeDB
     end
     
     DEFAULT_FIND_OPTIONS = {
-      'start_key'  => nil,   # start search with a given prefix
-      'end_key'    => nil,   # stop search with a given prefix
-      'limit'      => nil,   # retrieve at most <N> entries
-      'offset'     => 0,     # skip a given number of entries
-      'reverse'    => false, # reverse search direction and meaning of start_key & end_key 
-      'key'        => nil,   # prefix search (start_key == end_key)
-      'with_keys'  => false  # returns [key, value] pairs instead of just values
-    }.freeze
+      :start_key  => nil,   # start search with a given prefix
+      :end_key    => nil,   # stop search with a given prefix
+      :limit      => nil,   # retrieve at most <N> entries
+      :offset     => 0,     # skip a given number of entries
+      :reverse    => false, # reverse search direction and meaning of start_key & end_key 
+      :key        => nil,   # prefix search (start_key == end_key)
+      :with_keys  => false  # returns [key, value] pairs instead of just values
+    }.stringify_keys.freeze
     
     # Returns true if the index file is valid and will be used
     # by #find method.
