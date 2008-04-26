@@ -82,6 +82,8 @@ describe "Document", :shared => true do
     @document.slot4?.should be_false
   end
 
+  # update_slots
+  
   it "should batch update slots" do
     @document.update_slots(:aaa => "aaa", :bbb => true)
     @document.aaa.should == "aaa"
@@ -105,6 +107,27 @@ describe "Document", :shared => true do
     doc.aaa.should == "aaa"
     doc.bbb.should == true
   end
+  
+  # reverse_update_slots
+  
+  it "should batch update slots in reverse (||=)" do
+    @document.aaa = "before"
+    @document.reverse_update_slots(:aaa => "after", :bbb => false)
+    @document.aaa.should == "before"
+    @document.bbb.should == false
+  end
+  
+  it "should support batch reverse_update_slots with saving" do
+    @document.aaa = "before"
+    doc = @document.reverse_update_slots!(:aaa => "after", :bbb => false)
+    doc.aaa.should == "before"
+    doc.bbb.should == false
+    doc = doc.reload
+    doc.aaa.should == "before"
+    doc.bbb.should == false
+  end
+    
+  # callbacks
 
   it "should add callbacks" do
     cb1 = Callback.new(nil,:callback_name) {}
