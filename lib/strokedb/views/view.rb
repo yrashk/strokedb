@@ -61,8 +61,8 @@ module StrokeDB
       startkey   = options[:startkey]
       endkey     = options[:endkey]
       key        = options[:key]
-      count      = options[:count] || options[:limit]
-      skip       = options[:skip] || options[:offset]
+      count      = options[:count]   || options[:limit]
+      skip       = options[:skip]    || options[:offset]
       reverse    = options[:reverse] || options[:descending]
       with_keys  = options[:with_keys]
       
@@ -87,7 +87,7 @@ module StrokeDB
                            endkey && encode_key(endkey), 
                            count, 
                            skip, 
-                           descending, 
+                           reverse, 
                            with_keys)
       
       if with_keys
