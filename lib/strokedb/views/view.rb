@@ -128,8 +128,7 @@ module StrokeDB
       update(doc)
     end
     
-    # Remove a previous version, add a new one,
-    # pass UUID as a key to #map        
+    # Remove a previous version, add a new one.
     #
     def update_head(doc) #:nodoc
       prev = doc.versions.previous
@@ -139,11 +138,10 @@ module StrokeDB
     end
     private :update_head
     
-    # Add a new version to the index,
-    # pass [UUID, VERSION] as a key to #map
+    # Add a new version to the index.
     #
     def update_version(doc) #:nodoc
-      new_pairs = map_with_encoding([doc.uuid, doc.version],  doc)
+      new_pairs = map_with_encoding(doc.uuid, doc)
       storage.insert(new_pairs)
     end
     private :update_version
