@@ -38,13 +38,13 @@ module StrokeDB
     end
     
     DEFAULT_FIND_OPTIONS = {
-      :start_key  => nil,   # start search with a given prefix
-      :end_key    => nil,   # stop search with a given prefix
-      :limit      => nil,   # retrieve at most <N> entries
-      :offset     => 0,     # skip a given number of entries
-      :reverse    => false, # reverse search direction and meaning of start_key & end_key 
-      :key        => nil,   # prefix search (start_key == end_key)
-      :with_keys  => false  # returns [key, value] pairs instead of just values
+      'start_key'  => nil,   # start search with a given prefix
+      'end_key'    => nil,   # stop search with a given prefix
+      'limit'      => nil,   # retrieve at most <N> entries
+      'offset'     => 0,     # skip a given number of entries
+      'reverse'    => false, # reverse search direction and meaning of start_key & end_key 
+      'key'        => nil,   # prefix search (start_key == end_key)
+      'with_keys'  => false  # returns [key, value] pairs instead of just values
     }.freeze
     
     # Returns true if the index file is valid and will be used
@@ -90,7 +90,7 @@ module StrokeDB
     #   has_many_comments.find(:key => doc, :limit => 10, :reverse => true)  
     #
     def find(options)
-      options = DEFAULT_FIND_OPTIONS.merge(options).stringify_keys
+      options = DEFAULT_FIND_OPTIONS.merge(options.stringify_keys)
       
       start_key  = options['start_key']
       end_key    = options['end_key']
