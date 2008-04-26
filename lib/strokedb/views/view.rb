@@ -6,11 +6,11 @@ module StrokeDB
       # (size in bytes).
       "fixed_size_key"   => nil,
       
-      # By default, view index stores dpointers to the actual data
-      # if you want need to store some actual data you may set this to
-      # true or a particular size (in bytes).
+      # By default, view index stores dpointers to the actual data value.
+      # If you need to store some value in the index file, you may set this to
+      # true or a particular size (in bytes, for fixed-length data).
       # Note: optimized storage is used when both keys and values 
-      # have the fixed length. I.e. "inline" is false or an integer and 
+      # are the fixed length. I.e. "inline" is false or an integer and 
       # "fixed_size_key" is an integer.
       "inline"           => false,  # Integer 
       
@@ -130,7 +130,7 @@ module StrokeDB
     
         
     def update_head(doc) #:nodoc
-      # TODO: remove previous version, add new one
+      # TODO: remove previous version, add new one,
       #       pass UUID as a key to #map
       
     end
