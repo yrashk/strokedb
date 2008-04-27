@@ -50,13 +50,13 @@ end
 
 puts
 puts "Find/insert techniques"
-Benchmark.bm(32) do |x|
+Benchmark.bm(42) do |x|
   langs = [:C]    if RUBY_PLATFORM !~ /java/
   langs = [:Java] if RUBY_PLATFORM =~ /java/
   SimpleSkiplist.with_optimizations(langs) do |lang|
     GC.start
-    x.report("SimpleSkiplist#find #{lang}".ljust(32)) do 
-      100.times do
+    x.report("SimpleSkiplist#find 5000 #{lang}".ljust(32)) do 
+      1000.times do
         key = rand(len).to_s
         biglist.find(key)
         biglist.find(key)
@@ -66,8 +66,8 @@ Benchmark.bm(32) do |x|
       end
     end
     GC.start
-    x.report("SimpleSkiplist#insert #{lang}".ljust(32)) do 
-      100.times do
+    x.report("SimpleSkiplist#insert 5000 #{lang}".ljust(32)) do 
+      1000.times do
         key = rand(len).to_s
         biglist.insert(key, key)
         key = rand(len).to_s
