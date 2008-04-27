@@ -31,17 +31,17 @@ and returns key-value pair(s) for each document.
     
 View finder parameters:
 
-:startkey   => JSON
-:endkey     => JSON
-:count      => nil (Numeric)
-:descending => false (true)
-:skip       => 0
-:key        => (equivalent to set startkey and endkey to the same value)
+:start_key   => JSON
+:end_key     => JSON
+:limit      => nil (Numeric)
+:reverse => false (true)
+:offset       => 0
+:key        => (equivalent to set start_key and end_key to the same value)
 :with_keys  => false (true)  (returns [key, value] pairs instead of just values)
 
 You may ask a view for a set of documents in such a way:
 
-    LatestComments.find(:startkey => [article], :descending => true, :count => 20) #=> [...]
+    LatestComments.find(:start_key => [article], :reverse => true, :limit => 20) #=> [...]
 
 You may find a view by name:
 
@@ -56,8 +56,8 @@ You may define additional methods for a view inside View.new do ... end block:
       # this is used by has_many when #[] is called
       # *args are passed into doc.associations[*args]
       def has_many(doc, args)
-        skip, count = args  # I'm too lazy to accept Range (for now)
-        find(:startkey => [doc], :descending => true, :count => count, :skip => skip)
+        offset, limit = args  # I'm too lazy to accept Range (for now)
+        find(:start_key => [doc], :reverse => true, :limit => limit, :offset => offset)
       end
     end
 
@@ -304,7 +304,7 @@ In the other case, the value is stored in an ArchiveVolume.
 
 View search process:
 
-1) Encode input keys (startkey, endkey, key) 
+1) Encode input keys (start_key, end_key, key) 
 2) Load skiplist into memory
 3) Walk the skiplist using search rules (see views.rb for info)
 4) Select requested dpointers
@@ -379,7 +379,7 @@ EXAMPLES
     end
     
     # Find first 10 comments for a given post
-    Views["has_many_comments"].find(:key => some_post, :count => 10)
+    Views["has_many_comments"].find(:key => some_post, :limit => 10)
 
 2) has_and_belongs_to_many :tags (inlined tags)
 
@@ -400,7 +400,7 @@ EXAMPLES
     # Note: "paris" will have another prefix, 
     #       so ["paris", :blah] will not match. Thus we use ["paris"]
 
-    Views["docs_by_tag"].find(:key => ["paris"], :count => 20, :descending => true)
+    Views["docs_by_tag"].find(:key => ["paris"], :limit => 20, :reverse => true)
     
 
 3) has_many :friends
