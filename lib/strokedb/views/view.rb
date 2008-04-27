@@ -152,19 +152,28 @@ module StrokeDB
       storage.set_options(:key_size         => key_size, 
                           :value_size       => value_size, 
                           :on_duplicate_key => on_duplicate_key)
-      
-      if self["strategy"] == "heads"
-        class << self
-          alias_method :update, :update_head
-          public :update
-        end
+
+      if self['strategy'] == "heads"
+        update_head(doc)
       else
-        class << self
-          alias_method :update, :update_version
-          public :update
-        end
+        update_version(doc)
       end
-      update(doc)
+      # Way to optimize update! execution time (if it will matter)
+      # Please note that it will make persistent changes to a view instance object
+      # Here we go:
+      #
+      # if self["strategy"] == "heads"
+      #   class << self
+      #     alias_method :update, :update_head
+      #     public :update
+      #   end
+      # else
+      #   class << self
+      #     alias_method :update, :update_version
+      #     public :update
+      #   end
+      # end
+      #update(doc)
     end
     
     # Remove a previous version, add a new one.
