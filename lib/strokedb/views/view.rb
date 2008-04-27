@@ -216,6 +216,14 @@ module StrokeDB
     end
   end
   
+  # Note: we don't simply do Views = View to avoid "Views" in a meta name.
+  # This class is for Views["name"] only.
+  class Views
+    def self.[](view_name)
+      View[view_name]
+    end
+  end
+  
   class << View
     def [](name)
       # TODO: find viewdoc by name
