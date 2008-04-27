@@ -13,7 +13,7 @@ module StrokeDB
         raise StandardError, "Couldn't change options for an existing storage!"
       end
       
-      self.options = options
+      @options = options
       
     end
         

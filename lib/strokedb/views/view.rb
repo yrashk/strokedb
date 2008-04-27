@@ -118,8 +118,9 @@ module StrokeDB
         end_key = start_key = key
       end
       
-      array = storage.find(encode_key(start_key), 
+      array = storage.find(start_key && encode_key(start_key), 
                            end_key && encode_key(end_key), 
+                           encode_key(key),
                            limit, 
                            offset, 
                            reverse, 
@@ -192,7 +193,8 @@ module StrokeDB
     private :map_with_encoding
     
     def storage
-      @storage ||= store.view_storages[self.uuid]
+      # @storage ||= store.view_storages[self.uuid]
+      @storage ||= ViewStorage.new
     end
     private :storage
 
