@@ -64,7 +64,7 @@ module StrokeDB
   class Document
     AT_SIGN = "@".freeze
     def default_key_encode
-      AT_SIGN + uuid.to_raw_uuid
+      AT_SIGN + raw_uuid
     end
   end
   

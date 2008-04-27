@@ -91,6 +91,27 @@ describe DefaultKeyEncoder do
     DefaultKeyEncoder.decode(DefaultKeyEncoder.encode([1,"a D"])).should == [1, "a", "D"]
   end
   
+  it "should raise an error if trying to encode Hash" do
+    lambda do
+      DefaultKeyEncoder.encode({})
+    end.should raise_error(StandardError)
+  end
+  
+  it "should encode Document" do
+    setup_default_store
+    doc = Document.new
+    encoded_key = DefaultKeyEncoder.encode(doc)
+    encoded_key.should == "@#{doc.raw_uuid}"
+  end
+  
+  it "should decode stuff without a known prefix as a string" do
+    DefaultKeyEncoder.decode("string").should == "string"
+  end
+
+  it "should decode stuff with spaces without a known prefix as an array" do
+    DefaultKeyEncoder.decode("it is a string").should == "it is a string".split
+  end
+  
 end
 
 

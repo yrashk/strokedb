@@ -196,7 +196,7 @@ module StrokeDB
     end
     private :storage
 
-    # These are defaults (to by overriden in View.new{|v| ... })
+    # These are defaults (to be overriden in View.new{|v| ... })
     
     def map(key, value)
       raise InvalidViewError, "#map method is not defined for a view #{self['name']}!"

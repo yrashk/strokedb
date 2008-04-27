@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 
-describe "Skiplist serialization", :shared => true do
+describe "SearchSkiplist serialization", :shared => true do
   it "should correctly load what it dumped" do
     dump1 = @list.marshal_dump
     newlist = @list.class.allocate
@@ -48,7 +48,7 @@ SearchSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
   	  @list.find("").should == nil
     end
   
-    it_should_behave_like "Skiplist serialization"
+    it_should_behave_like "SearchSkiplist serialization"
   end
 
 
@@ -118,7 +118,7 @@ SearchSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       end
     end
   
-    it_should_behave_like "Skiplist serialization"
+    it_should_behave_like "SearchSkiplist serialization"
   
     it "should support to_a with sorted key-value pairs" do
       ary = @list.to_a
