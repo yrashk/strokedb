@@ -59,8 +59,7 @@ describe "Slot" do
     t = Time.now
     @slot.value = t
     @slot.value.should == t
-    pending("Time objects special serialization is not yet implemented")
-    @slot.to_raw.should match(/some_regexp/)
+    @slot.to_raw.should match(XMLSCHEMA_TIME_RE)
   end
   
   it "should store VersionedDocument reference if value is a saved Document" do
