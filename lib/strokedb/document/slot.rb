@@ -87,7 +87,10 @@ module StrokeDB
 
   class Slot
     attr_reader :doc, :value, :name
-
+    
+    DUMP_PREFIX    = "@!Dump:".freeze
+    DUMP_PREFIX_RE = /^#{DUMP_PREFIX}/.freeze
+    
     def initialize(doc, name = nil)
       @doc, @name = doc, name
       @decoded = {}
@@ -142,7 +145,7 @@ module StrokeDB
           decode_value(element)
         end
       when Range, Regexp
-        "@!Dump:#{StrokeDB::serialize(v)}"
+        DUMP_PREFIX + StrokeDB::serialize(v)
       when Symbol
         v.to_s
       when String, Numeric, TrueClass, FalseClass, NilClass
@@ -158,7 +161,7 @@ module StrokeDB
       case v
       when VERSIONREF
         DocumentReferenceValue.new(v, doc)
-      when /^@!Dump:/
+      when DUMP_PREFIX_RE
         StrokeDB::deserialize(v[7, v.length-7])
       when Array
         ArraySlotValue.new(v).map_with do |element| 
