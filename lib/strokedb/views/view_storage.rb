@@ -71,7 +71,12 @@ module StrokeDB
     #
     #
     def clear!
-      
+      @skiplist = SimpleSkiplist.new
     end
+    
+    def empty?
+      @skiplist.empty?
+    end
+    
   end
 end

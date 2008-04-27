@@ -1,5 +1,16 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
+describe "New", ViewStorage do
+  
+  before(:each) do
+    @view_storage = ViewStorage.new
+  end
+  
+  it "should be empty" do
+    @view_storage.should be_empty
+  end
+end
+
 describe "Inserting single pair into", ViewStorage do
 
   before(:each) do
@@ -136,6 +147,15 @@ describe ViewStorage, "with some pairs inserted" do
     @view_storage.insert((1..100).to_a.map {|i| [DefaultKeyEncoder.encode(i),i]})
   end
   
+  it "should not be empty" do
+    @view_storage.should_not be_empty
+  end
+  
+  it "should be empty after clearance" do
+    @view_storage.clear!
+    @view_storage.should be_empty
+  end
+  
   it "should be able to find entry with specific key" do
     @view_storage.find(nil, nil, DefaultKeyEncoder.encode(50), nil, nil, false, false).to_set.should == [50].to_set
   end
@@ -172,6 +192,5 @@ describe ViewStorage, "with some pairs inserted" do
   it "should return both keys and values if told so" do
     @view_storage.find(DefaultKeyEncoder.encode(3), DefaultKeyEncoder.encode(77), nil, nil, nil, false, true).to_set.should == (3..77).to_a.map {|i| [DefaultKeyEncoder.encode(i),i]}.to_set
   end
-  
-  
+
 end
