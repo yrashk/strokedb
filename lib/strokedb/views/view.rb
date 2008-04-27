@@ -1,5 +1,5 @@
 module StrokeDB
-  View = Meta.new do 
+  View = Meta.new(:nsurl => STROKEDB_NSURL) do 
     
     DEFAULT_VIEW_OPTIONS = {
       # Declare the size for a key to use optimized index file
