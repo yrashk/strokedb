@@ -87,7 +87,6 @@ module StrokeDB
     C = "C".freeze
     D = "D".freeze
     E = "E".freeze
-    F = "F".freeze
     X = "@".freeze
     S_= " ".freeze
     
@@ -114,7 +113,7 @@ module StrokeDB
         when E
           token[1..-1]
         when X
-          raise StandardError, "Document dereferencing in key decode is not supported yet!"
+          token[1..-1]
         else
           token  # unknown stuff is decoded as a string
         end
