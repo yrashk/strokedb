@@ -42,11 +42,9 @@ module StrokeDB
       !node_next(@head, 0)
     end
     
-    # Complicated search algorithm.
-    # Implementation plan:
-    # 1. no reverse, no with_keys - just find a start_key and move until end_key or limit.
-    # 2. with_keys support
-    # 3. reverse support
+    # Complicated search algorithm
+    # TODO: add reverse support
+    # TODO: add key duplication support
     # 
     def search(start_key, end_key, limit, offset, reverse, with_keys)
       offset ||= 0
@@ -64,10 +62,22 @@ module StrokeDB
     #
     def find_by_prefix(start_key, reverse)
       # TODO: add reverse support
-      !start_key and return node_next(node_first, 0)
-      x = find_nearest_node(start_key)
-      start_key and node_key(x)[0, start_key.size] != start_key and return nil
-      x
+      x = node_first # head [FIXME: change method name]
+      # if no prefix given, just return a first node
+      !start_key and return node_next(x, 0)
+      
+      level = node_level(x)
+      while level > 0
+        level -= 1
+        xnext = node_next(x, level)
+        while node_compare(xnext, start_key) < 0
+          x = xnext
+          xnext = node_next(x, level)
+        end
+      end
+      xnext == @tail and return nil
+      node_key(xnext)[0, start_key.size] != start_key and return nil
+      xnext
     end
     
     # 
@@ -76,10 +86,10 @@ module StrokeDB
       # TODO: add reverse support
       tail = @tail
       while offset > 0 && node != tail
-        node = node_next(x, 0)
+        node = node_next(node, 0)
         offset -= 1
       end
-      offset == 0 ? node : nil
+      offset <= 0 ? node : nil
     end
     
     # 
@@ -90,10 +100,10 @@ module StrokeDB
       meth = method(with_keys ? :node_pair : :node_value)
       tail = @tail
       limit ||= Float::MAX
+      end_prefix ||= ""
+      pfx_size = end_prefix.size
       while x != tail
-        if end_prefix
-          node_compare(x, end_prefix) > 0 and return values
-        end
+        node_key(x)[0, pfx_size] > end_prefix and return values
         values.size >= limit and return values
         values << meth.call(x).freeze
         x = node_next(x, 0)
