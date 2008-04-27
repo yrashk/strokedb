@@ -5,6 +5,9 @@ module StrokeDB
     def initialize(options = {})
       # TODO: find out whether the view indexfile exists and read
       #       its options
+      
+      @skiplist = SearchSkiplist.new
+      
     end
     
     def set_options(options)
@@ -16,10 +19,11 @@ module StrokeDB
       
     end
         
+    # 
     #
-    #
-    def find(start_key, end_key, key, limit, offset, reverse, with_keys)
-      
+    def find(start_key, end_key, limit, offset, reverse, with_keys)
+      # how smart...
+      @skiplist.search(start_key, end_key, limit, offset, reverse, with_keys)
     end
     
     # 

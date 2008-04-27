@@ -13,7 +13,7 @@ module StrokeDB
       # or to <tt>false</tt> if the size is not fixed.
       # Note: optimized storage is used when both keys and values  are the fixed length. 
       # I.e. both "value_size" and "key_size" are set.
-      "value_size" => StrokeDB::Util::RAW_UUID_SIZE,
+      "value_size" => Util::RAW_UUID_SIZE,
       
       # strategy determines whether to index HEADs or particular versions
       # When :heads is used, previous versions are removed from the index.

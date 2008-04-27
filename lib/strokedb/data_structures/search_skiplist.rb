@@ -40,6 +40,68 @@ module StrokeDB
       !node_next(@head, 0)
     end
     
+    # Complicated search algorithm.
+    # Implementation plan:
+    # 1. no reverse, no with_keys - just find a start_key and move until end_key or limit.
+    # 2. with_keys support
+    # 3. reverse support
+    # 
+    def search(start_key, end_key, limit, offset, reverse, with_keys)
+      offset ||= 0
+      
+      start_node = find_by_prefix(start_key, reverse)
+      !start_node and return []
+      
+      start_node = skip_nodes(start_node, offset, reverse)
+      !start_node and return []
+    
+      collect_values(start_node, end_key, limit, reverse, with_keys)
+    end
+    
+    # 
+    #
+    def find_by_prefix(start_key, reverse)
+      # TODO: add reverse support
+      !start_key and return node_next(node_first, 0)
+      x = find_nearest_node(start_key)
+      start_key and node_key(x)[0, start_key.size] != start_key and return nil
+      x
+    end
+    
+    # 
+    # 
+    def skip_nodes(node, offset, reverse)
+      # TODO: add reverse support
+      tail = @tail
+      while offset > 0 && node != tail
+        node = node_next(x, 0)
+        offset -= 1
+      end
+      offset == 0 ? node : nil
+    end
+    
+    # 
+    #
+    def collect_values(x, end_prefix, limit, reverse, with_keys)
+      # TODO: add reverse support
+      values = []
+      meth = method(with_keys ? :node_pair : :node_value)
+      tail = @tail
+      limit ||= Float::MAX
+      while x != tail
+        if end_prefix
+          node_compare(x, end_prefix) > 0 and return values
+        end
+        values.size >= limit and return values
+        values << meth.call(x).freeze
+        x = node_next(x, 0)
+      end
+      values
+    end
+    
+    
+    
+    
     # First key of a non-empty skiplist (nil for empty one)
     #
     def first_key
@@ -90,6 +152,7 @@ module StrokeDB
     # Find is thread-safe and requires no mutexes locking.
     def find_nearest_node(key) #:nodoc:
       x = node_first
+      !key and return x
       level = node_level(x)
       while level > 0
         level -= 1
@@ -168,7 +231,7 @@ module StrokeDB
     def find_nearest(key)
       node_value(find_nearest_node(key))
     end
-        
+    
     # Returns value, associated with key. nil if key is not found.
     #
     def find(key)
@@ -280,6 +343,10 @@ module StrokeDB
       return  1 unless x    # tail
       return -1 unless x[1] # head
       x[1] <=> key
+    end
+    
+    def node_pair(x)
+      x[1,2]
     end
     
     def node_key(x)

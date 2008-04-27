@@ -192,6 +192,28 @@ SearchSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       @list.find_nearest("g").should == "F"
     end
   end
+
+  describe "SearchSkiplist#search" do
+    before(:each) do
+      @list = SearchSkiplist.new
+      @keys = %w[ a aa ab b ba bb x xx xy xyz ]
+      @values = @keys.map{|v| v + " value"}
+      @key_values = @keys.map{|v| [v, v + " value"]}
+      @key_values.each do |k, v|
+        @list.insert(k, v)
+      end
+    end
+    
+    it "should find all items" do
+      @list.search(nil, nil, nil, nil, nil, nil).should == @values
+    end
+    
+    it "should find all items with keys" do
+      @list.search(nil, nil, nil, nil, nil, true).should == @key_values
+    end
+    
+  end
+  
 end
 
 def raw_list(list)
