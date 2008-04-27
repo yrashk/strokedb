@@ -5,6 +5,7 @@ module StrokeDB
     def initialize(options = {})
       # TODO: find out whether the view indexfile exists and read
       #       its options
+      @skiplist = SimpleSkiplist.new
     end
     
     def set_options(options)
@@ -19,7 +20,21 @@ module StrokeDB
     #
     #
     def find(start_key, end_key, key, limit, offset, reverse, with_keys)
-      
+      start_key = end_key = key if start_key.nil? && end_key.nil? 
+      # Please note that below algorithm will most probably be eventually replaced by a new skiplist Oleg Andreev works on currently
+      start_key = @skiplist.first_key unless start_key
+      current_key = start_key
+
+      items = []
+      item = @skiplist.find_nearest_node(current_key)
+
+      until item.nil?
+        items << item[2] # [2] is a node_value
+        break if (current_key = item[1]) == end_key # [1] is a node_key
+        item = item[0][0] # next node
+      end
+
+      items
     end
     
     # 
@@ -31,7 +46,10 @@ module StrokeDB
     #
     #
     def insert(new_pairs)
-      
+      new_pairs.each do |pair|
+        key, value = pair
+        @skiplist.insert(key, value)
+      end
     end
     
     #
