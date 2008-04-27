@@ -24,13 +24,19 @@ module StrokeDB
       # Please note that below algorithm will most probably be eventually replaced by a new skiplist Oleg Andreev works on currently
       start_key = @skiplist.first_key unless start_key
       current_key = start_key
-
+      offset ||= 0
+      
       items = []
       item = @skiplist.find_nearest_node(current_key)
-
+      
+      offset.times do 
+        item = item[0][0]
+      end
+      
       until item.nil?
         items << item[2] # [2] is a node_value
         break if (current_key = item[1]) == end_key # [1] is a node_key
+        break if items.size == limit
         item = item[0][0] # next node
       end
 
