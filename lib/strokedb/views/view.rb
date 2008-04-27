@@ -101,11 +101,7 @@ module StrokeDB
     # Some arguments can be nils.
     # 
     def ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
-      
-      # Mode 1. startkey, count (skip)
-      # Mode 2. startkey..endkey
-      # Mode 3. key, count (skip) - prefix search
-      
+    
       array = storage.find(start_key && encode_key(start_key), 
                            end_key && encode_key(end_key), 
                            key  && encode_key(key), 
