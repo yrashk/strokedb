@@ -32,7 +32,7 @@ type: :bugfix
 component: Storage
 release: v0.0.3
 reporter: Yurii Rashkovskii <yrashk@idbns.com>
-status: :closed
+status: :in_progress
 disposition: :fixed
 creation_time: 2008-04-17 21:28:49.887863 Z
 references: []
@@ -55,3 +55,7 @@ log_events:
   - Yurii Rashkovskii <yrashk@idbns.com>
   - closed issue with disposition fixed
   - That appears to be a spec bug (store was not synced, and autosync was trying to sync everything on files already engaged in the next subsequent example)
+- - 2008-04-27 05:51:35.607192 Z
+  - Yurii Rashkovskii <yrashk@idbns.com>
+  - changed status from closed to in_progress
+  - It appears that it still fails sometimes.
