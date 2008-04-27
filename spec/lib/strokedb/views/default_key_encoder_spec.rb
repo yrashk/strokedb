@@ -113,6 +113,21 @@ describe DefaultKeyEncoder do
     DefaultKeyEncoder.decode("it is a string").should == "it is a string".split
   end
   
+  it "should encode and decode Time values" do
+    times = [
+        Time.now - 1000000,
+        Time.now,
+        Time.now,
+        Time.now + 1000000
+      ]
+    
+    strs = times.map {|t| DefaultKeyEncoder.encode(t) } 
+    strs.should == strs.sort
+    
+    times2 = strs.map{|ts| DefaultKeyEncoder.decode(ts) }
+    times2.should == times
+  end
+  
 end
 
 

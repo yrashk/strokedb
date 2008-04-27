@@ -33,12 +33,12 @@ module StrokeDB
     end
     class ::String
       STROKEDB_SPACE_CHAR = " ".freeze
-      STROKEDB_E_CHAR     = "E".freeze
+      STROKEDB_KEY_CHAR   = "S".freeze
       def default_key_encode
         if self[STROKEDB_SPACE_CHAR]
           split(STROKEDB_SPACE_CHAR).default_key_encode
         else
-          STROKEDB_E_CHAR + self
+          STROKEDB_KEY_CHAR + self
         end
       end
     end
@@ -57,6 +57,14 @@ module StrokeDB
       def default_key_encode
         raise(StandardError, "Hash cannot be used as a key! Please set up custom " +
                              "#encode_key method if you really need to.")
+      end
+    end
+    class ::Time
+      # Index key is in UTC format to provide correct sorting, but lacks timezone info.
+      # slot.rb maintains timezone offset and keeps timezone-local time value
+      STROKEDB_KEY_CHAR = "T".freeze
+      def default_key_encode
+        STROKEDB_KEY_CHAR + getgm.xmlschema(6)
       end
     end
   end
@@ -86,9 +94,11 @@ module StrokeDB
     B = "B".freeze
     C = "C".freeze
     D = "D".freeze
-    E = "E".freeze
+    S = "S".freeze
+    T = "T".freeze
     X = "@".freeze
     S_= " ".freeze
+    R = (1..-1).freeze
     
     def self.decode(string)
       values = string.split(S_).map do |token|
@@ -110,10 +120,12 @@ module StrokeDB
             int  = 16**size - int
           end
           rat ? sign*int + ("0."+rat).to_f : sign*int
-        when E
-          token[1..-1]
+        when S
+          token[R]
         when X
-          token[1..-1]
+          token[R]
+        when T
+          Time.xmlschema(token[R])
         else
           token  # unknown stuff is decoded as a string
         end
