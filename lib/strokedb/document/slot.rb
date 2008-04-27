@@ -145,8 +145,10 @@ module StrokeDB
         "@!Dump:#{StrokeDB::serialize(v)}"
       when Symbol
         v.to_s
-      when Time, String, Numeric, TrueClass, FalseClass, NilClass
+      when String, Numeric, TrueClass, FalseClass, NilClass
         v
+      when Time
+        v.xmlschema(6)
       else
         raise ArgumentError, "#{v.class} is not a valid slot value type"
       end
@@ -178,6 +180,8 @@ module StrokeDB
         end
       when Symbol
         v.to_s
+      when XMLSCHEMA_TIME_RE
+        Time.xmlschema(v).localtime # localtime is for compliance with local time objects
       else
         v
       end
