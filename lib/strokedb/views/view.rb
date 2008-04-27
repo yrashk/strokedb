@@ -82,7 +82,7 @@ module StrokeDB
     #   # (assuming the key defined as [comment.document, comment.created_at])
     #   has_many_comments.find(:key => doc, :limit => 10, :reverse => true)  
     #
-    def find(options)
+    def find(options = {})
       options = DEFAULT_FIND_OPTIONS.merge(options.stringify_keys)
       
       start_key  = options['start_key']
@@ -159,8 +159,8 @@ module StrokeDB
     # Remove a previous version, add a new one.
     #
     def update_head(doc) #:nodoc
-      prev = doc.versions.previous
-      old_pairs = prev ? map_with_encoding(prev.uuid, prev) : []
+      prev = doc.versions.previous or return update_version(doc)
+      old_pairs = map_with_encoding(prev.uuid, prev)
       new_pairs = map_with_encoding(doc.uuid,  doc)
       storage.replace(old_pairs, new_pairs)
     end
@@ -206,7 +206,7 @@ module StrokeDB
     end
     
     def decode_value(evalue)
-      doc = self.store.find(evalue)
+      doc = self.store.find(evalue.to_formatted_uuid)
       doc.is_a?(RawData) ? doc['data'] : doc
     end
     

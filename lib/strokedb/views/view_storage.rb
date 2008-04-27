@@ -9,9 +9,9 @@ module StrokeDB
     end
     
     def set_options(options)
-      if exists? && self.options != options
-        raise StandardError, "Couldn't change options for an existing storage!"
-      end
+      # if exists? && self.options != options
+      #   raise StandardError, "Couldn't change options for an existing storage!"
+      # end
       
       @options = options
       
