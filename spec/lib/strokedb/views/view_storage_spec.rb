@@ -19,7 +19,8 @@ describe "Inserting single pair into", ViewStorage do
     @insertion = lambda {|key, val| @view_storage.insert([[key, val]]) }
   end
 
-  it "should store reference to Document" do
+  it "should store reference to a Document" do
+    pending "move this spec to view_spec"
     @value = Document.new
     @insertion.call('key',@value)
     @view_storage.find(nil, nil, 'key', nil, nil, false, false).to_set.should == [@value].to_set
@@ -46,6 +47,7 @@ describe "Inserting multiple pairs into", ViewStorage do
   end
 
   it "should store references to Documents" do
+    pending "move this spec to view_spec"
     @value_1 = Document.new
     @value_2 = Document.new
     @insertion.call(['key','another_key'],[@value_1, @value_2])
@@ -72,6 +74,7 @@ describe "Replacing single pair in", ViewStorage do
   end
 
   it "should replace existing reference to Document if such pair exists already" do
+    pending "move this spec to view_spec"
     @value_1 = Document.new
     @value_2 = Document.new
     
@@ -114,6 +117,7 @@ describe "Replacing multiple pairs in", ViewStorage do
   end
 
   it "should replace existing references to Document if such pairs exist already" do
+    pending "move this spec to view_spec"
     @value_1 = Document.new
     @value_2 = Document.new
     

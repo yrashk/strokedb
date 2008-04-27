@@ -114,13 +114,9 @@ module StrokeDB
       # Mode 2. startkey..endkey
       # Mode 3. key, count (skip) - prefix search
       
-      if key 
-        end_key = start_key = key
-      end
-      
       array = storage.find(start_key && encode_key(start_key), 
                            end_key && encode_key(end_key), 
-                           encode_key(key),
+                           key  && encode_key(key), 
                            limit, 
                            offset, 
                            reverse, 
