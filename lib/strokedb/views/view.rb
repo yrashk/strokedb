@@ -225,9 +225,6 @@ module StrokeDB
     end
   end
   
-  # Syntactic sugar for Views["view_name"]
-  Views = View
-  
   class << View
     def [](name)
       # TODO: find viewdoc by name
