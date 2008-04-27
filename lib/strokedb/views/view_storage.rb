@@ -5,7 +5,7 @@ module StrokeDB
     def initialize(options = {})
       # TODO: find out whether the view indexfile exists and read
       #       its options
-      @skiplist = SearchSkiplist.new
+      @skiplist = SimpleSkiplist.new
     end
     
     def set_options(options)
