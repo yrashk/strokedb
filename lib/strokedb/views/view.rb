@@ -179,8 +179,8 @@ module StrokeDB
     # Remove a previous version, add a new one.
     #
     def update_head(doc) #:nodoc
-      prev = doc.versions.previous # FIXME: handle situation with no previous version
-      old_pairs = map_with_encoding(prev.uuid, prev)
+      prev = doc.versions.previous
+      old_pairs = prev ? map_with_encoding(prev.uuid, prev) : []
       new_pairs = map_with_encoding(doc.uuid,  doc)
       storage.replace(old_pairs, new_pairs)
     end
