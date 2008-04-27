@@ -46,7 +46,11 @@ module StrokeDB
     # 
     #
     def replace(old_pairs, new_pairs)
-      
+      old_pairs.each do |pair|
+        key, value = pair
+        @skiplist.insert(key,nil) if @skiplist.find(key)
+      end
+      insert(new_pairs)
     end
     
     #

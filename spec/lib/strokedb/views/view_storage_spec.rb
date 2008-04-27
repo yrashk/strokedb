@@ -8,13 +8,13 @@ describe "Inserting single pair into", ViewStorage do
     @insertion = lambda {|key, val| @view_storage.insert([[key, val]]) }
   end
 
-  it "should should store reference to Document" do
+  it "should store reference to Document" do
     @value = Document.new
     @insertion.call('key',@value)
     @view_storage.find(nil, nil, 'key', nil, nil, false, false).to_set.should == [@value].to_set
   end
 
-  it "should should store reference to an arbitrary data" do
+  it "should store reference to an arbitrary data" do
     @value = "some data"
     @insertion.call('key',@value)
     @view_storage.find(nil, nil, 'key', nil, nil, false, false).to_set.should == [@value].to_set
@@ -34,18 +34,96 @@ describe "Inserting multiple pairs into", ViewStorage do
     end
   end
 
-  it "should should store references to Documents" do
+  it "should store references to Documents" do
     @value_1 = Document.new
     @value_2 = Document.new
-    @insertion.call(['key','another_key'],[@value1, @value2])
-    @view_storage.find('another_key', 'key', nil, nil, nil, false, false).to_set.should == [@value1, @value2].to_set
+    @insertion.call(['key','another_key'],[@value_1, @value_2])
+    @view_storage.find('another_key', 'key', nil, nil, nil, false, false).to_set.should == [@value_1, @value_2].to_set
   end
 
-  it "should should store references to an arbitrary data items" do
+  it "should store references to an arbitrary data items" do
     @value_1 = "some data"
     @value_2 = "another data"
-    @insertion.call(['key','another_key'],[@value1, @value2])
-    @view_storage.find('another_key', 'key', nil, nil, nil, false, false).to_set.should == [@value1, @value2].to_set
+    @insertion.call(['key','another_key'],[@value_1, @value_2])
+    @view_storage.find('another_key', 'key', nil, nil, nil, false, false).to_set.should == [@value_1, @value_2].to_set
+  end
+
+end
+
+
+describe "Replacing single pair in", ViewStorage do
+
+  before(:each) do
+    setup_default_store
+    @view_storage = ViewStorage.new
+    @insertion = lambda {|key, val| @view_storage.insert([[key, val]]) }
+    @replacement = lambda {|oldkey, oldval, key, val| @view_storage.replace([[oldkey, oldval]],[[key, val]]) }
+  end
+
+  it "should replace existing reference to Document if such pair exists already" do
+    @value_1 = Document.new
+    @value_2 = Document.new
+    
+    @insertion.call('key',@value_1)
+    @replacement.call('key',@value_1, 'key',@value_2)
+    
+    @view_storage.find(nil, nil, 'key', nil, nil, false, false).to_set.should == [@value_2].to_set
+  end
+
+  it "should replace existing reference to an arbitrary data item if such pair exists already" do
+    @value_1 = "some data"
+    @value_2 = "another data"
+    
+    @insertion.call('key',@value_1)
+    @replacement.call('key',@value_1, 'key',@value_2)
+    
+    @view_storage.find(nil, nil, 'key', nil, nil, false, false).to_set.should == [@value_2].to_set
+  end
+
+end
+
+describe "Replacing multiple pairs in", ViewStorage do
+
+  before(:each) do
+    setup_default_store
+    @view_storage = ViewStorage.new
+    @insertion = lambda do |keys, vals| 
+      pairs = []
+      keys.each_with_index {|key, i| pairs << [key, vals[i]]}
+      @view_storage.insert(pairs) 
+    end
+    @replacement = lambda do |oldkeys, oldvals, keys, vals| 
+      old_pairs = [] 
+      new_pairs = []
+      oldkeys.each_with_index {|key, i| old_pairs << [key, oldvals[i]]}
+      keys.each_with_index {|key, i| new_pairs << [key, vals[i]]}
+
+      @view_storage.replace(old_pairs, new_pairs) 
+    end
+  end
+
+  it "should replace existing references to Document if such pairs exist already" do
+    @value_1 = Document.new
+    @value_2 = Document.new
+    
+    @insertion.call(['key','another_key'],[@value_1, @value_2])
+    @replacement.call(['key','another_key'],[@value_1, @value_2],['key','another_key'],[@value_2, @value_1])
+
+    @view_storage.find(nil, nil, 'key', nil, nil, false, false).to_set.should == [@value_2].to_set
+    @view_storage.find(nil, nil, 'another_key', nil, nil, false, false).to_set.should == [@value_1].to_set
+  end
+
+  it "should replace existing references to an arbitrary data item if such pairs exist already" do
+    @value_1 = "some data"
+    @value_2 = "another data"
+    
+    @value_1 = "some data"
+    @value_2 = "another data"
+    @insertion.call(['key','another_key'],[@value_1, @value_2])
+    @replacement.call(['key','another_key'],[@value_1, @value_2], ['key','another_key'],[@value_2, @value_1])
+
+    @view_storage.find(nil, nil, 'key', nil, nil, false, false).to_set.should == [@value_2].to_set
+    @view_storage.find(nil, nil, 'another_key', nil, nil, false, false).to_set.should == [@value_1].to_set
   end
 
 end
