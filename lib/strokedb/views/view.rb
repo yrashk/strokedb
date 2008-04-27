@@ -1,5 +1,5 @@
 module StrokeDB
-  View = Meta.new do 
+  View = Meta.new(:nsurl => STROKEDB_NSURL) do 
     
     DEFAULT_VIEW_OPTIONS = {
       # Declare the size for a key to use optimized index file
@@ -118,8 +118,9 @@ module StrokeDB
         end_key = start_key = key
       end
       
-      array = storage.find(encode_key(start_key), 
+      array = storage.find(start_key && encode_key(start_key), 
                            end_key && encode_key(end_key), 
+                           encode_key(key),
                            limit, 
                            offset, 
                            reverse, 
@@ -151,25 +152,34 @@ module StrokeDB
       storage.set_options(:key_size         => key_size, 
                           :value_size       => value_size, 
                           :on_duplicate_key => on_duplicate_key)
-      
-      if self["strategy"] == "heads"
-        class << self
-          alias_method :update, :update_head
-          public :update
-        end
+
+      if self['strategy'] == "heads"
+        update_head(doc)
       else
-        class << self
-          alias_method :update, :update_version
-          public :update
-        end
+        update_version(doc)
       end
-      update(doc)
+      # Way to optimize update! execution time (if it will matter)
+      # Please note that it will make persistent changes to a view instance object
+      # Here we go:
+      #
+      # if self["strategy"] == "heads"
+      #   class << self
+      #     alias_method :update, :update_head
+      #     public :update
+      #   end
+      # else
+      #   class << self
+      #     alias_method :update, :update_version
+      #     public :update
+      #   end
+      # end
+      #update(doc)
     end
     
     # Remove a previous version, add a new one.
     #
     def update_head(doc) #:nodoc
-      prev = doc.versions.previous
+      prev = doc.versions.previous # FIXME: handle situation with no previous version
       old_pairs = map_with_encoding(prev.uuid, prev)
       new_pairs = map_with_encoding(doc.uuid,  doc)
       storage.replace(old_pairs, new_pairs)
@@ -192,7 +202,8 @@ module StrokeDB
     private :map_with_encoding
     
     def storage
-      @storage ||= store.view_storages[self.uuid]
+      # @storage ||= store.view_storages[self.uuid]
+      @storage ||= ViewStorage.new
     end
     private :storage
 
@@ -224,9 +235,6 @@ module StrokeDB
       json_key
     end
   end
-  
-  # Syntactic sugar for Views["view_name"]
-  Views = View
   
   class << View
     def [](name)
