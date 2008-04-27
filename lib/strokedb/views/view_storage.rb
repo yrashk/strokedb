@@ -19,13 +19,13 @@ module StrokeDB
         
     # 
     #
-    def oleganza_find(start_key, end_key, limit, offset, reverse, with_keys)
+    def find(start_key, end_key, limit, offset, reverse, with_keys)
       @list.search(start_key, end_key, limit, offset, reverse, with_keys)
     end
     
     #
     #
-    def find(start_key, end_key, key, limit, offset, reverse, with_keys)
+    def find_(start_key, end_key, key, limit, offset, reverse, with_keys)
       start_key = end_key = key if start_key.nil? && end_key.nil? 
       # Please note that below algorithm will most probably be eventually replaced by a new skiplist Oleg Andreev works on currently
       start_key = @list.first_key unless start_key
@@ -54,7 +54,7 @@ module StrokeDB
     def replace(old_pairs, new_pairs)
       old_pairs.each do |pair|
         key, value = pair
-        @skiplist.insert(key,nil) if @skiplist.find(key)
+        @list.insert(key,nil) if @list.find(key)
       end
       insert(new_pairs)
     end
@@ -64,7 +64,7 @@ module StrokeDB
     def insert(new_pairs)
       new_pairs.each do |pair|
         key, value = pair
-        @skiplist.insert(key, value)
+        @list.insert(key, value)
       end
     end
     
@@ -77,11 +77,11 @@ module StrokeDB
     #
     #
     def clear!
-      @skiplist = SimpleSkiplist.new
+      @list = SimpleSkiplist.new
     end
     
     def empty?
-      @skiplist.empty?
+      @list.empty?
     end
     
   end
