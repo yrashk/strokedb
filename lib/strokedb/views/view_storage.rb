@@ -65,7 +65,7 @@ module StrokeDB
     #
     #
     def exists?
-      
+      true
     end
     
     #

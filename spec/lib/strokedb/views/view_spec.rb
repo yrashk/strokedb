@@ -40,8 +40,6 @@ describe View, "with #map method defined" do
     @post_comments.map(123,123).should == [ [ 123, 123 ] ] 
   end
   
-  
-  
 end
 
 
