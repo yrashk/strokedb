@@ -21,10 +21,6 @@ module StrokeDB
     }
     
     on_initialization do |viewdoc|
-      unless viewdoc["name"]
-        raise ArgumentError, "View name must be specified!"
-      end
-      
       viewdoc.reverse_update_slots(DEFAULT_VIEW_OPTIONS)
       
       # pass viewdoc into initialization block:
@@ -138,12 +134,8 @@ module StrokeDB
     # See meta/papers/views.txt for more info.
     #
     def update(doc)
-      # Strategy is a constant for a particular document version,
-      # so we just redefine an #update method for faster dispatching.
-      
       storage.set_options(:key_size         => key_size, 
-                          :value_size       => value_size, 
-                          :on_duplicate_key => on_duplicate_key)
+                          :value_size       => value_size)
 
       if self['strategy'] == "heads"
         update_head(doc)
@@ -231,6 +223,18 @@ module StrokeDB
   class << View
     def [](name)
       # TODO: find viewdoc by name
+    end
+    
+    def define(options = {}, &block)
+      # TODO: find the view through the Views' view.
+      name = options.stringify_keys['name']
+      unless name
+        raise ArgumentError, "View name must be specified!"
+      end
+      find_or_create(:name => name) do |view|
+        view.update_slots(options)
+        block.call(view) if block
+      end
     end
   end
 

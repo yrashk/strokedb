@@ -13,7 +13,7 @@ API OVERVIEW
 View is a function which is applied to every document in a whole dataspace
 and returns key-value pair(s) for each document.
 
-    LatestComments = View.find_or_create(:name => "latest_comments") do |view|
+    LatestComments = View.define(:name => "latest_comments") do |view|
       def view.map(doc)
         if (doc.is_a?(Comment))
           # Key prefix is an association (to be filtered by)
@@ -49,7 +49,7 @@ You may find a view by name:
 
 You may define additional methods for a view inside View.new do ... end block:
       
-    LatestComments = View.find_or_create(:name => "latest_comments") do |view|
+    LatestComments = View.define(:name => "latest_comments") do |view|
       
       # view.map definition skipped (see above) ...
       
@@ -123,7 +123,7 @@ Update view is a regular view returning a document-view pairs.
 It is used to determine which views should be updated for the particular 
 document.
 
-    ArticleRelatedUV = View.find_or_create :name => "article_related" do |view|
+    ArticleRelatedUV = View.define :name => "article_related" do |view|
       def view.map(doc)
         if doc.is_a? Article
           [ doc, View.all.grep{|v| v.name =~ /article/ } ]
@@ -161,7 +161,7 @@ Scenarios:
 2) View for indexing all the documents' versions by date.
    If there're several versions per day, the latest one will be stored. 
       
-   docs_by_date = View.find_or_create(:name => "docs_by_date") do |view|
+   docs_by_date = View.define(:name => "docs_by_date") do |view|
      def view.map(doc)
         [ [ doc.created_at.to_date, doc.uuid ], doc ]
      end
@@ -193,7 +193,7 @@ SQL: select * from `versions` where `created_at` <= '2.days.ago' order by create
 
 StrokeDB view:
 
-docs_by_date = View.find_or_create(:name => "docs_by_date") do |view|
+docs_by_date = View.define(:name => "docs_by_date") do |view|
   def view.map(doc)
      [ [ doc.uuid, doc.created_at.to_date ], doc ]
   end
@@ -316,7 +316,7 @@ you may build an interesting fulltext search index.
 
 Simple word search index:
 
-    WordSearch = View.find_or_create :name => "word_search" do |view|
+    WordSearch = View.define :name => "word_search" do |view|
       def view.map(doc)
         words = doc["body"].split(/\W/)
         words.map do |word|
@@ -358,7 +358,7 @@ EXAMPLES
 
 1) has_many :comments with optimizations
 
-    View.find_or_create(:name => "has_many_comments", 
+    View.define(:name => "has_many_comments", 
              :fixed_key_length => (128 + 128 + 32)) do |v|
         def v.map(doc)
           doc.is_a? Comment ? [[[doc.comment_container, doc.created_at], doc]] : nil 
@@ -379,7 +379,7 @@ EXAMPLES
 
     doc.tags = %w[paris love sun]
     
-    View.find_or_create(:name => "docs_by_tag") do |v|
+    View.define(:name => "docs_by_tag") do |v|
       def v.map(doc)
         if doc['tags']
           time = doc.created_at
@@ -401,7 +401,7 @@ EXAMPLES
 
     Friendship.new(:friends => [oleg, yurik], :status => "collegues")
 
-    View.find_or_create(:name => "users_friends") do |v|
+    View.define(:name => "users_friends") do |v|
       def v.map(doc)
         if doc.is_a? Friendship
           # Filtered by status & ordered by name
