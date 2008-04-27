@@ -82,9 +82,10 @@ module StrokeDB
     # false     -> "B"
     # true      -> "C"
     # Number    -> "D<sign><number bitlength (8 hex bytes)><integer>[.<decimal>]"
-    # String    -> "E<string>"
+    # String    -> "S<string>"
+    # Time      -> "T<xmlschema>"
     # Array     -> "<elem1 elem2 ...>"
-    # Document  -> "<UUID>"
+    # Document  -> "@<UUID>"
     # 
     def self.encode(json)
       json.default_key_encode
