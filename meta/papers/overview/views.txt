@@ -161,8 +161,7 @@ Scenarios:
 2) View for indexing all the documents' versions by date.
    If there're several versions per day, the latest one will be stored. 
       
-   docs_by_date = View.find_or_create(:name => "docs_by_date", 
-                             :on_duplicate_key => :overwrite) do |view|
+   docs_by_date = View.find_or_create(:name => "docs_by_date") do |view|
      def view.map(doc)
         [ [ doc.created_at.to_date, doc.uuid ], doc ]
      end
@@ -176,11 +175,7 @@ Scenarios:
    
    When this index is updated, only particular versions are supplied
    and nothing is removed from the list.
-  
-   :on_duplicate_key => :overwrite tells, that only one revision
-   is stored per day. And this will be the latest revision, so you 
-   can see what the document looked like at the end of the day.
-   
+     
 To support both scenarios, we may introduce a simple switch 
 as a slot in the viewdoc:
 
@@ -198,8 +193,7 @@ SQL: select * from `versions` where `created_at` <= '2.days.ago' order by create
 
 StrokeDB view:
 
-docs_by_date = View.find_or_create(:name => "docs_by_date", 
-                          :on_duplicate_key => :overwrite) do |view|
+docs_by_date = View.find_or_create(:name => "docs_by_date") do |view|
   def view.map(doc)
      [ [ doc.uuid, doc.created_at.to_date ], doc ]
   end

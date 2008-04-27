@@ -18,10 +18,6 @@ module StrokeDB
       # strategy determines whether to index HEADs or particular versions
       # When :heads is used, previous versions are removed from the index.
       "strategy"         => "heads", # heads|versions
-      
-      # what to do when the key is duplicated: add to list (append|prepend),
-      # overwrite or don't do anything ("skip").
-      "on_duplicate_key" => "append" # append|prepend|skip|overwrite
     }
     
     on_initialization do |viewdoc|
