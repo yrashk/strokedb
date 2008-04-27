@@ -359,13 +359,13 @@ EXAMPLES
 1) has_many :comments with optimizations
 
     View.define(:name => "has_many_comments", 
-             :fixed_key_length => (128 + 128 + 32)) do |v|
-        def v.map(doc)
+             :fixed_key_length => (128 + 32)) do |v|
+        def v.map(uuid, doc)
           doc.is_a? Comment ? [[[doc.comment_container, doc.created_at], doc]] : nil 
         end
         def v.encode_key(key)
-          return key.raw_uuid_version if key.is_a?(Document) # for prefix search
-          key[0].raw_uuid_version + [key[1].to_i].pack("N")
+          return key.raw_uuid if key.is_a?(Document) # for prefix search
+          key[0].raw_uuid + [key[1].to_i].pack("N")
         end
         def v.split_by(key)
           key[0].raw_uuid_version
