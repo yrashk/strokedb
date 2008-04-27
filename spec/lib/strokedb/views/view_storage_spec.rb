@@ -90,7 +90,10 @@ describe ViewStorage, "with some pairs inserted" do
   it "should skip some results if offset is specified" do
     @view_storage.find(DefaultKeyEncoder.encode(3), DefaultKeyEncoder.encode(77), nil, nil, 3, false, false).to_set.should == (6..77).to_set
   end
-
+  
+  it "should return both keys and values if told so" do
+    @view_storage.find(DefaultKeyEncoder.encode(3), DefaultKeyEncoder.encode(77), nil, nil, nil, false, true).to_set.should == (3..77).to_a.map {|i| [DefaultKeyEncoder.encode(i),i]}.to_set
+  end
   
   
 end

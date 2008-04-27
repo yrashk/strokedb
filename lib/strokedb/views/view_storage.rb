@@ -30,12 +30,12 @@ module StrokeDB
       item = @skiplist.find_nearest_node(current_key)
       
       offset.times do 
-        item = item[0][0]
+        item = item[0][0] # next node
       end
       
       until item.nil?
-        items << item[2] # [2] is a node_value
-        break if (current_key = item[1]) == end_key # [1] is a node_key
+        items << (with_keys ? [item[1],item[2]] : item[2]) # [1] is a node_key [2] is a node_value
+        break if (current_key = item[1]) == end_key
         break if items.size == limit
         item = item[0][0] # next node
       end
