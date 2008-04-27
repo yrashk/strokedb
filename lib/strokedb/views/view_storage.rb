@@ -2,7 +2,7 @@ module StrokeDB
   class ViewStorage
     attr_reader :storage, :options, :exists
     
-    def initialize(params = {})
+    def initialize(options = {})
       # TODO: find out whether the view indexfile exists and read
       #       its options
     end
