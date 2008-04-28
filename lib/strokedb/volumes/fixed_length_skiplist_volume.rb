@@ -6,7 +6,7 @@ module StrokeDB
       @volume = MapVolume.new(:record_size => (@options['maxlevel']||DEFAULT_MAXLEVEL) * 4 + 1 +
       @options['key_length'] + @options['value_length'], :path => @options['path'])
       @nodes = {}
-      super(nil,:maxlevel => @options['maxlevel'], :probability => @options['probability'])
+      super(:maxlevel => @options['maxlevel'], :probability => @options['probability'])
     end
 
     def key_length

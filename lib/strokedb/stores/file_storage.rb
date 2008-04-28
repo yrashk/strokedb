@@ -111,7 +111,7 @@ module StrokeDB
     def initialize_files
       FileUtils.mkdir_p(@options['path'])
       @archive = ArchiveVolume.new(:path => @options['path'], :uuid => last_archive_uuid)
-      @uindex = FixedLengthSkiplistVolume.new(:path => File.join(@options['path'],'uindex'), :key_length => 32 , :value_length => 20)
+      @uindex = SkiplistVolume.new(:path => File.join(@options['path'],'uindex'), :silent => true)
     end
 
   end
