@@ -196,6 +196,8 @@ module StrokeDB
       checksum_length = CHECKSUM_LENGTH
       msg_range = (0..-(1 + checksum_length))
       
+      @log_bytes = 0
+      
       File.open(@log_path, "r") do |f|
         msg_length   = f.read(4).unpack(nf).first rescue nil
         (!msg_length || msg_length > max_msg_length) and raise LogFormatError, "Wrong WAL message length prefix!"

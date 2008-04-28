@@ -56,10 +56,16 @@ lang = "Ruby {FIXME: with_optimizations is irreversible operation for now}"
       @volume.insert("k2", "v2")
       
       @volume.close!
+      @volume.find("k").should  == "v"
+      @volume.find("k2").should  == "v2"
+      
+      lambda { @volume.insert("k3", "v3") }.should raise_error(SkiplistVolume::VolumeClosedException)
+      @volume.find("k3").should  == nil
       
       @volume = SkiplistVolume.new(:path => @path, :max_log_size => 1024, :silent => true)
       @volume.find("k").should  == "v"
       @volume.find("k2").should == "v2"
+      @volume.find("k3").should == nil
     end
     
   end
