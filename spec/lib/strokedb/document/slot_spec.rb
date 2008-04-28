@@ -58,7 +58,7 @@ describe "Slot" do
   it "should store Time object" do
     t = Time.now
     @slot.value = t
-    @slot.value.should == be_close(t, 0.000002)
+    @slot.value.should be_close(t, 0.000002)
     @slot.to_raw.should match(XMLSCHEMA_TIME_RE)
   end
   
