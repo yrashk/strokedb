@@ -209,7 +209,7 @@ module StrokeDB
       # end
     end
     
-    declare_optimized_methods(:C,  :find_with_update) do # :find_nearest_node,
+    declare_optimized_methods(:C, :find_nearest_node, :find_with_update) do
       require 'rubygems'
       require 'inline'
       inline(:C) do |builder|
@@ -231,24 +231,26 @@ module StrokeDB
           i_at_tail    = rb_intern("@tail");
           
         }
-        # builder.c %{
-        #           VALUE find_nearest_node_C(VALUE key) 
-        #           {
-        #             VALUE x = rb_funcall(self, i_anchor, 0);
-        #             long level = FIX2LONG(rb_funcall(self, i_node_level, 1, x));
-        #             VALUE xnext;
-        #             while (level-- > 0)
-        #             {
-        #               xnext = SS_NODE_NEXT(x, level);
-        #               while (ss_node_compare(xnext, key) <= 0)
-        #               {
-        #                 x = xnext;
-        #                 xnext = SS_NODE_NEXT(x, level);
-        #               }
-        #             }
-        #             return x;
-        #           }
-        #         }
+        builder.c %{
+          VALUE find_nearest_node_C(VALUE key) 
+          {
+            VALUE head = rb_ivar_get(self, i_at_head);
+            VALUE tail = rb_ivar_get(self, i_at_tail);
+            VALUE x = head;
+            long level = FIX2LONG(rb_funcall(self, i_node_level, 1, x));
+            VALUE xnext;
+            while (level-- > 0)
+            {
+              xnext = SS_NODE_NEXT(x, level);
+              while (ss_node_compare(head, tail, xnext, key) <= 0)
+              {
+                x = xnext;
+                xnext = SS_NODE_NEXT(x, level);
+              }
+            }
+            return x;
+          }
+        }
         builder.c %{
           static VALUE find_with_update_C(VALUE x, VALUE rlevel, VALUE key, VALUE update)
           {
