@@ -157,7 +157,7 @@ module StrokeDB
       File.rename(@log_path, @log_tmppath)
       File.delete(@log_tmppath)
       
-      init_log_file
+      init_log_file(@log_path)
       
     rescue => e
       error "Dump failed!"
