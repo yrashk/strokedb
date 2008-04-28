@@ -71,7 +71,9 @@ module StrokeDB
         level -= 1
         xnext = node_next(x, level, dir)
         if reverse
-          while node_compare(xnext, start_key) > 0
+          # FIXME: correct key CAN be > start_key in this case 
+          # (like "bb" > "b", but "b" is a valid prefix for "bb")
+          while node_compare2(xnext, start_key) > 0
             x = xnext
             xnext = node_next(x, level, dir)
           end
@@ -361,6 +363,12 @@ module StrokeDB
       return  1 if x == @tail # tail
       return -1 if x == @head # head
       x[1] <=> key
+    end
+
+    def node_compare2(x, key)
+      return  1 if x == @tail # tail
+      return -1 if x == @head # head
+      x[1][0, key.size] <=> key
     end
     
     def node_pair(x)

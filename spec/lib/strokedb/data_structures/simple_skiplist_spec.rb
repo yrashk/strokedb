@@ -261,10 +261,18 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       r.should == @key_values.reverse
     end
     
-    it "should find a value in a reversed order" do
+    it "should find a range in a reversed order" do
       r = search_with_options(@list, :start_key => "ab", :end_key => "aa", :reverse => true)
       r.should == %w[ab\ value aa\ value]
     end
+
+    it "should find a value in a reversed order" do
+      r = search_with_options(@list, :start_key => "a", :end_key => "a", :reverse => true)
+      r.should == %w[ab\ value aa\ value a\ value ]
+      r = search_with_options(@list, :start_key => "xyz", :end_key => "xyz", :reverse => true)
+      r.should == %w[xyz\ value]
+    end
+    
       
     def search_should_yield(results, os = {})
       # TODO: added reverse cases
