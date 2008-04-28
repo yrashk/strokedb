@@ -1,4 +1,5 @@
 require 'digest/md5' # for log message signature
+require 'fileutils'
 module StrokeDB
   # Skiplist by its nature must be loaded into memory and dumped on a disk 
   # as a whole thing. Since it is a pretty slow operation, we use a WAL
@@ -58,8 +59,16 @@ module StrokeDB
     def initialize(params)
       @params = params.stringify_keys
       @path = @params['path']
-      
+      @silent = @params['silent']
+      if @silent
+        class << self
+          def info(*args); end
+          def error(*args); end
+        end
+      end
       @max_log_size = (@params['max_log_size'] || DEFAULT_MAX_LOG_SIZE).to_i
+      
+      FileUtils.mkdir_p(File.dirname(@path))
       
       @list_path    = @path               # regular file for a skiplist
       @list_tmppath = @path + ".tmp"      # tempfile skiplist is dumped to
@@ -78,11 +87,9 @@ module StrokeDB
       if File.exists?(@list_path)
         @list = Marshal.load(File.read(@list_path))
       else
-        info "List file is not found, creating a brand new skiplist."
+        info "List file (#{@list_path}) not found, creating a brand new skiplist."
         @list = SimpleSkiplist.new(nil, @params)
       end
-      
-      @log_bytes = 0
       
       if File.exists?(@log_path)
         info "Log file detected (#{@log_path}), applying it to the loaded skiplist."
@@ -97,6 +104,10 @@ module StrokeDB
     end
     
     # Skiplist operations
+    def empty?
+      @list.empty?
+    end
+    
     def search(*args)
       @list.search(*args)
     end
@@ -245,12 +256,13 @@ module StrokeDB
     public :raise_volume_crashed
     
     def init_log_file(path)
+      @log_bytes = 0
       log_file = File.open(path, "a")
       log_file.sync = true
       log_file
     end
     
-    def info
+    def info(m)
       STDOUT.puts "SkiplistVolume#info: #{m}"
     end
     
