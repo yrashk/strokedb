@@ -87,7 +87,7 @@ module StrokeDB
       if File.exists?(@list_path)
         @list = SimpleSkiplist.load(File.read(@list_path))
       else
-        info "List file (#{@list_path}) not found, creating a brand new skiplist."
+        info "List file (#{@list_path}) was not found, creating a brand new skiplist."
         @list = SimpleSkiplist.new(@params)
       end
       
@@ -132,6 +132,8 @@ module StrokeDB
     # Read-only access remains.
     def close!
       dump!
+      @log_file.close
+      File.delete(@log_file.path)
       self
       class <<self
         alias :insert :raise_volume_closed
@@ -194,24 +196,25 @@ module StrokeDB
       nf = N_F
       max_msg_length = MAX_LOG_MSG_LENGTH
       checksum_length = CHECKSUM_LENGTH
-      msg_range = (0..-(1 + checksum_length))
       
       @log_bytes = 0
       
       File.open(@log_path, "r") do |f|
-        msg_length   = f.read(4).unpack(nf).first rescue nil
-        (!msg_length || msg_length > max_msg_length) and raise LogFormatError, "Wrong WAL message length prefix!"
+        until f.eof?
+          msg_length   = f.read(4).unpack(nf).first rescue nil
+          (!msg_length || msg_length > max_msg_length) and raise LogFormatError, "Wrong WAL message length prefix!"
         
-        msg_chk = f.read(msg_length + checksum_length)
-        msg = msg_chk[0, msg_length]
+          msg_chk = f.read(msg_length + checksum_length)
+          msg = msg_chk[0, msg_length]
         
-        @log_bytes += 4 + msg_length + checksum_length
+          @log_bytes += 4 + msg_length + checksum_length
         
-        checksum_invalid(msg, msg_chk[msg_range]) and raise LogFormatError, "WAL message checksum failure!"
+          checksum_invalid(msg, msg_chk[msg_length, checksum_length]) and raise LogFormatError, "WAL message checksum failure!"
         
-        key, value, level = Marshal.load(msg)
+          key, value, level = Marshal.load(msg)
         
-        list.insert(key, value, level)
+          list.insert(key, value, level)
+        end
       end
     
     # Log is malformed. This can happen in two situations:
