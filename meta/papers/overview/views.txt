@@ -108,7 +108,7 @@ Implementation note:
   
   
 
-PERSISTANCE & UPDATES
+PERSISTENCE & UPDATES
 
 In theory, every view invocation must involve the whole dataspace processing.
 In real world we need to optimize this by building persisted indexes
