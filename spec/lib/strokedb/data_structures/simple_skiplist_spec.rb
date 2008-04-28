@@ -77,7 +77,10 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     it "should correctly insert keys in an ascending level order" do
       1.upto(@maxlevel) do |i|
         k = "x#{i}"
-        @list.insert(k, k, i).should == @list
+        r = @list.insert(k, k, i)
+        r.object_id.should == @list.object_id
+        r.should == @list
+        
         @list.find("").should == nil
         @list.find(k).should == k
         @list.find("-").should == nil

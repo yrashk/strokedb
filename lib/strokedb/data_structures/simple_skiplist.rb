@@ -22,6 +22,10 @@ module StrokeDB
       @mutex       = Mutex.new
     end
     
+    def inspect
+      "#<#{self.class}:0x#{object_id.to_s(16)} items: #{to_a.inspect}, maxlevel: #{@maxlevel}, probability: #{@probability}>"
+    end
+        
     # Marshal API
     def marshal_dump
       raw_list = serialize_list(@head)
@@ -328,7 +332,7 @@ module StrokeDB
         arr
       end
     end
-    
+        
   private
 
     def serialize_list(head)
