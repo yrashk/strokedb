@@ -45,7 +45,6 @@ module StrokeDB
     end
     
     # Complicated search algorithm
-    # TODO: add reverse support
     # 
     def search(start_key, end_key, limit, offset, reverse, with_keys)
       offset ||= 0
@@ -59,12 +58,11 @@ module StrokeDB
       collect_values(start_node, end_key, limit, reverse, with_keys)
     end
     
-    # 
+    # TODO: add C routins for this to optimize performance
     #
     def find_by_prefix(start_key, reverse)
-      # TODO: add reverse support
       dir = dir_for_reverse(reverse)
-      x = anchor(reverse) # head [FIXME: change method name]
+      x = anchor(reverse)
       # if no prefix given, just return a first node
       !start_key and return node_next(x, 0, dir)
       
@@ -72,9 +70,16 @@ module StrokeDB
       while level > 0
         level -= 1
         xnext = node_next(x, level, dir)
-        while node_compare(xnext, start_key) < 0
-          x = xnext
-          xnext = node_next(x, level, dir)
+        if reverse
+          while node_compare(xnext, start_key) > 0
+            x = xnext
+            xnext = node_next(x, level, dir)
+          end
+        else
+          while node_compare(xnext, start_key) < 0
+            x = xnext
+            xnext = node_next(x, level, dir)
+          end
         end
       end
       xnext == anchor(!reverse) and return nil
@@ -86,7 +91,7 @@ module StrokeDB
     # 
     def skip_nodes(node, offset, reverse)
       dir = dir_for_reverse(reverse)
-      tail = @tail
+      tail = anchor(!reverse)
       while offset > 0 && node != tail
         node = node_next(node, 0, dir)
         offset -= 1
@@ -105,7 +110,11 @@ module StrokeDB
       end_prefix ||= ""
       pfx_size = end_prefix.size
       while x != tail
-        node_key(x)[0, pfx_size] > end_prefix and return values
+        if reverse
+          node_key(x)[0, pfx_size] < end_prefix and return values
+        else
+          node_key(x)[0, pfx_size] > end_prefix and return values
+        end
         values.size >= limit and return values
         values << meth.call(x).freeze
         x = node_next(x, 0, dir)
@@ -398,11 +407,6 @@ module StrokeDB
         value, 
         [nil]*level 
       ]
-    end
-    
-    # TODO: drop this after serialization routines updated
-    def new_anchor
-      new_node(@maxlevel, nil, nil)
     end
     
     def new_anchors(level)
