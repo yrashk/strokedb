@@ -3,10 +3,11 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe "Skiplist serialization", :shared => true do
   it "should correctly load what it dumped" do
-    dump1 = @list.marshal_dump
-    newlist = @list.class.allocate
-    dump2 = newlist.marshal_load(dump1).marshal_dump
+    dump1 = @list.dump
+    newlist = @list.class.load(dump1)
+    dump2 = newlist.dump
     dump1.should == dump2
+    newlist.to_a.should == @list.to_a
   end
   
   it "should correctly load to_a results" do
@@ -24,24 +25,12 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(nil, :maxlevel => @maxlevel, :probability => @probability)
+      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
     end
   
   	it "should be empty" do
   		@list.should be_empty
   	end
-	
-  	it "should be serialized with marshal_dump" do
-  	  @list.marshal_dump.should == {
-  	    :options => {
-  	      :probability => @probability,
-  	      :maxlevel => @maxlevel
-  	    },
-  	    :raw_list => [
-  	      [[nil]*@maxlevel, nil, nil, [nil]*@maxlevel]
-  	    ]
-  	  }
-    end
 	
   	it "should find nil in a empty skiplist" do
   	  @list.find("xx").should == nil
@@ -57,7 +46,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(nil, :maxlevel => @maxlevel, :probability => @probability)
+      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
     end
 
     it "should insert empty key in place of default head" do
@@ -113,7 +102,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(nil, :maxlevel => @maxlevel, :probability => @probability)
+      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
       1000.times do 
         k = rand(2**64).to_s
         v = k
@@ -148,7 +137,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(nil, :maxlevel => @maxlevel, :probability => @probability)
+      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
     end
     it "should return nil for empty skiplist" do
       @list.first_key.should == nil
@@ -166,7 +155,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(nil, :maxlevel => @maxlevel, :probability => @probability)
+      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
     end
     it "should find nil in empty skiplist" do
       @list.find_nearest("a").should == nil

@@ -12,36 +12,30 @@ module StrokeDB
     
     attr_accessor :maxlevel, :probability
     
-    def initialize(raw_list = nil, options = {})
+    def initialize(options = {})
       options = options.stringify_keys
       @maxlevel    = options['maxlevel']    || DEFAULT_MAXLEVEL
       @probability = options['probability'] || DEFAULT_PROBABILITY
       @head, @tail = new_anchors(@maxlevel)
-      if raw_list
-        @head, @tail = unserialize_list!(raw_list)
-      end
       @mutex       = Mutex.new
     end
     
     def inspect
       "#<#{self.class}:0x#{object_id.to_s(16)} items: #{to_a.inspect}, maxlevel: #{@maxlevel}, probability: #{@probability}>"
     end
-        
-    # Marshal API
-    def marshal_dump
-      raw_list = serialize_list(@head)
-      {
-        :options => {
-          :maxlevel    => @maxlevel,
-          :probability => @probability
-          },
-        :raw_list => raw_list
-      }
+    
+    def dump
+      Marshal.dump({
+        :maxlevel    => @maxlevel,
+        :probability => @probability,
+        :arr         => to_a
+      })
     end
     
-    def marshal_load(dumped)
-      initialize(dumped[:raw_list], dumped[:options])
-      self
+    def self.load(dumped)
+      hash = Marshal.load(dumped)
+      arr = hash.delete(:arr)
+      from_a(arr, hash)
     end
     
     # Tests whether skiplist is empty.
@@ -214,6 +208,7 @@ module StrokeDB
       #   }
       # end
     end
+    
     declare_optimized_methods(:C) do
     end
     
@@ -318,7 +313,7 @@ module StrokeDB
     # Constructs a skiplist from an array of key-value tuples (arrays).
     #
     def self.from_a(ary, options = {})
-      sl = new(nil, options)
+      sl = new(options)
       ary.each do |kv|
         sl.insert(kv[0], kv[1])
       end
@@ -335,52 +330,7 @@ module StrokeDB
     end
         
   private
-
-    def serialize_list(head)
-      head           = anchor.dup
-      head[0]        = [ nil  ] * node_level(head)
-      raw_list       = [ head ]
-      prev_by_levels = [ head ] * node_level(head)
-      x = node_next(head, 0)
-      i = 1
-      while x
-        l = node_level(x)
-        nx = node_next(x, 0)
-        x  = x.dup                  # make modification-safe copy of node
-        forwards = x[0]
-        while l > 0                 # for each node level update forwards
-          l -= 1
-          prev_by_levels[l][l] = i  # set raw_list's index as a forward ref
-          forwards[l] = nil         # nullify forward pointer (point to tail)
-          prev_by_levels[l] = x     # set in a previous stack
-        end
-        raw_list << x               # store serialized node in an array
-        x = nx                      # step to next node
-        i += 1                      # increment index in a raw_list array
-      end
-      raw_list
-    end
     
-    # Returns head & tail of an imported skiplist. 
-    # Caution: raw_list is modified (thus the bang). 
-    # Pass dup-ed value if you need.
-    #
-    # TODO: add double-linking!
-    #
-    def unserialize_list!(raw_list)
-      x = raw_list[0]
-      while x != nil
-        forwards = x[0]
-        forwards.each_with_index do |rawindex, i|
-          forwards[i] = rawindex ? raw_list[rawindex] : nil
-        end
-        # go next node
-        x = forwards[0]
-      end
-      # return anchors (head, tail)
-      [raw_list[0], new_anchor]  # <- FIXME: normal tail anchor needed
-    end
-      
     # C-style API for node operations    
     def anchor(reverse = false)
       reverse ? @tail : @head

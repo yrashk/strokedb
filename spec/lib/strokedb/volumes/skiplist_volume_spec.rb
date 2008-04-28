@@ -72,8 +72,6 @@ lang = "Ruby {FIXME: with_optimizations is irreversible operation for now}"
       }.should raise_error(SkiplistVolume::MessageTooBig)
     end
     
-    
-    
     def init_volume
       @path = TEMP_STORAGES + '/skiplist_volume_files/volume'
       FileUtils.rm_rf(TEMP_STORAGES + '/skiplist_volume_files')
