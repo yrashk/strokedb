@@ -1,3 +1,4 @@
+require 'digest/md5' # for log message signature
 module StrokeDB
   # Skiplist by its nature must be loaded into memory and dumped on a disk 
   # as a whole thing. Since it is a pretty slow operation, we use a WAL
@@ -47,6 +48,8 @@ module StrokeDB
       @params = params.stringify_keys
       @path = @params['path']
       
+      @max_log_size = @params['max_log_size'].to_i
+      
       @list_path    = @path               # regular file for a skiplist
       @list_tmppath = @path + ".tmp"      # tempfile skiplist is dumped to
       @log_path     = @path + ".wal"      # write ahead log
@@ -62,21 +65,24 @@ module StrokeDB
       end
       
       if File.exists?(@list_path)
-        @skiplist = SimpleSkiplist.load(File.read(@list_path))
+        @list = SimpleSkiplist.load(File.read(@list_path))
       else
         info "List file is not found, creating a brand new skiplist."
-        @skiplist = SimpleSkiplist.new(nil, @params)
+        @list = SimpleSkiplist.new(nil, @params)
       end
+      
+      @log_bytes = 0
       
       if File.exists?(@log_path)
         info "Log file detected (#{@log_path}), applying it to the loaded skiplist."
-        File.open(@log_path, "r") do |f|
-          # TODO: read the log format and call @list.insert for each record
-        end
+        replay_log!(@log_path, @list)
       end
       
-      @log_file = File.open(@log_file, "a")
+      @log_file = init_log_file(@log_path)
       
+    rescue => e
+      crash!(e)
+      raise
     end
     
     # Skiplist operations
@@ -91,19 +97,154 @@ module StrokeDB
     def insert(key, value, __level = nil)
       write_log(key, value, __level)
       @list.insert(key, value, __level)
+      dump! if @log_bytes > @max_log_size
+    rescue => e
+      crash!(e)
+      raise
+    ensure
+      self
     end
     
     # Volume operations
+    
+    # Dumps the skiplist and closes log for writing.
+    # Read-only access remains.
     def close!
-      
+      dump!
+      class <<self
+        alias :insert :raise_volume_closed
+        alias :close! :raise_volume_crashed
+        alias :dump! :raise_volume_crashed
+        def closed?; true; end
+      end
+    end
+    
+    def closed?
+      false
     end
     
     def dump!
+      dumped_list = @list.dump
+      f = File.open(@list_tmppath, 'w')
+      f.sync = true
+      f.write(dumped_list)
+      f.fsync
+      f.close
       
+      File.rename(@list_tmppath, @list_path)
+      File.rename(@log_path, @log_tmppath)
+      File.delete(@log_tmppath)
+      
+      init_log_file
+      
+    rescue => e
+      error "Dump failed!"
+      crash!(e)
+      raise
     end
     
+    # This makes volume instance unusable
+    def crash!(err = nil)
+      if err.is_a? Exception
+        backtrace = err.backtrace.join("\n")
+        error "Crashed with #{err}: #{err.message}\n#{backtrace}"
+      else
+        error "Crashed with #{exception.inspect}!"
+      end
+      class <<self
+        alias :insert :raise_volume_crashed
+        alias :close! :raise_volume_crashed
+        alias :dump! :raise_volume_crashed
+      end
+    end
+    
+    class LogFormatError < StandardError; end
+    class VolumeClosedException < StandardError; end
+    class VolumeCrashedException < StandardError; end
+    
   private
+    
+    N_F = "N".freeze
+    
+    # Encoded log message consists of the key, value, length prefixes and
+    # MD5 checksum. Skiplist is not intended for storing huge key or values:
+    # several kilobytes is okay. 
+    # This limit helps to fight incorrect log messages while replaying the log.
+    MAX_LOG_MSG_LENGTH = 1024*1024
+    CHECKSUM_LENGTH = 16 # MD5
+    
+    def replay_log!(log_path, list)
+      nf = N_F
+      max_msg_length = MAX_LOG_MSG_LENGTH
+      checksum_length = CHECKSUM_LENGTH
+      msg_range = (0..-(1 + checksum_length))
+      
+      File.open(@log_path, "r") do |f|
+        msg_length   = f.read(4).unpack(nf).first
+        (!msg_length || msg_length > max_msg_length) and raise LogFormatError, "Wrong WAL message length prefix!"
+        
+        msg_chk = f.read(msg_length + checksum_length)
+        msg = msg_chk[0, msg_length]
+        
+        @log_bytes += 4 + msg_length + checksum_length
+        
+        checksum_invalid(msg, msg_chk[msg_range]) and raise LogFormatError, "WAL message checksum failure!"
+        
+        key, value, level = Marshal.load(msg)
+        
+        list.insert(key, value, level)
+      end
+    
+    # Log is malformed. This can happen in two situations:
+    # 1) latest insert operation was not committed
+    #    (so we can just remove a log)
+    # 2) log was broken afterwards 
+    #    (we should try a backup log, notify someone...) 
+    # 
+    # For now, we trust underlying filesystem and handle case #1 only.
+    #
+    rescue LogFormatError => e
+      error e.message + " Dumping the skiplist and recreating a log."
+      dump!
+      
+    # Some strange error occured
+    rescue => e
+      crash! e
+      raise
+    end
+    
+    def write_log(key, value, level)
+      msg = Marshal.dump([key, value, level])
+      digest = Digest::MD5.digest(msg)
+      @log_file.write([msg.size].pack(N_F))
+      @log_file.write(msg)
+      @log_file.write(digest)
+      @log_file.fsync
+      @log_bytes += 4 + msg.size + CHECKSUM_LENGTH
+    end
+    
+    def checksum_invalid(msg, chk)
+      chk != Digest::MD5.digest(msg) rescue true
+    end
   
+    # +insert+ method is aliased with this on close.
+    def raise_volume_closed(*args)
+      raise VolumeClosedException, "Throw this object away and instantiate another one."
+    end
+    public :raise_volume_closed
+
+    # +insert+ method is aliased with this on crash.
+    def raise_volume_crashed(*args)
+      raise VolumeCrashedException, "Throw this object away and instantiate another one."
+    end
+    public :raise_volume_crashed
+    
+    def init_log_file(path)
+      log_file = File.open(path, "a")
+      log_file.sync = true
+      log_file
+    end
+    
     def info
       STDOUT.puts "SkiplistVolume#info: #{m}"
     end
@@ -111,6 +252,6 @@ module StrokeDB
     def error(m)
       STDERR.puts "SkiplistVolume#error: #{m}"
     end
-        
+  
   end
 end
