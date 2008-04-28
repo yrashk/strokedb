@@ -2,8 +2,6 @@ require 'thread'
 require File.expand_path(File.dirname(__FILE__) + '/../util/class_optimization')
 
 module StrokeDB
-  # Implements a thread-safe skiplist structure.
-  # Doesn't yield new skiplists
   class SimpleSkiplist
     include Enumerable
     
@@ -71,7 +69,7 @@ module StrokeDB
         level -= 1
         xnext = node_next(x, level, dir)
         if reverse
-          # FIXME: correct key CAN be > start_key in this case 
+          # Note: correct key CAN be greater than start_key in this case 
           # (like "bb" > "b", but "b" is a valid prefix for "bb")
           while node_compare2(xnext, start_key) > 0
             x = xnext
