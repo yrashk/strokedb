@@ -38,7 +38,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
   	      :maxlevel => @maxlevel
   	    },
   	    :raw_list => [
-  	      [[nil]*@maxlevel, nil, nil]
+  	      [[nil]*@maxlevel, nil, nil, [nil]*@maxlevel]
   	    ]
   	  }
     end
@@ -77,7 +77,10 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     it "should correctly insert keys in an ascending level order" do
       1.upto(@maxlevel) do |i|
         k = "x#{i}"
-        @list.insert(k, k, i).should == @list
+        r = @list.insert(k, k, i)
+        r.object_id.should == @list.object_id
+        r.should == @list
+        
         @list.find("").should == nil
         @list.find(k).should == k
         @list.find("-").should == nil
@@ -204,6 +207,8 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       end
     end
     
+    it_should_behave_like "Skiplist serialization"
+    
     it "should find all items" do
       search_should_yield(@key_values)
     end
@@ -247,6 +252,10 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       search_should_yield([], :start_key => "ab1", :end_key => "b")
     end
 
+    it "should search in a reverse order" do
+      r = search_with_options(@list, :reverse => true, :with_keys => true)
+      r.should == @key_values.reverse
+    end
       
     def search_should_yield(results, os = {})
       # TODO: added reverse cases

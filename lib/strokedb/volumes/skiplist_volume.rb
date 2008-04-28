@@ -120,11 +120,10 @@ module StrokeDB
       write_log(key, value, __level)
       @list.insert(key, value, __level)
       dump! if @log_bytes > @max_log_size
+      self
     rescue => e
       crash!(e)
       raise
-    ensure
-      self
     end
     
     # Volume operations
@@ -133,6 +132,7 @@ module StrokeDB
     # Read-only access remains.
     def close!
       dump!
+      self
       class <<self
         alias :insert :raise_volume_closed
         alias :close! :raise_volume_crashed
@@ -157,8 +157,8 @@ module StrokeDB
       File.rename(@log_path, @log_tmppath)
       File.delete(@log_tmppath)
       
-      init_log_file(@log_path)
-      
+      @log_file = init_log_file(@log_path)
+      self
     rescue => e
       error "Dump failed!"
       crash!(e)
@@ -183,6 +183,7 @@ module StrokeDB
     class LogFormatError < StandardError; end
     class VolumeClosedException < StandardError; end
     class VolumeCrashedException < StandardError; end
+    class MessageTooBig < StandardError; end
     
   private
     
@@ -196,7 +197,7 @@ module StrokeDB
       msg_range = (0..-(1 + checksum_length))
       
       File.open(@log_path, "r") do |f|
-        msg_length   = f.read(4).unpack(nf).first
+        msg_length   = f.read(4).unpack(nf).first rescue nil
         (!msg_length || msg_length > max_msg_length) and raise LogFormatError, "Wrong WAL message length prefix!"
         
         msg_chk = f.read(msg_length + checksum_length)
@@ -231,6 +232,9 @@ module StrokeDB
     
     def write_log(key, value, level)
       msg = Marshal.dump([key, value, level])
+      if msg.size > MAX_LOG_MSG_LENGTH
+        raise MessageTooBig, "Key-value pair is too big to be inserted (limit is #{MAX_LOG_MSG_LENGTH} bytes)"
+      end
       digest = Digest::MD5.digest(msg)
       @log_file.write([msg.size].pack(N_F))
       @log_file.write(msg)

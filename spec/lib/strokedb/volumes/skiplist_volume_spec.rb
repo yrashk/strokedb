@@ -1,7 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe "SkiplistVolume inserts and finds", :shared => true do
-
   it "should find & insert some data" do
     @volume.find("key").should == nil
     @volume.insert("key", "value")
@@ -13,7 +12,6 @@ describe "SkiplistVolume inserts and finds", :shared => true do
     @volume.find("key").should == nil
     @volume.find("key2").should == "value2"
   end
-
 end
 
 #SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
@@ -44,6 +42,44 @@ lang = "Ruby {FIXME: with_optimizations is irreversible operation for now}"
     end
     
     it_should_behave_like "SkiplistVolume inserts and finds"
+  end
+  
+  describe "Dumping SkiplistVolume" do
+    before(:each) do
+      @path = TEMP_STORAGES + '/skiplist_volume_files/volume'
+      FileUtils.rm_rf(TEMP_STORAGES + '/skiplist_volume_files')
+      @volume = SkiplistVolume.new(:path => @path, :max_log_size => 1024, :silent => true)
+    end
+    
+    it "should dump and load the dumped list" do
+      @volume.insert("k",  "v")
+      @volume.insert("k2", "v2")
+      
+      @volume.close!
+      
+      @volume = SkiplistVolume.new(:path => @path, :max_log_size => 1024, :silent => true)
+      @volume.find("k").should  == "v"
+      @volume.find("k2").should == "v2"
+    end
+    
+  end
+  
+  describe "SkiplistVolume errors" do
+    it "should throw an exception if the message is too big" do
+      @volume = init_volume
+      lambda { 
+        @volume.insert("key", "a"*SkiplistVolume::MAX_LOG_MSG_LENGTH)
+      }.should raise_error(SkiplistVolume::MessageTooBig)
+    end
+    
+    
+    
+    def init_volume
+      @path = TEMP_STORAGES + '/skiplist_volume_files/volume'
+      FileUtils.rm_rf(TEMP_STORAGES + '/skiplist_volume_files')
+      SkiplistVolume.new(:path => @path, :max_log_size => 1024, :silent => true)
+    end
+    
   end
 
 #end
