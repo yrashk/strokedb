@@ -68,6 +68,17 @@ lang = "Ruby {FIXME: with_optimizations is irreversible operation for now}"
       @volume.find("k3").should == nil
     end
     
+    it "should store a lot of values" do
+      @arr = (1..1000).to_a.map{|a| a.to_s}.sort
+      
+      @arr.each{|e| @volume.insert(e,e) }
+      
+      @volume.close!
+      @volume = SkiplistVolume.new(:path => @path, :max_log_size => 1024, :silent => true)
+      
+      @arr.each{|e| @volume.find(e).should == e }
+
+    end
   end
   
   describe "SkiplistVolume errors" do
