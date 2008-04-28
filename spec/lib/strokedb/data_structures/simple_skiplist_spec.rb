@@ -38,7 +38,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
   	      :maxlevel => @maxlevel
   	    },
   	    :raw_list => [
-  	      [[nil]*@maxlevel, nil, nil]
+  	      [[nil]*@maxlevel, nil, nil, [nil]*@maxlevel]
   	    ]
   	  }
     end
@@ -247,6 +247,10 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       search_should_yield([], :start_key => "ab1", :end_key => "b")
     end
 
+    it "should search in a reverse order" do
+      r = search_with_options(@list, :reverse => true, :with_keys => true)
+      r.should == @key_values.reverse
+    end
       
     def search_should_yield(results, os = {})
       # TODO: added reverse cases

@@ -15,7 +15,10 @@ module StrokeDB
     def initialize(raw_list = nil, options = {})
       @maxlevel    = options[:maxlevel]    || DEFAULT_MAXLEVEL
       @probability = options[:probability] || DEFAULT_PROBABILITY
-      @head        = raw_list && unserialize_list!(raw_list) || new_head
+      @head, @tail = new_anchors(@maxlevel)
+      if raw_list
+        @head, @tail = unserialize_list!(raw_list)
+      end
       @mutex       = Mutex.new
     end
     
@@ -44,7 +47,6 @@ module StrokeDB
     
     # Complicated search algorithm
     # TODO: add reverse support
-    # TODO: add key duplication support
     # 
     def search(start_key, end_key, limit, offset, reverse, with_keys)
       offset ||= 0
@@ -62,20 +64,21 @@ module StrokeDB
     #
     def find_by_prefix(start_key, reverse)
       # TODO: add reverse support
-      x = node_first # head [FIXME: change method name]
+      dir = dir_for_reverse(reverse)
+      x = anchor(reverse) # head [FIXME: change method name]
       # if no prefix given, just return a first node
-      !start_key and return node_next(x, 0)
+      !start_key and return node_next(x, 0, dir)
       
       level = node_level(x)
       while level > 0
         level -= 1
-        xnext = node_next(x, level)
+        xnext = node_next(x, level, dir)
         while node_compare(xnext, start_key) < 0
           x = xnext
-          xnext = node_next(x, level)
+          xnext = node_next(x, level, dir)
         end
       end
-      xnext == @tail and return nil
+      xnext == anchor(!reverse) and return nil
       node_key(xnext)[0, start_key.size] != start_key and return nil
       xnext
     end
@@ -83,10 +86,10 @@ module StrokeDB
     # 
     # 
     def skip_nodes(node, offset, reverse)
-      # TODO: add reverse support
+      dir = dir_for_reverse(reverse)
       tail = @tail
       while offset > 0 && node != tail
-        node = node_next(node, 0)
+        node = node_next(node, 0, dir)
         offset -= 1
       end
       offset <= 0 ? node : nil
@@ -95,10 +98,10 @@ module StrokeDB
     # 
     #
     def collect_values(x, end_prefix, limit, reverse, with_keys)
-      # TODO: add reverse support
+      dir = dir_for_reverse(reverse)
       values = []
       meth = method(with_keys ? :node_pair : :node_value)
-      tail = @tail
+      tail = anchor(!reverse)
       limit ||= Float::MAX
       end_prefix ||= ""
       pfx_size = end_prefix.size
@@ -106,7 +109,7 @@ module StrokeDB
         node_key(x)[0, pfx_size] > end_prefix and return values
         values.size >= limit and return values
         values << meth.call(x).freeze
-        x = node_next(x, 0)
+        x = node_next(x, 0, dir)
       end
       values
     end
@@ -121,10 +124,18 @@ module StrokeDB
     # Insert a key-value pair. If key already exists,
     # value will be overwritten.
     #
+    #  <i> is a new node
+    #  <M> is a marked node in a update_list
+    #  <N> is next node to <M> which reference must be updated. 
+    #
+    #  M-----------------> i <---------------- N ...
+    #  o ------> M ------> i <------ N ... 
+    #  o -> o -> o -> M -> i <- N ....
+    #
     def insert(key, value, __level = nil)
       @mutex.synchronize do
         newlevel = __level || random_level
-        x = node_first
+        x = anchor
         level = node_level(x)
         update = Array.new(level)
         x = find_with_update(x, level, key, update)
@@ -160,7 +171,7 @@ module StrokeDB
   	
     # Find is thread-safe and requires no mutexes locking.
     def find_nearest_node(key) #:nodoc:
-      x = node_first
+      x = anchor
       level = node_level(x)
       while level > 0
         level -= 1
@@ -204,7 +215,7 @@ module StrokeDB
       require 'inline'
       inline(:C) do |builder|
         builder.prefix %{
-          static ID i_node_first, i_node_level;
+          static ID i_anchor, i_node_level;
           #define SS_NODE_NEXT(x, level) (rb_ary_entry(rb_ary_entry(x, 0), level))
           static int ss_node_compare(VALUE x, VALUE key)
           {
@@ -215,13 +226,13 @@ module StrokeDB
           }
         }
         builder.add_to_init %{
-          i_node_first    = rb_intern("node_first");
+          i_anchor    = rb_intern("anchor");
           i_node_level    = rb_intern("node_level");
         }
         builder.c %{
           VALUE find_nearest_node_C(VALUE key) 
           {
-            VALUE x = rb_funcall(self, i_node_first, 0);
+            VALUE x = rb_funcall(self, i_anchor, 0);
             long level = FIX2LONG(rb_funcall(self, i_node_level, 1, x));
             VALUE xnext;
             while (level-- > 0)
@@ -274,7 +285,7 @@ module StrokeDB
     end
 
     def each_node #:nodoc:
-      x = node_next(node_first, 0)
+      x = node_next(anchor, 0)
       while x 
         yield(x)
         x = node_next(x, 0)
@@ -318,7 +329,7 @@ module StrokeDB
   private
 
     def serialize_list(head)
-      head           = node_first.dup
+      head           = anchor.dup
       head[0]        = [ nil  ] * node_level(head)
       raw_list       = [ head ]
       prev_by_levels = [ head ] * node_level(head)
@@ -342,9 +353,12 @@ module StrokeDB
       raw_list
     end
     
-    # Returns head of an imported skiplist. 
+    # Returns head & tail of an imported skiplist. 
     # Caution: raw_list is modified (thus the bang). 
     # Pass dup-ed value if you need.
+    #
+    # TODO: add double-linking!
+    #
     def unserialize_list!(raw_list)
       x = raw_list[0]
       while x != nil
@@ -355,26 +369,26 @@ module StrokeDB
         # go next node
         x = forwards[0]
       end
-      # return head
-      raw_list[0]
+      # return anchors (head, tail)
+      [raw_list[0], new_anchor]  # <- FIXME: normal tail anchor needed
     end
       
     # C-style API for node operations    
-    def node_first
-      @head
+    def anchor(reverse = false)
+      reverse ? @tail : @head
     end
     
     def node_level(x)
       x[0].size
     end
     
-    def node_next(x, level)
-      x[0][level]
+    def node_next(x, level, dir = 0)
+      x[dir][level]
     end
       
     def node_compare(x, key)
-      return  1 unless x    # tail
-      return -1 unless x[1] # head
+      return  1 if x == @tail # tail
+      return -1 if x == @head # head
       x[1] <=> key
     end
     
@@ -394,23 +408,55 @@ module StrokeDB
       x[2] = value
     end
     
+    # before: 
+    #   prev -> next
+    #   prev <- next
+    #
+    # after:
+    #
+    #  prev -> new -> next
+    #  prev <- new <- next
+    #
     def node_insert_after!(x, prev, level)
-      x[0][level] = prev[0][level]
+      netx = node_next(prev, level)  # 'next' is a reserved word in ruby
+      
+      # forward links
+      x[0][level] = netx
       prev[0][level] = x
+      
+      # backward links
+      x[3][level] = prev
+      netx[3][level] = x
     end
     
     def new_node(level, key, value)
-      [
-        [nil]*level,
-        key,
-        value
+      [ 
+        [nil]*level, 
+        key, 
+        value, 
+        [nil]*level 
       ]
     end
     
-    def new_head
+    # TODO: drop this after serialization routines updated
+    def new_anchor
       new_node(@maxlevel, nil, nil)
     end
-
+    
+    def new_anchors(level)
+      h = new_node(level, nil, nil)
+      t = new_node(level, nil, nil)
+      level.times do |i|
+        h[0][i] = t
+        t[3][i] = h
+      end
+      [h, t]
+    end
+    
+    def dir_for_reverse(reverse)
+      reverse ? 3 : 0
+    end
+    
   	def random_level
   	  p = @probability
   	  m = @maxlevel
