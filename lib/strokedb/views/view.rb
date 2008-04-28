@@ -229,13 +229,21 @@ module StrokeDB
       # TODO: find viewdoc by name
     end
     
-    def define(options = {}, &block)
+    # Define a view. 
+    #
+    # Examples
+    #   View.define("view_name", :option => "value") do |viewdoc| ... end
+    #   View.define(:name => "view_name", :option => "value") do |viewdoc| ... end
+    #
+    def define(*args, &block)
+      options = args.pop.stringify_keys rescue { }
       # TODO: find the view through the Views' view.
-      name = options.stringify_keys['name']
+      name = options['name'] || args.pop
       unless name
         raise ArgumentError, "View name must be specified!"
       end
       find_or_create(:name => name) do |view|
+        # FIXME: we must save a new version when options update a viewdoc contents
         view.update_slots(options)
         block.call(view) if block
       end
