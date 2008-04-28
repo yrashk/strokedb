@@ -20,7 +20,7 @@ module StrokeDB
   # 4) remove archive log
   # 0) write something to the in-memory skiplist and a log
   #
-  # Crash may happen after steps 0, 1, 2, 3, 4.
+  # Crash may happen after the steps 0, 1, 2, 3, 4.
   # Let's analyze all the possible situations:
   # 0) Data is lost from the memory, but is stored in a log.
   #    On restart we just load an already dumped skiplist 
@@ -44,11 +44,22 @@ module StrokeDB
   # 3) Replay the actual log on restart.
   # 
   class SkiplistVolume
+    
+    # Data is dumped to the disk every time log exceeds this limit
+    # Set "max_log_size" option when initializing the volume to override this.
+    DEFAULT_MAX_LOG_SIZE = 16*1024*1024
+    
+    # Encoded log message consists of the key, value, length prefixes and
+    # MD5 checksum. Skiplist is not intended for storing huge key or values:
+    # several kilobytes is okay. 
+    # This limit helps to fight incorrect log messages while replaying the log.
+    MAX_LOG_MSG_LENGTH = 1024*1024
+    
     def initialize(params)
       @params = params.stringify_keys
       @path = @params['path']
       
-      @max_log_size = @params['max_log_size'].to_i
+      @max_log_size = (@params['max_log_size'] || DEFAULT_MAX_LOG_SIZE).to_i
       
       @list_path    = @path               # regular file for a skiplist
       @list_tmppath = @path + ".tmp"      # tempfile skiplist is dumped to
@@ -165,12 +176,6 @@ module StrokeDB
   private
     
     N_F = "N".freeze
-    
-    # Encoded log message consists of the key, value, length prefixes and
-    # MD5 checksum. Skiplist is not intended for storing huge key or values:
-    # several kilobytes is okay. 
-    # This limit helps to fight incorrect log messages while replaying the log.
-    MAX_LOG_MSG_LENGTH = 1024*1024
     CHECKSUM_LENGTH = 16 # MD5
     
     def replay_log!(log_path, list)
