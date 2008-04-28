@@ -236,9 +236,17 @@ module StrokeDB
     #   View.define(:name => "view_name", :option => "value") do |viewdoc| ... end
     #
     def define(*args, &block)
-      options = args.pop.stringify_keys rescue { }
+      if args.first.is_a? String
+        options = args[1] || {}
+        options['name'] = args.first
+      else
+        options = args[0] || {}
+      end
+      
+      options = options.stringify_keys
+      
       # TODO: find the view through the Views' view.
-      name = options['name'] || args.pop
+      name = options['name']
       unless name
         raise ArgumentError, "View name must be specified!"
       end

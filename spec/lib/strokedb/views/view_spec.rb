@@ -29,7 +29,7 @@ describe "'Has many comments' view" do
   
   before(:all) do
     setup_default_store
-    @view = View.define(:name => "post_comments") do |view|
+    @view = View.define("post_comments") do |view|
       def view.map(uuid, doc)
         doc['type'] =~ /comment/ ? [[[doc.parent, doc.created_at], doc]] : nil
       end
