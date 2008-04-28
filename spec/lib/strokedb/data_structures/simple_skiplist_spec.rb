@@ -192,6 +192,98 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       @list.find_nearest("g").should == "F"
     end
   end
+  
+  describe "SimpleSkiplist#search [#{lang}]" do
+    before(:each) do
+      @list = SimpleSkiplist.new
+      @keys = %w[ a aa ab b ba bb pfx1 pfx2 pfx3 x xx xy xyz ]
+      @values = @keys.map{|v| v + " value"}
+      @key_values = @keys.map{|v| [v, v + " value"]}
+      @key_values.each do |k, v|
+        @list.insert(k, v)
+      end
+    end
+    
+    it "should find all items" do
+      search_should_yield(@key_values)
+    end
+    
+    it "should find all items starting with a prefix" do
+      search_should_yield(@key_values,          :start_key => "a")
+      search_should_yield(@key_values[1..-1],   :start_key => "aa")
+      search_should_yield(@key_values[2..-1],   :start_key => "ab")
+      search_should_yield(@key_values[3..-1],   :start_key => "b")
+      search_should_yield(@key_values[-1..-1],  :start_key => "xyz")
+      search_should_yield(@key_values[6..-1],   :start_key => "pfx")
+    end
+    
+    it "should not find any items if prefix not matched" do
+      search_should_yield([],  :start_key => "middle")
+      search_should_yield([],  :start_key => "__prefix")
+      search_should_yield([],  :start_key => "zuffix")
+      search_should_yield([],  :start_key => "pfx0")
+    end
+    
+    it "should not find all items before the given end_key (inclusive)" do
+      search_should_yield(@key_values,          :end_key => "xyz")
+      search_should_yield(@key_values,          :end_key => "zuffix")
+      search_should_yield(@key_values[0..-3],   :end_key => "xx")
+      search_should_yield(@key_values[0..2],    :end_key => "a")
+      search_should_yield(@key_values[0..1],    :end_key => "aa")
+      search_should_yield(@key_values[0..5],    :end_key => "b")
+    end
+    
+    it "should find items in a range" do
+      search_should_yield(@key_values[1..5], :start_key => "aa", :end_key => "bb")
+      search_should_yield(@key_values[0..2], :start_key => "a", :end_key => "a")
+      search_should_yield(@key_values[3..5], :start_key => "b", :end_key => "b")
+      search_should_yield(@key_values[6..8], :start_key => "pfx", :end_key => "pfx")
+    end
+    
+    it "should not find items in an invalid range" do
+      search_should_yield([], :start_key => "b",   :end_key => "a")
+      search_should_yield([], :start_key => "z",   :end_key => "a")
+      search_should_yield([], :start_key => "_",   :end_key => "b")
+      search_should_yield([], :start_key => "ab1", :end_key => "b")
+    end
+
+      
+    def search_should_yield(results, os = {})
+      # TODO: added reverse cases
+      list = @list
+      
+      os = os.merge(:with_keys => true)
+      r = search_with_options(list, os)
+      r.should == results
+      search_should_use_offsets_and_limits(list, os, r)
+      
+      os = os.merge(:with_keys => nil)
+      r = search_with_options(list, os)
+      r.should == results.map{|k,v| v}
+      search_should_use_offsets_and_limits(list, os, r)
+    end
+    
+    def search_should_use_offsets_and_limits(list, os, r1)
+      
+      offsets = [-1000, -1, 0, 1, 2, 3, 4, 1000]
+      limits  = [-1000, -1, 0, 1, 2, 3, 4, 1000]
+      
+      offsets.each do |off|
+        limits.each do |lim|
+          r2 = search_with_options(list, os.merge(:offset => off, :limit => lim))
+          r2.should == (r1[off < 0 ? 0 : off, lim < 0 ? 0 : lim] || [])
+        end
+      end
+    end
+        
+    def search_with_options(list, os = {})
+      #puts "OPTIONS: #{os.inspect}"
+      r = list.search(os[:start_key], os[:end_key], os[:limit], os[:offset], os[:reverse], os[:with_keys])
+      #puts "R: #{r.inspect}"
+      r 
+    end
+
+  end
 end
 
 def raw_list(list)

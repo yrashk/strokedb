@@ -13,8 +13,8 @@ API OVERVIEW
 View is a function which is applied to every document in a whole dataspace
 and returns key-value pair(s) for each document.
 
-    LatestComments = View.new(:name => "latest_comments") do |view|
-      view.map do |doc|
+    LatestComments = View.define(:name => "latest_comments") do |view|
+      def view.map(doc)
         if (doc.is_a?(Comment))
           # Key prefix is an association (to be filtered by)
           # Key suffix is an ordering part ("sort by date, please")
@@ -31,17 +31,17 @@ and returns key-value pair(s) for each document.
     
 View finder parameters:
 
-:startkey   => JSON
-:endkey     => JSON
-:count      => nil (Numeric)
-:descending => false (true)
-:skip       => 0
-:key        => (equivalent to set startkey and endkey to the same value)
+:start_key   => JSON
+:end_key     => JSON
+:limit      => nil (Numeric)
+:reverse => false (true)
+:offset       => 0
+:key        => (equivalent to set start_key and end_key to the same value)
 :with_keys  => false (true)  (returns [key, value] pairs instead of just values)
 
 You may ask a view for a set of documents in such a way:
 
-    LatestComments.find(:startkey => [article], :descending => true, :count => 20) #=> [...]
+    LatestComments.find(:start_key => [article], :reverse => true, :limit => 20) #=> [...]
 
 You may find a view by name:
 
@@ -49,15 +49,15 @@ You may find a view by name:
 
 You may define additional methods for a view inside View.new do ... end block:
       
-    LatestComments = View.new(:name => "latest_comments") do |view|
+    LatestComments = View.define(:name => "latest_comments") do |view|
       
       # view.map definition skipped (see above) ...
       
       # this is used by has_many when #[] is called
       # *args are passed into doc.associations[*args]
       def has_many(doc, args)
-        skip, count = args  # I'm too lazy to accept Range (for now)
-        find(:startkey => [doc], :descending => true, :count => count, :skip => skip)
+        offset, limit = args  # I'm too lazy to accept Range (for now)
+        find(:start_key => [doc], :reverse => true, :limit => limit, :offset => offset)
       end
     end
 
@@ -108,7 +108,7 @@ Implementation note:
   
   
 
-PERSISTANCE & UPDATES
+PERSISTENCE & UPDATES
 
 In theory, every view invocation must involve the whole dataspace processing.
 In real world we need to optimize this by building persisted indexes
@@ -123,8 +123,8 @@ Update view is a regular view returning a document-view pairs.
 It is used to determine which views should be updated for the particular 
 document.
 
-    ArticleRelatedUV = View.new :name => "article_related" do |view|
-      view.map do |doc|
+    ArticleRelatedUV = View.define :name => "article_related" do |view|
+      def view.map(doc)
         if doc.is_a? Article
           [ doc, View.all.grep{|v| v.name =~ /article/ } ]
         elsif doc.is_a? Comment
@@ -141,6 +141,68 @@ If some document-view pair is duplicated, duplicates are ignored.
 Database can define several update views lists. For instance:
 1) database.immediate_uvs = [ HasManyStuff ]
 2) database.nightly_uvs = [ SomeLazyFulltextIndex ]
+
+
+
+VERSIONING
+
+Every document has a number of previous versions which must be 
+covered with views as well, as HEAD versions ("latest").
+
+Scenarios:
+
+1) Simple view "article has_many comments" with head versions:
+   1. New document: pass through the View, save key-value pairs.
+   2. Document update: pass the previous version through the View,
+                       wipe out resulting tuples from the index,
+                       insert head version as usual.
+                       If doc is marked as "deleted", just don't insert it.
+
+2) View for indexing all the documents' versions by date.
+   If there're several versions per day, the latest one will be stored. 
+      
+   docs_by_date = View.define(:name => "docs_by_date") do |view|
+     def view.map(doc)
+        [ [ doc.created_at.to_date, doc.uuid ], doc ]
+     end
+   end
+   
+   # Find this document as it was 2 days ago.
+   docs_by_date.find(:key => [2.days.ago, uuid])
+
+   # Find all the updates done 2 days ago
+   docs_by_date.find(:key => [2 days ago])
+   
+   When this index is updated, only particular versions are supplied
+   and nothing is removed from the list.
+     
+To support both scenarios, we may introduce a simple switch 
+as a slot in the viewdoc:
+
+   :strategy => :heads | :versions
+   
+This will tell the view which scenario is to be used.
+
+
+
+KEY ARITHMETICS
+
+Scenario 1: "find the latest version of the given document 2+ days old"
+
+SQL: select * from `versions` where `created_at` <= '2.days.ago' order by created_at desc limit 1
+
+StrokeDB view:
+
+docs_by_date = View.define(:name => "docs_by_date") do |view|
+  def view.map(doc)
+     [ [ doc.uuid, doc.created_at.to_date ], doc ]
+  end
+end
+
+docs_by_date.find(:key => [doc.uuid, 2.days.ago], :key_search => [:strict, :before] )
+
+:key_search => :strict, :before|:after (nearest), :less, :greater
+
 
 
 DATA STRUCTURES
@@ -161,7 +223,7 @@ If the encoded key is shorter or longer, WrongKeyLengthException is thrown.
 2) You may define specific key encoder:
 
     View.new do |view|
-      view.encode_key do |key|
+      def view.encode_key(key)
         crazy_binary_pack(key)
       end
     end
@@ -175,7 +237,7 @@ Note: encode_key is not required to be a reversible operation, so
 decode_key should just return something reasonable for your application.
 
     View.new do |view|
-      view.decode_key do |key|
+      def view.decode_key(key)
         crazy_binary_unpack(key)
       end
     end
@@ -185,7 +247,7 @@ view list can be splitted. To optimize locality (i.e. store related data
 in the same storage), you may specify a split hinting:
 
     View.new do |view|
-      view.split_by do |key|
+      def view.split_by(key)
         key[0]
       end
     end
@@ -210,30 +272,37 @@ Sometimes we need to do a soft migration of the current index,
 or keep it as-is, or do a controlled migration to a completely new version.
 Migration issues are subject to discuss.
 
-You may specify descriptive data for view.*{ } blocks to make them 
-"serializable". Like:
 
-    View.new do |v|
-      v.encode_key("downcase") do |key|
-        key.downcase
-      end
-    end
 
-When encode_key behavior changes, you should change its description:
 
-    View.new do |v|
-      v.encode_key("upcase") do |key|
-        key.upcase
-      end
-    end
+VIEW STORAGE API
 
-This will lead to using another index file.
-In a viewdoc, such info is accessed as a regular slot:
+View is stored in two kind of storages: skiplists & ArchiveVolumes.
 
-    viewdoc["encode_key"] == "upcase"
+Skiplist is processed in memory and being saved as a whole thing.
+ArchiveVolume allows incremental updates without storing much
+data in memory.
 
-This is applied to "map", "encode_key", "decode_key" and "split_by".
+View update process:
 
+1) Take a document (or something else) as an input,
+2) Pass to map method
+3) For each key-value pair:
+4) Encode key and value
+5) Store value in an ArchiveVolume or in a skiplist
+6) Store a key-dpointer pair in a skiplist (there might be an actual
+   data instead of dpointer in case of inlining)
+
+Note: if value is a document, then dpointer points to document's contents.
+In the other case, the value is stored in an ArchiveVolume.
+
+View search process:
+
+1) Encode input keys (start_key, end_key, key) 
+2) Load skiplist into memory
+3) Walk the skiplist using search rules (see views.rb for info)
+4) Select requested dpointers
+5) Retrieve data for the given dpointers
 
 
 
@@ -247,8 +316,8 @@ you may build an interesting fulltext search index.
 
 Simple word search index:
 
-    WordSearch = View.new :name => "word_search" do |view|
-      view.map do |doc|
+    WordSearch = View.define :name => "word_search" do |view|
+      def view.map(doc)
         words = doc["body"].split(/\W/)
         words.map do |word|
           [word, doc]
@@ -275,14 +344,13 @@ Wikipedia describes core components:
 Reader and writer are storage-specific.
 Partition and comparison functions depend on a particular setup.
 
-Reduce API might look like this:
+Reduce API might look exactly like View API:
 
-    counter = Reducer.new do |r|
-      r.reduce do |key, items|
-        [key, items.length]
+    reducer = View.new(...) do |v|
+      def v.map(key, values)
+        [ [key, values.size] ]
       end
     end
-
 
 
 
@@ -290,40 +358,51 @@ EXAMPLES
 
 1) has_many :comments with optimizations
 
-    View.new(:name => "has_many_comments", 
-             :fixed_key_length => (128 + 128 + 32)) do |v|
-        v.map do |doc|
+    View.define(:name => "has_many_comments", 
+             :fixed_key_length => (128 + 32)) do |v|
+        def v.map(uuid, doc)
           doc.is_a? Comment ? [[[doc.comment_container, doc.created_at], doc]] : nil 
         end
-        v.encode_key do |key|
-          key[0].raw_uuid_version + [doc.created_at.to_i].pack("N")
+        def v.encode_key(key)
+          return key.raw_uuid if key.is_a?(Document) # for prefix search
+          key[0].raw_uuid + [key[1].to_i].pack("N")
         end
-        v.split_by do |key|
+        def v.split_by(key)
           key[0].raw_uuid_version
         end
     end
+    
+    # Find first 10 comments for a given post
+    Views["has_many_comments"].find(:key => some_post, :limit => 10)
 
 2) has_and_belongs_to_many :tags (inlined tags)
 
     doc.tags = %w[paris love sun]
     
-    View.new(:name => "docs_by_tag") do |v|
-      v.map do |doc|
+    View.define(:name => "docs_by_tag") do |v|
+      def v.map(doc)
         if doc['tags']
           time = doc.created_at
           doc['tags'].map do |tag|
-              [[tag, time], doc]
+            [[tag, time], doc]
           end
         end
       end
     end 
+    
+    # Find latest 20 documents for a given tag
+    # Note: "paris" will have another prefix, 
+    #       so ["paris", :blah] will not match. Thus we use ["paris"]
+
+    Views["docs_by_tag"].find(:key => ["paris"], :limit => 20, :reverse => true)
+    
 
 3) has_many :friends
 
     Friendship.new(:friends => [oleg, yurik], :status => "collegues")
 
-    View.new(:name => "users_friends") do |v|
-      v.map do |doc|
+    View.define(:name => "users_friends") do |v|
+      def v.map(doc)
         if doc.is_a? Friendship
           # Filtered by status & ordered by name
           [
@@ -334,5 +413,6 @@ EXAMPLES
       end
     end
 
-
+    # Find all Oleg's collegues sorted by name
+    Views["users_friends"].find(:key => [oleg, "collegues"])
 

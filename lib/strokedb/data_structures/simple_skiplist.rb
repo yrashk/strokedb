@@ -43,6 +43,75 @@ module StrokeDB
       !node_next(@head, 0)
     end
     
+    # Complicated search algorithm
+    # TODO: add reverse support
+    # TODO: add key duplication support
+    # 
+    def search(start_key, end_key, limit, offset, reverse, with_keys)
+      offset ||= 0
+      
+      start_node = find_by_prefix(start_key, reverse)
+      !start_node and return []
+      
+      start_node = skip_nodes(start_node, offset, reverse)
+      !start_node and return []
+    
+      collect_values(start_node, end_key, limit, reverse, with_keys)
+    end
+    
+    # 
+    #
+    def find_by_prefix(start_key, reverse)
+      # TODO: add reverse support
+      x = node_first # head [FIXME: change method name]
+      # if no prefix given, just return a first node
+      !start_key and return node_next(x, 0)
+      
+      level = node_level(x)
+      while level > 0
+        level -= 1
+        xnext = node_next(x, level)
+        while node_compare(xnext, start_key) < 0
+          x = xnext
+          xnext = node_next(x, level)
+        end
+      end
+      xnext == @tail and return nil
+      node_key(xnext)[0, start_key.size] != start_key and return nil
+      xnext
+    end
+    
+    # 
+    # 
+    def skip_nodes(node, offset, reverse)
+      # TODO: add reverse support
+      tail = @tail
+      while offset > 0 && node != tail
+        node = node_next(node, 0)
+        offset -= 1
+      end
+      offset <= 0 ? node : nil
+    end
+    
+    # 
+    #
+    def collect_values(x, end_prefix, limit, reverse, with_keys)
+      # TODO: add reverse support
+      values = []
+      meth = method(with_keys ? :node_pair : :node_value)
+      tail = @tail
+      limit ||= Float::MAX
+      end_prefix ||= ""
+      pfx_size = end_prefix.size
+      while x != tail
+        node_key(x)[0, pfx_size] > end_prefix and return values
+        values.size >= limit and return values
+        values << meth.call(x).freeze
+        x = node_next(x, 0)
+      end
+      values
+    end
+    
     # First key of a non-empty skiplist (nil for empty one)
     #
     def first_key
@@ -308,6 +377,10 @@ module StrokeDB
       return  1 unless x    # tail
       return -1 unless x[1] # head
       x[1] <=> key
+    end
+    
+    def node_pair(x)
+      x[1,2]
     end
     
     def node_key(x)

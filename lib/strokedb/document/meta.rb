@@ -186,7 +186,7 @@ module StrokeDB
     end
 
     #
-    # Conveniance alias for Meta#find.
+    # Convenient alias for Meta#find.
     #
     alias :all :find
 
