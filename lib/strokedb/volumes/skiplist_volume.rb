@@ -76,7 +76,7 @@ module StrokeDB
       end
       
       if File.exists?(@list_path)
-        @list = SimpleSkiplist.load(File.read(@list_path))
+        @list = Marshal.load(File.read(@list_path))
       else
         info "List file is not found, creating a brand new skiplist."
         @list = SimpleSkiplist.new(nil, @params)
@@ -135,7 +135,7 @@ module StrokeDB
     end
     
     def dump!
-      dumped_list = @list.dump
+      dumped_list = Marshal.dump(@list)
       f = File.open(@list_tmppath, 'w')
       f.sync = true
       f.write(dumped_list)
