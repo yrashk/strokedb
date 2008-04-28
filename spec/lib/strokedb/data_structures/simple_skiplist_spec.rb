@@ -132,6 +132,21 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     
   end
   
+  describe "SimpleSkiplist serialization [#{lang}]" do
+    before(:each) do
+      @maxlevel    = 8
+      @list = SimpleSkiplist.new(:maxlevel => @maxlevel)
+      @arr = (1..1000).to_a.map{|a| a.to_s}.sort
+    end
+    it "should export data to_a correctly" do
+      @arr.each{|e| @list.insert(e,e) }
+      @list.to_a.should == @arr.map{|e| [e, e]}
+    end
+    it "should load data from_a correctly" do
+      @list2 = @list.class.from_a(@arr.map{|e| [e, e]}, :maxlevel => @maxlevel)
+      @list2.to_a.should == @arr.map{|e| [e, e]}
+    end
+  end
   
   describe "SimpleSkiplist#first_key [#{lang}]" do
     before(:each) do
