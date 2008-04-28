@@ -16,9 +16,9 @@ describe "SkiplistVolume inserts and finds", :shared => true do
 
 end
 
-SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
-
-  describe "Brand new SkiplistVolume" do
+#SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
+lang = "Ruby {FIXME: with_optimizations is irreversible operation for now}"
+  describe "Brand new SkiplistVolume [#{lang}]" do
     before(:each) do
       @path = TEMP_STORAGES + '/skiplist_volume_files/volume'
       FileUtils.rm_rf(TEMP_STORAGES + '/skiplist_volume_files')
@@ -32,7 +32,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     it_should_behave_like "SkiplistVolume inserts and finds"
   end
   
-  describe "Brand new SkiplistVolume with immediate dumps" do
+  describe "Brand new SkiplistVolume with immediate dumps [#{lang}]" do
     before(:each) do
       @path = TEMP_STORAGES + '/skiplist_volume_files/volume'
       FileUtils.rm_rf(TEMP_STORAGES + '/skiplist_volume_files')
@@ -45,5 +45,5 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     
     it_should_behave_like "SkiplistVolume inserts and finds"
   end
-  
-end
+
+#end
