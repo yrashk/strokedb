@@ -13,8 +13,9 @@ module StrokeDB
     attr_accessor :maxlevel, :probability
     
     def initialize(raw_list = nil, options = {})
-      @maxlevel    = options[:maxlevel]    || DEFAULT_MAXLEVEL
-      @probability = options[:probability] || DEFAULT_PROBABILITY
+      options = options.stringify_keys
+      @maxlevel    = options['maxlevel']    || DEFAULT_MAXLEVEL
+      @probability = options['probability'] || DEFAULT_PROBABILITY
       @head        = raw_list && unserialize_list!(raw_list) || new_head
       @mutex       = Mutex.new
     end

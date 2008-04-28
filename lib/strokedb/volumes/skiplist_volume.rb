@@ -9,7 +9,7 @@ module StrokeDB
   # * When log becomes too large, or #dump! is called explicitely 
   #   skiplist is safely dumped to the disk.
   #
-  # DUMPING SAFETY 
+  # SAFETY 
   # 
   # 0) write something to the in-memory skiplist and a log
   #   (don't response while log is not updated)
@@ -36,7 +36,7 @@ module StrokeDB
   # 4) No stale files on the disk, log is empty, so the crash case is 
   #    just a regular "close" case. 
   # 
-  # According to this, all we have to do is:
+  # According to this, all we have to do is to:
   # 1) Do the durable updates to the log before in-memory operations.
   # 2) Remove all the stale files on restart.
   # 3) Load the skiplist from the regular file.
@@ -45,10 +45,41 @@ module StrokeDB
   class SkiplistVolume
     def initialize(params)
       @params = params.stringify_keys
+      @path = @params['path']
+      
+      @list_path    = @path               # regular file for a skiplist
+      @list_tmppath = @path + ".tmp"      # tempfile skiplist is dumped to
+      @log_path     = @path + ".wal"      # write ahead log
+      @log_tmppath  = @path + ".wal.tmp"  # tempfile for the WAL
+      
+      if File.exists?(@list_tmppath)
+        info "Unfinished dump file detected (#{@list_tmppath}). Removing the file." 
+        File.delete(@list_tmppath)
+      end
+      if File.exists?(@log_tmppath)
+        info "Unfinished WAL removal detected (#{@log_tmppath}). Removing the file."
+        File.delete(@log_tmppath)
+      end
+      
+      if File.exists?(@list_path)
+        @skiplist = SimpleSkiplist.load(File.read(@list_path))
+      else
+        info "List file is not found, creating a brand new skiplist."
+        @skiplist = SimpleSkiplist.new(nil, @params)
+      end
+      
+      if File.exists?(@log_path)
+        info "Log file detected (#{@log_path}), applying it to the loaded skiplist."
+        File.open(@log_path, "r") do |f|
+          # TODO: read the log format and call @list.insert for each record
+        end
+      end
+      
+      @log_file = File.open(@log_file, "a")
       
     end
     
-    # Skiplist interface
+    # Skiplist operations
     def search(*args)
       @list.search(*args)
     end
@@ -58,15 +89,27 @@ module StrokeDB
     end
     
     def insert(key, value, __level = nil)
+      write_log(key, value, __level)
       @list.insert(key, value, __level)
     end
     
+    # Volume operations
     def close!
       
     end
     
     def dump!
       
+    end
+    
+  private
+  
+    def info
+      STDOUT.puts "SkiplistVolume#info: #{m}"
+    end
+    
+    def error(m)
+      STDERR.puts "SkiplistVolume#error: #{m}"
     end
         
   end
