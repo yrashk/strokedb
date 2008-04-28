@@ -209,46 +209,46 @@ module StrokeDB
       # end
     end
     
-    declare_optimized_methods(:C) do
-    end
-    
-    declare_optimized_methods(:X, :find_nearest_node, :find_with_update) do
+    declare_optimized_methods(:C,  :find_with_update) do # :find_nearest_node,
       require 'rubygems'
       require 'inline'
       inline(:C) do |builder|
         builder.prefix %{
-          static ID i_anchor, i_node_level;
+          static ID i_anchor, i_node_level, i_at_head, i_at_tail;
           #define SS_NODE_NEXT(x, level) (rb_ary_entry(rb_ary_entry(x, 0), level))
-          static int ss_node_compare(VALUE x, VALUE key)
+          static int ss_node_compare(VALUE self, VALUE x, VALUE key)
           {
-            if (x == Qnil) return 1;          /* tail */
+            if (x == rb_ivar_get(self, i_at_tail)) return 1;    /* tail */
+            if (x == rb_ivar_get(self, i_at_head)) return -1;   /* head */
             VALUE key1 = rb_ary_entry(x, 1);
-            if (key1 == Qnil) return -1;      /* head */
             return rb_str_cmp(key1, key);
           }
         }
         builder.add_to_init %{
-          i_anchor    = rb_intern("anchor");
-          i_node_level    = rb_intern("node_level");
+          i_anchor     = rb_intern("anchor");
+          i_node_level = rb_intern("node_level");
+          i_at_head    = rb_intern("@head");
+          i_at_tail    = rb_intern("@tail");
+          
         }
-        builder.c %{
-          VALUE find_nearest_node_C(VALUE key) 
-          {
-            VALUE x = rb_funcall(self, i_anchor, 0);
-            long level = FIX2LONG(rb_funcall(self, i_node_level, 1, x));
-            VALUE xnext;
-            while (level-- > 0)
-            {
-              xnext = SS_NODE_NEXT(x, level);
-              while (ss_node_compare(xnext, key) <= 0)
-              {
-                x = xnext;
-                xnext = SS_NODE_NEXT(x, level);
-              }
-            }
-            return x;
-          }
-        }
+        # builder.c %{
+        #           VALUE find_nearest_node_C(VALUE key) 
+        #           {
+        #             VALUE x = rb_funcall(self, i_anchor, 0);
+        #             long level = FIX2LONG(rb_funcall(self, i_node_level, 1, x));
+        #             VALUE xnext;
+        #             while (level-- > 0)
+        #             {
+        #               xnext = SS_NODE_NEXT(x, level);
+        #               while (ss_node_compare(xnext, key) <= 0)
+        #               {
+        #                 x = xnext;
+        #                 xnext = SS_NODE_NEXT(x, level);
+        #               }
+        #             }
+        #             return x;
+        #           }
+        #         }
         builder.c %{
           static VALUE find_with_update_C(VALUE x, VALUE rlevel, VALUE key, VALUE update)
           {
@@ -257,7 +257,7 @@ module StrokeDB
             while (level-- > 0)
             {
               xnext = SS_NODE_NEXT(x, level);
-              while (ss_node_compare(xnext, key) < 0)
+              while (ss_node_compare(self, xnext, key) < 0)
               {
                 x = xnext;
                 xnext = SS_NODE_NEXT(x, level);
