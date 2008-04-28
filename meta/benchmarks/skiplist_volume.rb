@@ -15,7 +15,7 @@ SimpleSkiplist.optimize!(:C)
 
   bm(60) do |x| 
     FileUtils.rm_rf @path
-    skiplist = SkiplistVolume.new(:path => @path)
+    skiplist = SkiplistVolume.new(:path => @path, :max_log_size => 1024*4000)
 
     records = []
     n.times {|v| records << ["key#{v}".ljust(128," "),"val#{v}".ljust(128," ")] }

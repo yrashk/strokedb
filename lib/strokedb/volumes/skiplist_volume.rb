@@ -244,7 +244,9 @@ module StrokeDB
       @log_file.write([msg.size].pack(N_F))
       @log_file.write(msg)
       @log_file.write(digest)
-      @log_file.fsync
+      # fsync is needed to flush OS buffers to the disk. 
+      # It makes writes 10 times (!) slower but reliable.
+      @log_file.fsync 
       @log_bytes += 4 + msg.size + CHECKSUM_LENGTH
     end
     

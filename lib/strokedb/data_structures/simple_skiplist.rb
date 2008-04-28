@@ -216,10 +216,10 @@ module StrokeDB
         builder.prefix %{
           static ID i_anchor, i_node_level, i_at_head, i_at_tail;
           #define SS_NODE_NEXT(x, level) (rb_ary_entry(rb_ary_entry(x, 0), level))
-          static int ss_node_compare(VALUE self, VALUE x, VALUE key)
+          static int ss_node_compare(VALUE head, VALUE tail, VALUE x, VALUE key)
           {
-            if (x == rb_ivar_get(self, i_at_tail)) return 1;    /* tail */
-            if (x == rb_ivar_get(self, i_at_head)) return -1;   /* head */
+            if (x == tail) return 1; 
+            if (x == head) return -1;
             VALUE key1 = rb_ary_entry(x, 1);
             return rb_str_cmp(key1, key);
           }
@@ -254,10 +254,12 @@ module StrokeDB
           {
             long level = FIX2LONG(rlevel);
             VALUE xnext;
+            VALUE head = rb_ivar_get(self, i_at_head);
+            VALUE tail = rb_ivar_get(self, i_at_tail);
             while (level-- > 0)
             {
               xnext = SS_NODE_NEXT(x, level);
-              while (ss_node_compare(self, xnext, key) < 0)
+              while (ss_node_compare(head, tail, xnext, key) < 0)
               {
                 x = xnext;
                 xnext = SS_NODE_NEXT(x, level);
