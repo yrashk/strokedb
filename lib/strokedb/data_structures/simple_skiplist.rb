@@ -42,7 +42,7 @@ module StrokeDB
     # Tests whether skiplist is empty.
     #
     def empty?
-      !node_next(@head, 0)
+      node_next(@head, 0) == @tail
     end
     
     # Complicated search algorithm
@@ -209,8 +209,10 @@ module StrokeDB
       #   }
       # end
     end
+    declare_optimized_methods(:C) do
+    end
     
-    declare_optimized_methods(:C, :find_nearest_node, :find_with_update) do
+    declare_optimized_methods(:X, :find_nearest_node, :find_with_update) do
       require 'rubygems'
       require 'inline'
       inline(:C) do |builder|
@@ -286,7 +288,8 @@ module StrokeDB
 
     def each_node #:nodoc:
       x = node_next(anchor, 0)
-      while x 
+      tail = @tail
+      while x != tail
         yield(x)
         x = node_next(x, 0)
       end
