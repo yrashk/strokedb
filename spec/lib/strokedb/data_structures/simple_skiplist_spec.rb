@@ -207,6 +207,8 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       end
     end
     
+    it_should_behave_like "Skiplist serialization"
+    
     it "should find all items" do
       search_should_yield(@key_values)
     end
