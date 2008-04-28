@@ -64,7 +64,7 @@ module StrokeDB
       # slot.rb maintains timezone offset and keeps timezone-local time value
       STROKEDB_KEY_CHAR = "T".freeze
       def default_key_encode
-        STROKEDB_KEY_CHAR + getgm.xmlschema(6)
+        STROKEDB_KEY_CHAR + getgm.xmlschema(7)
       end
     end
   end
@@ -72,7 +72,7 @@ module StrokeDB
   class Document
     AT_SIGN = "@".freeze
     def default_key_encode
-      AT_SIGN + raw_uuid
+      AT_SIGN + uuid
     end
   end
   
@@ -126,7 +126,7 @@ module StrokeDB
         when X
           token[R]
         when T
-          Time.xmlschema(token[R])
+          Time.xmlschema(token[R]).localtime
         else
           token  # unknown stuff is decoded as a string
         end

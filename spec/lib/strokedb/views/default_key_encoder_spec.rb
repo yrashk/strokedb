@@ -97,12 +97,12 @@ describe DefaultKeyEncoder do
     end.should raise_error(StandardError)
   end
   
-  it "should encode Document and decode as a raw_uuid" do
+  it "should encode Document and decode as a uuid" do
     setup_default_store
     doc = Document.new
     encoded_key = DefaultKeyEncoder.encode(doc)
-    encoded_key.should == "@#{doc.raw_uuid}"
-    DefaultKeyEncoder.decode(encoded_key).should == doc.raw_uuid
+    encoded_key.should == "@#{doc.uuid}"
+    DefaultKeyEncoder.decode(encoded_key).should == doc.uuid
   end
   
   it "should decode stuff without a known prefix as a string" do
@@ -125,7 +125,7 @@ describe DefaultKeyEncoder do
     strs.should == strs.sort
     
     times2 = strs.map{|ts| DefaultKeyEncoder.decode(ts) }
-    times2.should == times
+    times2.zip(times) {|t2, t1| t2.should be_close(t1, 0.000002) }
   end
   
 end
