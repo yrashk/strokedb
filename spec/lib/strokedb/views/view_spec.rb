@@ -17,12 +17,21 @@ end
 describe View, "without #map method defined" do
   before(:each) do
     setup_default_store
-    @post_comments = View.define!(:name => "post_comments")
+  end
+  
+  it "should raise exception when view is created" do
+    lambda { 
+       View.define!(:name => "post_comments_invalid")
+    }.should raise_error(InvalidViewError)
   end
   
   it "should raise exception when #map is used" do
-     lambda { @post_comments.map("key","value") }.should raise_error(InvalidViewError)
+    Comment = Meta.new
+    @post_comments = View.define!(:name => "post_comments_invalid", :only => ["comment"])
+    c = Comment.new :text => "hello"
+    lambda { @post_comments.map(c.uuid, c) }.should raise_error(InvalidViewError)
   end
+  
 end
 
 describe "'Has many comments' view" do
@@ -45,16 +54,6 @@ describe "'Has many comments' view" do
     
     @comment21 = Document.create! :type => "comment21", :parent => @article2, :created_at => Time.now
     @comment22 = Document.create! :type => "comment22", :parent => @article2, :created_at => Time.now
-    
-    # shuffled order to ensure, items are sorted correctly afterwards
-    @view.update(@article3)
-    @view.update(@comment22)
-    @view.update(@comment11)
-    @view.update(@article2)
-    @view.update(@comment12)
-    @view.update(@comment13)
-    @view.update(@article1)
-    @view.update(@comment21)
   end
   
   it "should find all the comments sorted by date" do
@@ -87,8 +86,56 @@ describe "'Has many comments' view" do
     @view.find(:key => @article2, :offset => 1, :limit => 2).should == [@comment22]
     @view.find(:key => @article3, :offset => 1, :limit => 2).should == [ ]
   end
-  
 end
+
+
+describe View, "with :only option" do
+  before(:each) do
+    setup_default_store
+    block = proc {|view|
+      view.updated = "false"
+      class << view
+        def map(uuid, doc)
+          self.updated.replace "true"
+          nil # don't index
+        end
+        def updated?
+          self.updated == "true"
+        end
+      end
+    }
+    module A; end
+    A.send!(:remove_const, 'Article')          if defined?(A::Article)
+    A.send!(:remove_const, 'SponsoredArticle') if defined?(A::SponsoredArticle)
+    A.send!(:remove_const, 'Comment')          if defined?(A::Comment)
+    
+    module A
+      Article          = Meta.new
+      SponsoredArticle = Meta.new
+      Comment          = Meta.new 
+    end
+    
+    @generic   = View.new("generic", &block)
+    @comments  = View.new("comments", :only => ["Comment"], &block)
+    @c_and_a   = View.new("comments_and_articles", :only => ["Comment", "Article"], &block)
+    @sponsored = View.new("sponsored", :only => ["SponsoredArticle"], &block) 
+  end
+  it "should update articles only" do
+    a = (A::Article + A::SponsoredArticle).create!(:title => "This is a sponsored article")    
+    @generic.should      be_updated
+    @comments.should_not be_updated
+    @c_and_a.should      be_updated
+    @sponsored.should    be_updated
+  end
+  it "should update comments only" do
+    c = A::Comment.create!(:text => "Hello")
+    @generic.should       be_updated
+    @comments.should      be_updated
+    @c_and_a.should       be_updated
+    @sponsored.should_not be_updated    
+  end
+end
+
 
 describe View, "with block defined and saved" do
   
