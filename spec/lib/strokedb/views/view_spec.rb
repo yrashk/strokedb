@@ -96,8 +96,6 @@ describe View, "with :only option" do
       view.updated = "false"
       class << view
         def map(uuid, doc)
-        #  puts "!!!!!!!!"
-        #  puts "#{name}: #{doc.inspect}"
           self.updated.replace "true"
           nil # don't index
         end
