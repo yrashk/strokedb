@@ -1,5 +1,5 @@
 module StrokeDB
-  View = Meta.new(:nsurl => STROKEDB_NSURL) do
+  View = Meta.new do
     attr_accessor :map_with_proc
     attr_reader :reduce_with_proc
 
@@ -22,7 +22,7 @@ module StrokeDB
     end
 
   end
-  ViewCut = Meta.new(:nsurl => STROKEDB_NSURL) do
+  ViewCut = Meta.new do
 
     on_new_document do |cut|
       cut.instance_eval do

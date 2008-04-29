@@ -1,6 +1,6 @@
 module StrokeDB
 
-  StoreInfo = Meta.new(:nsurl => STROKEDB_NSURL) 
+  StoreInfo = Meta.new
 
   class Store
     include Enumerable

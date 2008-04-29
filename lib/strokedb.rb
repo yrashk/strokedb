@@ -70,6 +70,7 @@ module StrokeDB
   class NoDefaultStoreError < Exception ; end
 end
 
+require 'strokedb/nsurl'
 require 'strokedb/util'
 require 'strokedb/document'
 require 'strokedb/config'

@@ -25,11 +25,15 @@ class String
     gsub(/^.*::/, '')
   end
 
+  def modulize
+    return '' unless include?('::') && self[0,2] != '::'
+    self.gsub(/^(.+)::(#{demodulize})$/,'\\1')
+  end
+
   def constantize
     unless /\A(?:::)?([A-Z]\w*(?:::[A-Z]\w*)*)\z/ =~ self
       raise NameError, "#{self.inspect} is not a valid constant name!"
     end
-
     Object.module_eval("::#{$1}", __FILE__, __LINE__)
   end
   
