@@ -22,7 +22,7 @@ module StrokeDB
       # When :heads is used, previous versions are removed from the index.
       "strategy"         => "heads", # heads|versions
     }
-    
+
     on_new_document do |viewdoc|
       viewdoc.reverse_update_slots(DEFAULT_VIEW_OPTIONS)
     end

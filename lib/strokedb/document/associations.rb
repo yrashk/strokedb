@@ -1,6 +1,30 @@
 module StrokeDB
 
   module Associations
+    
+    AssociationViewImplementation = Proc.new do |view|
+      def view.map(uuid, doc)
+        reference_slotname = self[:reference_slotname]
+        through = self[:through]
+        expected_meta = self[:expected_meta]
+        
+        begin
+          through.each {|t| doc = doc.send(t) }
+        rescue SlotNotFoundError
+          doc = nil
+        end
+        
+        if doc.meta.name == expected_meta &&
+           reference_slotname_value = doc[reference_slotname]
+           [ 
+             [
+               reference_slotname_value,
+               doc
+             ]
+           ]
+        end
+      end
+    end
 
     module HasManyAssociation
       attr_reader :association_owner, :association_slotname
@@ -28,7 +52,7 @@ module StrokeDB
       end
 
       def association_meta
-        association_owner.meta["has_many_#{association_slotname}"][:meta]
+        association_owner.meta["has_many_#{association_slotname}"][:expected_meta]
       end
 
     end
@@ -40,7 +64,6 @@ module StrokeDB
       through = opts['through'] || []
       through = [through] unless through.is_a?(Array)
       meta = (through.shift || slotname).to_s.singularize.camelize
-      query = opts['conditions'] || {}
 
       extend_with = opts['extend'] || block
 
@@ -64,7 +87,12 @@ module StrokeDB
           _t << meta
           meta = _t.join('::') 
         end
-        @args.last.reverse_merge!({"has_many_#{slotname}" => { :reference_slotname => reference_slotname, :through => through, :meta => meta, :query => query, :extend_with => extend_with } })
+        
+        
+        view = View.define!({ :reference_slotname => reference_slotname, :through => through, :expected_meta => meta, :extend_with => extend_with }.to_json,
+                            { :reference_slotname => reference_slotname, :through => through, :expected_meta => meta, :extend_with => extend_with }, &AssociationViewImplementation)
+        
+        @args.last.reverse_merge!({"has_many_#{slotname}" => view})
         define_method(slotname) do 
           _has_many_association(slotname,{})
         end
@@ -78,22 +106,8 @@ module StrokeDB
     def initialize_associations
       define_method(:_has_many_association) do |slotname, additional_query|
         slot_has_many = meta["has_many_#{slotname}"]
-        reference_slotname = slot_has_many[:reference_slotname]
-        through = slot_has_many[:through]
-        meta = slot_has_many[:meta]
-        query = slot_has_many[:query]
-        effective_query = query.merge(:meta => meta.constantize.document, reference_slotname => self).merge(additional_query)
-
-        result = LazyArray.new.load_with do |lazy_array|
-          store.search(effective_query).map do |d| 
-            begin
-              through.each { |t| d = d.send(t) }
-            rescue SlotNotFoundError
-              d = nil
-            end
-            d
-          end.compact
-        end
+        StrokeDB::Associations::AssociationViewImplementation.call(slot_has_many)
+        result = slot_has_many.find(:key => self)
         if extend_with = slot_has_many[:extend_with] 
           result.extend(extend_with.constantize) 
         end
