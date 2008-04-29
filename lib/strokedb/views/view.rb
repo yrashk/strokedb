@@ -1,5 +1,6 @@
 module StrokeDB
   VIEW_CACHE = {}
+  VIEW_STORAGES = {}
   
   View = Meta.new(:nsurl => STROKEDB_NSURL) do 
     
@@ -191,7 +192,7 @@ module StrokeDB
     
     def storage
       # @storage ||= store.view_storages[self.uuid]
-      @storage ||= ViewStorage.new
+      VIEW_STORAGES[uuid] ||= ViewStorage.new
     end
     private :storage
 

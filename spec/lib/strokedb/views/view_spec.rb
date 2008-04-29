@@ -106,4 +106,10 @@ describe View, "with block defined and saved" do
     lambda { @view.map(1,2).should == [[1,2]]}.should_not raise_error(InvalidViewError)
   end
   
+  it "should have the same storage when reloaded" do
+    storage_id = @view.send(:storage).object_id
+    @view = @view.reload
+    @view.send(:storage).object_id.should == storage_id
+  end
+  
 end
