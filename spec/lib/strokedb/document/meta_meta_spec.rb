@@ -10,16 +10,6 @@ describe "Meta meta" do
   it "should have nsurl http://strokedb.com/" do
     Meta.document.nsurl.should == STROKEDB_NSURL
   end
-  
-  it "should have blank default nsurl by default" do
-    Meta.default_nsurl.should be_blank
-  end
-
-  it "should be able to configure new default nsurl" do
-    Meta.default_nsurl = "http://mycoolapp.com"
-    Meta.default_nsurl.should == "http://mycoolapp.com"
-    Meta.default_nsurl = ""
-  end
 
 end
 

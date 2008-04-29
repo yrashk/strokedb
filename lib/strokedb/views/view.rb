@@ -234,7 +234,7 @@ module StrokeDB
   end
   
   class << View
-    def [](name, nsurl = Meta.default_nsurl)  # FIXME: Meta seems to be a bad place for default_nsurl now
+    def [](name, nsurl = name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl) # FIXME: it is not nice
       uuid = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
       StrokeDB.default_store.find(uuid)
     end
@@ -260,7 +260,7 @@ module StrokeDB
         raise ArgumentError, "View name must be specified!"
       end
       
-      nsurl = options['nsurl'] ||= Meta.default_nsurl # FIXME: Meta seems to be a bad place for default_nsurl now
+      nsurl = options['nsurl'] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl # FIXME: it is not nice (and the same shit is in meta.rb)
       
       options['uuid'] = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
       
