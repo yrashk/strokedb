@@ -234,8 +234,9 @@ module StrokeDB
   end
   
   class << View
-    def [](name)
-      # TODO: find viewdoc by name
+    def [](name, nsurl = Meta.default_nsurl)  # FIXME: Meta seems to be a bad place for default_nsurl now
+      uuid = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
+      StrokeDB.default_store.find(uuid)
     end
 
     alias :original_new :new
@@ -259,7 +260,7 @@ module StrokeDB
         raise ArgumentError, "View name must be specified!"
       end
       
-      nsurl = options['nsurl'] ||= Meta.default_nsurl # FIXME: Meta seems to be a bad palce for default_nsurl now
+      nsurl = options['nsurl'] ||= Meta.default_nsurl # FIXME: Meta seems to be a bad place for default_nsurl now
       
       options['uuid'] = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
       

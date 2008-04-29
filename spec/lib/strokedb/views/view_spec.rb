@@ -112,4 +112,26 @@ describe View, "with block defined and saved" do
     @view.send(:storage).object_id.should == storage_id
   end
   
+  it "should be findable with #[] syntax" do
+    View["SomeView"].should == @view
+  end
+  
 end
+
+
+describe View, "with nsurl and block defined and saved" do
+  
+  before(:each) do
+    setup_default_store
+    @view = View.define!("SomeView", :nsurl => "http://strokedb.com/") do |view|
+      def view.map(uuid, doc)
+        [[doc,doc]]
+      end
+    end
+  end
+  it "should be findable with #[] syntax" do
+    View["SomeView", "http://strokedb.com/"].should == @view
+  end
+  
+end
+
