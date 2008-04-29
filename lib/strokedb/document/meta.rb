@@ -22,15 +22,6 @@ module StrokeDB
   module Meta
 
     class << self
-      
-      def default_nsurl
-        @default_nsurl ||= ""
-      end
-      
-      def default_nsurl=(nsurl)
-        @default_nsurl = nsurl
-      end
-      
       def new(*args, &block)
         mod = Module.new
         args = args.unshift(nil) if args.empty? || args.first.is_a?(Hash)
@@ -62,7 +53,7 @@ module StrokeDB
       def document(store=nil)
         raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
         unless meta_doc = store.find(uuid)
-          meta_doc = Document.create!(store, :name => Meta.name, :uuid => uuid, :nsurl => STROKEDB_NSURL)
+          meta_doc = Document.create!(store, :name => Meta.name.demodulize, :uuid => uuid, :nsurl => StrokeDB.nsurl)
         end
         meta_doc
       end
@@ -71,7 +62,7 @@ module StrokeDB
       private
 
       def uuid
-        @uuid ||= ::Util.sha1_uuid("meta:#{STROKEDB_NSURL}##{Meta.name}")
+        @uuid ||= ::Util.sha1_uuid("meta:#{StrokeDB.nsurl}##{Meta.name.demodulize}")
       end
 
       def extract_meta_name(*args)
@@ -243,8 +234,8 @@ module StrokeDB
 
       values = @args.clone.select{|a| a.is_a?(Hash) }.first
       values[:meta] = Meta.document(store)
-      values[:name] ||= name
-      values[:nsurl] ||= Meta.default_nsurl
+      values[:name] ||= name.demodulize
+      values[:nsurl] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl 
       values[:uuid] ||= ::Util.sha1_uuid("meta:#{values[:nsurl]}##{values[:name]}") if values[:name]
       
       if meta_doc = find_meta_doc(values, store)

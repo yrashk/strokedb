@@ -2,18 +2,6 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe "Meta module", :shared => true do
 
-  it "should use Meta.default_nsurl if nsurl is not specified" do
-    Meta.default_nsurl = "http://some/"
-    SomeName.document.nsurl.should == "http://some/"
-  end
-
-  it "should not use Meta.default_nsurl if nsurl is specified" do
-    Meta.default_nsurl = "http://some/"
-    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    SomeName = Meta.new(:nsurl => "http://another/")
-    SomeName.document.nsurl.should == "http://another/"
-  end
-  
   it "should be able to instantiate new Document which is also SomeName" do
     obj = SomeName.new
     obj.should be_a_kind_of(Document)
@@ -174,6 +162,58 @@ describe "Meta module without name" do
   end
 end
 
+describe "Meta module within no module" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+  end
+  
+  it "should use Module.nsurl by default" do
+    Module.nsurl "test"
+    SomeName = Meta.new
+    SomeName.document.nsurl.should == Module.nsurl
+    Module.nsurl ''
+  end
+  
+  it "should not use Module.nsurl if nsurl is specified" do
+    Module.nsurl "test"
+    SomeName = Meta.new(:nsurl => 'passed')
+    SomeName.document.nsurl.should == 'passed'
+    Module.nsurl ''
+  end
+  
+end
+
+
+describe "Meta module within module" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    module A
+      nsurl "some url"
+    end
+    A.send!(:remove_const,'SomeName') if defined?(A::SomeName)
+  end
+  
+  it "should use Module.nsurl by default" do
+    module A
+      SomeName = Meta.new
+    end
+    A::SomeName.document.nsurl.should == A.nsurl
+  end
+  
+  it "should not use Module.nsurl if nsurl is specified" do
+    module A
+      SomeName = Meta.new(:nsurl => "nsurl")
+    end
+    A::SomeName.document.nsurl.should == "nsurl"
+  end
+  
+end
 describe "Meta module with on_initialization callback" do
   
   before(:each) do
@@ -228,7 +268,7 @@ describe "Meta module with on_load callback" do
     doc = SomeName.new
   end
 
-  it "should  receive this callback on document load" do
+  it "should receive this callback on document load" do
     doc = SomeName.create!
     Kernel.should_receive(:on_load_called).with(false)
     SomeName.find(doc.uuid)

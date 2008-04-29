@@ -6,3 +6,20 @@ describe "String#/" do
     "lib/core_ext"/"foo".should == "lib/core_ext/foo"
   end
 end
+
+describe "String#modulize" do
+
+  it "if there is no module, leave nothing" do
+    "A".modulize.should == ""
+    "::A".modulize.should == ""
+  end
+  
+  it "should leave single module" do
+    "A::B".modulize.should == "A"
+  end
+
+  it "should leave multiple modules" do
+    "A::B::C".modulize.should == "A::B"
+  end
+
+end

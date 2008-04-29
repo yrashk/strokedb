@@ -684,11 +684,15 @@ module StrokeDB
       case meta
       when VERSIONREF
         if m = store.find($1, $2)
-          meta_names << m[:name]
+          mod = Module.find_by_nsurl(m[:nsurl])
+          mod = nil if mod == Module
+          meta_names << (mod ? mod.name : "") + "::" + m[:name]
         end
       when DOCREF
         if m = store.find($1)
-          meta_names << m[:name]
+          mod = Module.find_by_nsurl(m[:nsurl])
+          mod = nil if mod == Module
+          meta_names << (mod ? mod.name : "") + "::" + m[:name]
         end
       when Array
         meta_names = meta.map { |m| collect_meta_modules(store, m) }.flatten
