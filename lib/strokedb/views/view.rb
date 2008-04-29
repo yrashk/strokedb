@@ -271,6 +271,9 @@ module StrokeDB
       unless v = find(options['uuid'])
         v = original_new(store, options, &block)
       end
+
+      store.register_view(v)
+      
       v
     end
     
