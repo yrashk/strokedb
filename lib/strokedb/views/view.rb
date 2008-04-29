@@ -1,4 +1,6 @@
 module StrokeDB
+  VIEW_CACHE = {}
+  
   View = Meta.new(:nsurl => STROKEDB_NSURL) do 
     
     DEFAULT_VIEW_OPTIONS = {
@@ -27,9 +29,13 @@ module StrokeDB
     on_initialization do |viewdoc|
       # pass viewdoc into initialization block:
       # my_view = View.new(){ |view| ... }
-      if initialization_block = viewdoc.instance_variable_get(:@initialization_block)
+      if initialization_block = viewdoc.instance_variable_get(:@initialization_block) || initialization_block = VIEW_CACHE[viewdoc.uuid]
         initialization_block.call(viewdoc)
       end
+    end
+    
+    after_save do |viewdoc|
+      VIEW_CACHE[viewdoc.uuid] = viewdoc.instance_variable_get(:@initialization_block)
     end
     
     DEFAULT_FIND_OPTIONS = {

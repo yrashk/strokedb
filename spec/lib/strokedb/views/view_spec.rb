@@ -90,3 +90,20 @@ describe "'Has many comments' view" do
   
 end
 
+describe View, "with block defined and saved" do
+  
+  before(:each) do
+    setup_default_store
+    @view = View.create!(:name => "SomeView") do |view|
+      def view.map(uuid, doc)
+        [[doc,doc]]
+      end
+    end
+  end
+  
+  it "should re-establish block when reloaded" do
+    @view = @view.reload
+    lambda { @view.map(1,2).should == [[1,2]]}.should_not raise_error(InvalidViewError)
+  end
+  
+end
