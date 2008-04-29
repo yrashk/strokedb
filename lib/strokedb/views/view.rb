@@ -253,16 +253,18 @@ module StrokeDB
       
       options = options.stringify_keys
       
-      # TODO: find the view through the Views' view.
-      name = options['name']
-      unless name
+      unless name = options['name']
         raise ArgumentError, "View name must be specified!"
       end
-      find_or_create(:name => name) do |view|
-        # FIXME: we must save a new version when options update a viewdoc contents
-        view.update_slots(options)
-        block.call(view) if block
+      
+      nsurl = options['nsurl'] ||= Meta.default_nsurl # FIXME: Meta seems to be a bad palce for default_nsurl now
+      
+      options['uuid'] = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
+      
+      unless v = find(options['uuid'])
+        v = create!(options, &block)
       end
+      v
     end
   end
 

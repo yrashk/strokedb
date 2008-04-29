@@ -94,7 +94,7 @@ describe View, "with block defined and saved" do
   
   before(:each) do
     setup_default_store
-    @view = View.create!(:name => "SomeView") do |view|
+    @view = View.define("SomeView") do |view|
       def view.map(uuid, doc)
         [[doc,doc]]
       end
