@@ -81,12 +81,15 @@ module StrokeDB
           raise "has_many extension should be either Module or Proc"
         end
         reference_slotname = reference_slotname || name.demodulize.tableize.singularize
-        if name.index('::') # we're in namespaced meta
-          _t = name.split('::')
-          _t.pop
-          _t << meta
-          meta = _t.join('::') 
-        end
+        
+        # TODO: remove the below commented out code, it seems that we do not need it anymore
+        # (but I am not sure, so that's why I've left it here)
+        # if name.index('::') # we're in namespaced meta
+        #   _t = name.split('::')
+        #   _t.pop
+        #   _t << meta
+        #   meta = _t.join('::') 
+        # end
         
         
         view = View.define!({ :reference_slotname => reference_slotname, :through => through, :expected_meta => meta, :extend_with => extend_with }.to_json,
