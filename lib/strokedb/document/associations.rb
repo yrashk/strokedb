@@ -7,15 +7,14 @@ module StrokeDB
         reference_slotname = self[:reference_slotname]
         through = self[:through]
         expected_meta = self[:expected_meta]
-        
-        begin
-          through.each {|t| doc = doc.send(t) }
-        rescue SlotNotFoundError
-          doc = nil
-        end
-        
-        if doc.meta.name == expected_meta &&
-           reference_slotname_value = doc[reference_slotname]
+
+        if doc.meta.name == expected_meta
+          begin
+            through.each {|t| doc = doc.send(t) }
+          rescue SlotNotFoundError
+            return nil unless doc
+          end
+          if reference_slotname_value = doc[reference_slotname]
            [ 
              [
                reference_slotname_value,
@@ -23,6 +22,7 @@ module StrokeDB
              ]
            ]
         end
+      end
       end
     end
 
