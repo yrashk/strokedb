@@ -33,6 +33,7 @@ module StrokeDB
       if initialization_block = viewdoc.instance_variable_get(:@initialization_block) || initialization_block = VIEW_CACHE[viewdoc.uuid]
         initialization_block.call(viewdoc)
       end
+      viewdoc.store.register_view(viewdoc, viewdoc['only'])
     end
     
     after_save do |viewdoc|
@@ -271,12 +272,9 @@ module StrokeDB
       unless v = find(options['uuid'])
         v = original_new(store, options, &block)
       end
-
-      store.register_view(v)
-      
       v
     end
-    
+        
     alias :define :new
     alias :define! :create!
     

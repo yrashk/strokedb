@@ -26,7 +26,6 @@ describe View, "without #map method defined" do
   end
   
   it "should raise exception when #map is used" do
-    pending "TODO: option :only for a viewdoc"
     Comment = Meta.new
     @post_comments = View.define!(:name => "post_comments_invalid", :only => ["comment"])
     c = Comment.new :text => "hello"
@@ -87,8 +86,58 @@ describe "'Has many comments' view" do
     @view.find(:key => @article2, :offset => 1, :limit => 2).should == [@comment22]
     @view.find(:key => @article3, :offset => 1, :limit => 2).should == [ ]
   end
-  
 end
+
+
+describe View, "with :only option" do
+  before(:each) do
+    setup_default_store
+    block = proc {|view|
+      view.updated = "false"
+      class << view
+        def map(uuid, doc)
+        #  puts "!!!!!!!!"
+        #  puts "#{name}: #{doc.inspect}"
+          self.updated.replace "true"
+          nil # don't index
+        end
+        def updated?
+          self.updated == "true"
+        end
+      end
+    }
+    module A; end
+    A.send!(:remove_const, 'Article')          if defined?(A::Article)
+    A.send!(:remove_const, 'SponsoredArticle') if defined?(A::SponsoredArticle)
+    A.send!(:remove_const, 'Comment')          if defined?(A::Comment)
+    
+    module A
+      Article          = Meta.new
+      SponsoredArticle = Meta.new
+      Comment          = Meta.new 
+    end
+    
+    @generic   = View.new("generic", &block)
+    @comments  = View.new("comments", :only => ["Comment"], &block)
+    @c_and_a   = View.new("comments_and_articles", :only => ["Comment", "Article"], &block)
+    @sponsored = View.new("sponsored", :only => ["SponsoredArticle"], &block) 
+  end
+  it "should update articles only" do
+    a = (A::Article + A::SponsoredArticle).create!(:title => "This is a sponsored article")    
+    @generic.should      be_updated
+    @comments.should_not be_updated
+    @c_and_a.should      be_updated
+    @sponsored.should    be_updated
+  end
+  it "should update comments only" do
+    c = A::Comment.create!(:text => "Hello")
+    @generic.should       be_updated
+    @comments.should      be_updated
+    @c_and_a.should       be_updated
+    @sponsored.should_not be_updated    
+  end
+end
+
 
 describe View, "with block defined and saved" do
   
