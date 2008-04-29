@@ -243,10 +243,14 @@ module StrokeDB
     # Define a view. 
     #
     # Examples
-    #   View.define("view_name", :option => "value") do |viewdoc| ... end
-    #   View.define(:name => "view_name", :option => "value") do |viewdoc| ... end
+    #   View.new("view_name", :option => "value") do |viewdoc| ... end
+    #   View.new(:name => "view_name", :option => "value") do |viewdoc| ... end
+    #   View.new(store, "view_name", :option => "value") do |viewdoc| ... end
+    #   View.new(store, :name => "view_name", :option => "value") do |viewdoc| ... end
     #
     def new(*args, &block)
+      store = args.first.is_a?(Store) ? args.shift : StrokeDB.default_store
+      
       if args.first.is_a? String
         options = args[1] || {}
         options['name'] = args.first
@@ -265,7 +269,7 @@ module StrokeDB
       options['uuid'] = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
       
       unless v = find(options['uuid'])
-        v = original_new(options, &block)
+        v = original_new(store, options, &block)
       end
       v
     end
