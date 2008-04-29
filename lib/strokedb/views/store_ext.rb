@@ -25,7 +25,7 @@ module StrokeDB
         view.update(doc)
       end
       doc.metas.each do |meta|
-        views = @registered_views[meta.name]
+        views = @registered_views[meta['name']]
         if views
           views.each do |view|
             view.update(doc)
