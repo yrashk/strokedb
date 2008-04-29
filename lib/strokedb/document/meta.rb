@@ -86,9 +86,10 @@ module StrokeDB
         new_meta.module_eval do
           extend Meta
         end
-        new_meta_name = new_meta.instance_variable_get(:@metas).map{|m| m.name}.join('__')
-        Object.send(:remove_const, new_meta_name) rescue nil
-        Object.const_set(new_meta_name, new_meta)
+        new_meta_name = new_meta.instance_variable_get(:@metas).map{|m| m.name.demodulize}.join('__')
+        mod = self.name.modulize.constantize rescue Object
+        mod.send(:remove_const, new_meta_name) rescue nil
+        mod.const_set(new_meta_name, new_meta)
         new_meta
       elsif is_a?(Document) && meta.is_a?(Document)
         (Document.new(store, self.to_raw.except('uuid','version','previous_version'), true) +
