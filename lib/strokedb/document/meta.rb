@@ -36,6 +36,7 @@ module StrokeDB
           extend Coercions
           extend Virtualizations
           extend Util
+          extend IndexSlots
         end
         mod.module_eval(&block) if block_given?
         mod.module_eval do
@@ -43,6 +44,7 @@ module StrokeDB
           initialize_validations
           initialize_coercions
           initialize_virtualizations
+          initialize_index_slots
         end
         if meta_name = extract_meta_name(*args)
           Object.const_set(meta_name, mod)

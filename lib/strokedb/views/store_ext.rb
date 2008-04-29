@@ -5,7 +5,8 @@ module StrokeDB
     #
     def register_view(v, metas = nil) #:nodoc:
       initialize_views_list
-      if !metas || metas.empty?
+      metas = [metas].flatten.compact
+      if metas.empty?
         @registered_views[:rest] << v
       else
         metas.each do |meta_name|
