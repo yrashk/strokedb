@@ -137,8 +137,8 @@ module StrokeDB
       self
       class <<self
         alias :insert :raise_volume_closed
-        alias :close! :raise_volume_crashed
-        alias :dump! :raise_volume_crashed
+        alias :close! :raise_volume_closed
+        alias :dump!  :raise_volume_closed
         def closed?; true; end
       end
     end
@@ -178,7 +178,7 @@ module StrokeDB
       class <<self
         alias :insert :raise_volume_crashed
         alias :close! :raise_volume_crashed
-        alias :dump! :raise_volume_crashed
+        alias :dump!  :raise_volume_crashed
       end
     end
     
