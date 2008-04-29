@@ -106,7 +106,9 @@ module StrokeDB
     def initialize_associations
       define_method(:_has_many_association) do |slotname, additional_query|
         slot_has_many = meta["has_many_#{slotname}"]
-        result = slot_has_many.find(:key => self) # TODO: wrap it in LazyArray
+        result = LazyArray.new.load_with do |lazy_array|
+          slot_has_many.find(:key => self)
+        end
         if extend_with = slot_has_many[:extend_with] 
           result.extend(extend_with.constantize) 
         end
