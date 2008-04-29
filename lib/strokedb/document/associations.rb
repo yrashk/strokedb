@@ -91,8 +91,7 @@ module StrokeDB
         #   meta = _t.join('::') 
         # end
         
-        
-        view = View.define!({ :reference_slotname => reference_slotname, :through => through, :expected_meta => meta, :extend_with => extend_with }.to_json,
+        view = View.define!("#{name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl}##{name.demodulize.tableize.singularize}_has_many_#{slotname}",
                             { :reference_slotname => reference_slotname, :through => through, :expected_meta => meta, :extend_with => extend_with }, &AssociationViewImplementation)
         
         @args.last.reverse_merge!({"has_many_#{slotname}" => view})
