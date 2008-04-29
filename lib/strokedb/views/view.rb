@@ -20,9 +20,11 @@ module StrokeDB
       "strategy"         => "heads", # heads|versions
     }
     
-    on_initialization do |viewdoc|
+    on_new_document do |viewdoc|
       viewdoc.reverse_update_slots(DEFAULT_VIEW_OPTIONS)
-      
+    end
+    
+    on_initialization do |viewdoc|
       # pass viewdoc into initialization block:
       # my_view = View.new(){ |view| ... }
       if initialization_block = viewdoc.instance_variable_get(:@initialization_block)
