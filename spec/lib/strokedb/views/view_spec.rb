@@ -8,7 +8,7 @@ describe View, "without a name" do
   
   it "could not be initialized" do
     lambda do 
-      @post_comments = View.define
+      @post_comments = View.define!
     end.should raise_error(ArgumentError)
   end
   
@@ -17,7 +17,7 @@ end
 describe View, "without #map method defined" do
   before(:each) do
     setup_default_store
-    @post_comments = View.define(:name => "post_comments")
+    @post_comments = View.define!(:name => "post_comments")
   end
   
   it "should raise exception when #map is used" do
@@ -29,7 +29,7 @@ describe "'Has many comments' view" do
   
   before(:all) do
     setup_default_store
-    @view = View.define("post_comments") do |view|
+    @view = View.define!("post_comments") do |view|
       def view.map(uuid, doc)
         doc['type'] =~ /comment/ ? [[[doc.parent, doc.created_at], doc]] : nil
       end
@@ -94,7 +94,7 @@ describe View, "with block defined and saved" do
   
   before(:each) do
     setup_default_store
-    @view = View.define("SomeView") do |view|
+    @view = View.define!("SomeView") do |view|
       def view.map(uuid, doc)
         [[doc,doc]]
       end

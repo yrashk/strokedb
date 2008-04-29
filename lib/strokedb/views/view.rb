@@ -236,14 +236,15 @@ module StrokeDB
     def [](name)
       # TODO: find viewdoc by name
     end
-    
+
+    alias :original_new :new
     # Define a view. 
     #
     # Examples
     #   View.define("view_name", :option => "value") do |viewdoc| ... end
     #   View.define(:name => "view_name", :option => "value") do |viewdoc| ... end
     #
-    def define(*args, &block)
+    def new(*args, &block)
       if args.first.is_a? String
         options = args[1] || {}
         options['name'] = args.first
@@ -262,11 +263,16 @@ module StrokeDB
       options['uuid'] = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
       
       unless v = find(options['uuid'])
-        v = create!(options, &block)
+        v = original_new(options, &block)
       end
       v
     end
+    
+    alias :define :new
+    alias :define! :create!
+    
   end
+  
 
   class InvalidViewError < StandardError ; end
   
