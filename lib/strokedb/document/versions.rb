@@ -39,7 +39,7 @@ module StrokeDB
       # Get first version of document
       #
       def first
-        document.new? ? document.clone.extend(VersionedDocument) : self[all_preceding_versions.last]
+        document.new? ? document.clone.extend(VersionedDocument) : self[NIL_UUID]
       end
 
 

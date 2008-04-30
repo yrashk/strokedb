@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe "Playlist.has_many :songs association" do
-  
+
   before(:each) do
     setup_default_store
     setup_index
@@ -12,7 +12,7 @@ describe "Playlist.has_many :songs association" do
     end
     Song = Meta.new
   end
-  
+
   it "should convert :songs to Song and Playlist to playlist to compute foreign reference slot name" do
     playlist = Playlist.create!
     song = Song.create!(:playlist => playlist)
@@ -24,13 +24,13 @@ describe "Playlist.has_many :songs association" do
     song = Song.create!
     playlist.songs.should be_empty
   end
-  
+
   it "should have association owner defined" do
     playlist = Playlist.create!
     song = Song.create!
     playlist.songs.association_owner.should == playlist
   end
-  
+
   it "should work well with multiple metas" do
     Object.send!(:remove_const,'RockPlaylist') if defined?(RockPlaylist)
     RockPlaylist = Meta.new do
@@ -44,7 +44,7 @@ describe "Playlist.has_many :songs association" do
     playlist.songs.should == [rock_song]
     playlist.rock_songs.should == [rock_song]
   end
-  
+
   it "should fetch head versions of associated documents if association owner is a head" do
     playlist = Playlist.create!
     playlist.should be_head
@@ -60,21 +60,22 @@ describe "Playlist.has_many :songs association" do
   end
 
   it "should fetch specific versions of associated documents if association owner is a not a head" do
-    pending
-    playlist = Playlist.create!
-    song = Song.create!(:playlist => playlist)
-    playlist.name = "My playlist"
-    playlist.save!
-    playlist = playlist.versions.previous
-    playlist.should_not be_head
-    song.name = "My song"
-    song.save!
-    song = song.versions.previous
-    playlist.songs.should == [song]
-    playlist.songs.each do |s| 
-      s.should_not be_head
-      s.should be_a_kind_of(VersionedDocument) 
-      s.should_not have_slot(:name) 
+    pending do
+      playlist = Playlist.create!
+      song = Song.create!(:playlist => playlist)
+      playlist.name = "My playlist"
+      playlist.save!
+      playlist = playlist.versions.previous
+      playlist.should_not be_head
+      song.name = "My song"
+      song.save!
+      song = song.versions.previous
+      playlist.songs.should == [song]
+      playlist.songs.each do |s| 
+        s.should_not be_head
+        s.should be_a_kind_of(VersionedDocument) 
+        s.should_not have_slot(:name) 
+      end
     end
   end
 
@@ -94,23 +95,24 @@ describe "Playlist.has_many :songs association" do
   end
 
   it "should fetch head versions of associated documents if association owner wasn't saved when associated doc were created and now it is not a head" do
-    pending
-    playlist = Playlist.new
-    song = Song.create!(:playlist => playlist)
-    song.name = "My song"
-    song.save!
-    playlist.save!
-    playlist.name = "My playlist"
-    playlist.save!
-    playlist = playlist.versions.previous
-    playlist.songs.should == [song]
-    playlist.songs.each do |s| 
-      s.should be_head 
-      s.should_not be_a_kind_of(VersionedDocument) 
-      s.should have_slot(:name) 
+    pending do
+      playlist = Playlist.new
+      song = Song.create!(:playlist => playlist)
+      song.name = "My song"
+      song.save!
+      playlist.save!
+      playlist.name = "My playlist"
+      playlist.save!
+      playlist = playlist.versions.previous
+      playlist.songs.should == [song]
+      playlist.songs.each do |s| 
+        s.should be_head 
+        s.should_not be_a_kind_of(VersionedDocument) 
+        s.should have_slot(:name) 
+      end
     end
   end
-  
+
   it "should be able to filter associated documents" do
     playlist = Playlist.create!
     rock_song = Song.create!(:playlist => playlist, :genre => 'Rock')
@@ -118,7 +120,7 @@ describe "Playlist.has_many :songs association" do
     playlist.songs.find(:genre => 'Rock').should == [rock_song]
     playlist.songs.find(:genre => 'Pop').should == [pop_song]
   end
-  
+
   it "should be able to instantiate new document with #new" do
     playlist = Playlist.create!
     song = playlist.songs.new(:name => 'My song')
@@ -151,11 +153,11 @@ describe "Playlist.has_many :songs association" do
     song.should_not be_new
     playlist.songs.should == [song]
   end
-  
+
 end
 
 describe "Namespace::Playlist.has_many :songs association" do
-  
+
   before(:each) do
     setup_default_store
     setup_index
@@ -168,18 +170,18 @@ describe "Namespace::Playlist.has_many :songs association" do
     end
     Namespace::Song = Meta.new
   end
-  
+
   it "should convert :songs to Song and Playlist to playlist to compute foreign reference slot name" do
     playlist = Namespace::Playlist.create!
     song = Namespace::Song.create!(:playlist => playlist)
     playlist.songs.should == [song]
   end
-  
-   
+
+
 end
 
 describe "Playlist.has_many :rock_songs, :through => :songs, :conditions => { :genre => 'Rock' } association" do
-  
+
   before(:each) do
     setup_default_store
     setup_index
@@ -190,18 +192,18 @@ describe "Playlist.has_many :rock_songs, :through => :songs, :conditions => { :g
     end
     Song = Meta.new
   end
-  
+
   it "should convert :songs to Song and Playlist to playlist to compute foreign reference slot name" do
     playlist = Playlist.create!
     rock_song = Song.create!(:playlist => playlist, :genre => 'Rock')
     pop_song = Song.create!(:playlist => playlist, :genre => 'Pop')
     playlist.rock_songs.should == [rock_song]
   end
-  
+
 end
 
 describe "Playlist.has_many :songs, :foreign_reference => :belongs_to_playlist association" do
-  
+
   before(:each) do
     setup_default_store
     setup_index
@@ -212,17 +214,17 @@ describe "Playlist.has_many :songs, :foreign_reference => :belongs_to_playlist a
     end
     Song = Meta.new
   end
-  
+
   it "should convert :songs to Song and use foreign_reference to compute foreign reference slot name" do
     playlist = Playlist.create!
     song = Song.create!(:belongs_to_playlist => playlist)
     playlist.songs.should == [song]
   end
-  
+
 end
 
 describe "Playlist.has_many :all_songs, :through => :songs association" do
-  
+
   before(:each) do
     setup_default_store
     setup_index
@@ -234,17 +236,17 @@ describe "Playlist.has_many :all_songs, :through => :songs association" do
     end
     Song = Meta.new
   end
-  
+
   it "should use through's :songs to find out Song and convert Playlist to playlist" do
     playlist = Playlist.create!
     song = Song.create!(:playlist => playlist)
     playlist.all_songs.should == [song]
   end
-  
+
 end
 
 describe "Playlist.has_many :authors, :through => [:songs,:authors] association" do
-  
+
   before(:each) do
     setup_default_store
     setup_index
@@ -256,7 +258,7 @@ describe "Playlist.has_many :authors, :through => [:songs,:authors] association"
     end
     Song = Meta.new
   end
-  
+
   it "should use through's :songs to find out Song and convert Playlist to playlist" do
     playlist = Playlist.create!
     song = Song.create!(:playlist => playlist, :author => "John Doe")
@@ -268,7 +270,7 @@ describe "Playlist.has_many :authors, :through => [:songs,:authors] association"
     song = Song.create!(:playlist => playlist)
     playlist.authors.should be_empty
   end
-  
+
 end
 
 describe "Playlist.has_many :songs, :extend => MyExt association" do
@@ -285,12 +287,12 @@ describe "Playlist.has_many :songs, :extend => MyExt association" do
     end
     Song = Meta.new
   end
-  
+
   it "should extend result with MyExt" do
     playlist = Playlist.create!
     playlist.songs.should be_a_kind_of(MyExt)
   end
-  
+
 end
 
 describe "Playlist.has_many :songs do .. end association" do
@@ -307,11 +309,11 @@ describe "Playlist.has_many :songs do .. end association" do
     end
     Song = Meta.new
   end
-  
+
   it "should extend result with given block" do
     playlist = Playlist.create!
     playlist.songs.should be_a_kind_of(Playlist::HasManySongs)
     playlist.songs.should respond_to(:some_method)
   end
-  
+
 end

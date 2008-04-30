@@ -31,6 +31,9 @@ class String
   end
 
   def constantize
+    if /^meta:/ =~ self
+      return StrokeDB::META_CACHE[Meta.make_uuid_from_fullname(self)]
+    end
     unless /\A(?:::)?([A-Z]\w*(?:::[A-Z]\w*)*)\z/ =~ self
       raise NameError, "#{self.inspect} is not a valid constant name!"
     end

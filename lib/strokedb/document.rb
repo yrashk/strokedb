@@ -285,7 +285,7 @@ module StrokeDB
 
         slots.keys.sort.each do |k|
           if %w(version previous_version).member?(k) && v = self[k]
-            s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
+            s << "#{k}: #{v[0,4]}..., "
           else
             s << "#{k}: #{self[k].inspect}, "
           end
@@ -344,7 +344,6 @@ module StrokeDB
       collect_meta_modules(store, raw_slots['meta']).each do |meta_module|
         unless doc.is_a? meta_module
           doc.extend(meta_module)
-
           meta_module.setup_callbacks(doc) rescue nil
         end
       end
@@ -641,7 +640,7 @@ module StrokeDB
         initialize_slots slots
 
         self[:uuid] = Util.random_uuid unless self[:uuid]
-        generate_new_version!          unless self[:version]
+        self[:version] ||= NIL_UUID
       end
     end
 
@@ -686,13 +685,21 @@ module StrokeDB
         if m = store.find($1, $2)
           mod = Module.find_by_nsurl(m[:nsurl])
           mod = nil if mod == Module
-          meta_names << (mod ? mod.name : "") + "::" + m[:name]
+          if (mod.nil? && Object.constants.include?(m[:name])) || (mod && mod.constants.include?(m[:name]))
+            meta_names << (mod ? mod.name : "") + "::" + m[:name]
+          else
+            meta_names << Meta.resolve_uuid_name(m[:nsurl],m[:name])
+          end
         end
       when DOCREF
         if m = store.find($1)
           mod = Module.find_by_nsurl(m[:nsurl])
           mod = nil if mod == Module
-          meta_names << (mod ? mod.name : "") + "::" + m[:name]
+          if (mod.nil? && Object.constants.include?(m[:name])) || (mod && mod.constants.include?(m[:name]))
+            meta_names << (mod ? mod.name : "") + "::" + m[:name]
+          else
+            meta_names << Meta.resolve_uuid_name(m[:nsurl],m[:name])
+          end
         end
       when Array
         meta_names = meta.map { |m| collect_meta_modules(store, m) }.flatten
