@@ -134,10 +134,8 @@ describe "Config builder" do
   it "should use specified store if told so" do
     StrokeDB.send!(:remove_const,'SomeFunnyStore') if defined?(SomeFunnyStore)
     StrokeDB::SomeFunnyStore = Class.new(Store)
-    pending("not that important now") do
-      config = StrokeDB::Config.build :store => :some_funny, :base_path => @base_path
-      config.stores[:default].should be_a_kind_of(SomeFunnyStore)
-    end
+    config = StrokeDB::Config.build :store => :some_funny, :base_path => @base_path
+    config.stores[:default].should be_a_kind_of(SomeFunnyStore)
   end
 
   it "should add storages as he is told to" do
