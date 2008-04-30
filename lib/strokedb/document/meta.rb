@@ -119,8 +119,15 @@ module StrokeDB
       end
     end
 
-    CALLBACKS = %w(on_initialization on_load before_save after_save when_slot_not_found on_new_document on_validation 
-      after_validation on_set_slot)
+    CALLBACKS = %w(on_initialization 
+                   on_load 
+                   before_save 
+                   after_save 
+                   when_slot_not_found 
+                   on_new_document 
+                   on_validation 
+                   after_validation 
+                   on_set_slot)
 
     CALLBACKS.each do |callback_name|
       module_eval %{
@@ -296,7 +303,7 @@ module StrokeDB
       @callbacks ||= []
       @callbacks << Callback.new(self, name, uid, &block)
     end
-
+public
     def setup_callbacks(doc)
       return unless @callbacks
       @callbacks.each do |callback|
