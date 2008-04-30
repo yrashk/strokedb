@@ -507,9 +507,52 @@ describe "Head Document with references" do
     @document.some_indirect_link.first.should_not be_a_kind_of(VersionedDocument)
   end
 
-
 end
 
+describe "Head Document with meta" do
+
+  before(:each) do
+    setup_default_store
+    Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+    SomeMeta = Meta.new
+    @document = SomeMeta.create!
+    @document.should be_head
+  end
+
+  it "should link to head meta" do
+    Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+    SomeMeta = Meta.new(:some_slot => 1)
+    pending("#42 bug to be actually fixed [NEEDS ATTENTION!!!]") do
+      @document.meta.should be_head
+      @document.meta.should_not be_a_kind_of(VersionedDocument)
+      @document.meta.some_slot.should == 1
+    end
+  end
+  
+end
+
+describe "Non-head Document with meta" do
+
+  before(:each) do
+    setup_default_store
+    Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+    SomeMeta = Meta.new
+    @document = SomeMeta.create!
+    @document.update_slots! :updated => true
+    @document = @document.versions.previous
+    @document.should_not be_head
+  end
+
+  it "should link to exact meta version" do
+    Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+    SomeMeta = Meta.new(:some_slot => 1)
+    
+    @document.meta.should_not be_head
+    @document.meta.should be_a_kind_of(VersionedDocument)
+    @document.meta.should_not have_slot(:some_slot)
+  end
+  
+end
 describe "Saved VersionedDocument" do
 
   before(:each) do
