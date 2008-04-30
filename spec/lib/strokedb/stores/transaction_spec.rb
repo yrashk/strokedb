@@ -65,6 +65,15 @@ describe 'Transaction', :shared => true do
     Document.find(@doc.uuid).should be_nil
   end
   
+  it "should pop transaction on code that raises some exception" do
+    lambda do
+      @txn.execute do |txn|
+        raise Exception
+      end
+    end.should raise_error(Exception)
+    Thread.current[:strokedb_transactions].should be_empty
+  end
+  
     
 end
 

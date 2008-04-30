@@ -38,10 +38,15 @@ module StrokeDB
       Thread.current[:strokedb_transactions].push self
       
       @timestamp = LTS.new(store.timestamp.counter,uuid)
+
+      begin
+        result = yield(self)
+      rescue 
+        throw $!
+      ensure
+        Thread.current[:strokedb_transactions].pop
+      end
       
-      result = yield(self)
-      
-      Thread.current[:strokedb_transactions].pop
       
       result
     end
