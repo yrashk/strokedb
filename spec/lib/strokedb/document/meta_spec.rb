@@ -32,7 +32,7 @@ describe "Meta module", :shared => true do
     new_doc = nil
     2.times do |i|
       Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-      @meta = Meta.new(:name => "SomeName", :description => "Something")  
+      SomeName = Meta.new(:description => "Something")  
       new_doc = SomeName.document
     end
     new_doc.uuid.should == doc.uuid
@@ -162,6 +162,33 @@ describe "Meta module without name" do
   end
 end
 
+
+describe "Meta module without constant definition" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    @some_name = Meta.new(:name => 'SomeName') do
+      def some
+      end
+    end
+  end
+  
+  it "should not set respective constant" do
+    defined?(SomeName).should be_nil
+  end
+  
+  it "should have its name constantizeable anyway" do
+    Meta.resolve_uuid_name("","SomeName").constantize.should == @some_name
+  end
+
+  it "should be loaded into document on its load" do
+    doc = @some_name.create!.reload
+    doc.should respond_to(:some)
+  end
+
+end
+
 describe "Meta module within no module" do
   
   before(:each) do
@@ -254,7 +281,6 @@ describe "Meta module with on_load callback" do
   before(:each) do
     setup_default_store
     setup_index
-    
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
       on_load do |obj|
@@ -271,7 +297,7 @@ describe "Meta module with on_load callback" do
   it "should receive this callback on document load" do
     doc = SomeName.create!
     Kernel.should_receive(:on_load_called).with(false)
-    SomeName.find(doc.uuid)
+    d = SomeName.find(doc.uuid)
   end
   
   

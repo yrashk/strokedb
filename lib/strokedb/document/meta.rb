@@ -1,4 +1,7 @@
 module StrokeDB
+  
+  META_CACHE = {}
+  
   # Meta is basically a type. Imagine the following document:
   #
   # some_apple:
@@ -20,8 +23,21 @@ module StrokeDB
   #
   # Document class will be extended by modules Fruit and Product.
   module Meta
-
+    
     class << self
+
+      def resolve_uuid_name(nsurl,name)
+        "meta:#{nsurl}##{name}"
+      end
+
+      def make_uuid_from_fullname(full_name)
+        StrokeDB::Util.sha1_uuid(full_name)
+      end
+      
+      def make_uuid(nsurl, name)
+        StrokeDB::Util.sha1_uuid("meta:#{nsurl}##{name}")
+      end
+      
       def new(*args, &block)
         mod = Module.new
         args = args.unshift(nil) if args.empty? || args.first.is_a?(Hash)
@@ -44,8 +60,13 @@ module StrokeDB
           initialize_coercions
           initialize_virtualizations
         end
-        if meta_name = extract_meta_name(*args)
-          Object.const_set(meta_name, mod)
+        if name = args.last.stringify_keys['name']
+          META_CACHE[make_uuid(args.last.stringify_keys['nsurl'],args.last.stringify_keys['name'])] = mod 
+          mod.instance_eval %{
+            def name 
+              '#{name}'
+            end
+          }
         end
         mod
       end
@@ -63,14 +84,6 @@ module StrokeDB
 
       def uuid
         @uuid ||= ::Util.sha1_uuid("meta:#{StrokeDB.nsurl}##{Meta.name.demodulize}")
-      end
-
-      def extract_meta_name(*args)
-        if args.first.is_a?(Hash)
-          args.first[:name]
-        else
-          args[1][:name] unless args.empty?
-        end
       end
 
     end
@@ -227,8 +240,6 @@ module StrokeDB
       metadocs.size > 1 ? metadocs.inject { |a, b| a + b }.make_immutable! : metadocs.first
     end
     
-    private
-
     def make_document(store=nil)
       raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
       @meta_initialization_procs.each {|proc| proc.call }.clear
@@ -237,7 +248,7 @@ module StrokeDB
       values[:meta] = Meta.document(store)
       values[:name] ||= name.demodulize
       values[:nsurl] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl 
-      values[:uuid] ||= ::Util.sha1_uuid("meta:#{values[:nsurl]}##{values[:name]}") if values[:name]
+      values[:uuid] ||= Meta.make_uuid(values[:nsurl],values[:name]) if values[:name]
       
       if meta_doc = find_meta_doc(values, store)
         values[:version] = meta_doc.version
