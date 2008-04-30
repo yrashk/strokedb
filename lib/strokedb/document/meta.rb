@@ -31,11 +31,11 @@ module StrokeDB
       end
 
       def make_uuid_from_fullname(full_name)
-        StrokeDB::Util.sha1_uuid(full_name)
+        ::StrokeDB::Util.sha1_uuid(full_name)
       end
       
       def make_uuid(nsurl, name)
-        StrokeDB::Util.sha1_uuid("meta:#{nsurl}##{name}")
+        ::StrokeDB::Util.sha1_uuid("meta:#{nsurl}##{name}")
       end
       
       def new(*args, &block)
@@ -83,7 +83,7 @@ module StrokeDB
       private
 
       def uuid
-        @uuid ||= ::Util.sha1_uuid("meta:#{StrokeDB.nsurl}##{Meta.name.demodulize}")
+        @uuid ||= ::StrokeDB::Util.sha1_uuid("meta:#{StrokeDB.nsurl}##{Meta.name.demodulize}")
       end
 
     end
