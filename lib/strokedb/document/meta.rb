@@ -254,8 +254,12 @@ module StrokeDB
       values = @args.clone.select{|a| a.is_a?(Hash) }.first
       values[:meta] = Meta.document(store)
       values[:name] ||= name.demodulize
+
+      raise ArgumentError, "meta can't be nameless" if values[:name].blank?
+
       values[:nsurl] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl 
-      values[:uuid] ||= Meta.make_uuid(values[:nsurl],values[:name]) if values[:name]
+      values[:uuid] ||= Meta.make_uuid(values[:nsurl],values[:name])
+      
       
       if meta_doc = find_meta_doc(values, store)
         values[:version] = meta_doc.version

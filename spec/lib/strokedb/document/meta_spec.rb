@@ -161,8 +161,10 @@ describe "Meta module without name" do
     @some_meta = Meta.new(:nsurl => "http://some/")
   end
   
-  it "should not have document's UUID v5 based on nsurl and name" do
-    @some_meta.document.uuid.should_not == Util.sha1_uuid('http://some/#SomeName')
+  it "should not be able to create a document" do
+    lambda do
+      @some_meta.document
+    end.should raise_error(ArgumentError)
   end
 end
 
