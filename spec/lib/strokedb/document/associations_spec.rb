@@ -162,8 +162,57 @@ describe "Playlist.has_many :songs association" do
     song.should_not be_new
     playlist.songs.should == [song]
   end
+  
+ 
 
 end
+
+
+
+describe "Playlist.has_many :songs association with sort slot defined" do
+
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const,'Playlist') if defined?(Playlist)
+    Object.send!(:remove_const,'Song') if defined?(Song)
+    Playlist = Meta.new do
+      has_many :songs, :sort_by => :created_at
+    end
+    Song = Meta.new
+  end
+
+  it "having songs with created_at should be able sort by it" do
+    playlist = Playlist.create!
+    song2 = Song.create!(:playlist => playlist, :created_at => Time.now)
+    song1 = Song.create!(:playlist => playlist, :created_at => Time.now - 100)
+    playlist.songs.should == [song1, song2]
+  end
+  
+end
+
+describe "Playlist.has_many :songs association with sort slot defined and reverse order" do
+
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const,'Playlist') if defined?(Playlist)
+    Object.send!(:remove_const,'Song') if defined?(Song)
+    Playlist = Meta.new do
+      has_many :songs, :sort_by => :created_at, :reverse => true
+    end
+    Song = Meta.new
+  end
+
+  it "having songs with created_at should be able sort by it" do
+    playlist = Playlist.create!
+    song2 = Song.create!(:playlist => playlist, :created_at => Time.now)
+    song1 = Song.create!(:playlist => playlist, :created_at => Time.now - 100)
+    playlist.songs.should == [song2, song1]
+  end
+  
+end
+
 
 describe "Namespace::Playlist.has_many :songs association" do
 

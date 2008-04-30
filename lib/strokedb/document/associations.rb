@@ -9,20 +9,23 @@ module StrokeDB
         expected_meta = self[:expected_meta]
         expected_nsurl = self[:expected_nsurl]
         conditions = self[:conditions]
-        
+        sort_by = self[:sort_by]
+
         if doc.meta.name == expected_meta && doc.meta.nsurl == expected_nsurl
           if (reference_slotname_value = doc[reference_slotname]) &&
              (conditions.nil? ||
               (conditions &&
                (conditions.keys.select {|k| doc[k] == conditions[k]}.size == conditions.size)))
             begin
+              key = [reference_slotname_value, doc]
+              key = [key[0],doc.send(sort_by),key[1]] if sort_by
               through.each {|t| doc = doc.send(t) }
             rescue SlotNotFoundError
               return nil unless doc
             else
               [ 
                 [
-                  [reference_slotname_value, doc],
+                  key,
                   doc
                 ]
               ]
@@ -70,7 +73,9 @@ module StrokeDB
       nsurl = opts['nsurl'] || (name.modulize.empty? ? Module.nsurl : meta.modulize.constantize.nsurl)
       extend_with = opts['extend'] || block
       conditions = opts['conditions']
-
+      sort_by = opts['sort_by']
+      reverse = opts['reverse'] || false
+      
       @meta_initialization_procs << Proc.new do
         case extend_with
         when Proc
@@ -96,7 +101,8 @@ module StrokeDB
         # end
         
         view = View.define!("#{name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl}##{name.demodulize.tableize.singularize}_has_many_#{slotname}",
-                            { :reference_slotname => reference_slotname, :through => through, :expected_meta => meta, :expected_nsurl => nsurl, :extend_with => extend_with, :conditions => conditions }, &AssociationViewImplementation)
+                            { :reference_slotname => reference_slotname, :through => through, :expected_meta => meta, :expected_nsurl => nsurl, :extend_with => extend_with, 
+                              :conditions => conditions, :sort_by => sort_by, :reverse => reverse }, &AssociationViewImplementation)
         
         @args.last.reverse_merge!({"has_many_#{slotname}" => view})
         define_method(slotname) do 
@@ -113,7 +119,7 @@ module StrokeDB
       define_method(:_has_many_association) do |slotname|
         slot_has_many = meta["has_many_#{slotname}"]
         result = LazyArray.new.load_with do |lazy_array|
-          slot_has_many.find(:key => self)
+          slot_has_many.find(:key => self, :reverse => slot_has_many[:reverse])
         end
         if extend_with = slot_has_many[:extend_with] 
           result.extend(extend_with.constantize) 
