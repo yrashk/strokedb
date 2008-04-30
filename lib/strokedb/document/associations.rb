@@ -9,18 +9,19 @@ module StrokeDB
         expected_meta = self[:expected_meta]
         expected_nsurl = self[:expected_nsurl]
         if doc.meta.name == expected_meta && doc.meta.nsurl == expected_nsurl
-          begin
-            through.each {|t| doc = doc.send(t) }
-          rescue SlotNotFoundError
-            return nil unless doc
-          end
           if reference_slotname_value = doc[reference_slotname]
-           [ 
-             [
-               reference_slotname_value,
-               doc
-             ]
-           ]
+            begin
+              through.each {|t| doc = doc.send(t) }
+            rescue SlotNotFoundError
+              return nil unless doc
+            else
+              [ 
+                [
+                  reference_slotname_value,
+                  doc
+                ]
+              ]
+            end
         end
       end
       end
