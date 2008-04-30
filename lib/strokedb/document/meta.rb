@@ -88,6 +88,13 @@ module StrokeDB
 
     end
 
+    def implements(another_meta)
+      values = @args.select{|a| a.is_a?(Hash) }.first
+      values.merge!(another_meta.document.to_raw.delete_if {|k,v| ['name','uuid','version','previous_version','meta'].member?(k) })
+      include(another_meta)
+      self
+    end
+    
     def +(meta)
       if is_a?(Module) && meta.is_a?(Module)
         new_meta = Module.new
