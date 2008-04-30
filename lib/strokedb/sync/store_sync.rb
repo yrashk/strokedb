@@ -31,7 +31,9 @@ module StrokeDB
         @timestamp = LTS.new(_timestamp.counter, timestamp.uuid)
       else
       end
-      docs.each {|doc| save!(doc) unless include?(doc.uuid, doc.version)}
+      @txn = Transaction.new(:store => self)
+      @txn.execute do |txn|
+      docs.each {|doc| save!(doc) }
       docs.group_by {|doc| doc.uuid}.each_pair do |uuid, versions|
         incoming_chain = find(uuid, versions.last.version).versions.all_versions.map {|v| [v, find(uuid,v).to_json ]}
         if existing_chain[uuid].nil? or existing_chain[uuid].empty? # It is a new document
@@ -43,6 +45,7 @@ module StrokeDB
             sync = sync_chains(incoming_chain.reverse, existing_chain[uuid].reverse)
           rescue NonMatchingChains
             # raise NonMatchingDocumentCondition.new(uuid) # that will definitely leave garbage in the store (FIXME?)
+            txn.rollback!
             non_matching_doc = find(uuid)
             report.non_matching_documents << non_matching_doc
             next
@@ -51,16 +54,21 @@ module StrokeDB
           case resolution
           when :up_to_date
             # nothing to do
+            txn.commit!
           when :merge
             report.conflicts << SynchronizationConflict.create!(self, :document => find(uuid), :rev1 => sync[1].first, :rev2 => sync[2].first)
+            txn.commit!
           when :fast_forward
             fast_forwarded_doc = find(uuid, sync[1].last.first)
             save_as_head!(fast_forwarded_doc)
             report.fast_forwarded_documents << fast_forwarded_doc
+            txn.commit!
           else
+            txn.rollback!
             raise "Invalid sync resolution #{resolution}"
           end
         end
+      end
       end
       report.conflicts.each do |conflict|
         if resolution_strategy = conflict.document.meta[:resolution_strategy]
