@@ -285,7 +285,7 @@ module StrokeDB
 
         slots.keys.sort.each do |k|
           if %w(version previous_version).member?(k) && v = self[k]
-            s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
+            s << "#{k}: #{v[0,4]}..., "
           else
             s << "#{k}: #{self[k].inspect}, "
           end
@@ -641,7 +641,7 @@ module StrokeDB
         initialize_slots slots
 
         self[:uuid] = Util.random_uuid unless self[:uuid]
-        generate_new_version!          unless self[:version]
+        self[:version] ||= NIL_UUID
       end
     end
 

@@ -258,6 +258,10 @@ describe "New Document" do
     @document.version.should_not be_nil
   end
 
+  it "should have NIL UUID version" do
+    @document.version.should == NIL_UUID
+  end
+
   it "should have no previous version" do
     @document.previous_version.should be_nil
     @document.versions.previous.should be_nil
