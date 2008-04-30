@@ -96,8 +96,7 @@ end
       Slot1Diff.should_receive(:diff).with("abcdef","abcdef1").any_number_of_times.and_return("1")
       Slot1Diff.should_receive(:patch).with("abcdef","1").any_number_of_times.and_return("abcdef1")
       
-      # FIXME: meta without a name!
-      @meta = Document.create! :diff_strategy_slot1 => strategy # TODO: fix this spec, it willn't care if I say strategy_slot1
+      @meta = Document.create! :name => 'SomeSpecialMeta', :diff_strategy_slot1 => strategy # TODO: fix this spec, it willn't care if I say strategy_slot1
 
       @from = Document.create! :slot1 => "abcdef", :meta => @meta
       @to = Document.create! :slot1 => "abcdef1", :meta => @meta
