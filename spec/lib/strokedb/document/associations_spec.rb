@@ -271,7 +271,6 @@ describe "Playlist.has_many :authors, :through => [:songs,:authors] association"
   it "should not fail if Song document has no :author slot" do
     playlist = Playlist.create!
     song = Song.create!(:playlist => playlist)
-    puts playlist.authors.inspect
     playlist.authors.should be_empty
   end
   
