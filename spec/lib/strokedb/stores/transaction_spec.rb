@@ -47,6 +47,15 @@ describe 'Transaction', :shared => true do
     end
     Document.find(@doc.uuid).should be_nil
   end
+  
+  it "should see its own head version of the document" do
+    @doc = Document.create!
+    @txn.execute do |txn|
+      @doc.update_slots! :new_version => 'yes'
+      @doc.store.head_version(@doc.uuid).should == @doc.version
+    end
+    @doc.store.head_version(@doc.uuid).should == @doc.versions.previous.version
+  end
 
   it "should be able to commit transaction" do
     @txn.execute do |txn|

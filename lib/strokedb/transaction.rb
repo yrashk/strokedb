@@ -26,6 +26,10 @@ module StrokeDB
       storage.find(uuid,version,opts.merge(:store => self))
     end
     
+    def head_version(uuid)
+      storage.head_version(uuid,{ :store => self })
+    end
+    
     def save!(doc)
       @timestamp = @timestamp.next
       storage.save!(doc,@timestamp)
