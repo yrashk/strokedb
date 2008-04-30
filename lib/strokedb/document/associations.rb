@@ -7,8 +7,8 @@ module StrokeDB
         reference_slotname = self[:reference_slotname]
         through = self[:through]
         expected_meta = self[:expected_meta]
-
-        if doc.meta.name == expected_meta
+        expected_nsurl = self[:expected_nsurl]
+        if doc.meta.name == expected_meta && doc.meta.nsurl == expected_nsurl
           begin
             through.each {|t| doc = doc.send(t) }
           rescue SlotNotFoundError
@@ -64,7 +64,7 @@ module StrokeDB
       through = opts['through'] || []
       through = [through] unless through.is_a?(Array)
       meta = (through.shift || slotname).to_s.singularize.camelize
-
+      nsurl = opts['nsurl'] || (name.modulize.empty? ? Module.nsurl : meta.modulize.constantize.nsurl)
       extend_with = opts['extend'] || block
 
       @meta_initialization_procs << Proc.new do
@@ -92,7 +92,7 @@ module StrokeDB
         # end
         
         view = View.define!("#{name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl}##{name.demodulize.tableize.singularize}_has_many_#{slotname}",
-                            { :reference_slotname => reference_slotname, :through => through, :expected_meta => meta, :extend_with => extend_with }, &AssociationViewImplementation)
+                            { :reference_slotname => reference_slotname, :through => through, :expected_meta => meta, :expected_nsurl => nsurl, :extend_with => extend_with }, &AssociationViewImplementation)
         
         @args.last.reverse_merge!({"has_many_#{slotname}" => view})
         define_method(slotname) do 

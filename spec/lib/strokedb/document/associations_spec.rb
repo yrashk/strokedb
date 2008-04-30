@@ -163,10 +163,11 @@ describe "Namespace::Playlist.has_many :songs association" do
     setup_index
     Object.send!(:remove_const,'Namespace') if defined?(Namespace)
     Namespace = Module.new
+    Namespace.nsurl 'namespace'
     Namespace.send!(:remove_const,'Playlist') if defined?(Namespace::Playlist)
     Namespace.send!(:remove_const,'Song') if defined?(Namespace::Song)
     Namespace::Playlist = Meta.new do
-      has_many :songs
+      has_many :songs, :nsurl => 'namespace'
     end
     Namespace::Song = Meta.new
   end
