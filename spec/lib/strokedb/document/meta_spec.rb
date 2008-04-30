@@ -69,7 +69,9 @@ describe "Meta module", :shared => true do
   it "should return first document if no args are passed to #first" do
     a = SomeName.create!(:slot1 => 1)
     b = SomeName.create!(:slot1 => 2)
-    SomeName.first.should == SomeName.find.first
+    a_and_b = SomeName.find
+    a_and_b.to_set.should == [a,b].to_set
+    a_and_b.member?(SomeName.first).should be_true
   end
 
   it "correctly handles finding via UUID on call to #first" do
@@ -86,7 +88,9 @@ describe "Meta module", :shared => true do
   it "should return last document if no args are passed to #last" do
     a = SomeName.create!(:slot1 => 1)
     b = SomeName.create!(:slot1 => 2)
-    SomeName.last.should == SomeName.find.last
+    a_and_b = SomeName.find
+    a_and_b.to_set.should == [a,b].to_set
+    a_and_b.member?(SomeName.last).should be_true
   end
 
   it "correctly handles finding via UUID on call to #last" do
