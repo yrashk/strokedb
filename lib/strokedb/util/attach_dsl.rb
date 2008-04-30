@@ -24,10 +24,21 @@ module StrokeDB
 end
 
 if $0 == __FILE__
+  
+  module MetaDSL
+    def on_initialize(&block)
+      store_dsl_options("on_initialize", block)
+    end
+  end
+  
   module HasMany
+    attach_dsl MetaDSL
     def has_many(*args)
-      store_dsl_options("has_many", args)
-      puts "has_many defined."
+      store_dsl_options("has_many", { :module => HasMany, :args => args } )
+      puts "has_many defined in #{self.inspect}"
+    end
+    on_initialize do |doc|
+      blah_blah
     end
   end
   
@@ -38,6 +49,7 @@ if $0 == __FILE__
   end
   
   p App1.dsl
+  p App1.dsl["has_many"][:module].dsl
   
 end
 
