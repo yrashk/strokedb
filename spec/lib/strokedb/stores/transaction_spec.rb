@@ -73,6 +73,14 @@ describe 'Transaction', :shared => true do
     end.should raise_error(Exception)
     Thread.current[:strokedb_transactions].should be_empty
   end
+
+  it "should pop transaction on code that raises no exception" do
+    lambda do
+      @txn.execute do |txn|
+      end
+    end.should_not raise_error(Exception)
+    Thread.current[:strokedb_transactions].should be_empty
+  end
   
     
 end
