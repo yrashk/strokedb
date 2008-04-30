@@ -97,8 +97,8 @@ describe "Store that syncs documents in" do
     another_sync_rep.fast_forwarded_documents.should be_empty
     another_sync_rep.conflicts.should_not be_empty
     conflict = another_sync_rep.conflicts.first
-    conflict.rev1[1].should == doc_at_store.version
-    conflict.rev2[1].should == doc.version
+    conflict.rev1[0].should == doc_at_store.version
+    conflict.rev2[0].should == doc.version
   end
 
   it "should try to resolve SynchronizationConflict if it was created" do

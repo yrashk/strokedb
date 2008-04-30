@@ -52,7 +52,7 @@ module StrokeDB
           when :up_to_date
             # nothing to do
           when :merge
-            report.conflicts << SynchronizationConflict.create!(self, :document => find(uuid), :rev1 => sync[1], :rev2 => sync[2])
+            report.conflicts << SynchronizationConflict.create!(self, :document => find(uuid), :rev1 => sync[1].first, :rev2 => sync[2].first)
           when :fast_forward
             fast_forwarded_doc = find(uuid, sync[1].last.first)
             save_as_head!(fast_forwarded_doc)
