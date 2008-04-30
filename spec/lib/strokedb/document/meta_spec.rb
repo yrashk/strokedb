@@ -335,3 +335,64 @@ describe "ImplementsSomeName with implements SomeName meta" do
   
   
 end
+
+describe "ImplementsSomeName with multiple implements" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new(:some_slot => 'some_value') do
+      def some_name_meta
+      end
+    end
+    Object.send!(:remove_const,'SomeName1') if defined?(SomeName1)
+    SomeName1 = Meta.new(:some_slot1 => 'some_value1') do
+      def some_name_meta1
+      end
+    end
+    Object.send!(:remove_const,'ImplementsSomeName') if defined?(ImplementsSomeName)
+    ImplementsSomeName = Meta.new(:some_another_slot => 'some_another_value') do
+      def implements_some_name_meta
+      end
+      implements SomeName
+      implements SomeName1
+    end
+  end
+
+  it "should create a document which is both SomeName, SomeName1,  and ImplementsSomeName" do
+    doc = ImplementsSomeName.create!.reload
+    doc.should be_a_kind_of(SomeName)
+    doc.should be_a_kind_of(SomeName1)
+    doc.should be_a_kind_of(ImplementsSomeName)
+  end
+
+  it "should have SomeName's and SomeName1's slots merged in" do
+    ImplementsSomeName.document.slotnames.should include('some_another_slot')
+    ImplementsSomeName.document.some_another_slot.should == "some_another_value"
+    ImplementsSomeName.document.slotnames.should include('some_slot')
+    ImplementsSomeName.document.some_slot.should == "some_value"
+    ImplementsSomeName.document.slotnames.should include('some_slot1')
+    ImplementsSomeName.document.some_slot1.should == "some_value1"
+
+  end
+  
+  it "should not share the same uuid with either SomeName or SomeName1" do
+    ImplementsSomeName.document.uuid.should_not == SomeName.document.uuid
+    ImplementsSomeName.document.uuid.should_not == SomeName1.document.uuid
+  end
+  
+  it "should create document that responds both to #some_name_meta, #some_name_meta1, #implements_some_name_meta" do
+    doc = ImplementsSomeName.create!.reload
+    doc.should respond_to(:some_name_meta)
+    doc.should respond_to(:some_name_meta1)
+    doc.should respond_to(:implements_some_name_meta)
+  end
+  
+  it "should preserve its name" do
+    ImplementsSomeName.name.should == "ImplementsSomeName"
+  end
+  
+  
+end
