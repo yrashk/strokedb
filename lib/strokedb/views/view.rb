@@ -235,9 +235,12 @@ module StrokeDB
   end
   
   class << View
-    def [](name, nsurl = name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl) # FIXME: it is not nice
+    def [](*args) # FIXME: it is not nice
+      store = args.first.is_a?(Store) ? args.shift : StrokeDB.default_store
+      name = args[0]
+      nsurl = args[1] || (name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl)
       uuid = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
-      StrokeDB.default_store.find(uuid)
+      store.find(uuid)
     end
 
     alias :original_new :new

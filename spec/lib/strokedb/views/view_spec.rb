@@ -161,6 +161,7 @@ describe View, "with block defined and saved" do
   
   it "should be findable with #[] syntax" do
     View["SomeView"].should == @view
+    View[StrokeDB.default_store, "SomeView"].should == @view
   end
   
 end
@@ -178,7 +179,9 @@ describe View, "with nsurl and block defined and saved" do
   end
   it "should be findable with #[] syntax" do
     View["SomeView", "http://strokedb.com/"].should == @view
+    View[StrokeDB.default_store, "SomeView", "http://strokedb.com/"].should == @view
   end
   
 end
+
 
