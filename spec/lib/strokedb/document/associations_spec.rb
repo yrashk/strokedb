@@ -117,7 +117,7 @@ describe "Playlist.has_many :songs association" do
     playlist = Playlist.create!
     rock_song = Song.create!(:playlist => playlist, :genre => 'Rock')
     pop_song = Song.create!(:playlist => playlist, :genre => 'Pop')
-    pending("filtering is not ready") do
+    pending("result filtering is not ready") do
       playlist.songs.find(:genre => 'Rock').should == [rock_song]
       playlist.songs.find(:genre => 'Pop').should == [pop_song]
     end
@@ -200,9 +200,7 @@ describe "Playlist.has_many :rock_songs, :through => :songs, :conditions => { :g
     playlist = Playlist.create!
     rock_song = Song.create!(:playlist => playlist, :genre => 'Rock')
     pop_song = Song.create!(:playlist => playlist, :genre => 'Pop')
-    pending("filtering is not done yet") do
-      playlist.rock_songs.should == [rock_song]
-    end
+    playlist.rock_songs.should == [rock_song]
   end
 
 end
