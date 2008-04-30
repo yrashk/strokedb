@@ -286,3 +286,52 @@ describe "Combined meta module" do
   end
     
 end
+
+describe "ImplementsSomeName with implements SomeName meta" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new(:some_slot => 'some_value') do
+      def some_name_meta
+      end
+    end
+    Object.send!(:remove_const,'ImplementsSomeName') if defined?(ImplementsSomeName)
+    ImplementsSomeName = Meta.new(:some_another_slot => 'some_another_value') do
+      def implements_some_name_meta
+      end
+      implements SomeName
+    end
+  end
+
+  it "should create a document which is both SomeName and ImplementsSomeName" do
+    doc = ImplementsSomeName.create!.reload
+    doc.should be_a_kind_of(SomeName)
+    doc.should be_a_kind_of(ImplementsSomeName)
+  end
+
+  it "should have SomeName's slots merged in" do
+    ImplementsSomeName.document.slotnames.should include('some_another_slot')
+    ImplementsSomeName.document.some_another_slot.should == "some_another_value"
+    ImplementsSomeName.document.slotnames.should include('some_slot')
+    ImplementsSomeName.document.some_slot.should == "some_value"
+  end
+  
+  it "should not share the same uuid with SomeName" do
+    ImplementsSomeName.document.uuid.should_not == SomeName.document.uuid
+  end
+  
+  it "should create document that responds both to #some_name_meta and #implements_some_name_meta" do
+    doc = ImplementsSomeName.create!.reload
+    doc.should respond_to(:some_name_meta)
+    doc.should respond_to(:implements_some_name_meta)
+  end
+  
+  it "should preserve its name" do
+    ImplementsSomeName.name.should == "ImplementsSomeName"
+  end
+  
+  
+end
