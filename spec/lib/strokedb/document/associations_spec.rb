@@ -376,4 +376,3 @@ describe "Playlist.has_many :songs do .. end association" do
   end
 
 end
-
