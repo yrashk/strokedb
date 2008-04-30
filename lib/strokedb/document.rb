@@ -151,7 +151,7 @@ module StrokeDB
         if _module
           @document.extend(_module)
 
-          _module.send!(:setup_callbacks, @document) rescue nil
+          _module.setup_callbacks(@document) rescue nil
 
           if opts['call_initialization_callbacks'] 
             @document.send!(:execute_callbacks_for, _module, :on_initialization)
@@ -345,7 +345,7 @@ module StrokeDB
         unless doc.is_a? meta_module
           doc.extend(meta_module)
 
-          meta_module.send!(:setup_callbacks, doc) rescue nil
+          meta_module.setup_callbacks(doc) rescue nil
         end
       end
 
