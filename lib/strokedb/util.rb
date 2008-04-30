@@ -40,5 +40,6 @@ require 'util/lazy_mapping_hash'
 require 'util/serialization'
 require 'util/uuid'
 require 'util/xml'
+require 'util/attach_dsl'
 require 'time'
 require 'util/java_util' if RUBY_PLATFORM =~ /java/

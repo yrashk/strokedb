@@ -4,10 +4,13 @@ module StrokeDB
     # Attach module as DSL. Module may use store_dsl_options 
     # method to store DSL.
     #
-    def attach_dsl(mod)
-      extend(mod)
+    def attach_dsl(*mods)
       @dsl_options ||= {}
+      mods.each do |mod|
+        extend(mod)
+      end
     end
+    alias :attach_dsls :attach_dsl
     
     # Store some data associated with a DSL name.
     #
@@ -45,7 +48,6 @@ if $0 == __FILE__
   module App1
     attach_dsl HasMany
     has_many :blah, :blah => :blah
-    
   end
   
   p App1.dsl
