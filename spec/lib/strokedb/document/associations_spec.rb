@@ -19,6 +19,13 @@ describe "Playlist.has_many :songs association" do
     playlist.songs.should == [song]
   end
 
+  it "should convert :songs to Song and Playlist to playlist to compute foreign reference slot name for multple songs" do
+    playlist = Playlist.create!
+    song = Song.create!(:playlist => playlist)
+    song1 = Song.create!(:playlist => playlist)
+    playlist.songs.to_set.should == [song,song1].to_set
+  end
+
   it "should not fail if Song document has no :playlist slot" do
     playlist = Playlist.create!
     song = Song.create!
@@ -320,3 +327,4 @@ describe "Playlist.has_many :songs do .. end association" do
   end
 
 end
+

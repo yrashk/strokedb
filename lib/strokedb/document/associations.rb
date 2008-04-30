@@ -22,7 +22,7 @@ module StrokeDB
             else
               [ 
                 [
-                  reference_slotname_value,
+                  [reference_slotname_value, doc],
                   doc
                 ]
               ]
