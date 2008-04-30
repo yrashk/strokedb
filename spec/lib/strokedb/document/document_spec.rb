@@ -622,29 +622,18 @@ describe "Document with a single meta" do
     Object.send!(:remove_const, "SomeMeta") if defined? ::SomeMeta
     ::SomeMeta = Meta.new(@store)
     @meta = ::SomeMeta
-    # FIXME: This modifies metameta.
     @document = Document.create!(@store, :meta => @meta)
-    # This doesn't modify:
-    # @document = @meta.create!(@store)
-    
-  #  p @meta.document.meta
-  #  p @document.meta.meta
-  #  p @meta.create!.meta.meta
   end
 
   it "but specified within array should return single meta which should be mutable" do
-    pending "BUG"
-    @document = Document.create!(@store, :meta => [@meta])
-  #  p @meta.document.meta
-  #  p @document.meta.meta
-    @document.meta.should == @meta.document
-    @document.meta.should be_mutable
+      @document = Document.create!(@store, :meta => [@meta])
+      @document.meta.should == @meta.document
+      @document.meta.should be_mutable
   end
 
   it "should return single meta which should be mutable" do
-    pending "BUG"
-    @document.meta.should == @meta.document
-    @document.meta.should be_mutable
+      @document.meta.should == @meta.document
+      @document.meta.should be_mutable
   end
 
 end
