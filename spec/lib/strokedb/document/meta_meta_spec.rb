@@ -13,23 +13,6 @@ describe "Meta meta" do
 
 end
 
-describe "Meta meta instantiation" do
-
-  before(:each) do
-    # @store = mock("store")
-    # StrokeDB.stub!(:default_store).and_return(@store)
-    setup_default_store
-    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    @meta = Meta.new(:name => "SomeName")
-  end
-
-  it "should create new meta module and bind it to name passed" do
-    @meta.should be_a_kind_of(Meta)
-    SomeName.should == @meta
-  end
-
-end
-
 describe "Meta meta instantiation with block specified" do
   
   before(:each) do

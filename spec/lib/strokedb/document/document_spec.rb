@@ -258,6 +258,10 @@ describe "New Document" do
     @document.version.should_not be_nil
   end
 
+  it "should have NIL UUID version" do
+    @document.version.should == NIL_UUID
+  end
+
   it "should have no previous version" do
     @document.previous_version.should be_nil
     @document.versions.previous.should be_nil
@@ -609,25 +613,27 @@ end
 
 
 
-describe "Document with single meta" do
+describe "Document with a single meta" do
 
   before(:each) do
     @store = setup_default_store
     setup_default_store
     setup_index
-    @meta = Document.create!(@store)
+    Object.send!(:remove_const, "SomeMeta") if defined? ::SomeMeta
+    ::SomeMeta = Meta.new(@store)
+    @meta = ::SomeMeta
     @document = Document.create!(@store, :meta => @meta)
   end
 
   it "but specified within array should return single meta which should be mutable" do
-    @document = Document.create!(@store, :meta => [@meta])
-    @document.meta.should == @meta
-    @document.meta.should be_mutable
+      @document = Document.create!(@store, :meta => [@meta])
+      @document.meta.should == @meta.document
+      @document.meta.should be_mutable
   end
 
   it "should return single meta which should be mutable" do
-    @document.meta.should == @meta
-    @document.meta.should be_mutable
+      @document.meta.should == @meta.document
+      @document.meta.should be_mutable
   end
 
 end
