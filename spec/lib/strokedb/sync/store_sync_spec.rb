@@ -55,7 +55,7 @@ describe "Store that syncs documents in" do
     doc = Document.create!(@another_store, :hello => 'world')
     doc.test = 'passed'
     doc.save!
-    adoc = Document.create!(:uuid => doc.uuid)
+    adoc = Document.create!(:uuid => doc.uuid, :world => 'hello')
     sync_rep = @store.sync!(doc.versions.all.reverse)
     sync_rep.conflicts.should be_empty
     sync_rep.non_matching_documents.should == [adoc]
