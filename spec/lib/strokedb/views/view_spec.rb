@@ -69,10 +69,22 @@ describe "'Has many comments' view" do
     @view.find(:key => @article3).should == [ ]
   end
 
+  it "should find all the article's comments (simple key API)" do
+    @view.find(@article1).should == [@comment11, @comment12, @comment13]
+    @view.find(@article2).should == [@comment21, @comment22]
+    @view.find(@article3).should == [ ]
+  end
+
   it "should find all the article's comments in a reverse order" do
     @view.find(:key => @article1, :reverse => true).should == [@comment13, @comment12, @comment11]
     @view.find(:key => @article2, :reverse => true).should == [@comment22, @comment21]
     @view.find(:key => @article3, :reverse => true).should == [ ]
+  end
+
+  it "should find all the article's comments in a reverse order (simple key API)" do
+    @view.find(@article1, :reverse => true).should == [@comment13, @comment12, @comment11]
+    @view.find(@article2, :reverse => true).should == [@comment22, @comment21]
+    @view.find(@article3, :reverse => true).should == [ ]
   end
   
   it "should find all the article's comments with limit" do
