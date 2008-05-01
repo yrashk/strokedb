@@ -516,17 +516,17 @@ describe "Head Document with meta" do
     Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
     SomeMeta = Meta.new
     @document = SomeMeta.create!
+    @document = @document.reload
     @document.should be_head
   end
 
   it "should link to head meta" do
     Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
     SomeMeta = Meta.new(:some_slot => 1)
-    pending("#42 bug to be actually fixed [NEEDS ATTENTION!!!]") do
-      @document.meta.should be_head
-      @document.meta.should_not be_a_kind_of(VersionedDocument)
-      @document.meta.some_slot.should == 1
-    end
+    SomeMeta.document # ensure new metadoc version is saved
+    @document.meta.should be_head
+    @document.meta.should_not be_a_kind_of(VersionedDocument)
+    @document.meta.some_slot.should == 1
   end
   
 end
