@@ -92,7 +92,17 @@ module StrokeDB
     #   # (assuming the key defined as [comment.document, comment.created_at])
     #   has_many_comments.find(:key => doc, :limit => 10, :reverse => true)  
     #
-    def find(options = {})
+    def find(key = nil, options = {})
+
+      if !key || key.is_a?(Hash)
+        options = key || {}
+      else
+        startk, endk = traverse_key(key)
+        options = (options || {}).stringify_keys
+        options['start_key'] ||= !startk.blank? && startk || nil
+        options['end_key']   ||= !endk.blank?   && endk   || nil
+      end
+      
       options = DEFAULT_FIND_OPTIONS.merge(options.stringify_keys)
       
       start_key  = options['start_key']
@@ -104,6 +114,26 @@ module StrokeDB
       with_keys  = options['with_keys']
       
       ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
+    end
+    
+    # Traverses a user-friendly key in a #find method.
+    # Example:
+    #   find(["prefix", 10..42, "sfx", "a".."Z" ])
+    #   # => start_key == ["prefix", 10, "sfx", "a"]
+    #   # => end_key   == ["prefix", 42, "sfx", "Z"]
+    #
+    def traverse_key(key, sk = [], ek = []) 
+      case key
+      when Range
+        [sk << key.begin, ek << key.end] 
+      when Array
+        key.inject([sk, ek]) do |s, e, i| 
+          a, b = traverse_key(i, s, e)
+          [s << a, e << b]
+        end
+      else
+        [sk << key, ek << key]
+      end
     end
     
     # Ugly find accepts fixed set of arguments and works a bit faster, 
@@ -253,20 +283,14 @@ module StrokeDB
     #   View.new(store, :name => "view_name", :option => "value") do |viewdoc| ... end
     #
     def new(*args, &block)
-      store = args.first.is_a?(Store) ? args.shift : StrokeDB.default_store
       
-      if args.first.is_a? String
-        options = args[1] || {}
-        options['name'] = args.first
-      else
-        options = args[0] || {}
-      end
+      store, name, options = extract(Store, String, Hash, args)
       
-      options = options.stringify_keys
+      store ||= StrokeDB.default_store
+      options = options && options.stringify_keys || {}
+      name ||= options['name']
       
-      unless name = options['name']
-        raise ArgumentError, "View name must be specified!"
-      end
+      raise ArgumentError, "View name must be specified!" unless name
       
       nsurl = options['nsurl'] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl # FIXME: it is not nice (and the same shit is in meta.rb)
       
