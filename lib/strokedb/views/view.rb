@@ -16,7 +16,7 @@ module StrokeDB
       # or to <tt>false</tt> if the size is not fixed.
       # Note: optimized storage is used when both keys and values  are the fixed length. 
       # I.e. both "value_size" and "key_size" are set.
-      "value_size" => Util::RAW_UUID_SIZE,
+      "value_size" => ::StrokeDB::Util::RAW_UUID_SIZE,
       
       # strategy determines whether to index HEADs or particular versions
       # When :heads is used, previous versions are removed from the index.
@@ -239,7 +239,7 @@ module StrokeDB
       store = args.first.is_a?(Store) ? args.shift : StrokeDB.default_store
       name = args[0]
       nsurl = args[1] || (name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl)
-      uuid = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
+      uuid = ::StrokeDB::Util.sha1_uuid("view:#{nsurl}##{name}") 
       store.find(uuid)
     end
 
@@ -270,7 +270,7 @@ module StrokeDB
       
       nsurl = options['nsurl'] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl # FIXME: it is not nice (and the same shit is in meta.rb)
       
-      options['uuid'] = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
+      options['uuid'] = ::StrokeDB::Util.sha1_uuid("view:#{nsurl}##{name}") 
       
       unless v = find(options['uuid'])
         v = original_new(store, options, &block)
