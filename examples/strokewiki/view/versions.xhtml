@@ -13,7 +13,7 @@
 <h2>Versions of #{@page.name}</h2>
 
 <ul>
-<?r @page.versions.all.each do |page| ?>
+<?r @versions.each do |page| ?>
 <li>#{@page.updated_at}: <a href="/show/#{page.name}/#{page.versions.current.version}">#{page.versions.current.version}</a></li>
 <?r end ?>
 </ul>
