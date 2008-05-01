@@ -31,7 +31,7 @@ module Kernel
         
     args.each do |a|
       unless while t = template_and_args.shift
-        t === a and result << a and break 1 or result << nil
+        t === a and result.push a and break 1 or result.push nil
         end
         raise ArgumentError, "Unexpected argument #{a.inspect} is passed!"
       end
