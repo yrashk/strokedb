@@ -23,7 +23,7 @@ class Object
         if (mod == rb_mKernel) 
           rb_raise(rb_eArgError, "unextending Kernel is prohibited");
       	
-        p = (TYPE(self) == T_CLASS) ? self : rb_singleton_class(self);
+        p = rb_singleton_class(self);
         
         while (p) {
             if (p == mod || RCLASS(p)->m_tbl == RCLASS(mod)->m_tbl) {
