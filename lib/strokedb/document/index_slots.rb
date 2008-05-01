@@ -17,7 +17,7 @@ module StrokeDB
         doc.index_slots_view = View.define!(view_name, opts) do |view|
           def view.map(uuid, doc)
             meta = self['doc_meta']
-            slots.each do |sl|
+            slots.map do |sl|
               # construct a key out of the list of slots
               k = sl.inject([]) do |a, sn|
                 # push [slot_name, slot_value]
