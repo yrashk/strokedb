@@ -60,44 +60,6 @@ describe "Meta module", :shared => true do
     SomeName.all(:slot1 => 3).should == SomeName.find(:slot1 => 3)
   end
 
-  it "should return first found document matching given criteria on call to #first" do
-    a = SomeName.create!(:slot1 => 1)
-    b = SomeName.create!(:slot1 => 2)
-    SomeName.first(:slot1 => 1).should == a
-  end
-  
-  it "should return first document if no args are passed to #first" do
-    a = SomeName.create!(:slot1 => 1)
-    b = SomeName.create!(:slot1 => 2)
-    a_and_b = SomeName.find
-    a_and_b.to_set.should == [a,b].to_set
-    a_and_b.member?(SomeName.first).should be_true
-  end
-
-  it "correctly handles finding via UUID on call to #first" do
-    a = SomeName.create!(:slot1 => 5)
-    SomeName.first(a.uuid).should == a
-  end
-  
-  it "should return last found document matching given criteria on call to #last" do
-    a = SomeName.create!(:slot1 => 1)
-    b = SomeName.create!(:slot1 => 1)
-    SomeName.last(:slot1 => 1).should == SomeName.find(:slot1 => 1).last
-  end
-  
-  it "should return last document if no args are passed to #last" do
-    a = SomeName.create!(:slot1 => 1)
-    b = SomeName.create!(:slot1 => 2)
-    a_and_b = SomeName.find
-    a_and_b.to_set.should == [a,b].to_set
-    a_and_b.member?(SomeName.last).should be_true
-  end
-
-  it "correctly handles finding via UUID on call to #last" do
-    a = SomeName.create!(:slot1 => 5)
-    SomeName.last(a.uuid).should == a
-  end
-
   it "should raise ArgumentError unless args size is 1 or 2" do
     a = SomeName.create!(:slot1 => 1, :slot2 => 2)
     lambda { SomeName.find("foo","bar","foobar") }.should raise_error(ArgumentError)

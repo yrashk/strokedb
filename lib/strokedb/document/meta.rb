@@ -210,22 +210,6 @@ module StrokeDB
     alias :all :find
 
     #
-    # Finds the first document matching the given criteria.
-    #
-    def first(args = {})
-      result = find(args)
-      result.respond_to?(:first) ? result.first : result
-    end
-
-    #
-    # Finds the last document matching the given criteria.
-    #
-    def last(args = {})
-      result = find(args)
-      result.respond_to?(:last) ? result.last : result
-    end
-
-    #
     # Similar to +find+, but creates a document with an appropriate 
     # slot values if document was not found.
     #
