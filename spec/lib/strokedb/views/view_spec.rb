@@ -185,3 +185,24 @@ describe View, "with nsurl and block defined and saved" do
 end
 
 
+describe "View#traverse_key " do
+  
+  before(:each) do
+    setup_default_store
+    @v = View.new("a") do |view|
+      def view.map(*args); end
+    end
+  end
+  
+  it "should traverse misc keys" do
+    @v.traverse_key("a").should      == [["a"], ["a"]]
+    @v.traverse_key("z".."a").should == [["z"], ["a"]]
+    @v.traverse_key([:pfx, "z".."a"]).should == [[:pfx, "z"], [:pfx, "a"]]
+    @v.traverse_key([:pfx, "z".."a", :sfx]).should == [[:pfx, "z", :sfx], [:pfx, "a", :sfx]]
+    @v.traverse_key([:pfx, "z".."a", 1..3]).should == [[:pfx, "z", 1], [:pfx, "a", 3]]
+  end
+  
+end
+
+
+

@@ -127,9 +127,8 @@ module StrokeDB
       when Range
         [sk << key.begin, ek << key.end] 
       when Array
-        key.inject([sk, ek]) do |s, e, i| 
-          a, b = traverse_key(i, s, e)
-          [s << a, e << b]
+        key.inject([sk, ek]) do |se, i| 
+          traverse_key(i, *se)
         end
       else
         [sk << key, ek << key]
