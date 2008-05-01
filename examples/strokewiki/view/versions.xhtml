@@ -14,7 +14,7 @@
 
 <ul>
 <?r @versions.each do |page| ?>
-<li>#{@page.updated_at}: <a href="/show/#{page.name}/#{page.versions.current.version}">#{page.versions.current.version}</a></li>
+<li>#{page.updated_at}: <a href="/show/#{page.name}/#{page.version}">#{page.version}</a></li>
 <?r end ?>
 </ul>
 <hr/>
