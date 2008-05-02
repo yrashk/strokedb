@@ -216,9 +216,9 @@ describe "View#traverse_key " do
   
   it "should traverse half-opened ranges correctly" do
     @v.traverse_key(1..Infinity).should == [[1], []]
-    @v.traverse_key("z"..InfinityString).should == [["z"], []]
+    @v.traverse_key("z"..InfiniteString).should == [["z"], []]
     t = Time.now
-    @v.traverse_key([:pfx, t..InfinityTime]).should == [[:pfx, t], [:pfx]]
+    @v.traverse_key([:pfx, t..InfiniteTime]).should == [[:pfx, t], [:pfx]]
   end
   
 end
