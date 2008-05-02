@@ -122,16 +122,21 @@ module StrokeDB
     #   # => start_key == ["prefix", 10, "sfx", "a"]
     #   # => end_key   == ["prefix", 42, "sfx", "Z"]
     #
-    def traverse_key(key, sk = [], ek = []) 
+    def traverse_key(key, sk = [], ek = [], s_inf = nil, e_inf = nil) 
       case key
       when Range
-        [sk << key.begin, ek << key.end] 
+        a = key.begin
+        b = key.end
+        [ 
+          s_inf || a.infinite? ? sk : (sk << a),
+          e_inf || b.infinite? ? ek : (ek << b),
+        ] 
       when Array
         key.inject([sk, ek]) do |se, i| 
-          traverse_key(i, *se)
+          traverse_key(i, se[0], se[1], s_inf, e_inf)
         end
       else
-        [sk << key, ek << key]
+        [s_inf ? sk : (sk << key), e_inf ? ek : (ek << key)]
       end
     end
     
