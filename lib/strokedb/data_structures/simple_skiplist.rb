@@ -47,7 +47,10 @@ module StrokeDB
     # then collect all the values.
     # 
     # 1) Define a direction of search 
-    # 
+    # 2) Find the first node in the range start_key..end_key.
+    # 3) Skip a given number of nodes (:offset).
+    # 4) Collect nodes while :end_key prefix matches and :limit
+    #    is not exceeded.
     # 
     def search(start_key, end_key, limit, offset, reverse, with_keys)
       offset ||= 0
