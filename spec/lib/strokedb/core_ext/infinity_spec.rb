@@ -18,23 +18,23 @@ describe "Object#infinity?" do
   it "should return true for infinite 'values'" do
     Infinity.should be_infinite
     (-Infinity).should be_infinite
-    (InfinityString).should be_infinite
-    (InfinityTime).should be_infinite
+    (InfiniteString).should be_infinite
+    (InfiniteTime).should be_infinite
   end 
 end
 
-describe InfinityString do
+describe InfiniteString do
   it "should be used in Range" do
-    (InfinityString.."a").should be_a_kind_of(Range)
-    ("a"..InfinityString).should be_a_kind_of(Range)
-    (InfinityString..InfinityString).should be_a_kind_of(Range)
+    (InfiniteString.."a").should be_a_kind_of(Range)
+    ("a"..InfiniteString).should be_a_kind_of(Range)
+    (InfiniteString..InfiniteString).should be_a_kind_of(Range)
   end
 end
 
-describe InfinityTime do
+describe InfiniteTime do
   it "should be used in Range" do
-    (InfinityTime..Time.now).should be_a_kind_of(Range)
-    (Time.now..InfinityTime).should be_a_kind_of(Range)
-    (InfinityTime..InfinityTime).should be_a_kind_of(Range)
+    (InfiniteTime..Time.now).should be_a_kind_of(Range)
+    (Time.now..InfiniteTime).should be_a_kind_of(Range)
+    (InfiniteTime..InfiniteTime).should be_a_kind_of(Range)
   end
 end

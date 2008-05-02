@@ -14,19 +14,20 @@ class Numeric
   end
 end
 
-InfinityString = Class.new(String) do
+InfiniteString = Class.new(String) do
   def infinite?
     true
   end
 end.new.freeze
 
-InfinityTime = Class.new(Time) do
+InfiniteTime = Class.new(Time) do
   def infinite?
     true
   end
 end.new.freeze
 
+# Syntactic sugar: sweet aliases for daily use. 
 # For use like (SmallestString.."a") in View#find()
 #
-LargestString = SmallestString = InfinityString
-LargestTime   = SmallestTime   = InfinityTime
+LargestString = SmallestString = StringInfinity = InfiniteString
+LargestTime   = SmallestTime   = TimeInfinity = InfiniteTime
