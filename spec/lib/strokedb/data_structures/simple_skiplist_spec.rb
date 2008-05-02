@@ -205,7 +205,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
       @list = SimpleSkiplist.new
       @keys = %w[ a aa ab b ba bb pfx1 pfx2 pfx3 x xx xy xyz ]
       @values = @keys.map{|v| v + " value"}
-      @key_values = @keys.map{|v| [v, v + " value"]}
+      @key_values = @keys.map{|v| [v, v]}
       @key_values.each do |k, v|
         @list.insert(k, v)
       end
@@ -243,10 +243,12 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     end
     
     it "should find items in a range" do
-      search_should_yield(@key_values[1..5], :start_key => "aa", :end_key => "bb")
-      search_should_yield(@key_values[0..2], :start_key => "a", :end_key => "a")
-      search_should_yield(@key_values[3..5], :start_key => "b", :end_key => "b")
+      search_should_yield(@key_values[1..5], :start_key => "aa",  :end_key => "bb")
+      search_should_yield(@key_values[0..2], :start_key => "a",   :end_key => "a")
+      search_should_yield(@key_values[3..5], :start_key => "b",   :end_key => "b")
       search_should_yield(@key_values[6..8], :start_key => "pfx", :end_key => "pfx")
+      search_should_yield(@key_values[0..5], :start_key => "a",   :end_key => "b")
+      search_should_yield(@key_values[1..5], :start_key => "aa",  :end_key => "b")
     end
     
     it "should not find items in an invalid range" do
@@ -263,14 +265,18 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     
     it "should find a range in a reversed order" do
       r = search_with_options(@list, :start_key => "ab", :end_key => "aa", :reverse => true)
-      r.should == %w[ab\ value aa\ value]
+      r.should == %w[ab aa]
+      r = search_with_options(@list, :start_key => "b", :end_key => "aa", :reverse => true)
+      r.should == %w[aa ab b ba bb].reverse
+      r = search_with_options(@list, :start_key => "ba", :end_key => "a", :reverse => true)
+      r.should == %w[a aa ab b ba].reverse
     end
 
     it "should find a value in a reversed order" do
       r = search_with_options(@list, :start_key => "a", :end_key => "a", :reverse => true)
-      r.should == %w[ab\ value aa\ value a\ value ]
+      r.should == %w[ab aa a]
       r = search_with_options(@list, :start_key => "xyz", :end_key => "xyz", :reverse => true)
-      r.should == %w[xyz\ value]
+      r.should == %w[xyz]
     end
     
       
