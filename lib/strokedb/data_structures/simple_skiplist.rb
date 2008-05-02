@@ -42,7 +42,12 @@ module StrokeDB
       node_next(@head, 0) == @tail
     end
     
-    # Complicated search algorithm
+    # Smart prefix search algorithm.
+    # Algorithm is two-step: find the first matching key,
+    # then collect all the values.
+    # 
+    # 1) Define a direction of search 
+    # 
     # 
     def search(start_key, end_key, limit, offset, reverse, with_keys)
       offset ||= 0
@@ -56,7 +61,7 @@ module StrokeDB
       collect_values(start_node, end_key, limit, reverse, with_keys)
     end
     
-    # TODO: add C routins for this to optimize performance
+    # TODO: add C routines for this to optimize performance
     #
     def find_by_prefix(start_key, reverse)
       dir = dir_for_reverse(reverse)

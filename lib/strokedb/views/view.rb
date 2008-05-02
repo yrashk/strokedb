@@ -85,12 +85,21 @@ module StrokeDB
     # Examples:
     #   view.find                             # returns all the items in a view
     #   view.find(:limit => 1)                # returns the first document in a view
-    #   view.find(:offset => 10, :limit => 1) # returns 11-th document in a view
-    #   view.find(:key => doc)                # returns all items with a doc.uuid prefix 
+    #   view.find(:offset => 10, :limit => 1) # returns 11-th document in a view (Note: [doc] instead of doc)
+    #   view.find(doc)                        # returns all items with a doc.uuid prefix 
     #   
     #   # returns the latest 10 comments for a given document
     #   # (assuming the key defined as [comment.document, comment.created_at])
-    #   has_many_comments.find(:key => doc, :limit => 10, :reverse => true)  
+    #   has_many_comments.find(doc, :limit => 10, :reverse => true)  
+    #
+    #   comments.find([doc, 2.days.ago..Time.now]) # returns doc's comments within a time interval
+    #   # example above is equivalent to:
+    #   a) find(:key => [doc, 2.days.ago..Time.now])
+    #   b) find(:start_key => [doc, 2.days.ago], :end_key => [doc, Time.now])
+    #
+    # Effectively, first argument sets :key option, which in turn
+    # specifies :start_key and :end_key.
+    # Low-level search is performed using :start_key and :end_key only.
     #
     def find(key = nil, options = {})
 
