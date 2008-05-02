@@ -19,8 +19,7 @@ module StrokeDB
         
     # 
     #
-    def find(start_key, end_key, key, limit, offset, reverse, with_keys)
-      start_key = end_key = key if key
+    def find(start_key, end_key, limit, offset, reverse, with_keys)
       @list.search(start_key, end_key, limit, offset, reverse, with_keys)
     end
         

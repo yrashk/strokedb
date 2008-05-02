@@ -104,25 +104,27 @@ module StrokeDB
     def find(key = nil, options = {})
 
       if !key || key.is_a?(Hash)
-        options = key || {}
+        options = (key || {}).stringify_keys
       else
-        startk, endk = traverse_key(key)
         options = (options || {}).stringify_keys
+        options['key'] ||= key
+      end
+      options = DEFAULT_FIND_OPTIONS.merge(options)
+      
+      if key = options['key']
+        startk, endk = traverse_key(key)
         options['start_key'] ||= !startk.blank? && startk || nil
         options['end_key']   ||= !endk.blank?   && endk   || nil
       end
       
-      options = DEFAULT_FIND_OPTIONS.merge(options.stringify_keys)
-      
       start_key  = options['start_key']
       end_key    = options['end_key']
-      key        = options['key']
       limit      = options['limit']
       offset     = options['offset']
       reverse    = options['reverse']
       with_keys  = options['with_keys']
       
-      ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
+      ugly_find(start_key, end_key, limit, offset, reverse, with_keys)
     end
     
     # Traverses a user-friendly key in a #find method.
@@ -153,11 +155,10 @@ module StrokeDB
     # than a regular #find(options = {}) [probably insignificantly faster, TODO: check this]
     # Some arguments can be nils.
     # 
-    def ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
+    def ugly_find(start_key, end_key, limit, offset, reverse, with_keys)
     
       array = storage.find(start_key && encode_key(start_key), 
-                           end_key && encode_key(end_key), 
-                           key  && encode_key(key), 
+                           end_key && encode_key(end_key),
                            limit, 
                            offset, 
                            reverse, 
@@ -254,6 +255,11 @@ module StrokeDB
       DefaultKeyEncoder.decode(string_key)
     end
     
+    # FIXME: for the "versions" strategy we must store UUID.VERSION
+    # instead of UUID only. Maybe, we should store UUID.VERSION always,
+    # or rely on some uuid_version method (which is different for 
+    # Document and VersionedDocument)
+    # We should think about it.
     def encode_value(value)
       (value.is_a?(Document) ? value : RawData(value).save!).raw_uuid
     end
