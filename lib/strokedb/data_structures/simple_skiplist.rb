@@ -46,11 +46,18 @@ module StrokeDB
     # Algorithm is two-step: find the first matching key,
     # then collect all the values.
     # 
-    # 1) Define a direction of search 
-    # 2) Find the first node in the range start_key..end_key.
-    # 3) Skip a given number of nodes (:offset).
-    # 4) Collect nodes while :end_key prefix matches and :limit
+    # 1) Define a direction of search using <tt>reverse</tt>.
+    # 2) Find the first node in the range <tt>start_key..end_key</tt>.
+    # 3) Skip a given number of nodes (<tt>offset</tt>).
+    # 4) Collect nodes while <tt>end_key</tt> prefix matches and <tt>limit</tt>
     #    is not exceeded.
+    # <tt>reverse</tt> option specifies a direction of search, the meaning of 
+    # the <tt>start_key</tt> remains: it is the key to start search with.
+    #
+    # Note 1: search from "a" to "b" returns nothing if <tt>reverse</tt> is true.
+    #         Use "b".."a" to get interesting results in a reversed order.
+    # Note 2: search from "ab" to "a" (in any order) means the following:
+    #         Find the first "ab" key and move on while "a" is the prefix.
     # 
     def search(start_key, end_key, limit, offset, reverse, with_keys)
       offset ||= 0
