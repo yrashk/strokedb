@@ -419,4 +419,10 @@ describe "Meta#named" do
     SomeName.named(StrokeDB.default_store,"hello").should == doc
   end
   
+  it "should pass block to a document that was not created yet" do
+    blk = Proc.new {}
+    doc = SomeName.named("hello",&blk)
+    doc.instance_variable_get(:@initialization_block).should == blk
+  end
+  
 end
