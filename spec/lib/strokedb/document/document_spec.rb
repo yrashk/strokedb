@@ -90,6 +90,15 @@ describe "Document", :shared => true do
     @document.bbb.should == true
   end
 
+  it "should batch update slots but should not touch version/previous_version if update haven't changed document" do
+    @document = @document.update_slots!(:aaa => "aaa", :bbb => true).reload
+    lambda do
+    lambda do
+      @document.update_slots(:aaa => "aaa", :bbb => true)
+    end.should_not change(@document, :version)
+    end.should_not change(@document, :previous_version)
+  end
+
   it "should not save batch update slots" do
     @document.save! # ensure it is not new
     doc = @document.reload

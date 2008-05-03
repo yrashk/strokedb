@@ -364,3 +364,59 @@ describe "ImplementsSomeName with multiple implements" do
   
   
 end
+
+describe "Meta#named" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new
+  end
+
+  it "with (name) should create named document with this meta if it does not exist" do
+    doc = SomeName.named("hello")
+    doc.should_not be_nil
+    doc.should be_a_kind_of(Document)
+    doc.should be_a_kind_of(SomeName)
+    doc.should_not be_new
+    doc.versions.all.should have(1).item
+  end
+
+  it "with (name, slots hash) should create named document with this meta if it does not exist" do
+    doc = SomeName.named("hello", :some_slot => 1, :another_slot => "2")
+    doc.should_not be_nil
+    doc.should be_a_kind_of(Document)
+    doc.should be_a_kind_of(SomeName)
+    doc.should_not be_new
+    doc.versions.all.should have(1).item
+    doc.some_slot.should == 1
+    doc.another_slot.should == "2"
+  end
+  
+  it "with (name) should find named document with this meta if it does exist" do
+    doc = SomeName.named("hello")
+    SomeName.named("hello").should == doc
+  end
+
+  it "with (name, slots hash) should find named document with this meta if it does exist" do
+    doc = SomeName.named("hello", :some_slot => 1, :another_slot => "2")
+    SomeName.named("hello", :some_slot => 1, :another_slot => "2").should == doc
+  end
+
+  it "with (name, slots hash) should find and updated named document with this meta if it does exist but has no such slot pairs" do
+    doc = SomeName.named("hello", :some_slot => 1)
+    new_doc = SomeName.named("hello", :some_slot => 1, :another_slot => "2")
+    new_doc.should_not == doc
+    new_doc.versions.previous.should == doc
+    new_doc.another_slot.should == "2"
+    new_doc = SomeName.named("hello", :some_slot => 2, :another_slot => "2")
+    new_doc.some_slot.should == 2
+  end
+  
+  it "should be able to accept store as a first argument" do
+    doc = SomeName.named("hello")
+    SomeName.named(StrokeDB.default_store,"hello").should == doc
+  end
+  
+end

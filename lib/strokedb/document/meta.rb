@@ -118,6 +118,20 @@ module StrokeDB
         raise "Can't + #{self.class} and #{meta.class}"
       end
     end
+    
+    def named(*args)
+      args.unshift StrokeDB.default_store unless args.first.is_a?(StrokeDB::Store)
+      args << {} unless args.last.is_a?(Hash)
+      raise InvalidArgumentError, "you should specify name" unless args[1].is_a?(String)
+      name = args[1]
+      uuid = ::StrokeDB::Util.sha1_uuid("#{document.uuid}:#{name}")
+      unless doc = find(args[0],uuid)
+        doc = create!(args[0],args.last.reverse_merge(:uuid => uuid))
+      else
+        doc.update_slots!(args.last)
+      end
+      doc
+    end
 
     CALLBACKS = %w(on_initialization 
                    on_load 
@@ -205,7 +219,7 @@ module StrokeDB
     end
 
     #
-    # Conveniance alias for Meta#find.
+    # Convenience alias for Meta#find.
     #
     alias :all :find
 
