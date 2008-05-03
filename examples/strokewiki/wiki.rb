@@ -65,17 +65,17 @@ class MainController < Ramaze::Controller
   def show name,version=nil
     @page = Page.find(:name => name).first
     @page = @page.versions[version] if version
-    redirect("/new/#{name}") unless @page
+    redirect("/new?name=#{name}") unless @page
   end
   
   def versions name
     @page = Page.find(:name => name).first
     @versions = @page.versions.all
-    redirect("/new/#{name}") unless @page
+    redirect("/new?name=#{name}") unless @page
   end
   
-  def new name
-    @page = Page.new(:name => name)
+  def new
+    @page = Page.new(:name => request['name'])
   end
 
   def create name
