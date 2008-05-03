@@ -435,7 +435,7 @@ module StrokeDB
     # Updates slots with a specified <tt>hash</tt> and returns itself.
     def update_slots(hash)
       hash.each do |k, v|
-        self[k] = v
+        self[k] = v unless self[k] == v
       end
       self
     end
@@ -444,6 +444,7 @@ module StrokeDB
     def update_slots!(hash)
       update_slots(hash).save!
     end
+
     
     # Updates nil/false slots with a specified <tt>hash</tt> and returns itself.
     # Already set slots are not modified (<tt>||=</tt> is used).
