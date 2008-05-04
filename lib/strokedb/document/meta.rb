@@ -252,6 +252,13 @@ module StrokeDB
       metadocs.size > 1 ? metadocs.inject { |a, b| a + b }.make_immutable! : metadocs.first
     end
     
+    def extended(obj)
+      setup_callbacks(obj) if obj.is_a?(Document)
+    end
+    
+    
+    private
+    
     def make_document(store=nil)
       raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
       @meta_initialization_procs.each {|proc| proc.call }.clear
@@ -301,7 +308,7 @@ module StrokeDB
       @callbacks ||= []
       @callbacks << Callback.new(self, name, uid, &block)
     end
-public
+
     def setup_callbacks(doc)
       return unless @callbacks
       @callbacks.each do |callback|
