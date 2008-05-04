@@ -1,7 +1,9 @@
 Module.module_eval do
   
-  def self.clear_nsurls
+  def self.reset_nsurls
     @@nsurls = {}
+    ::Module.nsurl ''
+    ::StrokeDB.nsurl StrokeDB::STROKEDB_NSURL    
   end
   def self.find_by_nsurl(url)
     @@nsurls[url]
@@ -19,5 +21,4 @@ Module.module_eval do
   
 end
 
-Module.nsurl ''
-StrokeDB.nsurl StrokeDB::STROKEDB_NSURL
+Module.reset_nsurls

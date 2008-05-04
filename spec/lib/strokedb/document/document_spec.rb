@@ -887,23 +887,19 @@ describe "Valid Document's JSON with meta name specified" do
 
   before(:each) do
     @store = setup_default_store
-    @meta = Document.create!(:name => 'SomeDocument')
-    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @meta)
+    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
+    SomeDocument = Meta.new
+    @document = SomeDocument.new(@store,:slot1 => "val1", :slot2 => "val2")
     @json = @document.to_raw.to_json
     @decoded_json = JSON.parse(@json)
   end
 
   it "should load meta's module if it is available" do
-    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
-    SomeDocument = Module.new
-
     doc = Document.from_raw(@store,@decoded_json)
     doc.should be_a_kind_of(SomeDocument)
   end
 
   it "should not load meta's module if it is not available" do
-    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
-
     lambda do
       doc = Document.from_raw(@store,@decoded_json)
     end.should_not raise_error
@@ -918,9 +914,9 @@ describe "Valid Document's JSON with multiple meta names specified" do
     @store = setup_default_store
     @metas = []
     3.times do |i|
-      @metas << Document.create!(@store, :name => "SomeDocument#{i}")
+      @metas << Meta.new(:name => "SomeDocument#{i}")
     end
-    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @metas)
+    @document = @metas.inject{|a,b| a+=b}.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @metas)
     @json = @document.to_raw.to_json
     @decoded_json = JSON.parse(@json)
   end
