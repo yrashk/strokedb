@@ -252,6 +252,8 @@ module StrokeDB
       metadocs.size > 1 ? metadocs.inject { |a, b| a + b }.make_immutable! : metadocs.first
     end
     
+  
+  
     def extended(obj)
       setup_callbacks(obj) if obj.is_a?(Document)
     end
