@@ -474,10 +474,9 @@ describe "Deleted document" do
   end
   
   it "should be undeletable" do
-    @document = @document.undelete!
-    @document.should_not be_a_kind_of(DeletedDocument)
-    @document.should be_mutable
-    @store.find(@document.uuid).should == @document
+    undeleted_document = @document.undelete!
+    @document.should_not be_mutable
+    undeleted_document.should_not be_a_kind_of(DeletedDocument)
   end
   
 
