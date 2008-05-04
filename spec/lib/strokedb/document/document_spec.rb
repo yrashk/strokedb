@@ -821,6 +821,23 @@ describe "Document with version" do
 
 end
 
+describe "Immutable Document" do
+
+  before(:each) do
+    setup_default_store
+    @document = Document.new(:some_data => 1).make_immutable!
+    @document.should_not be_mutable
+  end
+  
+  it "should be able to be mutable again" do
+    @document.make_mutable!
+    @document.should be_mutable
+  end
+  
+  
+  
+end
+
 describe "Valid Document's JSON" do
 
   before(:each) do

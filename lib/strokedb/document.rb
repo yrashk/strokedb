@@ -745,5 +745,9 @@ module StrokeDB
     def save!
       self
     end
+    
+    def make_mutable!
+      unextend(ImmutableDocument)
+    end
   end
 end
