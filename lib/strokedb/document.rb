@@ -269,7 +269,7 @@ module StrokeDB
     def pretty_print #:nodoc:
       slots = to_raw.except('meta')
 
-      s = is_a?(ImmutableDocument) ? "#<(imm)" : "#<"
+      s = is_a?(ImmutableDocument) ? "#<^" : "#<"
 
       Util.catch_circular_reference(self) do
         if self[:meta] && name = meta[:name]
@@ -744,6 +744,10 @@ module StrokeDB
 
     def save!
       self
+    end
+    
+    def make_mutable!
+      unextend(ImmutableDocument)
     end
   end
 end
