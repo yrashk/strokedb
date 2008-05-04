@@ -280,7 +280,6 @@ module StrokeDB
       else
         args = [store, values]
         meta_doc = Document.new(*args)
-        meta_doc.extend(Meta)
         meta_doc.save!
       end
       meta_doc
