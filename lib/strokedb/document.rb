@@ -432,7 +432,7 @@ module StrokeDB
     # Updates slots with a specified <tt>hash</tt> and returns itself.
     def update_slots(hash)
       hash.each do |k, v|
-        self[k] = v unless self[k] == v
+        send("#{k}=", v) unless self[k] == v
       end
       self
     end
@@ -651,7 +651,7 @@ module StrokeDB
         meta.each {|m| metas.add_meta(m) }
       end
 
-      slots.except('meta').each {|name,value| self[name] = value }
+      slots.except('meta').each {|name,value| send("#{name}=", value) }
 
       # now, when we have all slots initialized, we can run initialization callbacks
       execute_callbacks :on_initialization

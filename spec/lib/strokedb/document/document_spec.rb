@@ -90,6 +90,12 @@ describe "Document", :shared => true do
     @document.bbb.should == true
   end
 
+  it "should pass batch update slots to matching slot= methods if any" do
+    @document.should_receive(:aaa=).with("aaa").once
+    @document.should_receive(:bbb=).with(true).once
+    @document.update_slots(:aaa => "aaa", :bbb => true)
+  end
+
   it "should batch update slots but should not touch version/previous_version if update haven't changed document" do
     @document = @document.update_slots!(:aaa => "aaa", :bbb => true).reload
     lambda do
@@ -332,6 +338,19 @@ describe "New Document with slots supplied" do
   end
 
   it_should_behave_like "Document"
+  
+  describe "with #slot= method(s)" do
+    it "should pass matching slots to methods" do
+      Kernel.should_receive(:called_slot1=).with("val1")
+      my_document_class = Class.new(Document) do
+        def slot1=(v)
+          Kernel.send(:called_slot1=,v)
+        end
+      end
+      @document = my_document_class.new(:slot1 => "val1", :slot2 => "val2")
+      
+    end
+  end
 
 end
 
