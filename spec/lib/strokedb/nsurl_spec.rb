@@ -4,7 +4,11 @@ describe "Some", Module do
   
   before(:each) do
     @module = Module.new
-    Module.clear_nsurls
+    Module.reset_nsurls
+  end
+  
+  after(:each) do
+    Module.reset_nsurls
   end
   
   it "should have nil nsurl by default" do
@@ -38,8 +42,13 @@ describe Module do
   
   
   before(:each) do
-    Module.clear_nsurls
+    Module.reset_nsurls
   end
+  
+  after(:each) do
+    Module.reset_nsurls
+  end
+
   
   it "should have empty nsurl by default" do
     Module.nsurl.should be_empty
@@ -50,7 +59,11 @@ end
 describe StrokeDB do
   
   before(:each) do
-    Module.clear_nsurls
+    Module.reset_nsurls
+  end
+
+  after(:each) do
+    Module.reset_nsurls
   end
   
   it "should have #{STROKEDB_NSURL} nsurl by default" do
