@@ -11,7 +11,7 @@ module StrokeDB
     def undelete!
       deleted_version = versions.previous
       store.save_as_head!(deleted_version)
-      self.class.find(uuid)
+      store.find(uuid)
     end
   end
   
