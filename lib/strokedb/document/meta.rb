@@ -1,4 +1,7 @@
 module StrokeDB
+  
+  META_CACHE = {}
+  
   # Meta is basically a type. Imagine the following document:
   #
   # some_apple:
@@ -20,8 +23,21 @@ module StrokeDB
   #
   # Document class will be extended by modules Fruit and Product.
   module Meta
-
+    
     class << self
+
+      def resolve_uuid_name(nsurl,name)
+        "meta:#{nsurl}##{name}"
+      end
+
+      def make_uuid_from_fullname(full_name)
+        ::StrokeDB::Util.sha1_uuid(full_name)
+      end
+      
+      def make_uuid(nsurl, name)
+        ::StrokeDB::Util.sha1_uuid("meta:#{nsurl}##{name}")
+      end
+      
       def new(*args, &block)
         mod = Module.new
         args = args.unshift(nil) if args.empty? || args.first.is_a?(Hash)
@@ -46,8 +62,13 @@ module StrokeDB
           initialize_virtualizations
           initialize_index_slots
         end
-        if meta_name = extract_meta_name(*args)
-          Object.const_set(meta_name, mod)
+        if name = args.last.stringify_keys['name']
+          META_CACHE[make_uuid(args.last.stringify_keys['nsurl'],args.last.stringify_keys['name'])] = mod 
+          mod.instance_eval %{
+            def name 
+              '#{name}'
+            end
+          }
         end
         mod
       end
@@ -64,19 +85,18 @@ module StrokeDB
       private
 
       def uuid
-        @uuid ||= ::Util.sha1_uuid("meta:#{StrokeDB.nsurl}##{Meta.name.demodulize}")
-      end
-
-      def extract_meta_name(*args)
-        if args.first.is_a?(Hash)
-          args.first[:name]
-        else
-          args[1][:name] unless args.empty?
-        end
+        @uuid ||= ::StrokeDB::Util.sha1_uuid("meta:#{StrokeDB.nsurl}##{Meta.name.demodulize}")
       end
 
     end
 
+    def implements(another_meta)
+      values = @args.select{|a| a.is_a?(Hash) }.first
+      values.merge!(another_meta.document.to_raw.delete_if {|k,v| ['name','uuid','version','previous_version','meta'].member?(k) })
+      include(another_meta)
+      self
+    end
+    
     def +(meta)
       if is_a?(Module) && meta.is_a?(Module)
         new_meta = Module.new
@@ -100,9 +120,30 @@ module StrokeDB
         raise "Can't + #{self.class} and #{meta.class}"
       end
     end
+    
+    def named(*args,&block)
+      args.unshift StrokeDB.default_store unless args.first.is_a?(StrokeDB::Store)
+      args << {} unless args.last.is_a?(Hash)
+      raise InvalidArgumentError, "you should specify name" unless args[1].is_a?(String)
+      name = args[1]
+      uuid = ::StrokeDB::Util.sha1_uuid("#{document.uuid}:#{name}")
+      unless doc = find(args[0],uuid)
+        doc = create!(args[0],args.last.reverse_merge(:uuid => uuid),&block)
+      else
+        doc.update_slots!(args.last)
+      end
+      doc
+    end
 
-    CALLBACKS = %w(on_initialization on_load before_save after_save when_slot_not_found on_new_document on_validation 
-      after_validation on_set_slot)
+    CALLBACKS = %w(on_initialization 
+                   on_load 
+                   before_save 
+                   after_save 
+                   when_slot_not_found 
+                   on_new_document 
+                   on_validation 
+                   after_validation 
+                   on_set_slot)
 
     CALLBACKS.each do |callback_name|
       module_eval %{
@@ -179,26 +220,9 @@ module StrokeDB
       end
     end
 
-    #
-    # Convenient alias for Meta#find.
+    # Convenience alias for Meta#find.
     #
     alias :all :find
-
-    #
-    # Finds the first document matching the given criteria.
-    #
-    def first(args = {})
-      result = find(args)
-      result.respond_to?(:first) ? result.first : result
-    end
-
-    #
-    # Finds the last document matching the given criteria.
-    #
-    def last(args = {})
-      result = find(args)
-      result.respond_to?(:last) ? result.last : result
-    end
 
     #
     # Similar to +find+, but creates a document with an appropriate 
@@ -229,8 +253,15 @@ module StrokeDB
       metadocs.size > 1 ? metadocs.inject { |a, b| a + b }.make_immutable! : metadocs.first
     end
     
+  
+  
+    def extended(obj)
+      setup_callbacks(obj) if obj.is_a?(Document)
+    end
+    
+    
     private
-
+    
     def make_document(store=nil)
       raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
       @meta_initialization_procs.each {|proc| proc.call }.clear
@@ -238,8 +269,12 @@ module StrokeDB
       values = @args.clone.select{|a| a.is_a?(Hash) }.first
       values[:meta] = Meta.document(store)
       values[:name] ||= name.demodulize
+
+      raise ArgumentError, "meta can't be nameless" if values[:name].blank?
+
       values[:nsurl] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl 
-      values[:uuid] ||= ::Util.sha1_uuid("meta:#{values[:nsurl]}##{values[:name]}") if values[:name]
+      values[:uuid] ||= Meta.make_uuid(values[:nsurl],values[:name])
+      
       
       if meta_doc = find_meta_doc(values, store)
         values[:version] = meta_doc.version
@@ -249,7 +284,6 @@ module StrokeDB
       else
         args = [store, values]
         meta_doc = Document.new(*args)
-        meta_doc.extend(Meta)
         meta_doc.save!
       end
       meta_doc

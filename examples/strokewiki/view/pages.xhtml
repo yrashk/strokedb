@@ -15,6 +15,11 @@
 <li><a href="/show/#{page.name}">#{page.name}</a> - <a href="/edit/#{page.name}">edit</a> | <a href="/delete/#{page.name}">delete</a></li>
 <?r end ?>
 </ul>
+<h2>Create page</h2>
+<form method="post" action="/new">
+Enter title: <input type="text" name="name">
+<input type="submit">
+</form>
 <hr/>
 <a href="/">Home</a> |
 <a href="/pages">Pages</a>

@@ -1,7 +1,8 @@
 ------------------------------------------------------------------------------
 WARNING
 
-Storages have changed, make sure you start with a fresh database.
+If you have problems running this example, make sure you start with a fresh
+database first.
 Delete .wiki.strokedb folder in current directory
 ------------------------------------------------------------------------------
 

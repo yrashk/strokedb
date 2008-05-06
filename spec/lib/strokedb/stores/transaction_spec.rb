@@ -47,6 +47,15 @@ describe 'Transaction', :shared => true do
     end
     Document.find(@doc.uuid).should be_nil
   end
+  
+  it "should see its own head version of the document" do
+    @doc = Document.create!
+    @txn.execute do |txn|
+      @doc.update_slots! :new_version => 'yes'
+      @doc.store.head_version(@doc.uuid).should == @doc.version
+    end
+    @doc.store.head_version(@doc.uuid).should == @doc.versions.previous.version
+  end
 
   it "should be able to commit transaction" do
     @txn.execute do |txn|
@@ -63,6 +72,23 @@ describe 'Transaction', :shared => true do
       Document.find(@doc.uuid).should be_nil
     end
     Document.find(@doc.uuid).should be_nil
+  end
+  
+  it "should pop transaction on code that raises some exception" do
+    lambda do
+      @txn.execute do |txn|
+        raise Exception
+      end
+    end.should raise_error(Exception)
+    Thread.current[:strokedb_transactions].should be_empty
+  end
+
+  it "should pop transaction on code that raises no exception" do
+    lambda do
+      @txn.execute do |txn|
+      end
+    end.should_not raise_error(Exception)
+    Thread.current[:strokedb_transactions].should be_empty
   end
   
     

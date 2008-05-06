@@ -90,6 +90,21 @@ describe "Document", :shared => true do
     @document.bbb.should == true
   end
 
+  it "should pass batch update slots to matching slot= methods if any" do
+    @document.should_receive(:aaa=).with("aaa").once
+    @document.should_receive(:bbb=).with(true).once
+    @document.update_slots(:aaa => "aaa", :bbb => true)
+  end
+
+  it "should batch update slots but should not touch version/previous_version if update haven't changed document" do
+    @document = @document.update_slots!(:aaa => "aaa", :bbb => true).reload
+    lambda do
+    lambda do
+      @document.update_slots(:aaa => "aaa", :bbb => true)
+    end.should_not change(@document, :version)
+    end.should_not change(@document, :previous_version)
+  end
+
   it "should not save batch update slots" do
     @document.save! # ensure it is not new
     doc = @document.reload
@@ -258,6 +273,10 @@ describe "New Document" do
     @document.version.should_not be_nil
   end
 
+  it "should have NIL UUID version" do
+    @document.version.should == NIL_UUID
+  end
+
   it "should have no previous version" do
     @document.previous_version.should be_nil
     @document.versions.previous.should be_nil
@@ -319,6 +338,19 @@ describe "New Document with slots supplied" do
   end
 
   it_should_behave_like "Document"
+  
+  describe "with #slot= method(s)" do
+    it "should pass matching slots to methods" do
+      Kernel.should_receive(:called_slot1=).with("val1")
+      my_document_class = Class.new(Document) do
+        def slot1=(v)
+          Kernel.send(:called_slot1=,v)
+        end
+      end
+      @document = my_document_class.new(:slot1 => "val1", :slot2 => "val2")
+      
+    end
+  end
 
 end
 
@@ -461,10 +493,9 @@ describe "Deleted document" do
   end
   
   it "should be undeletable" do
-    @document = @document.undelete!
-    @document.should_not be_a_kind_of(DeletedDocument)
-    @document.should be_mutable
-    @store.find(@document.uuid).should == @document
+    undeleted_document = @document.undelete!
+    @document.should_not be_mutable
+    undeleted_document.should_not be_a_kind_of(DeletedDocument)
   end
   
 
@@ -503,9 +534,52 @@ describe "Head Document with references" do
     @document.some_indirect_link.first.should_not be_a_kind_of(VersionedDocument)
   end
 
-
 end
 
+describe "Head Document with meta" do
+
+  before(:each) do
+    setup_default_store
+    Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+    SomeMeta = Meta.new
+    @document = SomeMeta.create!
+    @document = @document.reload
+    @document.should be_head
+  end
+
+  it "should link to head meta" do
+    Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+    SomeMeta = Meta.new(:some_slot => 1)
+    SomeMeta.document # ensure new metadoc version is saved
+    @document.meta.should be_head
+    @document.meta.should_not be_a_kind_of(VersionedDocument)
+    @document.meta.some_slot.should == 1
+  end
+  
+end
+
+describe "Non-head Document with meta" do
+
+  before(:each) do
+    setup_default_store
+    Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+    SomeMeta = Meta.new
+    @document = SomeMeta.create!
+    @document.update_slots! :updated => true
+    @document = @document.versions.previous
+    @document.should_not be_head
+  end
+
+  it "should link to exact meta version" do
+    Object.send!(:remove_const,'SomeMeta') if defined?(SomeMeta)
+    SomeMeta = Meta.new(:some_slot => 1)
+    
+    @document.meta.should_not be_head
+    @document.meta.should be_a_kind_of(VersionedDocument)
+    @document.meta.should_not have_slot(:some_slot)
+  end
+  
+end
 describe "Saved VersionedDocument" do
 
   before(:each) do
@@ -618,29 +692,18 @@ describe "Document with a single meta" do
     Object.send!(:remove_const, "SomeMeta") if defined? ::SomeMeta
     ::SomeMeta = Meta.new(@store)
     @meta = ::SomeMeta
-    # FIXME: This modifies metameta.
     @document = Document.create!(@store, :meta => @meta)
-    # This doesn't modify:
-    # @document = @meta.create!(@store)
-    
-  #  p @meta.document.meta
-  #  p @document.meta.meta
-  #  p @meta.create!.meta.meta
   end
 
   it "but specified within array should return single meta which should be mutable" do
-    pending "BUG"
-    @document = Document.create!(@store, :meta => [@meta])
-  #  p @meta.document.meta
-  #  p @document.meta.meta
-    @document.meta.should == @meta.document
-    @document.meta.should be_mutable
+      @document = Document.create!(@store, :meta => [@meta])
+      @document.meta.should == @meta.document
+      @document.meta.should be_mutable
   end
 
   it "should return single meta which should be mutable" do
-    pending "BUG"
-    @document.meta.should == @meta.document
-    @document.meta.should be_mutable
+      @document.meta.should == @meta.document
+      @document.meta.should be_mutable
   end
 
 end
@@ -778,6 +841,23 @@ describe "Document with version" do
 
 end
 
+describe "Immutable Document" do
+
+  before(:each) do
+    setup_default_store
+    @document = Document.new(:some_data => 1).make_immutable!
+    @document.should_not be_mutable
+  end
+  
+  it "should be able to be mutable again" do
+    @document.make_mutable!
+    @document.should be_mutable
+  end
+  
+  
+  
+end
+
 describe "Valid Document's JSON" do
 
   before(:each) do
@@ -807,23 +887,19 @@ describe "Valid Document's JSON with meta name specified" do
 
   before(:each) do
     @store = setup_default_store
-    @meta = Document.create!(:name => 'SomeDocument')
-    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @meta)
+    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
+    SomeDocument = Meta.new
+    @document = SomeDocument.new(@store,:slot1 => "val1", :slot2 => "val2")
     @json = @document.to_raw.to_json
     @decoded_json = JSON.parse(@json)
   end
 
   it "should load meta's module if it is available" do
-    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
-    SomeDocument = Module.new
-
     doc = Document.from_raw(@store,@decoded_json)
     doc.should be_a_kind_of(SomeDocument)
   end
 
   it "should not load meta's module if it is not available" do
-    Object.send!(:remove_const,'SomeDocument') if defined?(SomeDocument)
-
     lambda do
       doc = Document.from_raw(@store,@decoded_json)
     end.should_not raise_error
@@ -838,9 +914,9 @@ describe "Valid Document's JSON with multiple meta names specified" do
     @store = setup_default_store
     @metas = []
     3.times do |i|
-      @metas << Document.create!(@store, :name => "SomeDocument#{i}")
+      @metas << Meta.new(:name => "SomeDocument#{i}")
     end
-    @document = Document.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @metas)
+    @document = @metas.inject{|a,b| a+=b}.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @metas)
     @json = @document.to_raw.to_json
     @decoded_json = JSON.parse(@json)
   end

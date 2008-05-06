@@ -111,7 +111,7 @@ describe "Non-empty store" do
     @store.each do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.version}.should == @documents.sort_by {|doc| doc.version}
+    iterated_documents.sort_by {|doc| doc.uuid}.should == @documents.sort_by {|doc| doc.uuid}
   end
 
   it "should iterate over all stored documents and their versions if told so" do
@@ -125,7 +125,7 @@ describe "Non-empty store" do
         documents_with_versions << vd
       end
     end
-    iterated_documents.sort_by {|doc| doc.version}.should == documents_with_versions.sort_by {|doc| doc.version}
+    iterated_documents.sort_by {|doc| doc.uuid}.should == documents_with_versions.sort_by {|doc| doc.uuid}
   end
 
   it "should iterate over all newly stored documents if told so" do
@@ -139,7 +139,7 @@ describe "Non-empty store" do
     @store.each(:after_timestamp => timestamp) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.version}.should == @new_documents.sort_by {|doc| doc.version}
+    iterated_documents.sort_by {|doc| doc.uuid}.should == @new_documents.sort_by {|doc| doc.uuid}
   end
 
   it "should iterate over all newly stored versions if told so" do
@@ -154,7 +154,7 @@ describe "Non-empty store" do
     @store.each(:after_timestamp => timestamp, :include_versions => true) do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.version}.should == (@documents + @new_documents).sort_by {|doc| doc.version}
+    iterated_documents.sort_by {|doc| doc.uuid}.should == (@documents + @new_documents).sort_by {|doc| doc.uuid}
   end
 
 

@@ -16,13 +16,13 @@ module StrokeDB
       # or to <tt>false</tt> if the size is not fixed.
       # Note: optimized storage is used when both keys and values  are the fixed length. 
       # I.e. both "value_size" and "key_size" are set.
-      "value_size" => Util::RAW_UUID_SIZE,
+      "value_size" => ::StrokeDB::Util::RAW_UUID_SIZE,
       
       # strategy determines whether to index HEADs or particular versions
       # When :heads is used, previous versions are removed from the index.
       "strategy"         => "heads", # heads|versions
     }
-    
+
     on_new_document do |viewdoc|
       viewdoc.reverse_update_slots(DEFAULT_VIEW_OPTIONS)
     end
@@ -85,36 +85,80 @@ module StrokeDB
     # Examples:
     #   view.find                             # returns all the items in a view
     #   view.find(:limit => 1)                # returns the first document in a view
-    #   view.find(:offset => 10, :limit => 1) # returns 11-th document in a view
-    #   view.find(:key => doc)                # returns all items with a doc.uuid prefix 
+    #   view.find(:offset => 10, :limit => 1) # returns 11-th document in a view (Note: [doc] instead of doc)
+    #   view.find(doc)                        # returns all items with a doc.uuid prefix 
     #   
     #   # returns the latest 10 comments for a given document
     #   # (assuming the key defined as [comment.document, comment.created_at])
-    #   has_many_comments.find(:key => doc, :limit => 10, :reverse => true)  
+    #   has_many_comments.find(doc, :limit => 10, :reverse => true)  
     #
-    def find(options = {})
-      options = DEFAULT_FIND_OPTIONS.merge(options.stringify_keys)
+    #   comments.find([doc, 2.days.ago..Time.now]) # returns doc's comments within a time interval
+    #   # example above is equivalent to:
+    #   a) find(:key => [doc, 2.days.ago..Time.now])
+    #   b) find(:start_key => [doc, 2.days.ago], :end_key => [doc, Time.now])
+    #
+    # Effectively, first argument sets :key option, which in turn
+    # specifies :start_key and :end_key.
+    # Low-level search is performed using :start_key and :end_key only.
+    #
+    def find(key = nil, options = {})
+
+      if !key || key.is_a?(Hash)
+        options = (key || {}).stringify_keys
+      else
+        options = (options || {}).stringify_keys
+        options['key'] ||= key
+      end
+      options = DEFAULT_FIND_OPTIONS.merge(options)
+      
+      if key = options['key']
+        startk, endk = traverse_key(key)
+        options['start_key'] ||= !startk.blank? && startk || nil
+        options['end_key']   ||= !endk.blank?   && endk   || nil
+      end
       
       start_key  = options['start_key']
       end_key    = options['end_key']
-      key        = options['key']
       limit      = options['limit']
       offset     = options['offset']
       reverse    = options['reverse']
       with_keys  = options['with_keys']
       
-      ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
+      ugly_find(start_key, end_key, limit, offset, reverse, with_keys)
+    end
+    
+    # Traverses a user-friendly key in a #find method.
+    # Example:
+    #   find(["prefix", 10..42, "sfx", "a".."Z" ])
+    #   # => start_key == ["prefix", 10, "sfx", "a"]
+    #   # => end_key   == ["prefix", 42, "sfx", "Z"]
+    #
+    def traverse_key(key, sk = [], ek = [], s_inf = nil, e_inf = nil) 
+      case key
+      when Range
+        a = key.begin
+        b = key.end
+        [ 
+          s_inf || a.infinite? ? sk : (sk << a),
+          e_inf || b.infinite? ? ek : (ek << b),
+        ] 
+      when Array
+        key.inject([sk, ek]) do |se, i| 
+          traverse_key(i, se[0], se[1], s_inf, e_inf)
+        end
+      else
+        [s_inf ? sk : (sk << key), e_inf ? ek : (ek << key)]
+      end
     end
     
     # Ugly find accepts fixed set of arguments and works a bit faster, 
     # than a regular #find(options = {}) [probably insignificantly faster, TODO: check this]
     # Some arguments can be nils.
     # 
-    def ugly_find(start_key, end_key, key, limit, offset, reverse, with_keys)
+    def ugly_find(start_key, end_key, limit, offset, reverse, with_keys)
     
       array = storage.find(start_key && encode_key(start_key), 
-                           end_key && encode_key(end_key), 
-                           key  && encode_key(key), 
+                           end_key && encode_key(end_key),
                            limit, 
                            offset, 
                            reverse, 
@@ -211,6 +255,11 @@ module StrokeDB
       DefaultKeyEncoder.decode(string_key)
     end
     
+    # FIXME: for the "versions" strategy we must store UUID.VERSION
+    # instead of UUID only. Maybe, we should store UUID.VERSION always,
+    # or rely on some uuid_version method (which is different for 
+    # Document and VersionedDocument)
+    # We should think about it.
     def encode_value(value)
       (value.is_a?(Document) ? value : RawData(value).save!).raw_uuid
     end
@@ -235,9 +284,12 @@ module StrokeDB
   end
   
   class << View
-    def [](name, nsurl = name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl) # FIXME: it is not nice
-      uuid = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
-      StrokeDB.default_store.find(uuid)
+    def [](*args) # FIXME: it is not nice
+      store = args.first.is_a?(Store) ? args.shift : StrokeDB.default_store
+      name = args[0]
+      nsurl = args[1] || (name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl)
+      uuid = ::StrokeDB::Util.sha1_uuid("view:#{nsurl}##{name}") 
+      store.find(uuid)
     end
 
     alias :original_new :new
@@ -250,24 +302,18 @@ module StrokeDB
     #   View.new(store, :name => "view_name", :option => "value") do |viewdoc| ... end
     #
     def new(*args, &block)
-      store = args.first.is_a?(Store) ? args.shift : StrokeDB.default_store
       
-      if args.first.is_a? String
-        options = args[1] || {}
-        options['name'] = args.first
-      else
-        options = args[0] || {}
-      end
+      store, name, options = extract(Store, String, Hash, args)
       
-      options = options.stringify_keys
+      store ||= StrokeDB.default_store
+      options = options && options.stringify_keys || {}
+      name ||= options['name']
       
-      unless name = options['name']
-        raise ArgumentError, "View name must be specified!"
-      end
+      raise ArgumentError, "View name must be specified!" unless name
       
       nsurl = options['nsurl'] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl # FIXME: it is not nice (and the same shit is in meta.rb)
       
-      options['uuid'] = ::Util.sha1_uuid("view:#{nsurl}##{name}") 
+      options['uuid'] = ::StrokeDB::Util.sha1_uuid("view:#{nsurl}##{name}") 
       
       unless v = find(options['uuid'])
         v = original_new(store, options, &block)

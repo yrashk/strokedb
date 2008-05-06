@@ -121,6 +121,10 @@ module StrokeDB
       @stores[key] = store_instance
     end
     
+    def inspect
+      "#<StrokeDB::Config:0x#{object_id.to_s(16)}>"
+    end
+    
     private
     
     def constantize(name,type)

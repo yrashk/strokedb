@@ -42,7 +42,7 @@ module StrokeDB
   # 1) Do the durable updates to the log before in-memory operations.
   # 2) Remove all the stale files on restart.
   # 3) Load the skiplist from the regular file.
-  # 3) Replay the actual log on restart.
+  # 4) Replay the actual log on restart.
   # 
   class SkiplistVolume
     

@@ -1,10 +1,7 @@
-require 'document/validations'
-require 'document/virtualize'
+require 'document/dsl'
 require 'document/util'
 require 'document/meta'
-require 'document/associations'
 require 'document/callback'
-require 'document/coercions'
 require 'document/index_slots'
 require 'document/delete'
 require 'document/slot'
@@ -40,7 +37,7 @@ module StrokeDB
   end
 
   #
-  # Raised when Document#save! is called on an invalid document 
+  # Raised when Document#save! is called on an invalid document
   # (for which doc.valid? returns false)
   #
   class InvalidDocumentError < StandardError #:nodoc:
@@ -108,7 +105,7 @@ module StrokeDB
       def <<(meta)
         add_meta(meta, :call_initialization_callbacks => true)
       end
-      
+
       alias :_delete :delete
       def delete(meta)
         case meta
@@ -121,13 +118,13 @@ module StrokeDB
         else
           raise ArgumentError, "Meta should be either document or meta module"
         end
-        
+
         @document[:meta] = self
-        
+
         if _module
           @document.unextend(_module)
         end
-        
+
       end
 
       def add_meta(meta, opts = {})
@@ -152,9 +149,7 @@ module StrokeDB
         if _module
           @document.extend(_module)
 
-          _module.send!(:setup_callbacks, @document) rescue nil
-
-          if opts['call_initialization_callbacks'] 
+          if opts['call_initialization_callbacks']
             @document.send!(:execute_callbacks_for, _module, :on_initialization)
             @document.send!(:execute_callbacks_for, _module, :on_new_document) if @document.new?
           end
@@ -275,7 +270,7 @@ module StrokeDB
     def pretty_print #:nodoc:
       slots = to_raw.except('meta')
 
-      s = is_a?(ImmutableDocument) ? "#<(imm)" : "#<"
+      s = is_a?(ImmutableDocument) ? "#<^" : "#<"
 
       Util.catch_circular_reference(self) do
         if self[:meta] && name = meta[:name]
@@ -286,7 +281,7 @@ module StrokeDB
 
         slots.keys.sort.each do |k|
           if %w(version previous_version).member?(k) && v = self[k]
-            s << "#{k}: #{v.gsub(/^(0)+/,'')[0,4]}..., "
+            s << "#{k}: #{v[0,4]}..., "
           else
             s << "#{k}: #{self[k].inspect}, "
           end
@@ -345,8 +340,6 @@ module StrokeDB
       collect_meta_modules(store, raw_slots['meta']).each do |meta_module|
         unless doc.is_a? meta_module
           doc.extend(meta_module)
-
-          meta_module.send!(:setup_callbacks, doc) rescue nil
         end
       end
 
@@ -440,7 +433,7 @@ module StrokeDB
     # Updates slots with a specified <tt>hash</tt> and returns itself.
     def update_slots(hash)
       hash.each do |k, v|
-        self[k] = v
+        send("#{k}=", v) unless self[k] == v
       end
       self
     end
@@ -449,7 +442,8 @@ module StrokeDB
     def update_slots!(hash)
       update_slots(hash).save!
     end
-    
+
+
     # Updates nil/false slots with a specified <tt>hash</tt> and returns itself.
     # Already set slots are not modified (<tt>||=</tt> is used).
     # Acts like <tt>hash1.reverse_merge(hash2)</tt> (<tt>hash2.merge(hash1)</tt>).
@@ -628,21 +622,21 @@ module StrokeDB
       end
     end
 
-    # initialize the document. initialize_raw is true when 
+    # initialize the document. initialize_raw is true when
     # document is initialized from a raw serialized form
     def do_initialize(store, slots={}, initialize_raw = false) #:nodoc:
       @callbacks = {}
       @store = store
 
       if initialize_raw
-        initialize_raw_slots slots 
+        initialize_raw_slots slots
         @saved = true
       else
         @new = true
         initialize_slots slots
 
         self[:uuid] = Util.random_uuid unless self[:uuid]
-        generate_new_version!          unless self[:version]
+        self[:version] ||= NIL_UUID
       end
     end
 
@@ -651,14 +645,14 @@ module StrokeDB
       @slots = {}
       slots = slots.stringify_keys
 
-      # there is a reason for meta slot is initialized separately — 
+      # there is a reason for meta slot is initialized separately —
       # we need to setup coercions before initializing actual slots
       if meta = slots['meta']
         meta = [meta] unless meta.is_a?(Array)
         meta.each {|m| metas.add_meta(m) }
       end
 
-      slots.except('meta').each {|name,value| self[name] = value }
+      slots.except('meta').each {|name,value| send("#{name}=", value) }
 
       # now, when we have all slots initialized, we can run initialization callbacks
       execute_callbacks :on_initialization
@@ -677,29 +671,72 @@ module StrokeDB
       end
     end
 
+
+    class MetaModulesCollector
+      def initialize(store, subject)
+        @store   = store
+        @subject = subject
+      end
+
+      def resolve_module_name(uuid)
+        if metadoc = @store.find(uuid, self.lookup_version_for_meta(@subject))
+          mod = Module.find_by_nsurl(metadoc[:nsurl])
+
+          if self.has_defined_constant_for_meta?(mod, metadoc)
+            at_top_level?(mod) ? "::#{metadoc[:name]}" : "#{mod.name}::#{metadoc[:name]}"
+          else
+            Meta.resolve_uuid_name(metadoc[:nsurl], metadoc[:name])
+          end
+        end
+      end
+
+      def at_top_level?(mod)
+        mod == Module || mod.nil?
+      end
+
+      def collect!
+        meta_names = []
+
+        case @subject
+        when VERSIONREF, DOCREF
+          meta_names << resolve_module_name($1)
+        when Array
+          meta_names = @subject.map { |subj| subj = MetaModulesCollector.new(@store, subj).collect! }.flatten
+        when Document
+          meta_names << @subject[:name]
+        end
+
+        meta_names
+      end
+
+      def lookup_version_for_meta(meta)
+        version = case meta
+                  when VERSIONREF then $2
+                  else nil
+                  end
+        version
+      end
+
+      def has_defined_constant_for_meta?(mod, metadoc)
+        top_level_meta?(mod, metadoc) || has_meta_definition?(mod, metadoc)
+      end
+
+      def top_level_meta?(mod, doc)
+        (mod == Module && Object.constants.include?(doc[:name]))
+      end
+
+      def has_meta_definition?(mod, metadoc)
+        (mod && mod.constants.include?(metadoc[:name]))
+      end
+    end
+
+
+
     # returns an array of meta modules (as constants) for a given something
     # (a document reference, a document itself, or an array of the former)
     def self.collect_meta_modules(store, meta) #:nodoc:
-      meta_names = []
-
-      case meta
-      when VERSIONREF
-        if m = store.find($1, $2)
-          mod = Module.find_by_nsurl(m[:nsurl])
-          mod = nil if mod == Module
-          meta_names << (mod ? mod.name : "") + "::" + m[:name]
-        end
-      when DOCREF
-        if m = store.find($1)
-          mod = Module.find_by_nsurl(m[:nsurl])
-          mod = nil if mod == Module
-          meta_names << (mod ? mod.name : "") + "::" + m[:name]
-        end
-      when Array
-        meta_names = meta.map { |m| collect_meta_modules(store, m) }.flatten
-      when Document
-        meta_names << meta[:name]
-      end
+      @collector = MetaModulesCollector.new(store, meta)
+      meta_names = @collector.collect!
 
       meta_names.map { |m| m.is_a?(String) ? (m.constantize rescue nil) : m }.compact
     end
@@ -743,6 +780,10 @@ module StrokeDB
 
     def save!
       self
+    end
+
+    def make_mutable!
+      unextend(ImmutableDocument)
     end
   end
 end

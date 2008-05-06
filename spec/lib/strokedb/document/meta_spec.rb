@@ -32,7 +32,7 @@ describe "Meta module", :shared => true do
     new_doc = nil
     2.times do |i|
       Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-      @meta = Meta.new(:name => "SomeName", :description => "Something")  
+      SomeName = Meta.new(:description => "Something")  
       new_doc = SomeName.document
     end
     new_doc.uuid.should == doc.uuid
@@ -58,40 +58,6 @@ describe "Meta module", :shared => true do
   it "aliases Meta#all to Meta#find" do
     a = SomeName.create!(:slot1 => 3)
     SomeName.all(:slot1 => 3).should == SomeName.find(:slot1 => 3)
-  end
-
-  it "should return first found document matching given criteria on call to #first" do
-    a = SomeName.create!(:slot1 => 1)
-    b = SomeName.create!(:slot1 => 2)
-    SomeName.first(:slot1 => 1).should == a
-  end
-  
-  it "should return first document if no args are passed to #first" do
-    a = SomeName.create!(:slot1 => 1)
-    b = SomeName.create!(:slot1 => 2)
-    SomeName.first.should == SomeName.find.first
-  end
-
-  it "correctly handles finding via UUID on call to #first" do
-    a = SomeName.create!(:slot1 => 5)
-    SomeName.first(a.uuid).should == a
-  end
-  
-  it "should return last found document matching given criteria on call to #last" do
-    a = SomeName.create!(:slot1 => 1)
-    b = SomeName.create!(:slot1 => 1)
-    SomeName.last(:slot1 => 1).should == SomeName.find(:slot1 => 1).last
-  end
-  
-  it "should return last document if no args are passed to #last" do
-    a = SomeName.create!(:slot1 => 1)
-    b = SomeName.create!(:slot1 => 2)
-    SomeName.last.should == SomeName.find.last
-  end
-
-  it "correctly handles finding via UUID on call to #last" do
-    a = SomeName.create!(:slot1 => 5)
-    SomeName.last(a.uuid).should == a
   end
 
   it "should raise ArgumentError unless args size is 1 or 2" do
@@ -157,9 +123,38 @@ describe "Meta module without name" do
     @some_meta = Meta.new(:nsurl => "http://some/")
   end
   
-  it "should not have document's UUID v5 based on nsurl and name" do
-    @some_meta.document.uuid.should_not == Util.sha1_uuid('http://some/#SomeName')
+  it "should not be able to create a document" do
+    lambda do
+      @some_meta.document
+    end.should raise_error(ArgumentError)
   end
+end
+
+
+describe "Meta module without constant definition" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    @some_name = Meta.new(:name => 'SomeName') do
+      def some
+      end
+    end
+  end
+  
+  it "should not set respective constant" do
+    defined?(SomeName).should be_nil
+  end
+  
+  it "should have its name constantizeable anyway" do
+    Meta.resolve_uuid_name("","SomeName").constantize.should == @some_name
+  end
+
+  it "should be loaded into document on its load" do
+    doc = @some_name.create!.reload
+    doc.should respond_to(:some)
+  end
+
 end
 
 describe "Meta module within no module" do
@@ -214,141 +209,6 @@ describe "Meta module within module" do
   end
   
 end
-describe "Meta module with on_initialization callback" do
-  
-  before(:each) do
-    setup_default_store
-    setup_index
-    
-    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    SomeName = Meta.new do
-      on_initialization do |obj|
-        Kernel.send!(:on_initialization_called,obj.new?)
-      end
-    end
-  end
-  
-  it "should receive this callback on meta instantiation" do
-    Kernel.should_receive(:on_initialization_called).with(true)
-    doc = SomeName.new
-  end
-  
-  it "should be a sole meta receiving this callback when adding metas dynamically" do
-    Object.send!(:remove_const,'SomeOtherName') if defined?(SomeOtherName)
-    SomeOtherName = Meta.new do
-      on_initialization do |obj|
-        Kernel.send!(:other_on_initialization_called,obj.new?)
-      end
-    end
-    Kernel.should_receive(:other_on_initialization_called).with(true).once
-    doc = SomeOtherName.new
-    Kernel.should_receive(:on_initialization_called).with(true).once
-    doc.metas << SomeName
-  end
-  
-end
-
-
-describe "Meta module with on_load callback" do
-  
-  before(:each) do
-    setup_default_store
-    setup_index
-    
-    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    SomeName = Meta.new do
-      on_load do |obj|
-        Kernel.send!(:on_load_called,obj.new?)
-      end
-    end
-  end
-  
-  it "should not receive this callback on meta instantiation" do
-    Kernel.should_not_receive(:on_load_called)
-    doc = SomeName.new
-  end
-
-  it "should receive this callback on document load" do
-    doc = SomeName.create!
-    Kernel.should_receive(:on_load_called).with(false)
-    SomeName.find(doc.uuid)
-  end
-  
-  
-end
-
-describe "Meta module with before_save callback" do
-  
-  before(:each) do
-    setup_default_store
-    setup_index
-    
-    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    SomeName = Meta.new do
-      before_save do |obj|
-        Kernel.send!(:before_save_called,obj.new?)
-      end
-    end
-  end
-  
-  it "should initiate callback on Document#save! (before actually saving it)" do
-    s = SomeName.new
-    Kernel.should_receive(:before_save_called).with(true)
-    s.save!
-  end
-
-end
-
-describe "Meta module with after_save callback" do
-  
-  before(:each) do
-    setup_default_store
-    setup_index
-    
-    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    SomeName = Meta.new do
-      after_save do |obj|
-        Kernel.send!(:after_save_called,obj.new?)
-      end
-    end
-  end
-  
-  it "should initiate callback on Document#save! (after actually saving it)" do
-    s = SomeName.new
-    Kernel.should_receive(:after_save_called).with(false)
-    s.save!
-  end
-
-end
-
-
-describe "Meta module with on_new_document callback" do
-  
-  before(:each) do
-    setup_default_store
-    setup_index
-    
-    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
-    SomeName = Meta.new do
-      on_new_document do |obj|
-        Kernel.send!(:on_new_document,obj.new?)
-      end
-    end
-  end
-  
-  it "should initiate callback on Document#new" do
-    Kernel.should_receive(:on_new_document).with(true)
-    s = SomeName.new
-  end
-
-  it "should not initiate callback on loaded Document" do
-    Kernel.should_receive(:on_new_document).with(true).once
-    s = SomeName.new
-    s.save!
-    s.reload
-  end
-
-end
 
 describe "Combined meta module" do
   
@@ -393,4 +253,176 @@ describe "Combined meta module" do
     lambda { baddoc = (Buyer+user).create! }.should raise_error(RuntimeError)
   end
     
+end
+
+describe "ImplementsSomeName with implements SomeName meta" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new(:some_slot => 'some_value') do
+      def some_name_meta
+      end
+    end
+    Object.send!(:remove_const,'ImplementsSomeName') if defined?(ImplementsSomeName)
+    ImplementsSomeName = Meta.new(:some_another_slot => 'some_another_value') do
+      def implements_some_name_meta
+      end
+      implements SomeName
+    end
+  end
+
+  it "should create a document which is both SomeName and ImplementsSomeName" do
+    doc = ImplementsSomeName.create!.reload
+    doc.should be_a_kind_of(SomeName)
+    doc.should be_a_kind_of(ImplementsSomeName)
+  end
+
+  it "should have SomeName's slots merged in" do
+    ImplementsSomeName.document.slotnames.should include('some_another_slot')
+    ImplementsSomeName.document.some_another_slot.should == "some_another_value"
+    ImplementsSomeName.document.slotnames.should include('some_slot')
+    ImplementsSomeName.document.some_slot.should == "some_value"
+  end
+  
+  it "should not share the same uuid with SomeName" do
+    ImplementsSomeName.document.uuid.should_not == SomeName.document.uuid
+  end
+  
+  it "should create document that responds both to #some_name_meta and #implements_some_name_meta" do
+    doc = ImplementsSomeName.create!.reload
+    doc.should respond_to(:some_name_meta)
+    doc.should respond_to(:implements_some_name_meta)
+  end
+  
+  it "should preserve its name" do
+    ImplementsSomeName.name.should == "ImplementsSomeName"
+  end
+  
+  
+end
+
+describe "ImplementsSomeName with multiple implements" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new(:some_slot => 'some_value') do
+      def some_name_meta
+      end
+    end
+    Object.send!(:remove_const,'SomeName1') if defined?(SomeName1)
+    SomeName1 = Meta.new(:some_slot1 => 'some_value1') do
+      def some_name_meta1
+      end
+    end
+    Object.send!(:remove_const,'ImplementsSomeName') if defined?(ImplementsSomeName)
+    ImplementsSomeName = Meta.new(:some_another_slot => 'some_another_value') do
+      def implements_some_name_meta
+      end
+      implements SomeName
+      implements SomeName1
+    end
+  end
+
+  it "should create a document which is both SomeName, SomeName1,  and ImplementsSomeName" do
+    doc = ImplementsSomeName.create!.reload
+    doc.should be_a_kind_of(SomeName)
+    doc.should be_a_kind_of(SomeName1)
+    doc.should be_a_kind_of(ImplementsSomeName)
+  end
+
+  it "should have SomeName's and SomeName1's slots merged in" do
+    ImplementsSomeName.document.slotnames.should include('some_another_slot')
+    ImplementsSomeName.document.some_another_slot.should == "some_another_value"
+    ImplementsSomeName.document.slotnames.should include('some_slot')
+    ImplementsSomeName.document.some_slot.should == "some_value"
+    ImplementsSomeName.document.slotnames.should include('some_slot1')
+    ImplementsSomeName.document.some_slot1.should == "some_value1"
+
+  end
+  
+  it "should not share the same uuid with either SomeName or SomeName1" do
+    ImplementsSomeName.document.uuid.should_not == SomeName.document.uuid
+    ImplementsSomeName.document.uuid.should_not == SomeName1.document.uuid
+  end
+  
+  it "should create document that responds both to #some_name_meta, #some_name_meta1, #implements_some_name_meta" do
+    doc = ImplementsSomeName.create!.reload
+    doc.should respond_to(:some_name_meta)
+    doc.should respond_to(:some_name_meta1)
+    doc.should respond_to(:implements_some_name_meta)
+  end
+  
+  it "should preserve its name" do
+    ImplementsSomeName.name.should == "ImplementsSomeName"
+  end
+  
+  
+end
+
+describe "Meta#named" do
+  
+  before(:each) do
+    setup_default_store
+    setup_index
+    Object.send!(:remove_const,'SomeName') if defined?(SomeName)
+    SomeName = Meta.new
+  end
+
+  it "with (name) should create named document with this meta if it does not exist" do
+    doc = SomeName.named("hello")
+    doc.should_not be_nil
+    doc.should be_a_kind_of(Document)
+    doc.should be_a_kind_of(SomeName)
+    doc.should_not be_new
+    doc.versions.all.should have(1).item
+  end
+
+  it "with (name, slots hash) should create named document with this meta if it does not exist" do
+    doc = SomeName.named("hello", :some_slot => 1, :another_slot => "2")
+    doc.should_not be_nil
+    doc.should be_a_kind_of(Document)
+    doc.should be_a_kind_of(SomeName)
+    doc.should_not be_new
+    doc.versions.all.should have(1).item
+    doc.some_slot.should == 1
+    doc.another_slot.should == "2"
+  end
+  
+  it "with (name) should find named document with this meta if it does exist" do
+    doc = SomeName.named("hello")
+    SomeName.named("hello").should == doc
+  end
+
+  it "with (name, slots hash) should find named document with this meta if it does exist" do
+    doc = SomeName.named("hello", :some_slot => 1, :another_slot => "2")
+    SomeName.named("hello", :some_slot => 1, :another_slot => "2").should == doc
+  end
+
+  it "with (name, slots hash) should find and updated named document with this meta if it does exist but has no such slot pairs" do
+    doc = SomeName.named("hello", :some_slot => 1)
+    new_doc = SomeName.named("hello", :some_slot => 1, :another_slot => "2")
+    new_doc.should_not == doc
+    new_doc.versions.previous.should == doc
+    new_doc.another_slot.should == "2"
+    new_doc = SomeName.named("hello", :some_slot => 2, :another_slot => "2")
+    new_doc.some_slot.should == 2
+  end
+  
+  it "should be able to accept store as a first argument" do
+    doc = SomeName.named("hello")
+    SomeName.named(StrokeDB.default_store,"hello").should == doc
+  end
+  
+  it "should pass block to a document that was not created yet" do
+    blk = Proc.new {}
+    doc = SomeName.named("hello",&blk)
+    doc.instance_variable_get(:@initialization_block).should == blk
+  end
+  
 end

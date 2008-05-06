@@ -69,10 +69,22 @@ describe "'Has many comments' view" do
     @view.find(:key => @article3).should == [ ]
   end
 
+  it "should find all the article's comments (simple key API)" do
+    @view.find(@article1).should == [@comment11, @comment12, @comment13]
+    @view.find(@article2).should == [@comment21, @comment22]
+    @view.find(@article3).should == [ ]
+  end
+
   it "should find all the article's comments in a reverse order" do
     @view.find(:key => @article1, :reverse => true).should == [@comment13, @comment12, @comment11]
     @view.find(:key => @article2, :reverse => true).should == [@comment22, @comment21]
     @view.find(:key => @article3, :reverse => true).should == [ ]
+  end
+
+  it "should find all the article's comments in a reverse order (simple key API)" do
+    @view.find(@article1, :reverse => true).should == [@comment13, @comment12, @comment11]
+    @view.find(@article2, :reverse => true).should == [@comment22, @comment21]
+    @view.find(@article3, :reverse => true).should == [ ]
   end
   
   it "should find all the article's comments with limit" do
@@ -161,6 +173,7 @@ describe View, "with block defined and saved" do
   
   it "should be findable with #[] syntax" do
     View["SomeView"].should == @view
+    View[StrokeDB.default_store, "SomeView"].should == @view
   end
   
 end
@@ -178,7 +191,37 @@ describe View, "with nsurl and block defined and saved" do
   end
   it "should be findable with #[] syntax" do
     View["SomeView", "http://strokedb.com/"].should == @view
+    View[StrokeDB.default_store, "SomeView", "http://strokedb.com/"].should == @view
   end
   
 end
+
+
+describe "View#traverse_key " do
+  
+  before(:each) do
+    setup_default_store
+    @v = View.new("a") do |view|
+      def view.map(*args); end
+    end
+  end
+  
+  it "should traverse misc keys" do
+    @v.traverse_key("a").should      == [["a"], ["a"]]
+    @v.traverse_key("z".."a").should == [["z"], ["a"]]
+    @v.traverse_key([:pfx, "z".."a"]).should == [[:pfx, "z"], [:pfx, "a"]]
+    @v.traverse_key([:pfx, "z".."a", :sfx]).should == [[:pfx, "z", :sfx], [:pfx, "a", :sfx]]
+    @v.traverse_key([:pfx, "z".."a", 1..3]).should == [[:pfx, "z", 1], [:pfx, "a", 3]]
+  end
+  
+  it "should traverse half-opened ranges correctly" do
+    @v.traverse_key(1..Infinity).should == [[1], []]
+    @v.traverse_key("z"..InfiniteString).should == [["z"], []]
+    t = Time.now
+    @v.traverse_key([:pfx, t..InfiniteTime]).should == [[:pfx, t], [:pfx]]
+  end
+  
+end
+
+
 
