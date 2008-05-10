@@ -1,9 +1,9 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-describe "New", ViewStorage do
+describe "New", MemoryViewStorage do
   
   before(:each) do
-    @view_storage = ViewStorage.new
+    @view_storage = MemoryViewStorage.new
   end
   
   it "should be empty" do
@@ -11,11 +11,11 @@ describe "New", ViewStorage do
   end
 end
 
-describe "Inserting single pair into", ViewStorage do
+describe "Inserting single pair into", MemoryViewStorage do
 
   before(:each) do
     setup_default_store
-    @view_storage = ViewStorage.new
+    @view_storage = MemoryViewStorage.new
     @insertion = lambda {|key, val| @view_storage.insert([[key, val]]) }
   end
 
@@ -27,11 +27,11 @@ describe "Inserting single pair into", ViewStorage do
 
 end
 
-describe "Inserting multiple pairs into", ViewStorage do
+describe "Inserting multiple pairs into", MemoryViewStorage do
 
   before(:each) do
     setup_default_store
-    @view_storage = ViewStorage.new
+    @view_storage = MemoryViewStorage.new
     @insertion = lambda do |keys, vals| 
       pairs = []
       keys.each_with_index {|key, i| pairs << [key, vals[i]]}
@@ -49,11 +49,11 @@ describe "Inserting multiple pairs into", ViewStorage do
 end
 
 
-describe "Replacing single pair in", ViewStorage do
+describe "Replacing single pair in", MemoryViewStorage do
 
   before(:each) do
     setup_default_store
-    @view_storage = ViewStorage.new
+    @view_storage = MemoryViewStorage.new
     @insertion = lambda {|key, val| @view_storage.insert([[key, val]]) }
     @replacement = lambda {|oldkey, oldval, key, val| @view_storage.replace([[oldkey, oldval]],[[key, val]]) }
   end
@@ -70,11 +70,11 @@ describe "Replacing single pair in", ViewStorage do
 
 end
 
-describe "Replacing multiple pairs in", ViewStorage do
+describe "Replacing multiple pairs in", MemoryViewStorage do
 
   before(:each) do
     setup_default_store
-    @view_storage = ViewStorage.new
+    @view_storage = MemoryViewStorage.new
     @insertion = lambda do |keys, vals| 
       pairs = []
       keys.each_with_index {|key, i| pairs << [key, vals[i]]}
@@ -105,11 +105,11 @@ describe "Replacing multiple pairs in", ViewStorage do
 
 end
 
-describe ViewStorage, "with some pairs inserted" do
+describe MemoryViewStorage, "with some pairs inserted" do
   
   before(:each) do
     setup_default_store
-    @view_storage = ViewStorage.new
+    @view_storage = MemoryViewStorage.new
     @view_storage.insert((1..100).to_a.map {|i| [DefaultKeyEncoder.encode(i),i]})
   end
   
