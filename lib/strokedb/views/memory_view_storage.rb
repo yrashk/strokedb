@@ -1,5 +1,5 @@
 module StrokeDB
-  class ViewStorage
+  class MemoryViewStorage
     attr_reader :storage, :options, :exists
     
     def initialize(options = {})

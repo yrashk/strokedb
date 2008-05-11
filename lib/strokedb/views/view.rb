@@ -237,7 +237,7 @@ module StrokeDB
     
     def storage
       # @storage ||= store.view_storages[self.uuid]
-      VIEW_STORAGES[uuid] ||= ViewStorage.new
+      VIEW_STORAGES[uuid] ||= MemoryViewStorage.new
     end
     private :storage
 
