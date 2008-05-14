@@ -19,6 +19,20 @@ describe "Document" do
     @document[SomeMeta].should == "some value"
   end
   
+  describe "with metaslot assigned, once saved and reloaded" do
+    
+    before(:each) do
+      @document[SomeMeta] = "some value"
+      @document.save!
+      @document = @document.reload
+    end
+    
+    it "should be able to read metaslot" do
+      @document[SomeMeta].should == "some value"
+    end
+    
+  end
+  
   
 
 end
