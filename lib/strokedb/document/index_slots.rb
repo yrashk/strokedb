@@ -44,7 +44,7 @@ end
 
 
 
-
+=begin
 
 
 ##########################################################
@@ -83,8 +83,8 @@ module StrokeDB
                 ]
               ]
             end
+          end
         end
-      end
       end
     end
 
@@ -182,6 +182,9 @@ module StrokeDB
       end
     end
   end
+  
+  
 end  
 
+=end
 
