@@ -276,7 +276,7 @@ module StrokeDB
   end
   
   # Note: we don't simply do Views = View to avoid "Views" in a meta name.
-  # This class is for Views["name"] only.
+  # This class is for Views["name"] syntax only.
   class Views
     def self.[](view_name)
       View[view_name]
