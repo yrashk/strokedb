@@ -301,6 +301,10 @@ describe "ImplementsSomeName with implements SomeName meta" do
     ImplementsSomeName.name.should == "ImplementsSomeName"
   end
   
+  it "should reference implemented meta" do
+    ImplementsSomeName.document.implements_metas.should == [SomeName.document]
+  end
+  
   
 end
 
@@ -362,6 +366,9 @@ describe "ImplementsSomeName with multiple implements" do
     ImplementsSomeName.name.should == "ImplementsSomeName"
   end
   
+  it "should reference implemented metas" do
+    ImplementsSomeName.document.implements_metas.to_set.should == [SomeName.document,SomeName1.document].to_set
+  end
   
 end
 
