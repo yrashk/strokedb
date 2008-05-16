@@ -89,8 +89,10 @@ module StrokeDB
     end
 
     def implements(another_meta)
-      values = @args.select{|a| a.is_a?(Hash) }.first
+      values = @args.find{|a| a.is_a?(Hash) }
       values.merge!(another_meta.document.to_raw.delete_if {|k,v| ['name','uuid','version','previous_version','meta'].member?(k) })
+      values[:implements_metas] ||= []
+      values[:implements_metas] << another_meta.document
       include(another_meta)
       self
     end
