@@ -203,7 +203,7 @@ module StrokeDB
     # If slot was not found, it will return <tt>nil</tt>
     #
     def [](slotname)
-      slotname = slotname.document.uuid if slotname.is_a?(Meta) && slotname.is_a?(Module)
+      slotname = slotname.document.uuid if (slotname.is_a?(Meta) && slotname.is_a?(Module)) || (slotname == Meta)
       @slots[slotname.to_s].value rescue nil
     end
 
@@ -213,7 +213,7 @@ module StrokeDB
     #   document[:slot_1] = "some value"
     #
     def []=(slotname, value)
-      slotname = slotname.document.uuid if slotname.is_a?(Meta) && slotname.is_a?(Module)
+      slotname = slotname.document.uuid  if (slotname.is_a?(Meta) && slotname.is_a?(Module)) || (slotname == Meta)
       slotname = slotname.to_s
 
       (@slots[slotname] ||= Slot.new(self, slotname)).value = value

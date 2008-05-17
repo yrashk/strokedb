@@ -10,6 +10,11 @@ describe "Document" do
   end
 
   it "should assign a uuid-named slot for metaslot" do
+    @document[Meta] = SomeMeta
+    @document.slotnames.should include(Meta.document.uuid)
+  end
+
+  it "should assign a uuid-named slot for metaslot" do
     @document[SomeMeta] = "some value"
     @document.slotnames.should include(SomeMeta.document.uuid)
   end
