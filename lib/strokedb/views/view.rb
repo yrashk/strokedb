@@ -1,6 +1,5 @@
 module StrokeDB
   VIEW_CACHE = {}
-  VIEW_STORAGES = {}
   
   View = Meta.new do 
     
@@ -236,9 +235,9 @@ module StrokeDB
     private :map_with_encoding
     
     def storage
-      # @storage ||= store.view_storages[self.uuid]
-      VIEW_STORAGES[uuid] ||= MemoryViewStorage.new
+      @storage ||= store.view_storage(self.uuid)
     end
+    
     private :storage
 
     # These are defaults (to be overriden in View.new{|v| ... })

@@ -274,7 +274,7 @@ module StrokeDB
     end
     
     def info(m)
-      STDOUT.puts "SkiplistVolume#info: #{m}"
+      DEBUG { STDOUT.puts "SkiplistVolume#info: #{m}" }
     end
     
     def error(m)

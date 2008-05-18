@@ -1,6 +1,7 @@
 module StrokeDB
   class Store
-
+    
+    
     # Tells a store to update a view on document save.
     #
     def register_view(v, metas = nil) #:nodoc:
@@ -50,6 +51,12 @@ module StrokeDB
         :rest => [].to_set
         # meta_name => [...].to_set
       }
+    end
+    
+
+    def view_storage(uuid)
+      @view_storages ||= {}
+      @view_storages[uuid] ||= FileViewStorage.new(:path => File.join(@options['path'],"views/#{uuid}"))
     end
   end
 end
