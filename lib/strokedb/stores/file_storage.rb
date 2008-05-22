@@ -12,7 +12,7 @@ module StrokeDB
 
     def find(uuid, version=nil, opts = {}, &block)
       uuid_version = uuid + (version ? ".#{version}" : "")
-      key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : NIL_UUID.to_raw_uuid)
+      key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : RAW_FULL_UUID)
       if (ptr = @uindex.find(key)) && (ptr != "\x00" * 20) # no way ptr will be zero
         raw_doc = StrokeDB::deserialize(read_at_ptr(ptr))[0]
         unless opts[:no_instantiation]
@@ -52,7 +52,7 @@ module StrokeDB
       position = @archive.insert(StrokeDB::serialize([document,timestamp.counter]))
       ptr = DistributedPointer.pack(@archive.raw_uuid,position)
       uuid = document.raw_uuid
-      @uindex.insert(uuid + RAW_NIL_UUID, ptr) if options[:head] || !document.is_a?(VersionedDocument)
+      @uindex.insert(uuid + RAW_FULL_UUID, ptr) if options[:head] || !document.is_a?(VersionedDocument)
       @uindex.insert(uuid + document.version.to_raw_uuid, ptr) unless options[:head]
     rescue ArchiveVolume::VolumeCapacityExceeded	 
       create_new_archive!
