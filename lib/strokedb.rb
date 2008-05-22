@@ -13,7 +13,7 @@ module StrokeDB
         MAIN = 0
        MAJOR = 0
        MINOR = 2
-  PATCHLEVEL = 1
+  PATCHLEVEL = 2
   
   VERSION = [MAIN.to_s, MAJOR.to_s, MINOR.to_s, PATCHLEVEL.to_s].join('.')
   VERSION_STRING = VERSION + (RUBY_PLATFORM =~ /java/ ? '-java' : '')
