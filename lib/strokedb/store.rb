@@ -49,11 +49,11 @@ module StrokeDB
         @index_store.save!
       end
     end  
-    
+
     def save_as_head!(doc)
       @storage.save_as_head!(doc,timestamp)
     end
-    
+
 
 
     def each(options = {},&block)
@@ -83,7 +83,10 @@ module StrokeDB
     def autosync!
       @autosync_mutex ||= Mutex.new
       @autosync = nil if @autosync && !@autosync.status
-      at_exit { stop_autosync! }
+      @stop_autosync = false
+      at_exit do
+         stop_autosync! unless @stop_autosync
+       end
       @autosync ||= Thread.new do 
         until @stop_autosync
           @autosync_mutex.synchronize { storage.sync_chained_storages! }
@@ -91,10 +94,19 @@ module StrokeDB
         end
       end
     end
+    
+    def autosync?
+      @autosync && !@autosync.status
+    end
 
     def stop_autosync!
       if @autosync_mutex
-        @autosync_mutex.synchronize { @stop_autosync = true; storage.sync_chained_storages! }
+        @autosync_mutex.synchronize do
+          unless @stop_autosync
+            @stop_autosync = true
+            storage.sync_chained_storages! 
+          end
+        end
       end
     end
 

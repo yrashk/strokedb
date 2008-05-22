@@ -13,15 +13,15 @@ def setup_default_store(store=nil)
   end
   @path = TEMP_STORAGES
   FileUtils.rm_rf @path
-      
+
   @storage = if ENV['STORAGE'].to_s.downcase == 'file'
     StrokeDB::FileStorage.new(:path => @path + '/file_storage')
   else
     StrokeDB::MemoryStorage.new
   end
-  
-  StrokeDB.stub!(:default_store).and_return(StrokeDB::Store.new(:storage => @storage,:index => @index, 
-                                                                :path => @path))
+
+  $store = StrokeDB::Store.new(:storage => @storage,:index => @index, :path => @path)
+  StrokeDB.stub!(:default_store).and_return($store)
   StrokeDB.default_store
 end
 
@@ -40,4 +40,19 @@ def setup_index(store=nil)
   @index.document_store = store
   store.index_store = @index
   @index
+end
+
+Spec::Runner.configure do |config|
+  config.after(:all) do
+    
+    if ENV['STORAGE'].to_s.downcase == 'file'
+      ObjectSpace.each_object do |obj|
+        obj.stop_autosync! if obj.is_a?(Store)
+      end
+      
+      ObjectSpace.each_object do |obj|
+        obj.close if obj.is_a?(::File) rescue nil
+      end
+    end
+  end
 end
