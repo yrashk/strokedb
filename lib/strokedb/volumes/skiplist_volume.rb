@@ -112,6 +112,10 @@ module StrokeDB
       @list.search(*args)
     end
     
+    def each(*args, &block)
+      @list.each(*args, &block)
+    end
+    
     def find(key)
       @list.find(key)
     end
