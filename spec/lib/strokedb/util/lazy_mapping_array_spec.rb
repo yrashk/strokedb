@@ -18,7 +18,7 @@ describe "LazyMappingArray instance" do
   end
 end
 
-describe "LazyMappingArray instance with block specified" do
+describe "LazyMappingArray instance with map/unmap specified" do
   before(:each) do
     @original = [1,2,3,[1],[2]]
     @mapper = proc {|arg| arg.to_s }
@@ -166,10 +166,9 @@ describe "LazyMappingArray instance with block specified" do
     @array.should include("1")
     @array.should_not include("10")
   end
-  
+
   it "should be == to similar non-lazy array" do
-    @array.should == @original
+    @array.should == @original.map{|v| @mapper.call(v)}
   end
-
+  
 end
-
