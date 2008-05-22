@@ -99,7 +99,7 @@ module StrokeDB
       def initialize(document)
         @document = document
         _meta = document[:meta]
-        concat [_meta].flatten.compact.map{|v| v.is_a?(DocumentReferenceValue) ? v.load : v}
+        concat _meta.to_a
       end
 
       def <<(meta)
@@ -204,6 +204,7 @@ module StrokeDB
     # If slot was not found, it will return <tt>nil</tt>
     #
     def [](slotname)
+      slotname = slotname.document.uuid if (slotname.is_a?(Meta) && slotname.is_a?(Module)) || (slotname == Meta)
       @slots[slotname.to_s].value rescue nil
     end
 
@@ -213,6 +214,7 @@ module StrokeDB
     #   document[:slot_1] = "some value"
     #
     def []=(slotname, value)
+      slotname = slotname.document.uuid  if (slotname.is_a?(Meta) && slotname.is_a?(Module)) || (slotname == Meta)
       slotname = slotname.to_s
 
       (@slots[slotname] ||= Slot.new(self, slotname)).value = value
@@ -283,7 +285,11 @@ module StrokeDB
           if %w(version previous_version).member?(k) && v = self[k]
             s << "#{k}: #{v[0,4]}..., "
           else
-            s << "#{k}: #{self[k].inspect}, "
+            if k.match(/^#{UUID_RE}$/)
+              s << "[#{store.find(k).name}]: #{self[k].inspect}, " rescue s << "#{k}: #{self[k].inspect}, "
+            else
+              s << "#{k}: #{self[k].inspect}, "
+            end
           end
         end
 
@@ -324,7 +330,7 @@ module StrokeDB
         raw_slots[k.to_s] = v.to_raw
       end
 
-      raw_slots
+      raw_slots.to_raw
     end
 
     def to_optimized_raw #:nodoc:
@@ -334,8 +340,8 @@ module StrokeDB
     #
     # Creates a document from a serialized representation
     #
-    def self.from_raw(store, raw_slots, opts = {}) #:nodoc:
-      doc = new(store, raw_slots, true)
+    def self.from_raw(store, raw_slots, opts = {}, &block) #:nodoc:
+      doc = new(store, raw_slots, true, &block)
 
       collect_meta_modules(store, raw_slots['meta']).each do |meta_module|
         unless doc.is_a? meta_module
@@ -662,7 +668,6 @@ module StrokeDB
     # initialize slots from a raw representation
     def initialize_raw_slots(slots) #:nodoc:
       @slots = {}
-
       slots.each do |name,value|
         s = Slot.new(self, name)
         s.raw_value = value

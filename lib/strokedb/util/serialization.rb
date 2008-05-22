@@ -7,6 +7,18 @@ module StrokeDB
       end
     end
   end
+
+  class ::Hash
+    def to_raw
+      raw_hash = {}
+      map do |k,v|
+        _k = k.respond_to?(:to_raw) ? k.to_raw : k
+        _v = v.respond_to?(:to_raw) ? v.to_raw : v
+        raw_hash[_k] = _v
+      end
+      raw_hash
+    end
+  end
   
   module JsonSerializationMethod
     def serialize(x)

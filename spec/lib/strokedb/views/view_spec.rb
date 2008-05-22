@@ -8,7 +8,7 @@ describe View, "without a name" do
   
   it "could not be initialized" do
     lambda do 
-      @post_comments = View.define!
+      @post_comments = View.named()
     end.should raise_error(ArgumentError)
   end
   
@@ -20,14 +20,15 @@ describe View, "without #map method defined" do
   end
   
   it "should raise exception when view is created" do
+    pending("not sure we need it")
     lambda { 
-       View.define!(:name => "post_comments_invalid")
+       View.named("post_comments_invalid")
     }.should raise_error(InvalidViewError)
   end
   
   it "should raise exception when #map is used" do
     Comment = Meta.new
-    @post_comments = View.define!(:name => "post_comments_invalid", :only => ["comment"])
+    @post_comments = View.named("post_comments_invalid", :only => ["comment"])
     c = Comment.new :text => "hello"
     lambda { @post_comments.map(c.uuid, c) }.should raise_error(InvalidViewError)
   end
@@ -38,7 +39,7 @@ describe "'Has many comments' view" do
   
   before(:all) do
     setup_default_store
-    @view = View.define!("post_comments") do |view|
+    @view = View.named("post_comments") do |view|
       def view.map(uuid, doc)
         doc['type'] =~ /comment/ ? [[[doc.parent, doc.created_at], doc]] : nil
       end
@@ -127,11 +128,17 @@ describe View, "with :only option" do
       Comment          = Meta.new 
     end
     
-    @generic   = View.new("generic", &block)
-    @comments  = View.new("comments", :only => ["Comment"], &block)
-    @c_and_a   = View.new("comments_and_articles", :only => ["Comment", "Article"], &block)
-    @sponsored = View.new("sponsored", :only => ["SponsoredArticle"], &block) 
+    @generic   = View.named("generic", &block)
+    @comments  = View.named("comments", :only => ["Comment"], &block)
+    @c_and_a   = View.named("comments_and_articles", :only => ["Comment", "Article"], &block)
+    @sponsored = View.named("sponsored", :only => ["SponsoredArticle"], &block) 
   end
+
+  after(:each) do
+    StrokeDB.send(:remove_const, :VIEW_CACHE) if defined?(StrokeDB::VIEW_CACHE)
+    StrokeDB::VIEW_CACHE = {}
+  end
+  
   it "should update articles only" do
     a = (A::Article + A::SponsoredArticle).create!(:title => "This is a sponsored article")    
     @generic.should      be_updated
@@ -153,7 +160,7 @@ describe View, "with block defined and saved" do
   
   before(:each) do
     setup_default_store
-    @view = View.define!("SomeView") do |view|
+    @view = View.named("SomeView") do |view|
       def view.map(uuid, doc)
         [[doc,doc]]
       end
@@ -171,9 +178,29 @@ describe View, "with block defined and saved" do
     @view.send(:storage).object_id.should == storage_id
   end
   
-  it "should be findable with #[] syntax" do
-    View["SomeView"].should == @view
-    View[StrokeDB.default_store, "SomeView"].should == @view
+  it "should be findable with #named syntax" do
+    View.named("SomeView").should == @view
+  end
+
+  it "should set block for found-again view if it is supplied" do
+    @view = View.named("SomeView") do |view|
+      def view.map(uuid, doc)
+        [[doc,doc]]
+      end
+    end
+    lambda { @view.map(1,2).should == [[1,2]]}.should_not raise_error(InvalidViewError)
+  end
+  
+  it "should set block for found-again view if it is supplied even if it was not cached" do
+    StrokeDB.send(:remove_const, :VIEW_CACHE) if defined?(StrokeDB::VIEW_CACHE)
+    StrokeDB::VIEW_CACHE = {}
+    
+    @view = View.named("SomeView") do |view|
+      def view.map(uuid, doc)
+        [[doc,doc]]
+      end
+    end
+    lambda { @view.map(1,2).should == [[1,2]]}.should_not raise_error(InvalidViewError)
   end
   
 end
@@ -183,15 +210,14 @@ describe View, "with nsurl and block defined and saved" do
   
   before(:each) do
     setup_default_store
-    @view = View.define!("SomeView", :nsurl => "http://strokedb.com/") do |view|
+    @view = View.named("SomeView", :nsurl => "http://strokedb.com/") do |view|
       def view.map(uuid, doc)
         [[doc,doc]]
       end
     end
   end
-  it "should be findable with #[] syntax" do
-    View["SomeView", "http://strokedb.com/"].should == @view
-    View[StrokeDB.default_store, "SomeView", "http://strokedb.com/"].should == @view
+  it "should be findable with #named syntax" do
+    View.named("SomeView").should == @view
   end
   
 end
@@ -201,7 +227,7 @@ describe "View#traverse_key " do
   
   before(:each) do
     setup_default_store
-    @v = View.new("a") do |view|
+    @v = View.named("a") do |view|
       def view.map(*args); end
     end
   end

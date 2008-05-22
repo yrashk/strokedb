@@ -51,7 +51,7 @@ module StrokeDB
       # Returns <tt>nil</tt> if there is no previous version
       #
       def previous
-        self[document.previous_version]
+        document.previous_version ? self[document.previous_version] : nil
       end
 
       #

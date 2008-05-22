@@ -1,4 +1,6 @@
 module StrokeDB
+  RAW_HEAD_VERSION_UUID         = Util.sha1_uuid("strokedb-internal:head-version").to_raw_uuid
+
   class FileStorage < Storage
 
     def initialize(options = {})
@@ -7,16 +9,16 @@ module StrokeDB
     end
 
     def save_as_head!(document, timestamp)
-      write(document.uuid, document, timestamp)
+      save!(document,timestamp, :head => true)
     end      
 
-    def find(uuid, version=nil, opts = {})
+    def find(uuid, version=nil, opts = {}, &block)
       uuid_version = uuid + (version ? ".#{version}" : "")
-      key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : NIL_UUID.to_raw_uuid)
-      if (ptr = @uindex.find(key)) && (ptr != "\x00" * 20) # no way ptr will be zero
-        raw_doc = StrokeDB::deserialize(read_at_ptr(ptr))[0]
+      key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : RAW_HEAD_VERSION_UUID)
+      if (ptr = @uindex.find(key)) && (ptr[0,20] != "\x00" * 20) # no way ptr will be zero
+        raw_doc = StrokeDB::deserialize(read_at_ptr(ptr[0,20]))
         unless opts[:no_instantiation]
-          doc = Document.from_raw(opts[:store], raw_doc.freeze) # FIXME: there should be a better source for store (probably)
+          doc = Document.from_raw(opts[:store], raw_doc.freeze, &block) # FIXME: there should be a better source for store (probably)
           doc.extend(VersionedDocument) if version
           doc
         else
@@ -26,8 +28,10 @@ module StrokeDB
     end
 
     def include?(uuid,version=nil)
-      !!find(uuid,version,:no_instantiation => true)
+      key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : RAW_HEAD_VERSION_UUID)
+      !@uindex.find(key).nil?
     end
+    
     # using #include? to match with Array, but #contains sounds much nicer
     alias_method :contains?, :include?
 
@@ -40,20 +44,23 @@ module StrokeDB
     def each(options = {})
       after = options[:after_timestamp]
       include_versions = options[:include_versions]
-      @container.each do |key, value|
-        next if after && (value[1] <= after)
-        if uuid_match = key.match(/^#{UUID_RE}$/) || (include_versions && uuid_match = key.match(/#{UUID_RE}./) )
-          yield Document.from_raw(options[:store],value[0])
+      @uindex.each do |key, value|
+        timestamp = StrokeDB.deserialize(read_at_ptr(value[20,20]))
+        next if after && (timestamp <= after)
+        if key[16,16] == RAW_HEAD_VERSION_UUID || include_versions
+          yield Document.from_raw(options[:store],StrokeDB.deserialize(read_at_ptr(value[0,20])))
         end
       end
     end
 
     def perform_save!(document, timestamp, options = {})
-      position = @archive.insert(StrokeDB::serialize([document,timestamp.counter]))
+      ts_position = @archive.insert(StrokeDB::serialize(timestamp.counter))
+      position = @archive.insert(StrokeDB::serialize(document))
+      ts_ptr = DistributedPointer.pack(@archive.raw_uuid,ts_position)
       ptr = DistributedPointer.pack(@archive.raw_uuid,position)
       uuid = document.raw_uuid
-      @uindex.insert(uuid + RAW_NIL_UUID, ptr) if options[:head] || !document.is_a?(VersionedDocument)
-      @uindex.insert(uuid + document.version.to_raw_uuid, ptr) unless options[:head]
+      @uindex.insert(uuid + RAW_HEAD_VERSION_UUID, ptr + ts_ptr) if options[:head] || !document.is_a?(VersionedDocument)
+      @uindex.insert(uuid + document.version.to_raw_uuid, ptr + ts_ptr) unless options[:head]
     rescue ArchiveVolume::VolumeCapacityExceeded	 
       create_new_archive!
     end

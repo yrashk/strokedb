@@ -8,12 +8,14 @@ require_one_of 'json', 'json_pure'
 require 'set'
 require 'fileutils'
 
+
+
 module StrokeDB
   # Version:
         MAIN = 0
        MAJOR = 0
        MINOR = 2
-  PATCHLEVEL = 1
+  PATCHLEVEL = 2
   
   VERSION = [MAIN.to_s, MAJOR.to_s, MINOR.to_s, PATCHLEVEL.to_s].join('.')
   VERSION_STRING = VERSION + (RUBY_PLATFORM =~ /java/ ? '-java' : '')
@@ -41,8 +43,7 @@ module StrokeDB
   # so called Nil UUID
   NIL_UUID                      = "00000000-0000-0000-0000-000000000000"
   RAW_NIL_UUID                  = "\x00" * 16
-
-
+  
   class <<self
     def default_store
       StrokeDB.default_config.stores[:default] rescue nil
@@ -71,6 +72,7 @@ module StrokeDB
 end
 
 require 'strokedb/nsurl'
+
 require 'strokedb/util'
 require 'strokedb/document'
 require 'strokedb/config'
