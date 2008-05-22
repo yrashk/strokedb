@@ -166,6 +166,10 @@ describe "LazyMappingArray instance with block specified" do
     @array.should include("1")
     @array.should_not include("10")
   end
+  
+  it "should be == to similar non-lazy array" do
+    @array.should == @original
+  end
 
 end
 
