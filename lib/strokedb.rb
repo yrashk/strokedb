@@ -41,6 +41,8 @@ module StrokeDB
   # so called Nil UUID
   NIL_UUID                      = "00000000-0000-0000-0000-000000000000"
   RAW_NIL_UUID                  = "\x00" * 16
+  
+  RAW_FULL_UUID                 = "\xff" * 16
 
 
   class <<self
