@@ -8,6 +8,8 @@ require_one_of 'json', 'json_pure'
 require 'set'
 require 'fileutils'
 
+
+
 module StrokeDB
   # Version:
         MAIN = 0
@@ -42,9 +44,6 @@ module StrokeDB
   NIL_UUID                      = "00000000-0000-0000-0000-000000000000"
   RAW_NIL_UUID                  = "\x00" * 16
   
-  RAW_FULL_UUID                 = "\xff" * 16
-
-
   class <<self
     def default_store
       StrokeDB.default_config.stores[:default] rescue nil
@@ -73,6 +72,7 @@ module StrokeDB
 end
 
 require 'strokedb/nsurl'
+
 require 'strokedb/util'
 require 'strokedb/document'
 require 'strokedb/config'
