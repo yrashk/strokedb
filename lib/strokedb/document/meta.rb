@@ -127,7 +127,7 @@ module StrokeDB
       raise ArgumentError, "you should specify name" unless args[1].is_a?(String)
       name = args[1]
       uuid = ::StrokeDB::Util.sha1_uuid("#{document.uuid}:#{name}")
-      unless doc = find(args[0],uuid)
+      unless doc = find(args[0],uuid,&block)
         doc = create!(args[0],args.last.reverse_merge(:uuid => uuid),&block)
       else
         doc.update_slots!(args.last)
@@ -192,7 +192,7 @@ module StrokeDB
     #   all_my_joes  = User.find(my_store, :name => "joe")
     #   oh_my        = User.find(my_store, "1e3d02cc-0769-4bd8-9113-e033b246b013")
     #
-    def find(*args)
+    def find(*args, &block)
       if args.empty? || !args.first.respond_to?(:search)
         raise NoDefaultStoreError unless StrokeDB.default_store
         
@@ -209,8 +209,7 @@ module StrokeDB
       case args[1]
       when String
         raise ArgumentError, "Invalid UUID" unless args[1].match(UUID_RE)
-
-        store.search(opt.merge({ :uuid => args[1] })).first
+        store.find(args[1], &block)
       when Hash
         store.search opt.merge(args[1])
       when nil

@@ -10,13 +10,13 @@ module StrokeDB
       save!(document,timestamp, :head => true)
 		end      
     
-    def find(uuid, version=nil, opts = {})
+    def find(uuid, version=nil, opts = {},&block)
       uuid_version = uuid + (version ? ".#{version}" : "")
       unless raw_doc = read(uuid_version)
-        authoritative_source.find(uuid,version,opts) if authoritative_source
+        authoritative_source.find(uuid,version,opts,&block) if authoritative_source
       else
         unless opts[:no_instantiation]
-          doc = Document.from_raw(opts[:store], raw_doc.freeze) # FIXME: there should be a better source for store (probably)
+          doc = Document.from_raw(opts[:store], raw_doc.freeze, &block) # FIXME: there should be a better source for store (probably)
           doc.extend(VersionedDocument) if version
           doc
         else

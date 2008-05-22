@@ -16,8 +16,8 @@ module StrokeDB
       raise "Missing chunk storage" unless @storage
     end
 
-    def find(uuid, version=nil, opts = {})
-      @storage.find(uuid,version,opts.merge(:store => self))
+    def find(uuid, version=nil, opts = {}, &block)
+      @storage.find(uuid,version,opts.merge(:store => self),&block)
     end
 
     def search(*args)
