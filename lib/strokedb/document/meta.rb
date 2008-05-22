@@ -124,7 +124,7 @@ module StrokeDB
     def named(*args,&block)
       args.unshift StrokeDB.default_store unless args.first.is_a?(StrokeDB::Store)
       args << {} unless args.last.is_a?(Hash)
-      raise InvalidArgumentError, "you should specify name" unless args[1].is_a?(String)
+      raise ArgumentError, "you should specify name" unless args[1].is_a?(String)
       name = args[1]
       uuid = ::StrokeDB::Util.sha1_uuid("#{document.uuid}:#{name}")
       unless doc = find(args[0],uuid)

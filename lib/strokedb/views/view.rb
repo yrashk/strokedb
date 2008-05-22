@@ -32,6 +32,11 @@ module StrokeDB
       if initialization_block = viewdoc.instance_variable_get(:@initialization_block) || initialization_block = VIEW_CACHE[viewdoc.uuid]
         initialization_block.call(viewdoc)
       end
+      # name = viewdoc['name']
+      # raise ArgumentError, "View name must be specified!" unless name
+      nsurl = viewdoc['nsurl'] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl # FIXME: it is not nice (and the same shit is in meta.rb)
+      # viewdoc.instance_variable_set(:@uuid, ::StrokeDB::Util.sha1_uuid("view:#{nsurl}##{name}"))
+      
       viewdoc.store.register_view(viewdoc, viewdoc['only'])
     end
     
@@ -274,58 +279,6 @@ module StrokeDB
     end
   end
   
-  # Note: we don't simply do Views = View to avoid "Views" in a meta name.
-  # This class is for Views["name"] syntax only.
-  class Views
-    def self.[](view_name)
-      View[view_name]
-    end
-  end
-  
-  class << View
-    def [](*args) # FIXME: it is not nice
-      store = args.first.is_a?(Store) ? args.shift : StrokeDB.default_store
-      name = args[0]
-      nsurl = args[1] || (name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl)
-      uuid = ::StrokeDB::Util.sha1_uuid("view:#{nsurl}##{name}") 
-      store.find(uuid)
-    end
-
-    alias :original_new :new
-    # Define a view. 
-    #
-    # Examples
-    #   View.new("view_name", :option => "value") do |viewdoc| ... end
-    #   View.new(:name => "view_name", :option => "value") do |viewdoc| ... end
-    #   View.new(store, "view_name", :option => "value") do |viewdoc| ... end
-    #   View.new(store, :name => "view_name", :option => "value") do |viewdoc| ... end
-    #
-    def new(*args, &block)
-      
-      store, name, options = extract(Store, String, Hash, args)
-      
-      store ||= StrokeDB.default_store
-      options = options && options.stringify_keys || {}
-      name ||= options['name']
-      
-      raise ArgumentError, "View name must be specified!" unless name
-      
-      nsurl = options['nsurl'] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl # FIXME: it is not nice (and the same shit is in meta.rb)
-      
-      options['uuid'] = ::StrokeDB::Util.sha1_uuid("view:#{nsurl}##{name}") 
-      
-      unless v = find(options['uuid'])
-        v = original_new(store, options, &block)
-      end
-      v
-    end
-        
-    alias :define :new
-    alias :define! :create!
-    
-  end
-  
-
   class InvalidViewError < StandardError ; end
   
 end
