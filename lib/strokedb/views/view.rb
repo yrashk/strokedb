@@ -37,11 +37,11 @@ module StrokeDB
       nsurl = viewdoc['nsurl'] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl # FIXME: it is not nice (and the same shit is in meta.rb)
       # viewdoc.instance_variable_set(:@uuid, ::StrokeDB::Util.sha1_uuid("view:#{nsurl}##{name}"))
       
-      viewdoc.store.register_view(viewdoc, viewdoc['only'])
     end
     
     after_save do |viewdoc|
       VIEW_CACHE[viewdoc.uuid] = viewdoc.instance_variable_get(:@initialization_block)
+      viewdoc.store.register_view(viewdoc, viewdoc['only'])
     end
     
     DEFAULT_FIND_OPTIONS = {
