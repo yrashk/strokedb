@@ -98,7 +98,7 @@ module StrokeDB
       def initialize(document)
         @document = document
         _meta = document[:meta]
-        concat [_meta].flatten.compact.map{|v| v.is_a?(DocumentReferenceValue) ? v.load : v}
+        concat _meta.to_a
       end
 
       def <<(meta)
