@@ -11,10 +11,16 @@ def setup_default_store(store=nil)
     StrokeDB.stub!(:default_store).and_return(store)
     return store
   end
-  @mem_storage = StrokeDB::MemoryStorage.new
   @path = TEMP_STORAGES
   FileUtils.rm_rf @path
-  StrokeDB.stub!(:default_store).and_return(StrokeDB::Store.new(:storage => @mem_storage,:index => @index, 
+      
+  @storage = if ENV['STORAGE'].to_s.downcase == 'file'
+    StrokeDB::FileStorage.new(:path => @path + '/file_storage')
+  else
+    StrokeDB::MemoryStorage.new
+  end
+  
+  StrokeDB.stub!(:default_store).and_return(StrokeDB::Store.new(:storage => @storage,:index => @index, 
                                                                 :path => @path))
   StrokeDB.default_store
 end
