@@ -224,7 +224,7 @@ describe "Document", :shared => true do
     @document.metas_slot = [Meta]
     @document = @document.save!.reload
     @document.meta_slot.should == Meta.document(@document.store)
-    @document.metas_slot.should == [Meta.document(@document.store)]
+    @document.metas_slot.to_a.should == [Meta.document(@document.store)]
   end
 
   it "should not save itself once declared immutable" do

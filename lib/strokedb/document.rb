@@ -329,7 +329,7 @@ module StrokeDB
         raw_slots[k.to_s] = v.to_raw
       end
 
-      raw_slots
+      raw_slots.to_raw
     end
 
     def to_optimized_raw #:nodoc:
@@ -339,8 +339,8 @@ module StrokeDB
     #
     # Creates a document from a serialized representation
     #
-    def self.from_raw(store, raw_slots, opts = {}) #:nodoc:
-      doc = new(store, raw_slots, true)
+    def self.from_raw(store, raw_slots, opts = {}, &block) #:nodoc:
+      doc = new(store, raw_slots, true, &block)
 
       collect_meta_modules(store, raw_slots['meta']).each do |meta_module|
         unless doc.is_a? meta_module
@@ -667,7 +667,6 @@ module StrokeDB
     # initialize slots from a raw representation
     def initialize_raw_slots(slots) #:nodoc:
       @slots = {}
-
       slots.each do |name,value|
         s = Slot.new(self, name)
         s.raw_value = value
