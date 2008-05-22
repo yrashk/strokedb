@@ -175,6 +175,27 @@ describe View, "with block defined and saved" do
     View["SomeView"].should == @view
     View[StrokeDB.default_store, "SomeView"].should == @view
   end
+
+  it "should set block for found-again view if it is supplied" do
+    @view = View.define!("SomeView") do |view|
+      def view.map(uuid, doc)
+        [[doc,doc]]
+      end
+    end
+    lambda { @view.map(1,2).should == [[1,2]]}.should_not raise_error(InvalidViewError)
+  end
+  
+  it "should set block for found-again view if it is supplied even if it was not cached" do
+    StrokeDB.send(:remove_const, :VIEW_CACHE) if defined?(StrokeDB::VIEW_CACHE)
+    StrokeDB::VIEW_CACHE = {}
+    
+    @view = View.define!("SomeView") do |view|
+      def view.map(uuid, doc)
+        [[doc,doc]]
+      end
+    end
+    lambda { @view.map(1,2).should == [[1,2]]}.should_not raise_error(InvalidViewError)
+  end
   
 end
 
