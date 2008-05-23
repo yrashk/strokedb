@@ -1,9 +1,9 @@
 module StrokeDB
   
-  ByMetas = View.new "strokedb_all_docs_by_metas" do |view|
+  ByMetas = View.named "strokedb_all_docs_by_metas" do |view|
     def view.map(uuid, doc)
-      doc.metas.each do |meta|
-        
+      doc.metas.map do |meta|
+        [meta, doc]
       end
     end
   end
