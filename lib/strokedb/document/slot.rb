@@ -11,6 +11,7 @@ module StrokeDB
       super(*args)
       @modification_callback.call if @modification_callback
     end
+    
   end
 
   class ArraySlotValue < LazyMappingArray
@@ -70,6 +71,7 @@ module StrokeDB
       "#<DocRef #{self[0,5]}..>"
     end
     alias :to_raw :str
+    alias :to_s :str
 
     def ==(v)
       case v
@@ -160,7 +162,7 @@ module StrokeDB
     def decode_value(v)
       case v
       when VERSIONREF
-        DocumentReferenceValue.new(v, doc)
+        DocumentReferenceValue.new(v.to_s, doc)
       when DUMP_PREFIX_RE
         StrokeDB::deserialize(v[7, v.length-7])
       when Array

@@ -135,6 +135,10 @@ module StrokeDB
     def to_a
        Array.new(map{|v| v})
     end
+    
+    def ==(arr)
+      to_a == arr
+    end
 
     def class
       Array

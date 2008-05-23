@@ -112,6 +112,10 @@ module StrokeDB
       @list.search(*args)
     end
     
+    def each(*args, &block)
+      @list.each(*args, &block)
+    end
+    
     def find(key)
       @list.find(key)
     end
@@ -274,7 +278,7 @@ module StrokeDB
     end
     
     def info(m)
-      STDOUT.puts "SkiplistVolume#info: #{m}"
+      DEBUG { STDOUT.puts "SkiplistVolume#info: #{m}" }
     end
     
     def error(m)

@@ -84,7 +84,7 @@ describe "Non-empty store" do
   end
 
   it "should report versioned document that does not exist as such" do
-    @store.include?(@documents.first.uuid,'ouch, there is no way such version could be generated').should == false
+    @store.include?(@documents.first.uuid,StrokeDB::Util.random_uuid).should == false
   end
 
   it "should report document that does not exist as such" do
@@ -102,7 +102,7 @@ describe "Non-empty store" do
   end
 
   it "should not find a versioned document with version that does not exist" do
-    @store.find(@documents.first.uuid,'absolutely absurd version').should be_nil
+    @store.find(@documents.first.uuid,StrokeDB::Util.random_uuid).should be_nil
   end
 
 
