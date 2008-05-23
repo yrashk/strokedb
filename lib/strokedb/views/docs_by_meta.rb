@@ -1,6 +1,6 @@
 module StrokeDB
   
-  ByMetas = View.define! "" do |view|
+  ByMetas = View.new "strokedb_all_docs_by_metas" do |view|
     def view.map(uuid, doc)
       doc.metas.each do |meta|
         
