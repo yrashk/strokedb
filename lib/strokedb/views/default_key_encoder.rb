@@ -76,6 +76,13 @@ module StrokeDB
     end
   end
   
+  class <<Meta
+    AT_SIGN = "#".freeze
+    def default_key_encode
+      AT_SIGN + meta_uuid
+    end
+  end
+  
   module DefaultKeyEncoder
     
     # nil       -> "A"  
@@ -86,6 +93,7 @@ module StrokeDB
     # Time      -> "T<xmlschema>"
     # Array     -> "<elem1 elem2 ...>"
     # Document  -> "@<UUID>"
+    # Meta      -> "#<UUID>"
     # 
     def self.encode(json)
       json.default_key_encode
@@ -98,6 +106,7 @@ module StrokeDB
     S = "S".freeze
     T = "T".freeze
     X = "@".freeze
+    M = "#".freeze
     S_= " ".freeze
     R = (1..-1).freeze
     
@@ -124,6 +133,8 @@ module StrokeDB
         when S
           token[R]
         when X
+          token[R]
+        when M
           token[R]
         when T
           Time.xmlschema(token[R]).localtime

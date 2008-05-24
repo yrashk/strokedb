@@ -85,6 +85,11 @@ describe DefaultKeyEncoder do
     arr2.should == arr
   end
   
+  it "should decode meta modules" do
+    meta = DefaultKeyEncoder.decode(DefaultKeyEncoder.encode(Meta))
+    meta.should == Meta.meta_uuid
+  end
+  
   it "should encode/decode string with spaces gracefully" do
     DefaultKeyEncoder.decode(DefaultKeyEncoder.encode("a b")).should == ["a", "b"]
     DefaultKeyEncoder.decode(DefaultKeyEncoder.encode(["1", "a b"])).should == ["1", "a", "b"]
