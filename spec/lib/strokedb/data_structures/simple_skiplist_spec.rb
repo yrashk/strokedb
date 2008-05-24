@@ -98,6 +98,25 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
   end
 
 
+  describe "Deleting from skiplist" do
+    before(:each) do
+      @list = SimpleSkiplist.new
+      @list.insert "1a", "a"
+      @list.insert "1b", "b"
+      @list.insert "1c", "c"
+      @list.insert "1d", "d"
+    end
+    it "should store nil" do
+      @list.insert("1b", nil)
+      @list.search("1", "1", 3, 0, false, false).should == ["a", nil, "c"]
+    end
+    it "should delete item" do
+      @list.delete("1b")
+      @list.search("1", "1", 3, 0, false, false).should == ["a", "c", "d"]
+    end
+  end
+
+
   describe "Big skiplist [#{lang}]" do
     before(:each) do
       @maxlevel    = 8

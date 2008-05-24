@@ -144,7 +144,7 @@ module StrokeDB
       return first ? first[1] : nil
     end
     
-    # Insert a key-value pair. If key already exists,
+    # Insert a key-value pair. If the key already exists,
     # value will be overwritten.
     #
     #  <i> is a new node
@@ -173,6 +173,36 @@ module StrokeDB
   	      while level > 0
   	        level -= 1
   	        node_insert_after!(newx, update[level], level)
+          end
+    	  end
+      end
+    	self
+  	end
+  	
+  	# Remove a key-value pair. If the key does not exist,
+    # no action is performed.
+    #
+    #  <d> is a node to be removed
+    #  <M> is a marked node in a update_list
+    #  <N> is next node to <M> which reference must be updated. 
+    #
+    #  M-----------------> d <---------------- N ...
+    #  o ------> M ------> d <------ N ... 
+    #  o -> o -> o -> M -> d <- N ....
+    #
+    def delete(key)
+      @mutex.synchronize do
+        x = anchor
+        level = node_level(x)
+        update = Array.new(level)
+        x = find_with_update(x, level, key, update)
+        
+        # remove existing key
+  	    if node_compare(x, key) == 0
+  	      level = node_level(x)
+  	      while level > 0
+  	        level -= 1
+  	        node_delete_after!(x, update[level], level)
           end
     	  end
       end
@@ -419,6 +449,25 @@ module StrokeDB
       # backward links
       x[3][level] = prev
       netx[3][level] = x
+    end
+    
+    # before: 
+    #   prev -> x -> next
+    #   prev <- x -> next
+    #
+    # after:
+    #
+    #  prev -> next
+    #  prev <- next
+    #
+    def node_delete_after!(x, prev, level)
+      netx = node_next(x, level)  # 'next' is a reserved word in ruby
+      
+      # forward links
+      prev[0][level] = netx
+      
+      # backward links
+      netx[3][level] = prev
     end
     
     def new_node(level, key, value)
