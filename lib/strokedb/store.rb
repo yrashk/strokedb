@@ -14,15 +14,21 @@ module StrokeDB
       initialize_files
       autosync! unless @options['noautosync']
       raise "Missing chunk storage" unless @storage
+      @all_slots_view = GenerateAllSlotsView()
     end
 
     def find(uuid, version=nil, opts = {}, &block)
       @storage.find(uuid,version,opts.merge(:store => self),&block)
     end
 
-    def search(*args)
-      return [] unless @index_store
-      @index_store.find(*args)
+    # Perform a simple search
+    # search(:a => xxx, :b => yyy, ...)
+    def search(slots)
+      slots.map do |key, value|
+        @all_slots_view.find([key, value]).to_set 
+      end.inject do |set, subset|
+        set & subset
+      end
     end
 
     def include?(uuid,version=nil)
