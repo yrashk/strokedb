@@ -98,7 +98,7 @@ module StrokeDB
     class Metas < Array  #:nodoc:
       def initialize(document)
         @document = document
-        _meta = document[:meta]
+        _meta = document[Meta]
         concat _meta.to_a
       end
 
@@ -119,7 +119,7 @@ module StrokeDB
           raise ArgumentError, "Meta should be either document or meta module"
         end
 
-        @document[:meta] = self
+        @document[Meta] = self
 
         if _module
           @document.unextend(_module)
@@ -144,7 +144,7 @@ module StrokeDB
         end
 
         # register meta in the document
-        @document[:meta] = self
+        @document[Meta] = self
 
         if _module
           @document.extend(_module)
@@ -204,7 +204,7 @@ module StrokeDB
     # If slot was not found, it will return <tt>nil</tt>
     #
     def [](slotname)
-      slotname = slotname.document.uuid if (slotname.is_a?(Meta) && slotname.is_a?(Module)) || (slotname == Meta)
+      slotname = slotname.meta_uuid if (slotname.is_a?(Meta) && slotname.is_a?(Module)) || (slotname == Meta)
       @slots[slotname.to_s].value rescue nil
     end
 
@@ -214,7 +214,7 @@ module StrokeDB
     #   document[:slot_1] = "some value"
     #
     def []=(slotname, value)
-      slotname = slotname.document.uuid  if (slotname.is_a?(Meta) && slotname.is_a?(Module)) || (slotname == Meta)
+      slotname = slotname.meta_uuid  if (slotname.is_a?(Meta) && slotname.is_a?(Module)) || (slotname == Meta)
       slotname = slotname.to_s
 
       (@slots[slotname] ||= Slot.new(self, slotname)).value = value
@@ -270,12 +270,12 @@ module StrokeDB
     end
 
     def pretty_print #:nodoc:
-      slots = to_raw.except('meta')
+      slots = to_raw.except(Meta.meta_uuid)
 
       s = is_a?(ImmutableDocument) ? "#<^" : "#<"
 
       Util.catch_circular_reference(self) do
-        if self[:meta] && name = meta[:name]
+        if self[Meta] && name = meta[:name]
           s << "#{name} "
         else
           s << "Doc "
@@ -300,7 +300,7 @@ module StrokeDB
 
       s
     rescue Util::CircularReferenceCondition
-      "#(#{(self[:meta] ? "#{meta}" : "Doc")} #{('@#'+uuid)[0,5]}...)"
+      "#(#{(self[Meta] ? "#{meta}" : "Doc")} #{('@#'+uuid)[0,5]}...)"
     end
 
     alias :to_s :pretty_print
@@ -343,7 +343,7 @@ module StrokeDB
     def self.from_raw(store, raw_slots, opts = {}, &block) #:nodoc:
       doc = new(store, raw_slots, true, &block)
 
-      collect_meta_modules(store, raw_slots['meta']).each do |meta_module|
+      collect_meta_modules(store, raw_slots[Meta.meta_uuid]).each do |meta_module|
         unless doc.is_a? meta_module
           doc.extend(meta_module)
         end
@@ -471,7 +471,7 @@ module StrokeDB
     # it will combine all metadocuments into one 'virtual' metadocument
     #
     def meta
-      unless (m = self[:meta]).kind_of? Array
+      unless (m = self[Meta]).kind_of? Array
         # simple case
         return m || Document.new(@store)
       end
@@ -649,16 +649,21 @@ module StrokeDB
     # initialize slots for a new, just created document
     def initialize_slots(slots) #:nodoc:
       @slots = {}
-      slots = slots.stringify_keys
-
+      slots = slots.clone
       # there is a reason for meta slot is initialized separately —
       # we need to setup coercions before initializing actual slots
-      if meta = slots['meta']
+      if meta = slots[Meta]
         meta = [meta] unless meta.is_a?(Array)
         meta.each {|m| metas.add_meta(m) }
       end
-
-      slots.except('meta').each {|name,value| send("#{name}=", value) }
+      slots.delete(Meta)
+      slots.each do |name,value|
+         if name.is_a?(Module)
+           self[name] = value
+         else
+           send("#{name}=", value) 
+         end
+      end
 
       # now, when we have all slots initialized, we can run initialization callbacks
       execute_callbacks :on_initialization

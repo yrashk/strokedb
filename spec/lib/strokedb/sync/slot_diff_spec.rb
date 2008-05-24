@@ -10,8 +10,8 @@ describe "Diffing documents with slot changed and slot's diff strategy is specif
 
     @meta = Document.create! :diff_strategy_slot1 => 'slot_1_diff', :name => "Slot1DiffMeta"
 
-    @from = Document.create! :slot1 => 1, :meta => @meta
-    @to = Document.create! :slot1 => 2, :meta => @meta
+    @from = Document.create! :slot1 => 1, Meta => @meta
+    @to = Document.create! :slot1 => 2, Meta => @meta
 
     @diff = @to.diff(@from)
   end
@@ -31,8 +31,8 @@ describe "Diffing documents with slot changed and slot's diff strategy is specif
     Object.send!(:remove_const,'Slot1Diff') if defined?(Slot1Diff)
     @meta = Document.create! :diff_strategy_slot1 => 'slot_1_diff', :name => "Slot1DiffMeta"
 
-    @from = Document.create! :slot1 => 1, :meta => @meta
-    @to = Document.create! :slot1 => 2, :meta => @meta
+    @from = Document.create! :slot1 => 1, Meta => @meta
+    @to = Document.create! :slot1 => 2, Meta => @meta
     
     @diff = @to.diff(@from)
   end
@@ -53,8 +53,8 @@ describe "Diffing documents with slot changed and slot's diff strategy is specif
 
     @meta = Document.create! :diff_strategy_slot1 => 'slot_1_diff', :name => "Slot1DiffMeta"
 
-    @from = Document.create! :slot1 => 1, :meta => @meta
-    @to = Document.create! :slot1 => 2, :meta => @meta
+    @from = Document.create! :slot1 => 1, Meta => @meta
+    @to = Document.create! :slot1 => 2, Meta => @meta
     
     @diff = @to.diff(@from)
   end

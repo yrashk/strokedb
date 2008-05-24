@@ -17,6 +17,7 @@ module StrokeDB
     def initialize(slots)
       @slots = {}
       slots.each do |k, v|
+        k = k.meta_uuid if k.is_a?(Module) # quick hack, but PointQuery will be thrown away as soon as we'll have new search system
         @slots[k.to_optimized_raw] = v.to_optimized_raw
       end
     end
