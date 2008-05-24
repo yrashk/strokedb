@@ -24,12 +24,7 @@ module StrokeDB
     # Perform a simple search
     # search(:a => xxx, :b => yyy, ...)
     def search(slots)
-      view = @all_slots_view
-      view.key_traversal([], slots) do |key, value|
-        view.find(key + [value]) 
-      end.inject do |set, subset|
-        set & subset
-      end
+      @all_slots_view.search(slots)
     end
     
     def include?(uuid,version=nil)
