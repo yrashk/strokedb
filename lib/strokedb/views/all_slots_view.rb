@@ -4,17 +4,28 @@ module StrokeDB
       def view.map(uuid, doc)
         doc.slotnames.inject([]) do |pairs, sname|
           value = doc[sname]
-          if value.is_a?(Array)
-            value.inject(pairs) do |ps, v|
-              ps << [[sname, v], doc]
-              ps
-            end
-          else
-            pairs << [[sname, value], doc]
-            pairs
+          key_traversal(sname, value, pairs) do |k, v|
+            [[k, v, doc], doc]
           end
         end
       end
     end
   end
+  
+  def key_traversal(key, value, pairs = [], &block)
+    case value
+    when Array
+      value.inject(pairs) do |ps, v|
+        key_traversal(key, v, ps, &block)
+      end
+    when Hash
+      value.to_a.inject(pairs) do |ps, kv|
+        key_traversal([key, kv[0]], kv[1], ps, &block)
+      end
+    else
+      pairs << yield(key, value)
+      pairs
+    end
+  end
+  
 end
