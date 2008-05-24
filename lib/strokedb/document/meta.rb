@@ -128,7 +128,7 @@ module StrokeDB
       args << {} unless args.last.is_a?(Hash)
       raise ArgumentError, "you should specify name" unless args[1].is_a?(String)
       name = args[1]
-      uuid = ::StrokeDB::Util.sha1_uuid("#{document.uuid}:#{name}")
+      uuid = ::StrokeDB::Util.sha1_uuid("#{document(args[0]).uuid}:#{name}")
       unless doc = find(args[0],uuid,&block)
         doc = create!(args[0],args.last.reverse_merge(:uuid => uuid),&block)
       else
