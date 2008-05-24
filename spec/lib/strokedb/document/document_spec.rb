@@ -692,11 +692,11 @@ describe "Document with a single meta" do
     Object.send!(:remove_const, "SomeMeta") if defined? ::SomeMeta
     ::SomeMeta = Meta.new(@store)
     @meta = ::SomeMeta
-    @document = Document.create!(@store, :meta => @meta)
+    @document = Document.create!(@store, Meta => @meta)
   end
 
   it "but specified within array should return single meta which should be mutable" do
-      @document = Document.create!(@store, :meta => [@meta])
+      @document = Document.create!(@store, Meta => [@meta])
       @document.meta.should == @meta.document
       @document.meta.should be_mutable
   end
@@ -726,7 +726,7 @@ describe "Document with multiple metas" do
       end
     end
 
-    @document = Document.new(:meta => @metas)
+    @document = Document.new(Meta => @metas)
   end
 
   it "should return single merged meta" do
@@ -737,7 +737,7 @@ describe "Document with multiple metas" do
     meta[1].should == 1
     meta[2].should == 2
     meta.name.should == "0,1,2"
-    @document[:meta].should be_a_kind_of(Array)
+    @document[Meta].should be_a_kind_of(Array)
   end
 
   it "should make single merged meta immutable" do
@@ -916,7 +916,7 @@ describe "Valid Document's JSON with multiple meta names specified" do
     3.times do |i|
       @metas << Meta.new(:name => "SomeDocument#{i}")
     end
-    @document = @metas.inject{|a,b| a+=b}.new(@store,:slot1 => "val1", :slot2 => "val2", :meta => @metas)
+    @document = @metas.inject{|a,b| a+=b}.new(@store,:slot1 => "val1", :slot2 => "val2", Meta => @metas)
     @json = @document.to_raw.to_json
     @decoded_json = JSON.parse(@json)
   end

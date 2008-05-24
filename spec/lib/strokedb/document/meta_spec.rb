@@ -227,7 +227,7 @@ describe "Combined meta module" do
 
   it "should initialize Document with all metas" do
     d = (User+Buyer+Seller).new
-    d[:meta].should == [User.document,Buyer.document,Seller.document]
+    d[Meta].should == [User.document,Buyer.document,Seller.document]
   end
 
   it "should be able to find respective documents" do

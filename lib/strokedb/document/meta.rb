@@ -73,16 +73,15 @@ module StrokeDB
 
       def document(store=nil)
         raise NoDefaultStoreError.new unless store ||= StrokeDB.default_store
-        unless meta_doc = store.find(uuid)
-          meta_doc = Document.create!(store, :name => Meta.name.demodulize, :uuid => uuid, :nsurl => StrokeDB.nsurl)
+        unless meta_doc = store.find(meta_uuid)
+          meta_doc = Document.create!(store, :name => Meta.name.demodulize, :uuid => meta_uuid, :nsurl => StrokeDB.nsurl)
         end
         meta_doc
       end
       
 
-      private
 
-      def uuid
+      def meta_uuid
         @uuid ||= ::StrokeDB::Util.sha1_uuid("meta:#{StrokeDB.nsurl}##{Meta.name.demodulize}")
       end
 
@@ -156,7 +155,7 @@ module StrokeDB
     def new(*args, &block)
       args = args.clone
       args << {} unless args.last.is_a?(Hash)
-      args.last[:meta] = @metas
+      args.last[Meta] = @metas
       doc = Document.new(*args, &block)
       doc
     end
@@ -204,7 +203,7 @@ module StrokeDB
       end
 
       store = args[0]
-      opt = { :meta => @metas.map {|m| m.document(store)} }
+      opt = { Meta => @metas.map {|m| m.document(store)} }
 
       case args[1]
       when String
@@ -255,8 +254,17 @@ module StrokeDB
   
   
     def extended(obj)
-      setup_callbacks(obj) if obj.is_a?(Document)
+        setup_callbacks(obj) if obj.is_a?(Document)
     end
+    
+    def meta_uuid
+      values = @args.clone.select{|a| a.is_a?(Hash) }.first
+      values[:nsurl] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl 
+      values[:name] ||= name.demodulize
+      
+      @uuid ||= Meta.make_uuid(values[:nsurl],values[:name])
+    end
+    
     
     
     private
@@ -266,16 +274,16 @@ module StrokeDB
       @meta_initialization_procs.each {|proc| proc.call }.clear
 
       values = @args.clone.select{|a| a.is_a?(Hash) }.first
-      values[:meta] = Meta.document(store)
+      values[Meta] = Meta.document(store)
       values[:name] ||= name.demodulize
 
       raise ArgumentError, "meta can't be nameless" if values[:name].blank?
 
       values[:nsurl] ||= name.modulize.empty? ? Module.nsurl : name.modulize.constantize.nsurl 
-      values[:uuid] ||= Meta.make_uuid(values[:nsurl],values[:name])
+      values[:uuid] ||= meta_uuid
       
       
-      if meta_doc = find_meta_doc(values, store)
+      if meta_doc = store.find(meta_uuid)
         values[:version] = meta_doc.version
         values[:uuid] = meta_doc.uuid
         args = [store, values]
@@ -286,12 +294,6 @@ module StrokeDB
         meta_doc.save!
       end
       meta_doc
-    end
-
-    def find_meta_doc(values, store)
-      if uuid = values[:uuid]
-        store.find(uuid)
-      end
     end
 
     def changed?(meta_doc, args)
