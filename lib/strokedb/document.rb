@@ -110,7 +110,7 @@ module StrokeDB
         case meta
         when Document
           _delete meta
-          _module = StrokeDB::Document.collect_meta_modules(@document.store, meta).first
+          _module = MetaModulesCollector.new(@document.store, meta).collect!.first
         when Meta
           _delete meta.document(@document.store)
           _module = meta
@@ -134,7 +134,7 @@ module StrokeDB
         case meta
         when Document
           push meta
-          _module = StrokeDB::Document.collect_meta_modules(@document.store, meta).first
+          _module = MetaModulesCollector.new(@document.store, meta).collect!.first
         when Meta
           push meta.document(@document.store)
           _module = meta
@@ -342,7 +342,7 @@ module StrokeDB
     def self.from_raw(store, raw_slots, opts = {}, &block) #:nodoc:
       doc = new(store, raw_slots, true, &block)
 
-      collect_meta_modules(store, raw_slots['meta']).each do |meta_module|
+      MetaModulesCollector.new(store, raw_slots['meta']).collect!.each do |meta_module|
         unless doc.is_a? meta_module
           doc.extend(meta_module)
         end
@@ -710,7 +710,7 @@ module StrokeDB
           meta_names << @subject[:name]
         end
 
-        meta_names
+        meta_names.map { |m| m.is_a?(String) ? (m.constantize rescue nil) : m }.compact
       end
 
       def lookup_version_for_meta(meta)
@@ -732,17 +732,6 @@ module StrokeDB
       def has_meta_definition?(mod, metadoc)
         (mod && mod.constants.include?(metadoc[:name]))
       end
-    end
-
-
-
-    # returns an array of meta modules (as constants) for a given something
-    # (a document reference, a document itself, or an array of the former)
-    def self.collect_meta_modules(store, meta) #:nodoc:
-      @collector = MetaModulesCollector.new(store, meta)
-      meta_names = @collector.collect!
-
-      meta_names.map { |m| m.is_a?(String) ? (m.constantize rescue nil) : m }.compact
     end
 
     def generate_new_version!
