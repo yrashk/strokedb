@@ -26,7 +26,7 @@ module StrokeDB
     def replace(old_pairs, new_pairs)
       old_pairs.each do |pair|
         key, value = pair
-        @list.insert(key,nil) if @list.find(key)
+        @list.delete(key) if @list.find(key)
       end
       insert(new_pairs)
     end

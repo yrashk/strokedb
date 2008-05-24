@@ -129,6 +129,16 @@ module StrokeDB
       crash!(e)
       raise
     end
+
+    def delete(key)
+      write_log(key, 0, 0)
+      @list.delete(key)
+      dump! if @log_bytes > @max_log_size
+      self
+    rescue => e
+      crash!(e)
+      raise
+    end
     
     # Volume operations
     
@@ -216,8 +226,12 @@ module StrokeDB
           checksum_invalid(msg, msg_chk[msg_length, checksum_length]) and raise LogFormatError, "WAL message checksum failure!"
         
           key, value, level = Marshal.load(msg)
-        
-          list.insert(key, value, level)
+          
+          if level == 0
+            list.delete(key)
+          else
+            list.insert(key, value, level)
+          end
         end
       end
     
