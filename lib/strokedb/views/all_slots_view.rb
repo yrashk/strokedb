@@ -10,8 +10,8 @@ module StrokeDB
               ps
             end
           else
-            ps << [[sname, value], doc]
-            ps
+            pairs << [[sname, value], doc]
+            pairs
           end
         end
       end
