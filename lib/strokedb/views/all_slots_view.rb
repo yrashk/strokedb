@@ -1,6 +1,6 @@
 module StrokeDB
-  def GenerateAllSlotsView
-    View.named "strokedb_all_slots" do |view|
+  def GenerateAllSlotsView(store)
+    View.named(store, "strokedb_all_slots") do |view|
       def view.map(uuid, doc)
         doc.slotnames.inject([]) do |pairs, sname|
           value = doc[sname]

@@ -14,7 +14,7 @@ module StrokeDB
       initialize_files
       autosync! unless @options['noautosync']
       raise "Missing chunk storage" unless @storage
-      @all_slots_view = GenerateAllSlotsView()
+      @all_slots_view = GenerateAllSlotsView(self)
     end
 
     def find(uuid, version=nil, opts = {}, &block)
