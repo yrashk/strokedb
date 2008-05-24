@@ -25,7 +25,7 @@ module StrokeDB
     # search(:a => xxx, :b => yyy, ...)
     def search(slots)
       slots.map do |key, value|
-        @all_slots_view.find([key, value]).to_set 
+        @all_slots_view.find([key, value]) 
       end.inject do |set, subset|
         set & subset
       end
