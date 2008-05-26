@@ -1,6 +1,6 @@
 module StrokeDB
   
-  def self.head(branch="master")
+  def self.head(tag="master")
     Util.sha1_uuid(branch).to_raw_uuid
   end
   
