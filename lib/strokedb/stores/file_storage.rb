@@ -1,5 +1,10 @@
 module StrokeDB
-  RAW_HEAD_VERSION_UUID         = Util.sha1_uuid("strokedb-internal:head-version").to_raw_uuid
+  
+  def self.head(branch="master")
+    Util.sha1_uuid(branch).to_raw_uuid
+  end
+  
+  RAW_MASTER_HEAD_VERSION_UUID         = head()
 
   class FileStorage < Storage
 
@@ -14,7 +19,7 @@ module StrokeDB
 
     def find(uuid, version=nil, opts = {}, &block)
       uuid_version = uuid + (version ? ".#{version}" : "")
-      key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : RAW_HEAD_VERSION_UUID)
+      key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : RAW_MASTER_HEAD_VERSION_UUID)
       if (ptr = @uindex.find(key)) && (ptr[0,20] != "\x00" * 20) # no way ptr will be zero
         raw_doc = StrokeDB::deserialize(read_at_ptr(ptr[0,20]))
         unless opts[:no_instantiation]
@@ -28,7 +33,7 @@ module StrokeDB
     end
 
     def include?(uuid,version=nil)
-      key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : RAW_HEAD_VERSION_UUID)
+      key = uuid.to_raw_uuid + (version ? version.to_raw_uuid : RAW_MASTER_HEAD_VERSION_UUID)
       !@uindex.find(key).nil?
     end
     
@@ -47,7 +52,7 @@ module StrokeDB
       @uindex.each do |key, value|
         timestamp = StrokeDB.deserialize(read_at_ptr(value[20,20]))
         next if after && (timestamp <= after)
-        if key[16,16] == RAW_HEAD_VERSION_UUID || include_versions
+        if key[16,16] == RAW_MASTER_HEAD_VERSION_UUID || include_versions
           yield Document.from_raw(options[:store],StrokeDB.deserialize(read_at_ptr(value[0,20])))
         end
       end
@@ -59,7 +64,7 @@ module StrokeDB
       ts_ptr = DistributedPointer.pack(@archive.raw_uuid,ts_position)
       ptr = DistributedPointer.pack(@archive.raw_uuid,position)
       uuid = document.raw_uuid
-      @uindex.insert(uuid + RAW_HEAD_VERSION_UUID, ptr + ts_ptr) if options[:head] || !document.is_a?(VersionedDocument)
+      @uindex.insert(uuid + RAW_MASTER_HEAD_VERSION_UUID, ptr + ts_ptr) if options[:head] || !document.is_a?(VersionedDocument)
       @uindex.insert(uuid + document.version.to_raw_uuid, ptr + ts_ptr) unless options[:head]
     rescue ArchiveVolume::VolumeCapacityExceeded	 
       create_new_archive!
