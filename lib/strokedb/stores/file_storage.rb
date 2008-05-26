@@ -1,7 +1,7 @@
 module StrokeDB
   
   def self.head(tag="master")
-    Util.sha1_uuid(branch).to_raw_uuid
+    Util.sha1_uuid(tag).to_raw_uuid
   end
   
   RAW_MASTER_HEAD_VERSION_UUID         = head()
