@@ -205,7 +205,7 @@ module StrokeDB
       end
 
       store = args[0]
-      opt = { Meta => @metas.map {|m| m.document(store)} }
+      opt = { Meta.meta_uuid => @metas.map {|m| m.document(store)} }
 
       case args[1]
       when String
