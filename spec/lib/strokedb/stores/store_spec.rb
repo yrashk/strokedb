@@ -45,6 +45,7 @@ describe "New store" do
   end
 
   it "should have 0 timestamp" do
+    pending "Invalid spec: reconsider requirements (store can have several meta/view docs saved on init)"
     @store.timestamp.should == LTS.zero(@store.uuid)
   end
 
@@ -111,7 +112,7 @@ describe "Non-empty store" do
     @store.each do |doc|
       iterated_documents << doc
     end
-    iterated_documents.sort_by {|doc| doc.uuid}.should == @documents.sort_by {|doc| doc.uuid}
+    iterated_documents.delete_if{|doc| !doc[:stuff] }.sort_by {|doc| doc.uuid}.should == @documents.sort_by {|doc| doc.uuid}
   end
 
   it "should iterate over all stored documents and their versions if told so" do
@@ -125,7 +126,7 @@ describe "Non-empty store" do
         documents_with_versions << vd
       end
     end
-    iterated_documents.sort_by {|doc| doc.uuid}.should == documents_with_versions.sort_by {|doc| doc.uuid}
+    iterated_documents.delete_if{|doc| !doc[:stuff] }.sort_by {|doc| doc.uuid}.should == documents_with_versions.sort_by {|doc| doc.uuid}
   end
 
   it "should iterate over all newly stored documents if told so" do
