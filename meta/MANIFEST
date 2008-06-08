@@ -23,10 +23,6 @@ lib/strokedb/core_ext/object.rb
 lib/strokedb/core_ext/string.rb
 lib/strokedb/core_ext/symbol.rb
 lib/strokedb/core_ext.rb
-lib/strokedb/data_structures/chunked_skiplist.rb
-lib/strokedb/data_structures/inverted_list.rb
-lib/strokedb/data_structures/point_query.rb
-lib/strokedb/data_structures/simple_skiplist.rb
 lib/strokedb/data_structures/skiplist.rb
 lib/strokedb/data_structures.rb
 lib/strokedb/document/callback.rb
@@ -47,7 +43,6 @@ lib/strokedb/nsurl.rb
 lib/strokedb/store.rb
 lib/strokedb/stores/chainable_storage.rb
 lib/strokedb/stores/file_storage.rb
-lib/strokedb/stores/inverted_list_file_storage.rb
 lib/strokedb/stores/memory_storage.rb
 lib/strokedb/stores/remote_store.rb
 lib/strokedb/stores.rb
@@ -95,9 +90,6 @@ spec/lib/strokedb/core_ext/infinity_spec.rb
 spec/lib/strokedb/core_ext/spec_helper.rb
 spec/lib/strokedb/core_ext/string_spec.rb
 spec/lib/strokedb/core_ext/symbol_spec.rb
-spec/lib/strokedb/data_structures/chunked_skiplist_spec.rb
-spec/lib/strokedb/data_structures/inverted_list_spec.rb
-spec/lib/strokedb/data_structures/simple_skiplist_spec.rb
 spec/lib/strokedb/data_structures/skiplist_spec.rb
 spec/lib/strokedb/data_structures/spec_helper.rb
 spec/lib/strokedb/document/associations_spec.rb
