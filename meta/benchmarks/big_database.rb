@@ -23,7 +23,7 @@ N = 1_000
 #   
 # end
 
-SimpleSkiplist.optimize!(:C)
+Skiplist.optimize!(:C)
 
 # FileUtils.rm_rf "../../spec/temp/storages/bigstore"
 # StrokeDB::Config.build :default => true, :base_path => "../../spec/temp/storages/bigstore"

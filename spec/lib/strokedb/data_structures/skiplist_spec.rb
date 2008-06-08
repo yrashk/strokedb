@@ -18,14 +18,14 @@ describe "Skiplist serialization", :shared => true do
   end
 end
 
-SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
+Skiplist.with_optimizations(OPTIMIZATIONS) do |lang|
 
-  describe "Empty SimpleSkiplist [#{lang}]" do
+  describe "Empty Skiplist [#{lang}]" do
   
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
+      @list = Skiplist.new(:maxlevel => @maxlevel, :probability => @probability)
     end
   
   	it "should be empty" do
@@ -46,7 +46,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
+      @list = Skiplist.new(:maxlevel => @maxlevel, :probability => @probability)
     end
 
     it "should insert empty key in place of default head" do
@@ -100,7 +100,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
 
   describe "Deleting from skiplist" do
     before(:each) do
-      @list = SimpleSkiplist.new
+      @list = Skiplist.new
       @list.insert "1a", "a"
       @list.insert "1b", "b"
       @list.insert "1c", "c"
@@ -121,7 +121,7 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
+      @list = Skiplist.new(:maxlevel => @maxlevel, :probability => @probability)
       1000.times do 
         k = rand(2**64).to_s
         v = k
@@ -151,10 +151,10 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     
   end
   
-  describe "SimpleSkiplist serialization [#{lang}]" do
+  describe "Skiplist serialization [#{lang}]" do
     before(:each) do
       @maxlevel    = 8
-      @list = SimpleSkiplist.new(:maxlevel => @maxlevel)
+      @list = Skiplist.new(:maxlevel => @maxlevel)
       @arr = (1..1000).to_a.map{|a| a.to_s}.sort
     end
     it "should export data to_a correctly" do
@@ -167,11 +167,11 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     end
   end
   
-  describe "SimpleSkiplist#first_key [#{lang}]" do
+  describe "Skiplist#first_key [#{lang}]" do
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
+      @list = Skiplist.new(:maxlevel => @maxlevel, :probability => @probability)
     end
     it "should return nil for empty skiplist" do
       @list.first_key.should == nil
@@ -185,11 +185,11 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
   end
   
   
-  describe "SimpleSkiplist#find_nearest [#{lang}]" do
+  describe "Skiplist#find_nearest [#{lang}]" do
     before(:each) do
       @maxlevel    = 8
       @probability = 0.5
-      @list = SimpleSkiplist.new(:maxlevel => @maxlevel, :probability => @probability)
+      @list = Skiplist.new(:maxlevel => @maxlevel, :probability => @probability)
     end
     it "should find nil in empty skiplist" do
       @list.find_nearest("a").should == nil
@@ -219,9 +219,9 @@ SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
     end
   end
   
-  describe "SimpleSkiplist#search [#{lang}]" do
+  describe "Skiplist#search [#{lang}]" do
     before(:each) do
-      @list = SimpleSkiplist.new
+      @list = Skiplist.new
       @keys = %w[ a aa ab b ba bb pfx1 pfx2 pfx3 x xx xy xyz ]
       @values = @keys.map{|v| v + " value"}
       @key_values = @keys.map{|v| [v, v]}

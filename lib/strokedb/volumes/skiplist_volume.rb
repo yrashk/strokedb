@@ -85,10 +85,10 @@ module StrokeDB
       end
       
       if File.exists?(@list_path)
-        @list = SimpleSkiplist.load(File.read(@list_path))
+        @list = Skiplist.load(File.read(@list_path))
       else
         info "List file (#{@list_path}) was not found, creating a brand new skiplist."
-        @list = SimpleSkiplist.new(@params)
+        @list = Skiplist.new(@params)
       end
       
       if File.exists?(@log_path)

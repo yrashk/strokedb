@@ -2,7 +2,7 @@ require 'thread'
 require File.expand_path(File.dirname(__FILE__) + '/../util/class_optimization')
 
 module StrokeDB
-  class SimpleSkiplist
+  class Skiplist
     include Enumerable
     
     DEFAULT_MAXLEVEL     = 32

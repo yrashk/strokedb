@@ -1,1 +1,1 @@
-require 'data_structures/simple_skiplist'
+require 'data_structures/skiplist'

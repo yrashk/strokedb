@@ -38,7 +38,7 @@ end
 
 benchmark!("Ruby")
 
-SimpleSkiplist.optimize!(:C)
+Skiplist.optimize!(:C)
 
 benchmark!("C")
 

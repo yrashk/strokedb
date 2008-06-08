@@ -14,7 +14,7 @@ describe "SkiplistVolume inserts and finds", :shared => true do
   end
 end
 
-#SimpleSkiplist.with_optimizations(OPTIMIZATIONS) do |lang|
+#Skiplist.with_optimizations(OPTIMIZATIONS) do |lang|
 lang = "Ruby {FIXME: with_optimizations is irreversible operation for now}"
   describe "Brand new SkiplistVolume [#{lang}]" do
     before(:each) do

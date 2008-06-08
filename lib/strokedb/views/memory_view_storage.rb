@@ -2,11 +2,11 @@ module StrokeDB
   class MemoryViewStorage < ViewStorage
     
     def initialize(options = {})
-      @list = SimpleSkiplist.new
+      @list = Skiplist.new
     end
     
     def clear!
-      @list = SimpleSkiplist.new
+      @list = Skiplist.new
     end
     
   end
