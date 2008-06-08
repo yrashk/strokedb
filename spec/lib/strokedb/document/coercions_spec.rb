@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 def setup
   setup_default_store
-  setup_index
+  
   Object.send!(:remove_const, 'Foo') if defined?(Foo)
   Object.send!(:remove_const, 'Bar') if defined?(Bar)
   Object.send!(:remove_const, 'User') if defined?(User)

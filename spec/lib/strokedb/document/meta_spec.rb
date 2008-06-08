@@ -90,7 +90,7 @@ describe "Meta module with name" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
 
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new
@@ -117,7 +117,7 @@ describe "Meta module without name" do
     
   before(:each) do
     setup_default_store
-    setup_index
+    
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     @some_meta = Meta.new(:nsurl => "http://some/")
@@ -135,7 +135,7 @@ describe "Meta module without constant definition" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     @some_name = Meta.new(:name => 'SomeName') do
       def some
       end
@@ -161,7 +161,7 @@ describe "Meta module within no module" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
   end
@@ -187,7 +187,7 @@ describe "Meta module within module" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     module A
       nsurl "some url"
     end
@@ -214,7 +214,7 @@ describe "Combined meta module" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     
     Object.send!(:remove_const,'User') if defined?(User)
     Object.send!(:remove_const,'Buyer') if defined?(Buyer)
@@ -259,7 +259,7 @@ describe "ImplementsSomeName with implements SomeName meta" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
 
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new(:some_slot => 'some_value') do
@@ -312,7 +312,7 @@ describe "ImplementsSomeName with multiple implements" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
 
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new(:some_slot => 'some_value') do
@@ -376,7 +376,7 @@ describe "Meta#named" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new
   end

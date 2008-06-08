@@ -20,7 +20,7 @@ def setup_default_store(store=nil)
     StrokeDB::MemoryStorage.new
   end
 
-  $store = StrokeDB::Store.new(:storage => @storage,:index => @index, :path => @path)
+  $store = StrokeDB::Store.new(:storage => @storage, :path => @path)
   StrokeDB.stub!(:default_store).and_return($store)
   StrokeDB.default_store
 end
@@ -32,15 +32,6 @@ def stub_meta_in_store(store=nil)
   store.should_receive(:include?).with(NIL_UUID).any_number_of_times.and_return(true)
 end
 
-def setup_index(store=nil)
-  store ||= StrokeDB.default_store
-  index_storage = StrokeDB::InvertedListFileStorage.new(:path => TEMP_STORAGES + '/inverted_list_storage')
-  index_storage.clear!
-  @index = StrokeDB::InvertedListIndex.new(index_storage)
-  @index.document_store = store
-  store.index_store = @index
-  @index
-end
 
 Spec::Runner.configure do |config|
   config.after(:all) do

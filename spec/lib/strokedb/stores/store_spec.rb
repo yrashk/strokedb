@@ -68,7 +68,7 @@ describe "Non-empty store" do
 
   before(:each) do
     @store = setup_default_store
-    setup_index
+    
     @documents = []
     10.times do |i|
       @documents << Document.create!(:stuff => i)

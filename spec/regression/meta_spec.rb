@@ -4,7 +4,7 @@ describe "Adding meta" do
   
   before(:all) do
     setup_default_store
-    setup_index
+    
     Object.send!(:remove_const,'User') if defined?(User)
     Object.send!(:remove_const,'Buyer') if defined?(Buyer)
     User = StrokeDB::Meta.new

@@ -4,7 +4,7 @@ describe "Document class" do
 
   before(:each) do
     @store = setup_default_store
-    setup_index
+    
   end
 
   it "should be able to find document by UUID" do
@@ -688,7 +688,7 @@ describe "Document with a single meta" do
   before(:each) do
     @store = setup_default_store
     setup_default_store
-    setup_index
+    
     Object.send!(:remove_const, "SomeMeta") if defined? ::SomeMeta
     ::SomeMeta = Meta.new(@store)
     @meta = ::SomeMeta
@@ -714,7 +714,7 @@ describe "Document with multiple metas" do
 
   before(:each) do
     @store = setup_default_store
-    setup_index
+    
     @metas = []
     3.times do |i|
       @metas << Document.create!(:a => i, i => i, :name => i.to_s)

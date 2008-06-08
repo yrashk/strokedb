@@ -2,7 +2,7 @@ describe "Meta module with on_initialization callback" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
@@ -37,7 +37,7 @@ describe "Meta module with on_load callback" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
       on_load do |obj|
@@ -64,7 +64,7 @@ describe "Meta module with before_save callback" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
@@ -86,7 +86,7 @@ describe "Meta module with after_save callback" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do
@@ -109,7 +109,7 @@ describe "Meta module with on_new_document callback" do
   
   before(:each) do
     setup_default_store
-    setup_index
+    
     
     Object.send!(:remove_const,'SomeName') if defined?(SomeName)
     SomeName = Meta.new do

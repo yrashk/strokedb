@@ -4,7 +4,6 @@ describe "Playlist.has_many :songs association" do
 
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Playlist') if defined?(Playlist)
     Object.send!(:remove_const,'Song') if defined?(Song)
     Playlist = Meta.new do
@@ -173,7 +172,6 @@ describe "Playlist.has_many :songs association with sort slot defined" do
 
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Playlist') if defined?(Playlist)
     Object.send!(:remove_const,'Song') if defined?(Song)
     Playlist = Meta.new do
@@ -195,7 +193,6 @@ describe "Playlist.has_many :songs association with sort slot defined and revers
 
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Playlist') if defined?(Playlist)
     Object.send!(:remove_const,'Song') if defined?(Song)
     Playlist = Meta.new do
@@ -218,7 +215,6 @@ describe "Namespace::Playlist.has_many :songs association" do
 
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Namespace') if defined?(Namespace)
     Namespace = Module.new
     Namespace.nsurl 'namespace'
@@ -243,7 +239,6 @@ describe "Playlist.has_many :rock_songs, :through => :songs, :conditions => { :g
 
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Playlist') if defined?(Playlist)
     Object.send!(:remove_const,'Song') if defined?(Song)
     Playlist = Meta.new do
@@ -265,7 +260,6 @@ describe "Playlist.has_many :songs, :foreign_reference => :belongs_to_playlist a
 
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Playlist') if defined?(Playlist)
     Object.send!(:remove_const,'Song') if defined?(Song)
     Playlist = Meta.new do
@@ -286,7 +280,6 @@ describe "Playlist.has_many :all_songs, :through => :songs association" do
 
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Playlist') if defined?(Playlist)
     Object.send!(:remove_const,'Song') if defined?(Song)
 
@@ -308,7 +301,6 @@ describe "Playlist.has_many :authors, :through => [:songs,:authors] association"
 
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Playlist') if defined?(Playlist)
     Object.send!(:remove_const,'Song') if defined?(Song)
 
@@ -335,7 +327,6 @@ end
 describe "Playlist.has_many :songs, :extend => MyExt association" do
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Playlist') if defined?(Playlist)
     Object.send!(:remove_const,'Song') if defined?(Song)
     Object.send!(:remove_const,'MyExt') if defined?(MyExt)
@@ -357,7 +348,6 @@ end
 describe "Playlist.has_many :songs do .. end association" do
   before(:each) do
     setup_default_store
-    setup_index
     Object.send!(:remove_const,'Playlist') if defined?(Playlist)
     Object.send!(:remove_const,'Song') if defined?(Song)
     Playlist = Meta.new do

@@ -4,13 +4,12 @@ module StrokeDB
 
   class Store
     include Enumerable
-    attr_accessor :storage, :index_store, :uuid
+    attr_accessor :storage, :uuid
     attr_reader :timestamp
 
     def initialize(options = {})
       @options = options.stringify_keys
       @storage = @options['storage']
-      @index_store = @options['index']
       initialize_files
       autosync! unless @options['noautosync']
       raise "Missing chunk storage" unless @storage
