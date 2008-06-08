@@ -39,20 +39,7 @@ module StrokeDB
     def save!(doc)
       next_timestamp!
       storage.save!(doc, timestamp)
-      
       update_views!(doc)
-      
-      # TODO: remove this shit 
-      if @index_store
-        if doc.previous_version
-          raw_pdoc = find(doc.uuid,doc.previous_version,:no_instantiation => true)
-          pdoc = Document.from_raw(self,raw_pdoc.freeze,:skip_callbacks => true)
-          pdoc.extend(VersionedDocument)
-          @index_store.delete(pdoc)
-        end
-        @index_store.insert(doc)
-        @index_store.save!
-      end
     end  
 
     def save_as_head!(doc)
