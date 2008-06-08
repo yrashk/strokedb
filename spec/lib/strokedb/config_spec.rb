@@ -13,9 +13,8 @@ describe "Config" do
     ::StrokeDB.default_config.should == @config
   end
   
-  it "should have no storages or indexes on creation" do
+  it "should have no storages on creation" do
     @config.storages.should be_empty
-    @config.indexes.should be_empty
   end
   
   it "should add known storages without specific parameters" do
@@ -67,19 +66,6 @@ describe "Config" do
     @config.storages[:fs].should_not have_chained_storage(@config.storages[:mem3])
   end
 
-  it "should add an index" do
-    @paths << (@root_path + "file_storage_index")
-    @config.add_storage :fs, :file, :path => @paths.last
-    @paths << (@root_path + "inverted_list_file_index")
-    @config.add_storage :idx_st, :inverted_list_file, :path => @paths.last
-    @config.add_index :idx, :inverted_list, :idx_st
-    @config.indexes[:idx].should be_an_instance_of(InvertedListIndex)
-  end
-
-  it "should raise the correct exception when adding an unknown index" do
-    lambda { @config.add_index :unknown, :unknown_index_type, :idx_st }.should raise_error(StrokeDB::UnknownIndexTypeError)
-  end
-
   it "should add a store" do
     @paths << (@root_path + "file_storage")
     @config.add_storage :fs, :file, :path => @paths.last
@@ -88,15 +74,11 @@ describe "Config" do
     @config.stores[:store].storage.should == @config.storages[:fs]
   end
   
-  it "should add a default store with default index" do
+  it "should add a default store" do
     @paths << (@root_path + "file_storage_default_index")
     @config.add_storage :fs, :file, :path => @paths.last
-    @paths << (@root_path + "inverted_list_file_default_index")
-    @config.add_storage :index_storage, :inverted_list_file, :path => @paths.last
-    @config.add_index :default, :inverted_list, :index_storage
     @config.add_store :default, nil, :storage => :fs, :cut_level => 4, :path => @paths.last
     @config.stores[:default].should be_an_instance_of(Store)
-    @config.indexes[:default].document_store.should == @config.stores[:default]
   end
 
   after(:each) do
@@ -191,38 +173,6 @@ describe "Config builder" do
     config.storages[:chunk_3].authoritative_source.should be_nil
   end
   
-  it "should use InvertedListIndex by default" do
-    config = StrokeDB::Config.build :base_path => @base_path
-    config.indexes[:default].should be_a_kind_of(InvertedListIndex)
-  end
-
-  it "should use specific index if told so by default" do
-    StrokeDB.send!(:remove_const,'SomeFunnyIndex') if defined?(SomeFunnyIndex)
-    StrokeDB::SomeFunnyIndex = Class.new(InvertedListIndex)
-    config = StrokeDB::Config.build :index => :some_funny, :base_path => @base_path
-    config.indexes[:default].should be_a_kind_of(SomeFunnyIndex)
-  end
-
-  it "should use InvertedListFileStorage index storage by default" do
-    config = StrokeDB::Config.build :base_path => @base_path
-    config.storages[:inverted_list_file].should be_a_kind_of(InvertedListFileStorage)
-  end
-
-  it "should use specific index storage if told so" do
-    StrokeDB.send!(:remove_const,'SomeFunnyIndexStorage') if defined?(SomeFunnyIndexStorage)
-    StrokeDB::SomeFunnyIndexStorage = Class.new(InvertedListFileStorage)
-    config = StrokeDB::Config.build :index_storages => [:some_funny_index], :base_path => @base_path
-    config.storages[:some_funny_index].should be_a_kind_of(SomeFunnyIndexStorage)
-  end
-
-  it "should initialize index storage with base_path+storage_name" do
-    StrokeDB.send!(:remove_const,'SomeFunnyIndexStorage') if defined?(SomeFunnyIndexStorage)
-    StrokeDB::SomeFunnyIndexStorage = Class.new(InvertedListFileStorage)
-    index_storage = StrokeDB::SomeFunnyIndexStorage.new(:path => @base_path + '/some_funny_index')
-    SomeFunnyIndexStorage.should_receive(:new).with(:path => @base_path + '/some_funny_index').and_return(index_storage)
-    config = StrokeDB::Config.build :index_storages => [:some_funny_index], :base_path => @base_path
-  end
-
   it "should dump config in base_path (except 'default' key)" do
     cfg = StrokeDB::Config.build :default => true, :base_path => @base_path
     config = JSON.parse(IO.read(@base_path + '/config'))
