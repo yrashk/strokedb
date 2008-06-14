@@ -1,0 +1,35 @@
+
+STORAGES OVERVIEW
+
+StrokeDB stores 2 kinds of things:
+
+1) Documents with all their versions.
+2) Views' index files.
+
+Documents are stored in the "document storages", 
+view indexes are stored in (sic!) the "view storages".
+
+Document storage does two simple things:
+1) Gives a document for a given UUID (or UUID.VERSION)
+2) Stores a document with a given UUID.VERSION
+Also it allows you to iterate over all the documents,
+but this is done inside a View reindexing.
+
+View indexes are stored as ordered lists of key-value tuples.
+Value is a document UUID (or UUID.VERSION), key is an arbitrary 
+structure relevant to the particular View.
+
+Views answer search queries and update the index with a #update method.
+
+
+DOCUMENT STORAGE
+
+
+
+
+
+The only "write" operation exposed by API is a Document#save! method.
+
+
+
+
