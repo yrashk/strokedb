@@ -17,6 +17,7 @@ module StrokeDB
     end
 
     def find(uuid, version=nil, opts = {}, &block)
+      #puts "Store#find: #{uuid} v. #{version.inspect} (#{opts.inspect})"
       @storage.find(uuid,version,opts.merge(:store => self),&block)
     end
 
