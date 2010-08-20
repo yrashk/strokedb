@@ -14,11 +14,11 @@ One of the most important concepts of StrokeDB is a StrokeDB::Document.
 
 Install ossp-uuid library:
 
-	$ sudo port install ossp-uuid # (MacOSX)
+	$ brew install ossp-uuid # (MacOSX)
 
 You need to install few gems in order to run StrokeDB:
 
-	$ sudo gem install diff-lcs json RubyInline
+	$ gem install diff-lcs json RubyInline
 	
 If you can't install ossp-uuid for some reason, then install uuidtools gem as well.
 
@@ -30,10 +30,11 @@ If you can't install ossp-uuid for some reason, then install uuidtools gem as we
 
 === Installing rubygem
 
-	$ sudo gem install strokedb
+	$ gem install strokedb
 	
 === <i>(Optional) Running test suite</i>
 
+  $ gem install rcov echoe rspec
 	$ rake sup
 	
 =AUTHORS
